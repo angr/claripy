@@ -7,7 +7,7 @@ set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 # This allows for simple invoking of cmake files in this path
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-# Help with user config
+# Functions to be used later
 include(set_prefer_cli)
 
 
@@ -59,8 +59,8 @@ set( DEFAULT_OTHER_LOG_LEVEL "Info" )
 
 ### Config Options ###
 
-# The VERSION file (we normalize it for cleaner logging purposes)
-file( TO_CMAKE_PATH "${CMAKE_SOURCE_DIR}/../VERSION" VERSION_FILE )
+# The VERSION file
+set( VERSION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../VERSION" )
 
 # Static Analysis Options
 option( IWYU "Enable iwyu" OFF )
@@ -246,6 +246,13 @@ message(STATUS "Version: ${VERSION}")
 # Used for compilation and header lookup for tests
 set(CLARICPP_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
+# Where the claricpp source will be installed
+# This source will be parsed by backtraces for code snippits
+if(NOT DEFINED SOURCE_ROOT_FOR_BACKTRACE)
+	set(SOURCE_ROOT_FOR_BACKTRACE "${CMAKE_CURRENT_SOURCE_DIR}")
+endif()
+message(STATUS "Backtrace generators will look for source files in: ${SOURCE_ROOT_FOR_BACKTRACE}")
+
 
 #################################################
 #                                               #
@@ -254,17 +261,17 @@ set(CLARICPP_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 #################################################
 
 
-# Find Required
+# BigInt support
 # set(Boost_USE_STATIC_LIBS ON) This might matter if we link, we do not at the moment
 find_package(Boost 1.7 REQUIRED)
 include(GMP) # Boost multiprecision backend
-if(NOT GMP_FOUND)
+if(NOT GMP_FOUND) # Check variable set by the included GMP cmake file
 	message(FATAL_ERROR "gmp not found")
 endif()
-include(z3)
 
-# Backward
+# Other required
 include(Backward)
+include(z3)
 
 # Static Analysis
 include(StaticAnalsis)
@@ -287,7 +294,7 @@ endif()
 # the ones inlined in the shared library. Furthermore, other compilation which
 # used the headers may not move the headers within this directory for the same
 # reason: it changes the normpath of __FILE__ which changes the CUIDs, etc.
-add_compile_options("-ffile-prefix-map=${CMAKE_SOURCE_DIR}/=/")
+add_compile_options("-ffile-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/=/")
 
 # Global required complication flags
 add_compile_options(
@@ -477,6 +484,20 @@ if(ENABLE_SECURITY)
 	include(EnableSecurity)
 endif()
 
+# Configure library compilation and linking
+# This is just in case we missed any flags above
+if(CMAKE_BUILD_TYPE MATCHES Rel)
+	include(CheckIPOSupported)
+	check_ipo_supported(RESULT IPO_SUPPORTED OUTPUT IPO_ERROR)
+	if (IPO_SUPPORTED)
+		message(STATUS "Interprocedural optimization enabled")
+		set_property(TARGET "${CLARICPP}" PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+	else()
+		message(WARNING "Interprocedural optimization is not supported: ${IPO_ERROR}")
+		message("Disabling interprocedural optimization")
+	endif()
+endif()
+
 
 #################################################
 #                                               #
@@ -488,7 +509,11 @@ endif()
 # Create a make target for the library
 add_subdirectory("${CLARICPP_SRC}")
 
-# Allow building with z3
+# Backtrace config
+add_backward("${CLARICPP}" TRUE)
+target_compile_definitions("${CLARICPP}" PRIVATE "SOURCE_ROOT_FOR_BACKTRACE=\"${SOURCE_ROOT_FOR_BACKTRACE}\"")
+
+# Z3 config
 target_include_directories("${CLARICPP}"
 	SYSTEM BEFORE
 	PRIVATE "${Z3_INCLUDE_DIR}"
@@ -499,17 +524,6 @@ target_link_libraries("${CLARICPP}"
 	PRIVATE "${GMP_LIBRARIES}" # Boost multiprecision backend
 	# PRIVATE dl (only necessary if using native backtraces; not needed for Backward backtraces)
 )
-
-# Allow building with Backward
-add_backward("${CLARICPP}" TRUE)
-
-# Configure library compilation and linking
-# This is just in case we missed any flags above
-if(CMAKE_BUILD_TYPE MATCHES Rel)
-	set_property(TARGET "${CLARICPP}"
-		PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE
-	)
-endif()
 
 # Create a make target for test cases
 if(ENABLE_TESTING)

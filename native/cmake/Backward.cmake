@@ -5,7 +5,7 @@
 message(STATUS "Configuring Backward...")
 
 # Config
-set(BACKWARD_DIR "${CMAKE_SOURCE_DIR}/backward-cpp/")
+set(BACKWARD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/backward-cpp/")
 option(WARN_BACKWARD_LIMITATIONS "Warn about any limitations due to missing dependencies" ON)
 
 # Error checking
