@@ -8,7 +8,7 @@ set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Functions to be used later
-include(set_prefer_cli)
+include(default)
 
 
 #################################################
@@ -53,9 +53,9 @@ set( CMAKE_BUILD_TYPE "Debug" CACHE STRING "Cmake build type" )
 
 # Log levels are defined in ./src/utils/log/level/level/hpp
 # Note: Lower log levels implier higher levels (i.e. verbose implies critical)
-set( DEFAULT_RELEASE_LOG_LEVEL "Warning" )
-set( DEFAULT_DEBUG_LOG_LEVEL "Debug" )
-set( DEFAULT_OTHER_LOG_LEVEL "Info" )
+default( DEFAULT_RELEASE_LOG_LEVEL "Warning" )
+default( DEFAULT_DEBUG_LOG_LEVEL "Debug" )
+default( DEFAULT_OTHER_LOG_LEVEL "Info" )
 
 ### Config Options ###
 
@@ -110,7 +110,7 @@ set( Z3_LIB_PRIVATE_TARGET "lib-z3" )
 # Note that for all modes, the output must be a directory containing a 'bin' and 'include' directory
 # The 'bin' directory should include the shared library claricpp can link to
 # The 'include' directory should include the header files claricpp can use
-set_prefer_cli( Z3_ACQUISITION_MODE SYSTEM )
+default( Z3_ACQUISITION_MODE SYSTEM )
 
 # This option is used to help locate the Z3 library.
 # If left undefined cmake will attempt to locate it automatically
@@ -130,7 +130,7 @@ if (Z3_ACQUISITION_MODE STREQUAL SYSTEM)
 	# The path to the include directory (z3 header files)
 	# This directory will by symlinked into the build directory for read-only usage
 	# Claricpp is coded to use z3 headers as non-system headers, so this is necessary
-	set_prefer_cli( Z3_INCLUDE_PATH "/path/to/z3-headers/" )
+	default( Z3_INCLUDE_PATH "/path/to/z3-headers/" )
 
 endif()
 
@@ -142,7 +142,7 @@ if (Z3_ACQUISITION_MODE STREQUAL DOWNLOAD)
 
 	# The link to download z3 from
 	# The link must be the compressed z3 install directory containing 'bin' and 'include'
-	set_prefer_cli( Z3_DOWNLOAD_LINK
+	default( Z3_DOWNLOAD_LINK
 		# "https://github.com/Z3Prover/z3/releases/download/z3-4.8.10/z3-4.8.10-x64-ubuntu-18.04.zip"
 		"https://github.com/Z3Prover/z3/releases/download/z3-4.8.10/z3-4.8.10-x64-osx-10.15.7.zip"
 	)
@@ -150,8 +150,8 @@ if (Z3_ACQUISITION_MODE STREQUAL DOWNLOAD)
 	# Optionally provide the hash of the compressed file
 	# If this is done, the hash will be checked after download for security
 	# If this is not desired, leave these variable undefined
-	set_prefer_cli( Z3_DOWNLOAD_HASH "750773630d05cc7c6e4e92be937bfdc6" )
-	set_prefer_cli( Z3_DOWNLOAD_HASH_TYPE "MD5" )
+	default( Z3_DOWNLOAD_HASH "750773630d05cc7c6e4e92be937bfdc6" )
+	default( Z3_DOWNLOAD_HASH_TYPE "MD5" )
 
 	# Other required download settings
 	option( Z3_DOWNLOAD_TLS_VERIFY "Specify whether to verify the server certificate for https:// urls" ON )
@@ -170,12 +170,12 @@ if (Z3_ACQUISITION_MODE STREQUAL PATH)
 	# On Mac this will probably be a dynamic library (.dylib)
 	# On Linux this will probably be a shared object (.so)
 	# On Windows this will probably be a dynamic link library (.dll)
-	set_prefer_cli( Z3_LIB_PATH "/path/to/z3/library.so" )
+	default( Z3_LIB_PATH "/path/to/z3/library.so" )
 
 	# The path to the include directory (z3 header files)
 	# This directory will by symlinked into the build directory for read-only usage
 	# Claricpp is coded to use z3 headers as non-system headers, so this is necessary
-	set_prefer_cli( Z3_INCLUDE_PATH "/path/to/z3-headers/" )
+	default( Z3_INCLUDE_PATH "/path/to/z3-headers/" )
 
 endif()
 
@@ -192,8 +192,8 @@ if (Z3_ACQUISITION_MODE STREQUAL BUILD)
 
 	# Specify the repo and commit that should be used to build Z3
 	# Z3_GIT_COMMIT can be a branch, tag, or commit hash
-	set_prefer_cli( Z3_REPO_LINK "https://github.com/Z3Prover/z3" )
-	set_prefer_cli( Z3_GIT_COMMIT "master" )
+	default( Z3_REPO_LINK "https://github.com/Z3Prover/z3" )
+	default( Z3_GIT_COMMIT "master" )
 
 	# Build z3 in release or debug mode
 	option( Z3_BUILD_RELEASE_MODE "ON to build z3 in release mode, OFF for debug mode" ON )
@@ -248,9 +248,7 @@ set(CLARICPP_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 # Where the claricpp source will be installed
 # This source will be parsed by backtraces for code snippits
-if(NOT DEFINED SOURCE_ROOT_FOR_BACKTRACE)
-	set(SOURCE_ROOT_FOR_BACKTRACE "${CMAKE_CURRENT_SOURCE_DIR}")
-endif()
+default(SOURCE_ROOT_FOR_BACKTRACE "${CMAKE_CURRENT_SOURCE_DIR}")
 message(STATUS "Backtrace generators will look for source files in: ${SOURCE_ROOT_FOR_BACKTRACE}")
 
 
@@ -424,11 +422,11 @@ if(OPTIMIZE_FOR_NATIVE)
 endif()
 
 # Fix compile time logging
-if(CMAKE_BUILD_TYPE MATCHES Rel AND CONSTANT_LOG_LEVEL)
-    message("Runtime logging disabled!")
+if(CONSTANT_LOG_LEVEL)
+    message("Constant log level set!")
 	target_compile_definitions("${CLARICPP}" PUBLIC "CONSTANT_LOG_LEVEL") # Export this macro
 else()
-    message("Runtime logging enabled!")
+    message("Runtime adjustable log level enabled!")
 endif()
 
 # Enable testing

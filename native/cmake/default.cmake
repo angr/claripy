@@ -1,4 +1,6 @@
-function(set_prefer_cli VARI VAL)
+# default(x value) = if not defined(x): set(x value)
+
+function(default VARI VAL)
 	if (NOT DEFINED "${VARI}")
 		set("${VARI}" "${VAL}" PARENT_SCOPE)
 	else()
