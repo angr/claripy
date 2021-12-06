@@ -8,7 +8,7 @@ if(CPP_CHECK)
 		"--std=c++17"
 		"--error-exitcode=1"
 		"--inline-suppr"
-		# TODO: remove this after python wrapper and c ABI made
+		# TODO: remove this after python wrapper and c ABI made @todo
 		"--suppress=unusedFunction"
 		# cppcheck might have path issues; this check is redundant since we can compile successfully
 		"--suppress=missingIncludeSystem"
