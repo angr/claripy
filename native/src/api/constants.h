@@ -30,20 +30,20 @@
 /** A local macro used to declare a C wrapper for a C++ type */
 #define DECLARE_WRAPPER(NAME)                                                                      \
     /** A C wrapper for a C++ type */                                                              \
-    struct NAME {                                                                                  \
+    typedef struct {                                                                                  \
         /** An obscure point to a C++ type */                                                      \
         void *ptr;                                                                                 \
-    }
+    } NAME;
 
 /** A local macro used to declare an out array of a C type */
 #define DECLARE_OUT_ARRAY(NAME)                                                                    \
     /** The wrapper struct for the array */                                                        \
-    struct ARRAY_OUT(NAME) {                                                                       \
+    typedef struct {                                                                       \
         /** An array of C objects */                                                               \
-        struct NAME *arr;                                                                          \
+        NAME *arr;                                                                          \
         /** The length of the array */                                                             \
         SIZE_T len;                                                                                \
-    }
+    } ARRAY_OUT(NAME);
 
 // Primitives
 
@@ -96,7 +96,7 @@ typedef enum { ClaricppWidthFloat, ClaricppWidthDouble } ClaricppWidth;
 // Unions
 
 /** A C union containing the primitive types an Expr can hold */
-union ClaricppPrimUnion {
+typedef union {
     // Literal types
     BOOL boolean;    // Bool
     const char *str; // String
@@ -109,18 +109,18 @@ union ClaricppPrimUnion {
     uint32_t u32;
     uint64_t u64;
     const char *big_int;
-};
+} ClaricppPrimUnion;
 
 /** A C union containing the types an Expr can hold */
-union ClaricppArgUnion {
-    union ClaricppPrimUnion prim;
-    struct ClaricppExpr expr;
+typedef union {
+    ClaricppPrimUnion prim;
+    ClaricppExpr expr;
     ClaricppRM rounding_mode;
     ClaricppWidth width;
-};
+} ClaricppArgUnion;
 
 /** A C enum noting the types an Expr can hold */
-enum ClaricppTypeEnum {
+typedef enum {
     ClaricppTypeEnumBool = 0,
     ClaricppTypeEnumStr,
     ClaricppTypeEnumFloat,
@@ -134,23 +134,23 @@ enum ClaricppTypeEnum {
     ClaricppTypeEnumExpr,
     ClaricppTypeEnumRM,
     ClaricppTypeEnumWidth
-};
+} ClaricppTypeEnum;
 
 /** A safer C union containing the primitive types an Expr can hold */
-struct ClaricppPrim {
+typedef struct {
     /** The data this union holds */
-    union ClaricppPrimUnion data;
+    ClaricppPrimUnion data;
     /** The type of this data */
-    enum ClaricppTypeEnum type;
-};
+    ClaricppTypeEnum type;
+} ClaricppPrim;
 
 /** A safer C union containing the types an Expr can hold */
-struct ClaricppArg {
+typedef struct {
     /** The data this union holds */
-    union ClaricppArgUnion data;
+    ClaricppArgUnion data;
     /** The type of this data */
-    enum ClaricppTypeEnum type;
-};
+    ClaricppTypeEnum type;
+} ClaricppArg;
 
 // Array types
 
