@@ -294,13 +294,21 @@ endif()
 # reason: it changes the normpath of __FILE__ which changes the CUIDs, etc.
 add_compile_options("-ffile-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/=/")
 
-# Global required complication flags
+# Convert warnings to errors but treat #warning's as warnings
+add_compile_options("-Werror")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+	add_compile_options("-Wno-error=cpp")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+	add_compile_options("-Wno-error=#warnings")
+else()
+	message(WARNING "Unknown compiler, please manually add a compile flag"
+			"to ensure that #warnings are not caught by -Werror.")
+endif()
+
+# Global required compilation flags
 add_compile_options(
-	# Warning globs
 	"-Wall"
 	"-Wextra"
-	"-Werror" # Convert warnings to errors
-	# A bunch of useful warnings to have
 	"-Wcast-align"
 	"-Wcast-qual"
 	"-Wdeprecated"
@@ -338,16 +346,6 @@ add_compile_options(
 	"-Wdouble-promotion"
 	"-Wnon-virtual-dtor"
 )
-
-# Treat #warning's as warnings
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-	add_compile_options("-Wno-error=cpp")
-elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-	add_compile_options("-Wno-error=#warnings")
-else()
-	message(WARNING "Unknown compiler, please manually add a compile flag"
-					"to ensure that #warnings are not caught by -Werror.")
-endif()
 
 # Compile options that cannot be used with g++
 if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -434,7 +432,6 @@ if(ENABLE_TESTING)
     message("Testing enabled!")
 	include(CTest)
 	enable_testing()
-	# Macros
 	target_compile_definitions("${CLARICPP}" PUBLIC "ENABLE_TESTING") # Export this macro
 else()
     message("Testing disabled!")
@@ -445,12 +442,10 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
     message("Debug Mode enabled!")
 	target_compile_definitions("${CLARICPP}"
 		PUBLIC "DEFAULT_LOG_LEVEL=${DEFAULT_DEBUG_LOG_LEVEL}" # Export this macro
-		PUBLIC "DEBUGMODE=1"
-		PUBLIC "DEBUG=1"
+		PUBLIC "_GLIBCXX_ASSERTIONS" # Export this macro
+		PUBLIC "DEBUGMODE=1" # Export this macro
+		PUBLIC "DEBUG=1" # Export this macro
 	)
-	# Macros
-	target_compile_definitions("${CLARICPP}" PUBLIC "_GLIBCXX_ASSERTIONS")
-	# Compile and link flags
 	target_compile_options("${CLARICPP}" PUBLIC
 		"-O0"
 		"-g"
@@ -462,16 +457,15 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 	)
 elseif(CMAKE_BUILD_TYPE MATCHES Rel)
     message("Release Build enabled!")
-	target_compile_definitions("${CLARICPP}" PUBLIC  # Export this macro
-		"DEFAULT_LOG_LEVEL=${DEFAULT_RELEASE_LOG_LEVEL}"
+	target_compile_definitions("${CLARICPP}"
+		 PUBLIC "DEFAULT_LOG_LEVEL=${DEFAULT_RELEASE_LOG_LEVEL}" # Export this macro
 	)
 	# Compilation and linker flags
 	target_compile_options("${CLARICPP}" PRIVATE "-pipe" "-O3")
-	target_link_options("${CLARICPP}" PRIVATE "-flto")
 else()
 	message(WARNING "Build level: ${CMAKE_BUILD_TYPE}")
-	target_compile_definitions("${CLARICPP}" PUBLIC # Export this macro
-		"DEFAULT_LOG_LEVEL=${DEFAULT_OTHER_LOG_LEVEL}"
+	target_compile_definitions("${CLARICPP}"
+		PUBLIC "DEFAULT_LOG_LEVEL=${DEFAULT_OTHER_LOG_LEVEL}" # Export this macro
 	)
 endif()
 
@@ -489,6 +483,7 @@ if(CMAKE_BUILD_TYPE MATCHES Rel)
 	check_ipo_supported(RESULT IPO_SUPPORTED OUTPUT IPO_ERROR)
 	if (IPO_SUPPORTED)
 		message(STATUS "Interprocedural optimization enabled")
+		target_link_options("${CLARICPP}" PRIVATE "-flto")
 		set_property(TARGET "${CLARICPP}" PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 	else()
 		message(WARNING "Interprocedural optimization is not supported: ${IPO_ERROR}")
