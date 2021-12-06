@@ -24,10 +24,11 @@ def all_equal(vals):
     return all(v == v0 for v in vals)
 
 
-@skip
 class SmtLibSolverTestCongruency(unittest.TestCase):
+    # Skip these test for now because of a problem with pysmt
+    @skip
     def get_solvers(self):
-        # Skip these test for now because of a problem with pysmt
+
         solvers = [
             claripy.SolverStrings(backend=claripy.backend_manager.backends.smtlib_cvc4),
             claripy.SolverStrings(backend=claripy.backend_manager.backends.smtlib_z3),

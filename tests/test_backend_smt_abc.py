@@ -4,8 +4,9 @@ import common_backend_smt_solver
 
 from common_backend_smt_solver import if_installed
 
-@if_installed
+
 class SmtLibSolverTest_ABC(common_backend_smt_solver.SmtLibSolverTestBase):
+    @if_installed
     def get_solver(self):
         from claripy.backends.backend_smtlib_solvers.abc_popen import SolverBackendABC
         backend = SolverBackendABC(daggify=True)

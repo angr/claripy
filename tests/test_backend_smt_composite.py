@@ -5,9 +5,9 @@ from claripy.backends.backend_smtlib_solvers.z3_popen import SolverBackendZ3
 import common_backend_smt_solver
 
 
-# Skip these test for now because of a problem with pysmt
-@skip
 class SmtLibSolverTest_Z3(common_backend_smt_solver.SmtLibSolverTestBase):
+    # Skip these test for now because of a problem with pysmt
+    @skip
     def get_solver(self):
         solver = claripy.SolverPortfolio(
             solvers=[
