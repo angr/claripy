@@ -338,7 +338,7 @@ class BackendZ3(Backend):
     @condom
     def FuncDecl(self, ast):
         func_name = ast.op
-        func_args = ast.args[1:]
+        func_args = ast.args
         func_args_z3 = self.convert_list(func_args)
         func_sig = [arg.sort() for arg in func_args_z3]
         func_sig.append(z3.BitVecSort(ast.length, self._context))
@@ -419,7 +419,7 @@ class BackendZ3(Backend):
         children = [ self._abstract_internal(ctx, z3.Z3_get_app_arg(ctx, ast, i), new_split_on) for i in range(num_args) ]
 
         append_children = True
-
+        decl_name_str = _z3_decl_name_str(ctx, decl)
         if op_name == 'True':
             return BoolV(True)
         elif op_name == 'False':
@@ -441,8 +441,8 @@ class BackendZ3(Backend):
             return FPV(val, sort)
 
 
-        elif op_name == 'UNINTERPRETED' and _z3_decl_name_str(ctx, decl).decode().startswith('Func_'):
-            symbol_name = _z3_decl_name_str(ctx, decl)
+        elif op_name == 'UNINTERPRETED' and decl_name_str.decode().startswith('Func_'):
+            symbol_name = decl_name_str
             symbol_str = symbol_name.decode()
             symbol_ty = z3.Z3_get_sort_kind(ctx, z3_sort)
             bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
@@ -462,6 +462,8 @@ class BackendZ3(Backend):
             args.extend(children)
             func = Func(op=symbol_str, args=args, _ret_size = bv_size)
             func_result = func.func_op(*args)
+            if symbol_str in str(func_result.args[0]):
+                func_result.args = func_result.args[1:]
             return func_result
 
         elif op_name == 'UNINTERPRETED' and num_args == 0: # symbolic value
