@@ -9,6 +9,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+/** Used to mark where the FFI parser should start from
+ *  This struct is not used within the code base, instead
+ *  it exists to tell the FFI parser to expose all methods
+ *  which come after it after macro expansion
+ */
+struct ClaricppFFIStart;
+
 // Copy enum generation macros
 #include "../mode.h"
 
