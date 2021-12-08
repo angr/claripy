@@ -19,7 +19,7 @@ ClaricppExpr claricpp_expr_make_like_annotations(const ClaricppExpr old, Claricp
  * @param expr The Expr to determine if it is symbolic
  * @return True if expr is symbolic
  */
-bool claricpp_expr_symbolic(const ClaricppExpr expr);
+BOOL claricpp_expr_symbolic(const ClaricppExpr expr);
 
 /** Return the SPAV expr holds
  * @param expr The Expr to get the SPAV of
