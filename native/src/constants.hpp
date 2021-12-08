@@ -77,13 +77,6 @@ constexpr UInt operator"" _ui(const unsigned long long u) noexcept {
     return u; // The compiler will error if this is narrowing
 }
 
-/** A way to get a char * from a char[]
- *  char[]'s may not be forwardable, _c alleviates this
- */
-constexpr const char *operator"" _c(const char *s, unsigned long) noexcept {
-    return s;
-}
-
 // A way to get an std::string from a char[]
 using ::std::string_literals::operator""s;
 
