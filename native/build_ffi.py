@@ -104,6 +104,12 @@ def build_ffi(lib_name, build_dir):
     # Extract data
     source_f = get_source_f(os.path.dirname(__file__))
     cdefs = get_cdefs(build_dir)
+    # Output dir
+    ffi_tmp = os.path.join(build_dir, 'ffi')
+    if not os.path.exists(ffi_tmp):
+        os.mkdir(ffi_tmp)
+    with open(os.path.join(ffi_tmp, 'cdefs.txt'), 'w') as f:
+        f.write(cdefs)
     # FFI
     ffibuilder = FFI()
     ffibuilder.cdef(cdefs)
@@ -111,9 +117,6 @@ def build_ffi(lib_name, build_dir):
     ffibuilder.set_source(lib_name, include, libraries=['claricpp'], library_dirs=[build_dir], extra_link_args=['-Wl,-rpath,' + build_dir],
     )
     # Compile
-    ffi_tmp = os.path.join(build_dir, 'ffi')
-    if not os.path.exists(ffi_tmp):
-        os.mkdir(ffi_tmp)
     ffibuilder.compile(tmpdir=ffi_tmp, verbose=True)
 
 def parse_args(prog, *args):
