@@ -16,7 +16,9 @@ extern "C" {
         return Expr::get_bit_length(API::to_cpp(expr));
     }
 
-    bool claricpp_expr_symbolic(const ClaricppExpr expr) { return API::to_cpp_ref(expr).symbolic; }
+    BOOL claricpp_expr_symbolic(const ClaricppExpr expr) {
+        return API::bool_(API::to_cpp_ref(expr).symbolic);
+    }
 
     ClaricppSPAV claricpp_expr_annotations(const ClaricppExpr expr) {
         const auto &ret { API::to_cpp_ref(expr).annotations };
