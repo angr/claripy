@@ -17,8 +17,13 @@ extern "C" {
         return API::to_c(Annotation::factory<Annotation::SimplificationAvoidance>());
     }
 
+    ClaricppSPAV claricpp_annotation_create_empty_spav() { return { nullptr }; }
+
     ClaricppSPAV claricpp_annotation_create_spav(ARRAY_IN(ClaricppAnnotation) list,
                                                  const SIZE_T len) {
+        if (UNLIKELY(len == 0)) {
+            return claricpp_annotation_create_empty_spav();
+        }
         UTIL_AFFIRM_NOT_NULL_DEBUG(list);
         Annotation::Vec::RawVec raw;
         raw.reserve(len);

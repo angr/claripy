@@ -17,6 +17,10 @@ void annotation() {
     };
     const ClaricppSPAV spav { claricpp_annotation_create_spav(arr, 2) };
 
+    // Empty spav
+    const ClaricppSPAV empty_spav { claricpp_annotation_create_empty_spav() };
+    UNITTEST_ASSERT(empty_spav.ptr == nullptr);
+
     // Constants
     const A::BasePtr base { API::to_cpp(arr[0]) };
     const A::BasePtr sa { API::to_cpp(arr[1]) };

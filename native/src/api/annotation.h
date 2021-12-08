@@ -20,6 +20,12 @@ ClaricppAnnotation claricpp_annotation_new_base();
 ClaricppAnnotation claricpp_annotation_new_simplification_avoidance();
 
 /** Create an Annotation::SPAV from a list of annotations
+ *  @return An empty ClaricppSPAV
+ */
+ClaricppSPAV claricpp_annotation_create_empty_spav();
+
+/** Create an Annotation::SPAV from a list of annotations
+ *  It is not very efficient to call this with len = 0 relative to the dedicated function
  *  @param list An array of ClaricppAnnotation pointers
  *  @param len The length of list
  *  @return A ClaricppSPAV constructed from list and len
