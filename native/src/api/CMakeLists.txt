@@ -4,5 +4,5 @@ target_sources("${CLARICPP}" PRIVATE
     create.cpp
     expr.cpp
     backend.cpp
-    api.cpp
+    free.cpp
 )
