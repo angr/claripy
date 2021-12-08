@@ -1,10 +1,10 @@
 /**
  * @file
- * @brief This header exposes the general C API functions for claricpp
+ * @brief This header exposes free functions for the C API
  * \ingroup api
  */
-#ifndef R_API_API_H_
-#define R_API_API_H_
+#ifndef R_API_FREE_H_
+#define R_API_FREE_H_
 
 #include "constants.h"
 
