@@ -11,7 +11,7 @@
 #include "../macros.hpp"
 #include "../util.hpp"
 
-/** Used to define a possible unused static_cuid in a class
+/** Used to define a possibly unused static_cuid in a class
  *  Leaves the class in a public state
  *  Will not cause any compiler warnings if this field is not used
  *  X can be any int, but must be different between different templates of the same class
@@ -25,7 +25,6 @@
     [[maybe_unused]] static const constexpr ::CUID::CUID static_cuid {                             \
         UTIL_FILE_LINE_HASH ^ Util::FNV1a<int>::hash(&Util::ref<int, static_cast<int>((X))>, 1)    \
     };
-
 
 namespace CUID {
 
