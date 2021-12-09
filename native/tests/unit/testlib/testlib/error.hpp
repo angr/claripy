@@ -34,7 +34,7 @@ namespace UnitTest::TestLib {
     extern thread_local std::shared_ptr<const Util::Log::Style::Base> original_sty;
 
     /** The UnitTest error struct */
-    DEFINE_NAMESPACED_FINAL_EXCEPTION(Error, Claricpp, Util::Err)
+    UTIL_ERR_DEFINE_NAMESPACED_FINAL_EXCEPTION(Error, Claricpp, Util::Err)
 
     /** A function used to test a boolean value; the thrown exception should *not* be caught */
     template <typename... Args> void ut_fail(Args &&...args) {

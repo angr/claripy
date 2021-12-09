@@ -17,15 +17,15 @@ namespace Util::Err::Python {
     /** Base Python exception
      *  All Python exceptions must derive from this
      */
-    DEFINE_NONFINAL_EXCEPTION(Base, Claricpp);
+    UTIL_ERR_DEFINE_NONFINAL_EXCEPTION(Base, Claricpp);
 
     /** A custom claripy exception
      *  All Claripy exceptions must derive from this
      */
-    DEFINE_NONFINAL_EXCEPTION(Claripy, Base);
+    UTIL_ERR_DEFINE_NONFINAL_EXCEPTION(Claripy, Base);
 
     /** Analogous to python's ValueError exception */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(ValueError, Base);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(ValueError, Base);
 
 } // namespace Util::Err::Python
 

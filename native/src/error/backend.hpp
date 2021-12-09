@@ -19,24 +19,24 @@ namespace Error::Backend {
     // Intermediate classes
 
     /** Expr Balance exception */
-    DEFINE_NONFINAL_EXCEPTION(Base, Claripy);
+    UTIL_ERR_DEFINE_NONFINAL_EXCEPTION(Base, Claripy);
 
     // Final classes
 
     /** @todo document */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(Abstraction, Base);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(Abstraction, Base);
 
     /** @todo document */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(Unsupported, Base);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(Unsupported, Base);
 
     /** @todo document */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(VSA, Base);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(VSA, Base);
 
     /** @todo document */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(Z3, Claripy);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(Z3, Claripy);
 
     /** @todo document */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(MissingSolver, Claripy);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(MissingSolver, Claripy);
 
 } // namespace Error::Backend
 

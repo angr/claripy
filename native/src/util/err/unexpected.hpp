@@ -15,52 +15,52 @@ namespace Util::Err {
     /** Base unexpected exception
      *  All unexpected exceptions must derive from this
      */
-    DEFINE_NONFINAL_EXCEPTION(Unexpected, Claricpp);
+    UTIL_ERR_DEFINE_NONFINAL_EXCEPTION(Unexpected, Claricpp);
 
     /** Hash Collision exception */
-    DEFINE_NONFINAL_EXCEPTION(Collision, Unexpected);
+    UTIL_ERR_DEFINE_NONFINAL_EXCEPTION(Collision, Unexpected);
 
     /** Null pointer exception */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(Null, Unexpected);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(Null, Unexpected);
 
     /** Invalid path exception */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(BadPath, Unexpected);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(BadPath, Unexpected);
 
     /** Syscall failure exception */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(Syscall, Unexpected);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(Syscall, Unexpected);
 
     /** Bad size exception */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(Size, Unexpected);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(Size, Unexpected);
 
     /** Bad index exception */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(Index, Unexpected);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(Index, Unexpected);
 
     /** Bad cast exception */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(BadCast, Unexpected);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(BadCast, Unexpected);
 
     /** Hash Collision exception */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(HashCollision, Collision);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(HashCollision, Collision);
 
     /** Bad variant access exception */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(BadVariantAccess, Unexpected);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(BadVariantAccess, Unexpected);
 
     /** Raised when a virtual function that should have been overridden was called */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(MissingVirtualFunction, Claricpp);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(MissingVirtualFunction, Claricpp);
 
     /** Raised when a function is given invalid arguments */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(Usage, Claricpp);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(Usage, Claricpp);
 
     /** Raised when a recurrence guarded function recurses too many times */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(RecurrenceLimit, Claricpp);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(RecurrenceLimit, Claricpp);
 
     /** Raised when something unknown occurs */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(Unknown, Claricpp);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(Unknown, Claricpp);
 
     /** Raised when an unsupported op is invoked */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(NotSupported, Claricpp);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(NotSupported, Claricpp);
 
     /** Raised when a dynamic type error occurs */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(Type, Claricpp);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(Type, Claricpp);
 
 } // namespace Util::Err
 

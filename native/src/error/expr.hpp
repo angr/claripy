@@ -19,28 +19,28 @@ namespace Error::Expr {
     // Intermediate classes
 
     /** Expr Balance exception */
-    DEFINE_NONFINAL_EXCEPTION(Balancer, Claripy);
+    UTIL_ERR_DEFINE_NONFINAL_EXCEPTION(Balancer, Claripy);
     /** Expr Operation exception */
-    DEFINE_NONFINAL_EXCEPTION(Operation, Claripy);
+    UTIL_ERR_DEFINE_NONFINAL_EXCEPTION(Operation, Claripy);
 
     // Final classes
 
     /** Expr usage exception */
-    DEFINE_NONFINAL_EXCEPTION(Usage, Claripy);
+    UTIL_ERR_DEFINE_NONFINAL_EXCEPTION(Usage, Claripy);
     /** @todo document */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(BalancerUnsat, Balancer);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(BalancerUnsat, Balancer);
     /** @todo document */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(Type, Claripy);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(Type, Claripy);
     /** @todo document */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(Value, Claripy);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(Value, Claripy);
     /** @todo document */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(Size, Claripy);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(Size, Claripy);
     /** @todo document */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(Replacement, Claripy);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(Replacement, Claripy);
     /** @todo document */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(Recursion, Operation);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(Recursion, Operation);
     /** @todo document */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(ZeroDivision, Operation);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(ZeroDivision, Operation);
 
 } // namespace Error::Expr
 
