@@ -11,9 +11,10 @@
 #define R_API_H_
 
 #include "api/annotation.h"
-#include "api/free.h"
 #include "api/backend.h"
 #include "api/create.h"
 #include "api/expr.h"
+#include "api/free.h"
+#include "api/general.h"
 
 #endif

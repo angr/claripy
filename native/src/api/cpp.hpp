@@ -132,7 +132,9 @@ namespace API {
 
     // To C
 
-    /** Heap cache function */
+    /** Heap cache function
+     *  @todo: make this inc a reference count for much greater speed
+     */
     template <typename InCpp> inline auto to_c(InCpp &&x) {
         static_assert(!std::is_reference_v<InCpp>, "Did you mean to std::move this?");
         return Private::Map<InCpp> { Private::cache<InCpp>.move_to_heap(std::move(x)) };
@@ -148,12 +150,15 @@ namespace API {
     }
 
     /** Return a dynamically allocated string containing s */
-    inline const char *c_str(const std::string &s) {
-        char *ret { new char[s.size() + 1] };
-        std::memcpy(ret, s.data(), s.size());
-        ret[s.size()] = 0;
+    inline const char *c_str(CCSC s, const UInt len) {
+        char *ret { new char[len + 1] };
+        std::memcpy(ret, s, len);
+        ret[len] = 0;
         return ret;
     }
+
+    /** Return a dynamically allocated string containing s */
+    inline const char *c_str(const std::string &s) { return c_str(s.data(), s.size()); }
 
     namespace Private {
         /** Return a corresponding array-type of CTypes of size len */
@@ -319,7 +324,9 @@ namespace API {
     // Forward declaration
     template <typename InC> inline void free_union(InC &x);
 
-    /** Multi-array-optional Heap cache free function */
+    /** Multi-array-optional Heap cache free function
+     *  @todo: make to_c inc a reference count and this dec one for much greater speed
+     */
     template <unsigned ArrayLayer, typename InC> inline void free(InC &x) {
         if constexpr (ArrayLayer == 0) {
             if constexpr (Private::TypeMap::template contains<InC>) {
@@ -376,6 +383,11 @@ namespace API {
             static_assert(Util::TD::false_<InC>, "Needs implementation");
         }
     }
+
+    // Exceptions
+
+    /** A thread local exception pointer */
+    extern thread_local const std::exception *exception_ptr;
 
 } // namespace API
 

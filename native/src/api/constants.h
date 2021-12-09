@@ -37,7 +37,7 @@ struct ClaricppFFIStart;
 /** A local macro used to declare a C wrapper for a C++ type */
 #define DECLARE_WRAPPER(NAME)                                                                      \
     /** A C wrapper for a C++ type */                                                              \
-    typedef struct {                                                                                  \
+    typedef struct {                                                                               \
         /** An obscure point to a C++ type */                                                      \
         void *ptr;                                                                                 \
     } NAME;
@@ -170,5 +170,28 @@ DECLARE_OUT_ARRAY(ClaricppArg);
 // Cleanup
 #undef DECLARE_OUT_ARRAY
 #undef DECLARE_WRAPPER
+
+// Exception
+
+/** An enum of Claricpp exception types
+ *  @todo: Make this support more
+ */
+typedef enum {
+    ClaricppExceptionEnumNone = 0, // No exception
+    ClaricppExceptionEnumUnknown,
+    ClaricppExceptionEnumStd,
+    ClaricppExceptionEnumUnexpected,
+    ClaricppExceptionEnumPython
+} ClaricppExceptionEnum;
+
+/** The exception struct Claricpp sends to python */
+typedef struct {
+    /** The exception type */
+    const ClaricppExceptionEnum type;
+    /** The exception message */
+    const char *msg;
+    /** The exception stack trace */
+    const char *trace;
+} ClaricppException;
 
 #endif
