@@ -6,7 +6,6 @@
 #ifndef R_UTIL_ERR_MACROS_HPP_
 #define R_UTIL_ERR_MACROS_HPP_
 
-#include "../../cuid.hpp"
 #include "../../macros.hpp"
 
 
