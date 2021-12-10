@@ -8,10 +8,6 @@
 
 #include "base.hpp"
 
-#include "../../terminate.hpp"
-
-#include <exception>
-#include <memory>
 #include <mutex>
 #include <ostream>
 
@@ -31,14 +27,11 @@ namespace Util::Log::Backend {
          *  a defined order.
          */
         explicit inline OStream(std::shared_ptr<std::ostream> stream_, const bool should_flush_,
-                                const bool flush_on_exit_ = true) noexcept
+                                const bool flush_on_exit_ = true)
             : stream { std::move(stream_) },
               should_flush { should_flush_ },
               flush_on_exit { flush_on_exit_ } {
-            // @todo: fallback_log: stream may not be a null
-            if (UNLIKELY(stream == nullptr)) {
-                ::Util::terminate();
-            }
+            UTIL_ASSERT(Err::Null, stream != nullptr, "stream should not be nullptr");
         }
 
         /** A virtual destructor */
