@@ -390,8 +390,8 @@ namespace API {
     /** A thread local exception pointer */
     extern thread_local std::exception_ptr exception_ptr;
 
-/** Call at the beginning of every API function
- *  Starts the exception handling
+/** Starts the exception handling
+ *  Call at the beginning of every API function that can throw exceptions
  */
 #define API_FUNC_START                                                                             \
     API::exception_ptr = nullptr;                                                                  \
@@ -401,13 +401,21 @@ namespace API {
 
 /** Call at the end of every API function
  *  Ends the exception handling
+ *  Does not call return
  */
-#define API_FUNC_END                                                                               \
+#define API_FUNC_END_NO_RETURN                                                                     \
     }                                                                                              \
     catch (...) {                                                                                  \
         API::exception_ptr = std::current_exception();                                             \
-        return { 0 }; /* Return all null */                                                        \
     }
+
+/** Call at the end of every API function
+ *  Ends the exception handling
+ *  returns {}
+ */
+#define API_FUNC_END                                                                               \
+    API_FUNC_END_NO_RETURN;                                                                        \
+    return {};
 
 } // namespace API
 
