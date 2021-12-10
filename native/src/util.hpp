@@ -21,6 +21,7 @@
 #include "util/dependent_constant.hpp"
 #include "util/do_once.hpp"
 #include "util/err.hpp"
+#include "util/fallback_error_log.hpp"
 #include "util/file_line_hash.hpp"
 #include "util/fnv1a.hpp"
 #include "util/full.hpp"
