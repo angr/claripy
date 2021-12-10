@@ -6,9 +6,11 @@
 #ifndef R_UTIL_TERMINATE_HPP_
 #define R_UTIL_TERMINATE_HPP_
 
+#include "../constants.hpp"
+
 namespace Util {
     /** Terminates the program */
-    [[noreturn]] void terminate(const bool force_flush_log = false) noexcept;
+    [[noreturn]] void terminate(CCSC msg = nullptr, const bool force_flush_log = false) noexcept;
 } // namespace Util
 
 #endif
