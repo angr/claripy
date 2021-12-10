@@ -45,9 +45,9 @@ struct ClaricppFFIStart;
 /** A local macro used to declare an out array of a C type */
 #define DECLARE_OUT_ARRAY(NAME)                                                                    \
     /** The wrapper struct for the array */                                                        \
-    typedef struct {                                                                       \
+    typedef struct {                                                                               \
         /** An array of C objects */                                                               \
-        NAME *arr;                                                                          \
+        NAME *arr;                                                                                 \
         /** The length of the array */                                                             \
         SIZE_T len;                                                                                \
     } ARRAY_OUT(NAME);
