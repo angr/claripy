@@ -22,6 +22,6 @@ BOOL claricpp_has_exception();
  *  This function should only be called if claricpp_has_exception() is true
  *  @return The C++ exception Claricpp threw during the previous API function call
  */
-ClaricppException claricpp_get_excption();
+ClaricppException claricpp_get_exception();
 
 #endif // R_GENERAL_HPP_

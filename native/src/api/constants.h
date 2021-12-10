@@ -178,6 +178,7 @@ DECLARE_OUT_ARRAY(ClaricppArg);
  */
 typedef enum {
     ClaricppExceptionEnumNone = 0, // No exception
+    ClaricppExceptionEnumUnknownCritical,
     ClaricppExceptionEnumUnknown,
     ClaricppExceptionEnumStd,
     ClaricppExceptionEnumUnexpected,
@@ -187,7 +188,7 @@ typedef enum {
 /** The exception struct Claricpp sends to python */
 typedef struct {
     /** The exception type */
-    const ClaricppExceptionEnum type;
+    ClaricppExceptionEnum type;
     /** The exception message */
     const char *msg;
     /** The exception stack trace */

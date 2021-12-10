@@ -105,7 +105,7 @@ namespace API {
     }
 
     /** Dereferences in after converting it to its C++ type; then down casts it to Out
-     *  If the dynmaic_cast fails, an exception is thrown
+     *  If the dynamic_cast fails, an exception is thrown
      *  If *(in.ptr) == nullptr, an exception is thrown
      *  Constness is applied as needed to out
      */
@@ -203,19 +203,19 @@ namespace API {
         return to_double_arr(std::vector<std::vector<InCpp>> { d_arr });
     }
 
-    // Other conversionts
+    // Other conversions
 
     /** Converts between a C++ strong enums and C weak enums
      *  Currently supported conversions:
      *  1. Mode::FP::Rounding <-> ClaricppRM
      */
-    template <typename In> inline auto mode(const In in) noexcept {
+    template <typename In> constexpr auto mode(const In in) noexcept {
         using Ret = typename Private::EnumMap::template Get<In>;
-        return Ret(in); // Must be (), not {}
+        return static_cast<Ret>(in);
     }
 
     /** Converts between a C and C++ bool */
-    template <typename In> inline auto bool_(const In in) noexcept {
+    template <typename In> constexpr auto bool_(const In in) noexcept {
         return static_cast<std::conditional_t<std::is_same_v<In, bool>, BOOL, bool>>(in);
     }
 
@@ -387,7 +387,26 @@ namespace API {
     // Exceptions
 
     /** A thread local exception pointer */
-    extern thread_local const std::exception *exception_ptr;
+    extern thread_local std::exception_ptr exception_ptr;
+
+/** Call at the beginning of every API function
+ *  Starts the exception handling
+ */
+#define API_FUNC_START                                                                             \
+    API::exception_ptr = nullptr;                                                                  \
+    try {
+
+// @todo exception tests
+
+/** Call at the end of every API function
+ *  Ends the exception handling
+ */
+#define API_FUNC_END                                                                               \
+    }                                                                                              \
+    catch (...) {                                                                                  \
+        API::exception_ptr = std::current_exception();                                             \
+        return { 0 }; /* Return all null */                                                        \
+    }
 
 } // namespace API
 
