@@ -16,8 +16,7 @@ BOOL claricpp_has_exception() {
         return API::bool_(API::exception_ptr);
     }
     catch (...) {
-        // @todo: fallback log
-        Util::terminate();
+        Util::terminate("has_exception failed");
     }
 }
 
