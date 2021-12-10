@@ -30,6 +30,9 @@ namespace Util::Log::Backend {
 
         /** Log the given message, level, to the correct log given by log_id */
         virtual void log(CCSC id, const Level::Level &lvl, const std::string &msg) const = 0;
+
+        /** Flush the log if applicable */
+        virtual void flush() const = 0;
     };
 
     /** Default virtual destructor */

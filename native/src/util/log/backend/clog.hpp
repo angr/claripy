@@ -18,7 +18,6 @@ namespace Util::Log::Backend {
      *  When the buffer is flushed is deferred to std::clog
      */
     struct Clog final : public OStream {
-
         /** Constructor */
         inline Clog() : OStream(std::make_shared<std::ostream>(std::clog.rdbuf()), false, false) {}
     };

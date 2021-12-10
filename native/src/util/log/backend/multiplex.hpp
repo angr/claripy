@@ -8,7 +8,7 @@
 
 #include "base.hpp"
 
-#include "../../affirm_not_null_debug.hpp"
+#include "../../assert_not_null_debug.hpp"
 #include "../../thread_safe.hpp"
 
 #include <memory>
@@ -27,8 +27,15 @@ namespace Util::Log::Backend {
         /** Log the given message, level, to the correct log given by log_id with each backend */
         inline void log(CCSC id, const Level::Level &lvl, const std::string &msg) const final {
             for (const auto &i : backends) {
-                UTIL_AFFIRM_NOT_NULL_DEBUG(i);
+                UTIL_ASSERT_NOT_NULL_DEBUG(i);
                 i->log(id, lvl, msg);
+            }
+        }
+
+        /** Flush logs */
+        inline void flush() const final {
+            for (const auto &i : backends) {
+                i->flush();
             }
         }
 
