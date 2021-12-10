@@ -20,6 +20,7 @@ BOOL claricpp_has_exception();
 
 /** Returns the C++ exception Claricpp threw during the previous API function call
  *  This function should only be called if claricpp_has_exception() is true
+ *  If this function fails, the failire exception is returned but the saved exception is not cleared
  *  @return The C++ exception Claricpp threw during the previous API function call
  */
 ClaricppException claricpp_get_exception();

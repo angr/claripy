@@ -178,9 +178,10 @@ DECLARE_OUT_ARRAY(ClaricppArg);
  */
 typedef enum {
     ClaricppExceptionEnumNone = 0, // No exception
-    ClaricppExceptionEnumUnknownCritical,
-    ClaricppExceptionEnumUnknown,
-    ClaricppExceptionEnumStd,
+    ClaricppExceptionEnumFailAlloc,    // Called when get_exception fails due to bad_alloc
+    ClaricppExceptionEnumFailCritical, // Called when get_exception fails for some other reason
+    ClaricppExceptionEnumUnknown,      // Called when an unknown exception type is returned
+    ClaricppExceptionEnumStd,          // Called when an std exception type is thrown
     ClaricppExceptionEnumUnexpected,
     ClaricppExceptionEnumPython
 } ClaricppExceptionEnum;

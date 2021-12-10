@@ -12,7 +12,8 @@ thread_local std::exception_ptr API::exception_ptr { nullptr };
 void claricpp_init_for_python_usage() {}
 
 BOOL claricpp_has_exception() {
-    return API::bool_(API::exception_ptr ? true : false);
+    static_assert(noexcept(API::exception_ptr.operator bool()), "Should not throw");
+    return API::bool_(API::exception_ptr.operator bool()); // Avoid static cast to be explicit
 }
 
 
@@ -25,7 +26,7 @@ static inline char *try_gen_msg(CCSC prime) noexcept {
             std::strcpy(msg, prime);
         }
     }
-    catch (std::exception &) {
+    catch (...) {
     }
     return msg;
 }
@@ -72,12 +73,21 @@ static inline ClaricppException get_exception() noexcept {
 
 
 ClaricppException claricpp_get_exception() {
+    // Exempt from need of API_FUNC_START and such
+    static_assert(noexcept(API::exception_ptr = nullptr), "Should be noexcept");
     try {
-        return get_exception();
+        const auto ret { get_exception() };
+        API::exception_ptr = nullptr;
+        return ret;
     }
-    catch (std::exception &e) {
-        return { .type = ClaricppExceptionEnumUnknownCritical,
-                 .msg = try_gen_msg("get_exception failed; please crash"),
+    catch (std::bad_alloc) {
+        return { .type = ClaricppExceptionEnumFailAlloc,
+                 .msg = try_gen_msg("Got std::bad_alloc within get_exception"),
+                 .trace = nullptr };
+    }
+    catch (...) {
+        return { .type = ClaricppExceptionEnumFailCritical,
+                 .msg = try_gen_msg("get_exception failed for unknown reason"),
                  .trace = nullptr };
     }
 }
