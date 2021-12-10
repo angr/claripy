@@ -43,11 +43,18 @@ namespace Util::Err {
 
         inline std::string backtrace() const noexcept { return bt.str(); }
 
+        /** Logs that an atomic was toggled */
+        static void log_atomic_change(CCSC what, const bool old, const bool new_);
+
         /** Enable / disable backtraces
          *  Returns the old state
          */
-        static inline bool toggle_backtrace(bool set) noexcept {
-            return enable_backtraces.exchange(set);
+        static inline bool toggle_backtrace(const bool set, const bool log_me = false) noexcept {
+            const bool ret { enable_backtraces.exchange(set) };
+            if (UNLIKELY((log_me))) {
+                log_atomic_change("Claricpp backtrace functionality", ret, set);
+            }
+            return ret;
         }
 
         /** Return true if and only if backtraces are enabled */
@@ -56,8 +63,12 @@ namespace Util::Err {
         /** Enable / disable appending backtraces
          *  Returns the old state
          */
-        static inline bool toggle_append_backtrace(bool set) noexcept {
-            return append_backtrace.exchange(set);
+        static inline bool toggle_append_backtrace(const bool set, const bool log_me) noexcept {
+            const bool ret { append_backtrace.exchange(set) };
+            if (UNLIKELY((log_me))) {
+                log_atomic_change("Claricpp::append_backtrace ", ret, set);
+            }
+            return ret;
         }
 
         /** Return true if and only if backtraces are enabled */

@@ -2,13 +2,9 @@
  * @file
  * \ingroup util
  */
-#include "access.hpp"
-
-#include "base.hpp"
-#include "default.hpp"
-
 #include "../../assert_not_null_debug.hpp"
 #include "../../thread_safe.hpp"
+#include "../log.hpp"
 
 
 // For brevity
@@ -25,7 +21,9 @@ static ThreadSafe::Access<const Sty> access {
 
 void Style::unsafe_set(std::shared_ptr<const Base> &&ptr) {
     UTIL_ASSERT_NOT_NULL_DEBUG(ptr);
+    debug("Logging style about to update");
     access.set_shared_ptr_move(std::move(ptr));
+    info("Logging style updated");
 }
 
 std::shared_ptr<const Style::Base> Style::get() {
