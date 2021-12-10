@@ -108,9 +108,9 @@ namespace Create {
     inline Expr::BasePtr compare(const Expr::BasePtr &left, const Expr::BasePtr &right,
                                  Annotation::SPAV &&sp = nullptr) {
         static_assert(Mode::compare_is_valid(Mask), "Invalid Compare Mode");
-        Util::affirm<Util::Err::Usage>(Util::BitMask::has(Mask, Mode::Compare::Signed) ||
-                                           !CUID::is_t<Expr::FP>(left),
-                                       WHOAMI "FP comparisons must be signed");
+        UTIL_ASSERT(Util::Err::Usage,
+                    Util::BitMask::has(Mask, Mode::Compare::Signed) || !CUID::is_t<Expr::FP>(left),
+                    "FP comparisons must be signed");
         return Private::binary_explicit<Expr::Bool, Op::Compare<Mask>, Private::SizeMode::NA,
                                         Expr::FP, Expr::BV>(left, right, std::move(sp));
     }

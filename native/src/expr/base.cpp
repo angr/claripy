@@ -5,17 +5,16 @@
 
 
 void Expr::Base::ctor_debug_checks() const {
-    using E = Util::Err::Usage;
     if (op->cuid == Op::Symbol::static_cuid) {
-        Util::affirm<E>(symbolic, WHOAMI_HEADER_ONLY "Symbolic Op may not be concrete");
+        UTIL_ASSERT(Util::Err::Usage, symbolic, "Symbolic Op may not be concrete");
     }
     else if (op->cuid == Op::Literal::static_cuid) {
-        Util::affirm<E>(!symbolic, WHOAMI_HEADER_ONLY "Literal Op may not be symbolic");
+        UTIL_ASSERT(Util::Err::Usage, !symbolic, "Literal Op may not be symbolic");
     }
 }
 
 void Expr::Base::repr(std::ostream &out) const {
-    UTIL_AFFIRM_NOT_NULL_DEBUG(op); // Sanity check
+    UTIL_ASSERT_NOT_NULL_DEBUG(op); // Sanity check
     out << R"|({ "type":")|" << type_name();
     out << R"|(", "symbolic":)|" << std::boolalpha << symbolic << ", ";
     if (const auto *const bits { dynamic_cast<CTSC<Expr::Bits>>(this) }; bits != nullptr) {

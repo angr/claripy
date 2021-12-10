@@ -60,13 +60,10 @@ namespace Op {
         explicit inline If(const Hash::Hash &h, const Expr::BasePtr &c, const Expr::BasePtr &if_tru,
                            const Expr::BasePtr &if_fal)
             : Base { h, static_cuid }, cond { c }, if_true { if_tru }, if_false { if_fal } {
-            // For brevity
-            namespace Err = Error::Expr;
-            // Error checking
-            Util::affirm<Err::Type>(CUID::is_t<Expr::Bool>(cond),
-                                    WHOAMI "Condition expr must be a boolean");
-            Util::affirm<Err::Type>(Expr::are_same_type<true>(if_true, if_false),
-                                    WHOAMI "if_true must be of the same type and size as if_false");
+            using Err = Error::Expr::Type;
+            UTIL_ASSERT(Err, CUID::is_t<Expr::Bool>(cond), "Condition expr must be a boolean");
+            const bool same { Expr::are_same_type<true>(if_true, if_false) };
+            UTIL_ASSERT(Err, same, "if_true must be of the same type and size as if_false");
         }
     };
 

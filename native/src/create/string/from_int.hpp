@@ -19,9 +19,8 @@ namespace Create::String {
      */
     inline Expr::BasePtr from_int(const Expr::BasePtr &x, Annotation::SPAV &&sp = nullptr) {
         namespace Err = Error::Expr;
-        Util::affirm<Err::Usage>(x != nullptr, WHOAMI "Expr pointers cannot be nullptr");
-        Util::affirm<Err::Type>(CUID::is_t<Expr::BV>(x),
-                                WHOAMI "operand must be each be of type Expr::BV");
+        UTIL_ASSERT(Err::Usage, x != nullptr, "Expr pointers cannot be nullptr");
+        UTIL_ASSERT(Err::Type, CUID::is_t<Expr::BV>(x), "operand must be each be of type Expr::BV");
         return Simplification::simplify(Expr::factory<Expr::String>(
             x->symbolic, Op::factory<Op::String::FromInt>(x),
             Expr::get_bit_length(x) + 2_ui * BitLength::char_bit, std::move(sp)));

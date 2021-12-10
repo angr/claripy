@@ -7,7 +7,7 @@
 #include "base.hpp"
 #include "default.hpp"
 
-#include "../../affirm_not_null_debug.hpp"
+#include "../../assert_not_null_debug.hpp"
 #include "../../thread_safe.hpp"
 
 
@@ -24,7 +24,7 @@ static ThreadSafe::Access<const Sty> access {
 
 
 void Style::unsafe_set(std::shared_ptr<const Base> &&ptr) {
-    UTIL_AFFIRM_NOT_NULL_DEBUG(ptr);
+    UTIL_ASSERT_NOT_NULL_DEBUG(ptr);
     access.set_shared_ptr_move(std::move(ptr));
 }
 

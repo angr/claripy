@@ -55,7 +55,7 @@ namespace Backend::Z3 {
 
             // Error checking
             using E = Error::Expr::Operation;
-            Util::affirm<E>(size % C_CHAR_BIT == 0, "Can't reverse non-byte sized bitvectors");
+            UTIL_ASSERT(E, size % C_CHAR_BIT == 0, "Can't reverse non-byte sized bitvectors");
 
             // Reverse byte by byte
             auto ret { extract(C_CHAR_BIT - 1u, 0u, e) };
@@ -202,15 +202,15 @@ namespace Backend::Z3 {
         template <typename FunctorType>
         static z3::expr ptr_accumulate(FlatArr arr, const UInt size) {
 #ifdef DEBUG
-            Util::affirm<Util::Err::Size>(
-                size >= 2, "size < 2; this probably resulted from an invalid claricpp expr.");
-            UTIL_AFFIRM_NOT_NULL_DEBUG(arr[0]);
-            UTIL_AFFIRM_NOT_NULL_DEBUG(arr[1]);
+            UTIL_ASSERT(Util::Err::Size, size >= 2,
+                        "size < 2; this probably resulted from an invalid claricpp expr.");
+            UTIL_ASSERT_NOT_NULL_DEBUG(arr[0]);
+            UTIL_ASSERT_NOT_NULL_DEBUG(arr[1]);
 #endif
             const FunctorType fn {};
             z3::expr ret { fn(*arr[0], *arr[1]) };
             for (UInt i { 2 }; i < size; ++i) {
-                UTIL_AFFIRM_NOT_NULL_DEBUG(arr[i]);
+                UTIL_ASSERT_NOT_NULL_DEBUG(arr[i]);
                 ret = std::move(fn(std::move(ret), *arr[i]));
             }
             return ret;
@@ -261,8 +261,8 @@ namespace Backend::Z3 {
          *  expr may not be nullptr
          */
         static z3::expr literal(const Expr::RawPtr expr, z3::context &ctx) {
-            UTIL_AFFIRM_NOT_NULL_DEBUG(expr);
-            UTIL_AFFIRM_NOT_NULL_DEBUG(expr->op); // Sanity check
+            UTIL_ASSERT_NOT_NULL_DEBUG(expr);
+            UTIL_ASSERT_NOT_NULL_DEBUG(expr->op); // Sanity check
             using To = CTSC<Op::Literal>;
             const auto &data { Util::checked_static_cast<To>(expr->op.get())->value };
             try {
@@ -281,8 +281,8 @@ namespace Backend::Z3 {
                         return ctx.fpa_val(std::get<double>(data));
                     case 4:
                         UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 4, PyObj::VSPtr);
-                        throw Error::Backend::Unsupported(WHOAMI
-                                                          "VSA is not supported by the Z3 backend");
+                        UTIL_THROW(Error::Backend::Unsupported,
+                                   "VSA is not supported by the Z3 backend");
 /** A local macro used for consistency */
 #define STD_INT(INDEX, TYPE, BL)                                                                   \
     case INDEX:                                                                                    \
@@ -309,13 +309,13 @@ namespace Backend::Z3 {
                     }
                         // Error handling
                     default:
-                        throw Util::Err::NotSupported(
-                            WHOAMI "Unknown variant type in literal op given to z3 backend");
+                        UTIL_THROW(Util::Err::NotSupported,
+                                   "Unknown variant type in literal op given to z3 backend");
                 }
             }
             // Re-emit these exceptions with additional info and wrapped as a Claricpp exception
             catch (const std::bad_variant_access &ex) {
-                throw Util::Err::BadVariantAccess(WHOAMI, ex.what());
+                UTIL_THROW(Util::Err::BadVariantAccess, ex.what());
             }
         }
 
@@ -324,8 +324,8 @@ namespace Backend::Z3 {
          *  expr may not be nullptr
          */
         static z3::expr symbol(const Expr::RawPtr expr, SymAnTransData &satd, z3::context &ctx) {
-            UTIL_AFFIRM_NOT_NULL_DEBUG(expr);
-            UTIL_AFFIRM_NOT_NULL_DEBUG(expr->op); // Sanity check
+            UTIL_ASSERT_NOT_NULL_DEBUG(expr);
+            UTIL_ASSERT_NOT_NULL_DEBUG(expr->op); // Sanity check
             using To = CTSC<Op::Symbol>;
             const std::string &name { Util::checked_static_cast<To>(expr->op.get())->name };
             switch (expr->cuid) {
@@ -343,9 +343,9 @@ namespace Backend::Z3 {
                 case Expr::BV::static_cuid: {
                     using BVP = CTSC<Expr::BV>;
 #ifdef DEBUG // @todo Double check if I am strill right
-                    Util::affirm<Util::Err::Unknown>(
-                        Factory::Private::gcache<Expr::Base>().find(expr->hash) != nullptr,
-                        WHOAMI "cache lookup failed for existing object");
+                    UTIL_ASSERT(Util::Err::Unknown,
+                                Factory::Private::gcache<Expr::Base>().find(expr->hash) != nullptr,
+                                "cache lookup failed for existing object");
 #endif
                     // Update annotations for translocation
                     const uint64_t name_hash { Util::FNV1a<char>::hash(name.c_str(), name.size()) };
@@ -361,10 +361,10 @@ namespace Backend::Z3 {
                 }
                 // Error handling
                 case Expr::VS::static_cuid:
-                    throw Error::Backend::Unsupported(WHOAMI
-                                                      "VSA is not supported by the Z3 backend");
+                    UTIL_THROW(Error::Backend::Unsupported,
+                               "VSA is not supported by the Z3 backend");
                 default:
-                    throw Util::Err::NotSupported(WHOAMI "Unknown expr CUID given to z3 backend");
+                    UTIL_THROW(Util::Err::NotSupported, "Unknown expr CUID given to z3 backend");
             }
         }
 
@@ -375,8 +375,7 @@ namespace Backend::Z3 {
             static void assert_are_compatible(const z3::expr &a, const z3::expr &b) {
 #ifdef DEBUG
                 z3::check_context(a, b);
-                Util::affirm<Util::Err::Type>(a.is_fpa() && b.is_fpa(),
-                                              WHOAMI " called non-FP ops");
+                UTIL_ASSERT(Util::Err::Type, a.is_fpa() && b.is_fpa(), " called non-FP ops");
 #else
                 Util::sink(a, b);
 #endif
@@ -396,8 +395,8 @@ namespace Backend::Z3 {
                     case Mode::FP::Rounding::TowardsZero:
                         return z3::RTZ;
                     default:
-                        throw Util::Err::NotSupported(WHOAMI "Unable to map Mode::FP::Rounding ",
-                                                      mode, " to z3::rounding_mode");
+                        UTIL_THROW(Util::Err::NotSupported, "Unable to map Mode::FP::Rounding ",
+                                   mode, " to z3::rounding_mode");
                 };
             }
 

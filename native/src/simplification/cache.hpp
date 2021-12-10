@@ -22,7 +22,7 @@ namespace Simplification {
      *  Record that an Expr with Hash h simplifies to non-null Expr pointer e
      */
     inline void cache(const Hash::Hash h, const Expr::BasePtr &e) {
-        UTIL_AFFIRM_NOT_NULL_DEBUG(e);
+        UTIL_ASSERT_NOT_NULL_DEBUG(e);
         Private::cache.insert(h, e);
     }
 

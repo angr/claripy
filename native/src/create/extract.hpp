@@ -19,10 +19,9 @@ namespace Create {
         using namespace Simplification;
 
         // Checks
-        Util::affirm<E::Usage>(from != nullptr, WHOAMI "from may not be nullptr");
-        Util::affirm<E::Type>(CUID::is_t<Expr::BV>(from),
-                              WHOAMI "from operands must be an Expr::BV");
-        Util::affirm<E::Type>(high >= low, WHOAMI "high must be >= low");
+        UTIL_ASSERT(E::Usage, from != nullptr, "from may not be nullptr");
+        UTIL_ASSERT(E::Type, CUID::is_t<Expr::BV>(from), "from operands must be an Expr::BV");
+        UTIL_ASSERT(E::Type, high >= low, "high must be >= low");
 
         // Construct expr
         return simplify(Expr::factory<Expr::BV>(from->symbolic,

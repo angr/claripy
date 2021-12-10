@@ -16,9 +16,9 @@ namespace Create::String {
     inline Expr::BasePtr index_of(const Expr::BasePtr &str, const Expr::BasePtr &pattern,
                                   const Expr::BasePtr &start_index, const UInt bit_length,
                                   Annotation::SPAV &&sp = nullptr) {
-        Util::affirm<Error::Expr::Usage>(str != nullptr && pattern != nullptr &&
-                                             start_index != nullptr,
-                                         WHOAMI "Exprs pointers cannot be nullptr");
+        UTIL_ASSERT(Error::Expr::Usage,
+                    str != nullptr && pattern != nullptr && start_index != nullptr,
+                    "Exprs pointers cannot be nullptr");
         return Simplification::simplify(
             Expr::factory<Expr::BV>(str->symbolic || pattern->symbolic,
                                     Op::factory<Op::String::IndexOf>(str, pattern, start_index),

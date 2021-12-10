@@ -49,7 +49,7 @@ namespace Backend::Z3 {
          *  expr may not be nullptr
          */
         inline Expr::BasePtr simplify(const Expr::RawPtr expr) final {
-            UTIL_AFFIRM_NOT_NULL_DEBUG(expr);
+            UTIL_ASSERT_NOT_NULL_DEBUG(expr);
             switch (expr->cuid) {
                 case Expr::Bool::static_cuid: {
                     auto b_obj { convert(expr) };
@@ -65,7 +65,7 @@ namespace Backend::Z3 {
                     Util::Log::info("Z3 Backend will not simplify expr with CUID: ", expr->cuid);
 #ifdef DEBUG
                     auto ret { Expr::find(expr->hash) };
-                    Util::affirm<Util::Err::HashCollision>(ret.get() == expr, WHOAMI);
+                    UTIL_ASSERT_EMPTY(Util::Err::HashCollision, ret.get() == expr);
                     return ret;
 #else
                     return Expr::find(expr->hash);
@@ -183,7 +183,7 @@ namespace Backend::Z3 {
                 // Extract the hash of the next assertion
                 const auto a_i { assertions[i] };
 #ifdef DEBUG
-                Util::affirm<Util::Err::Unknown>(a_i.num_args() >= 2, "Malformed assertion: ", a_i);
+                UTIL_ASSERT(Util::Err::Unknown, a_i.num_args() >= 2, "Malformed assertion: ", a_i);
 #endif
                 const auto [hash, tracked] { extract_hash(a_i.arg(0)) }; // Get hash from name
                 // Skip untracked / non-core assertions
@@ -405,8 +405,8 @@ namespace Backend::Z3 {
          */
         inline std::vector<std::vector<Op::PrimVar>>
         batch_eval(const std::vector<z3::expr> exprs, z3::solver &solver, const UInt n_sol) const {
-            Util::affirm<Util::Err::Usage>(exprs.size() > 1,
-                                           WHOAMI "should only be called when exprs.size() > 1");
+            UTIL_ASSERT(Util::Err::Usage, exprs.size() > 1,
+                        "should only be called when exprs.size() > 1");
             // Prep
             solver.push();
             std::vector<std::vector<Op::PrimVar>> ret;
@@ -489,19 +489,19 @@ namespace Backend::Z3 {
                 case 9: {
                     UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(p, 9, BigInt);
                     const auto &bi = std::get<BigInt>(p);
-                    Util::affirm<Usage>(bi.bit_length < 64,
-                                        WHOAMI "Bit length of given PrimVar is too long");
+                    UTIL_ASSERT(Usage, bi.bit_length < 64,
+                                "Bit length of given PrimVar is too long");
                     return static_cast<T>(bi.value);
                 }
                 default:
-                    throw Usage(WHOAMI "Invalid PrimVar given");
+                    UTIL_THROW(Usage, "Invalid PrimVar given");
             }
         }
 
         /** Create a == b; neither may be nullptr */
         static inline Expr::BasePtr to_eq(const Expr::RawPtr a_raw, const Expr::RawPtr b_raw) {
-            UTIL_AFFIRM_NOT_NULL_DEBUG(a_raw);
-            UTIL_AFFIRM_NOT_NULL_DEBUG(b_raw);
+            UTIL_ASSERT_NOT_NULL_DEBUG(a_raw);
+            UTIL_ASSERT_NOT_NULL_DEBUG(b_raw);
             return Create::eq(Expr::find(a_raw->hash), Expr::find(b_raw->hash));
         }
 
@@ -510,12 +510,12 @@ namespace Backend::Z3 {
         inline auto extrema(const Expr::RawPtr raw_expr, z3::solver &solver) {
             // Check input
             using Usage = Util::Err::Usage;
-            UTIL_AFFIRM_NOT_NULL_DEBUG(raw_expr);
+            UTIL_ASSERT_NOT_NULL_DEBUG(raw_expr);
 #ifdef DEBUG
-            Util::affirm<Usage>(CUID::is_t<Expr::BV>(raw_expr), WHOAMI "expr must be a BV");
+            UTIL_ASSERT(Usage, CUID::is_t<Expr::BV>(raw_expr), "expr must be a BV");
 #endif
             const auto len { Expr::get_bit_length(raw_expr) };
-            Util::affirm<Usage>(len <= 64, WHOAMI "ret cannot be called on BV wider than 64 bits");
+            UTIL_ASSERT(Usage, len <= 64, "ret cannot be called on BV wider than 64 bits");
             z3::expr expr { convert(raw_expr) };
 
             // Starting interval and comparators

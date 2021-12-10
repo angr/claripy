@@ -25,10 +25,10 @@ namespace Create::Private {
         // Checks
         static_assert(Op::FP::is_mode_binary<OpT>,
                       "Create::Private::mode_binary requires OpT to be Op::FP::ModeBinary");
-        Util::affirm<Err::Usage>(left != nullptr && right != nullptr,
-                                 WHOAMI "Expr pointers cannot be nullptr");
-        Util::affirm<Err::Type>(CUID::is_t<Expr::FP>(left),
-                                WHOAMI "left operands must be of type Expr::FP");
+        UTIL_ASSERT(Err::Usage, left != nullptr && right != nullptr,
+                    "Expr pointers cannot be nullptr");
+        UTIL_ASSERT(Err::Type, CUID::is_t<Expr::FP>(left),
+                    "left operands must be of type Expr::FP");
 
         // Create expr
         return simplify(Expr::factory<Expr::FP>(left->symbolic || right->symbolic,

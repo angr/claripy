@@ -26,10 +26,10 @@ namespace Create::Private {
         static_assert(Op::is_ternary<OpT>, "Create::Private::ternary requires a ternary OpT");
 
         // Dynamic checks
-        Util::affirm<Err::Usage>(first != nullptr, second != nullptr && third != nullptr,
-                                 WHOAMI "Expr pointer arguments may not be nullptr");
-        Util::affirm<Err::Type>(CUID::is_any_t<const Expr::Base, Allowed...>(first),
-                                WHOAMI "first operand of invalid type; allowed types: ", allowed);
+        UTIL_ASSERT(Err::Usage, first != nullptr, second != nullptr && third != nullptr,
+                    " Expr pointer arguments may not be nullptr");
+        const bool type_ok { CUID::is_any_t<const Expr::Base, Allowed...>(first) };
+        UTIL_ASSERT(Err::Type, type_ok, "first operand of invalid type; allowed types: ", allowed);
 
         // Construct expr (static casts are safe because of previous checks)
         const bool sym { first->symbolic || second->symbolic || third->symbolic };
@@ -39,8 +39,8 @@ namespace Create::Private {
         }
         else {
             using E = Util::Err::Type;
-            Util::affirm<E>(first->cuid == second->cuid, WHOAMI "second operand of wrong type");
-            Util::affirm<E>(first->cuid == third->cuid, WHOAMI "third operand of wrong type");
+            UTIL_ASSERT(E, first->cuid == second->cuid, "second operand of wrong type");
+            UTIL_ASSERT(E, first->cuid == third->cuid, "third operand of wrong type");
             return simplify(Expr::factory<Out>(sym, Op::factory<OpT>(first, second, third),
                                                Expr::get_bit_length(first) +
                                                    Expr::get_bit_length(second) +

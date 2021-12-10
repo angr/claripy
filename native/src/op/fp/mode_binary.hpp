@@ -76,9 +76,8 @@ namespace Op::FP {
                                    const Expr::BasePtr &l, const Expr::BasePtr &r,
                                    const Mode::FP::Rounding m)
             : Base { h, cuid_ }, mode { m }, left { l }, right { r } {
-            using E = Error::Expr::Type;
-            Util::affirm<E>(Expr::are_same_type<true>(left, right),
-                            WHOAMI "left and right types or sizes differ");
+            const bool same { Expr::are_same_type<true>(left, right) };
+            UTIL_ASSERT(Error::Expr::Type, same, "left and right types or sizes differ");
         }
     };
 

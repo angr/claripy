@@ -16,8 +16,8 @@
 
 /** A local macro used for length checking the number of children in a container */
 #define ASSERT_ARG_LEN(X, N)                                                                       \
-    Util::affirm<Util::Err::Size>((X).size() == (N), WHOAMI "Op ", __func__,                       \
-                                  " should have " #N " children, but instead has: ", (X).size());
+    UTIL_ASSERT(Util::Err::Size, (X).size() == (N),                                                \
+                "Op should have " #N " children, but instead has: ", (X).size());
 
 /** A string explaining why this file refuses to abstract unknown floating point values */
 #define REFUSE_FP_STANDARD                                                                         \
@@ -89,11 +89,11 @@ namespace Backend::Z3 {
             const auto &ctx { b.ctx() };
             if (UNLIKELY((Z3_get_decl_num_parameters(ctx, decl) != 1) ||
                          (Z3_get_decl_parameter_kind(ctx, decl, 0) != Z3_PARAMETER_SYMBOL))) {
-                throw Error::Backend::Abstraction("Weird Z3 model (Type 1).", b);
+                UTIL_THROW(Error::Backend::Abstraction, "Weird Z3 model (Type 1).", b);
             }
             const auto symb { Z3_get_decl_symbol_parameter(ctx, decl, 0) };
             if (UNLIKELY(Z3_get_symbol_kind(ctx, symb) != Z3_STRING_SYMBOL)) {
-                throw Error::Backend::Abstraction("Weird Z3 model (Type 2).", b);
+                UTIL_THROW(Error::Backend::Abstraction, "Weird Z3 model (Type 2).", b);
             }
             return { Z3_get_symbol_string(ctx, symb) };
         }
@@ -132,22 +132,22 @@ namespace Backend::Z3 {
                         if (LIKELY(width == Mode::FP::flt)) {
                             return Create::symbol<Expr::FP>(std::move(name), Mode::FP::flt.width());
                         }
-                        throw Error::Backend::Unsupported(WHOAMI REFUSE_FP_STANDARD "\nWidth: ",
-                                                          width);
+                        UTIL_THROW(Error::Backend::Unsupported,
+                                   REFUSE_FP_STANDARD "\nWidth: ", width);
                     }
                     default:
-                        throw Error::Backend::Abstraction(
-                            WHOAMI "Unknown sort_kind: ", sort.sort_kind(), "\nOp decl: ", decl,
-                            "\nPlease report this.");
+                        UTIL_THROW(Error::Backend::Abstraction,
+                                   "Unknown sort_kind: ", sort.sort_kind(), "\nOp decl: ", decl,
+                                   "\nPlease report this.");
                 }
             }
             // Unknown error
             else {
                 auto &ctx { decl.ctx() };
-                throw Error::Backend::Abstraction(
-                    WHOAMI "Uninterpreted z3 op with args given. Op name: ",
-                    Z3_get_symbol_string(ctx, Z3_get_decl_name(ctx, decl)),
-                    "\nPlease report this.");
+                UTIL_THROW(Error::Backend::Abstraction,
+                           "Uninterpreted z3 op with args given. Op name: ",
+                           Z3_get_symbol_string(ctx, Z3_get_decl_name(ctx, decl)),
+                           "\nPlease report this.");
             }
         }
 
@@ -258,8 +258,7 @@ namespace Backend::Z3 {
                 // Standard sizes
                 if (bl <= 64) {
                     uint64_t u64;
-                    Util::affirm<E>(b_obj.is_numeral_u64(u64),
-                                    WHOAMI "given z3 object is not a numeral");
+                    UTIL_ASSERT(E, b_obj.is_numeral_u64(u64), "given z3 object is not a numeral");
                     switch (bl) {
                         case 8:
                             return Util::narrow<uint8_t>(u64);
@@ -276,7 +275,7 @@ namespace Backend::Z3 {
 
                 // Get the BV as a BigInt
                 std::string str;
-                Util::affirm<E>(b_obj.is_numeral(str), WHOAMI "given z3 object is not a numeral");
+                UTIL_ASSERT(E, b_obj.is_numeral(str), "given z3 object is not a numeral");
                 return (bk.big_int_mode() == Mode::BigInt::Int)
                          ? BigInt { BigInt::Int(std::move(str)), bl }
                          : BigInt { std::move(str), bl };
@@ -299,7 +298,7 @@ namespace Backend::Z3 {
                         UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(x, 4, BigInt);
                         return Create::literal(std::move(std::get<BigInt>(x)));
                     default:
-                        throw Util::Err::Unknown(WHOAMI, "Bad variant");
+                        UTIL_THROW(Util::Err::Unknown, "Bad variant");
                 }
 #undef G_CASE
                 static_assert(std::variant_size_v<BVVar> == 5,
@@ -370,7 +369,7 @@ namespace Backend::Z3 {
                 if (LIKELY(width == Mode::FP::flt)) {
                     return Create::literal(copysign<Sign>(flt));
                 }
-                throw Error::Backend::Unsupported(WHOAMI REFUSE_FP_STANDARD "\nSort: ", sort);
+                UTIL_THROW(Error::Backend::Unsupported, REFUSE_FP_STANDARD "\nSort: ", sort);
             }
 
             /** A helper function to assist in creating FPA literals
@@ -424,9 +423,9 @@ namespace Backend::Z3 {
                 success &= Z3_fpa_get_numeral_exponent_int64(ctx, b_obj, &exp, true);
 
                 // Error check
-                Util::affirm<Util::Err::Unknown>(
-                    success,
-                    WHOAMI "something went wrong with fp component extraction.\nGiven fp: ", b_obj);
+                UTIL_ASSERT(
+                    Util::Err::Unknown, success,
+                    "something went wrong with fp component extraction.\nGiven fp: ", b_obj);
 
                 const auto sort { b_obj.get_sort() };
                 const auto width { z3_sort_to_fp_width(sort) };
@@ -451,9 +450,9 @@ namespace Backend::Z3 {
                     UTIL_TYPE_PUN_ONTO(&ret, &to_val);
                     return ret;
                 }
-                throw Util::Err::NotSupported(
-                    WHOAMI "Cannot create a value for this unknown floating point standard."
-                           "\nZ3_sort: ",
+                UTIL_THROW(
+                    Util::Err::NotSupported,
+                    "Cannot create a value for this unknown floating point standard.\nZ3_sort: ",
                     sort);
             }
 

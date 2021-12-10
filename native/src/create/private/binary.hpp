@@ -23,8 +23,8 @@ namespace Create::Private {
         }
         else if constexpr (Mode == SizeMode::Add) {
             // Type check before size extraction
-            Util::affirm<Util::Err::Type>(left->cuid == right->cuid,
-                                          WHOAMI "right operand of incorrect type");
+            UTIL_ASSERT(Util::Err::Type, left->cuid == right->cuid,
+                        "right operand of incorrect type");
             return Expr::get_bit_length(left) + Expr::get_bit_length(right);
         }
         else {
@@ -49,10 +49,10 @@ namespace Create::Private {
         static_assert(Op::is_binary<OpT>, "Create::Private::binary requires a binary OpT");
 
         // Dynamic checks
-        Util::affirm<Err::Usage>(left != nullptr && right != nullptr,
-                                 WHOAMI "Expr pointer arguments may not be nullptr");
-        Util::affirm<Err::Type>(CUID::is_any_t<const Expr::Base, Allowed...>(left),
-                                WHOAMI "left operand of invalid type; allowed types: ", allowed);
+        UTIL_ASSERT(Err::Usage, left != nullptr && right != nullptr,
+                    "Expr pointer arguments may not be nullptr");
+        const bool type_ok { CUID::is_any_t<const Expr::Base, Allowed...>(left) };
+        UTIL_ASSERT(Err::Type, type_ok, "left operand of invalid type; allowed types: ", allowed);
 
         // Construct expr
         if constexpr (std::is_same_v<Expr::Bool, Out>) {
@@ -84,10 +84,10 @@ namespace Create::Private {
         }
 
         // Dynamic checks
-        Util::affirm<Err::Usage>(left != nullptr && right != nullptr,
-                                 WHOAMI "Expr pointer arguments may not be nullptr");
-        Util::affirm<Err::Type>(CUID::is_any_t<const Expr::Base, Allowed...>(left),
-                                WHOAMI "left operand of incorrect type");
+        UTIL_ASSERT(Err::Usage, left != nullptr && right != nullptr,
+                    "Expr pointer arguments may not be nullptr");
+        const bool type_ok { CUID::is_any_t<const Expr::Base, Allowed...>(left) };
+        UTIL_ASSERT(Err::Type, type_ok, "left operand of incorrect type");
 
         // Create Expr
         if constexpr (Util::Type::Is::in<Expr::Bool, Allowed...>) {

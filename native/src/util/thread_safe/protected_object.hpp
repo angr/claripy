@@ -9,7 +9,7 @@
 #include "base.hpp"
 #include "move_lock.hpp"
 
-#include "../affirm.hpp"
+#include "../assert.hpp"
 #include "../err.hpp"
 #include "../macros.hpp"
 
@@ -113,7 +113,7 @@ namespace Util::ThreadSafe {
       private:
         /** Throws an exception if ptr is nullptr */
         template <typename E = Util::Err::Usage> void throw_if_null() const {
-            Util::affirm<E>(pointer, WHOAMI "attempted to dereference a null pointer");
+            UTIL_ASSERT(E, pointer, "attempted to dereference a null pointer");
         }
 
         /** Return a T pointer */

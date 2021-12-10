@@ -65,11 +65,10 @@ namespace Op::String {
                                   const Expr::BasePtr &c, const Expr::BasePtr &s)
             : Base { h, static_cuid }, start_index { si }, count { c }, full_string { s } {
             using E = Error::Expr::Type;
-            Util::affirm<E>(CUID::is_t<Expr::BV>(start_index),
-                            WHOAMI "start_index expr must be a BV");
-            Util::affirm<E>(CUID::is_t<Expr::BV>(count), WHOAMI "count expr must be a BV");
-            Util::affirm<E>(CUID::is_t<Expr::String>(full_string),
-                            WHOAMI "full_string expr must be a String");
+            UTIL_ASSERT(E, CUID::is_t<Expr::BV>(start_index), "start_index expr must be a BV");
+            UTIL_ASSERT(E, CUID::is_t<Expr::BV>(count), "count expr must be a BV");
+            UTIL_ASSERT(E, CUID::is_t<Expr::String>(full_string),
+                        "full_string expr must be a String");
         }
     };
 

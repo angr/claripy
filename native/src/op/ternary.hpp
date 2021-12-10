@@ -87,16 +87,16 @@ namespace Op {
 
             // Type / size checking
             if constexpr (ConsiderSize) {
-                Util::affirm<E>(Expr::are_same_type<true>(first, second),
-                                WHOAMI "first and second types or sizes differ");
-                Util::affirm<E>(Expr::are_same_type<true>(first, third),
-                                WHOAMI "first and third types or sizes differ");
+                UTIL_ASSERT(E, Expr::are_same_type<true>(first, second),
+                            "first and second types or sizes differ");
+                UTIL_ASSERT(E, Expr::are_same_type<true>(first, third),
+                            "first and third types or sizes differ");
             }
             else {
-                Util::affirm<E>(Expr::are_same_type<false>(first, second),
-                                WHOAMI "first and second types differ");
-                Util::affirm<E>(Expr::are_same_type<false>(first, third),
-                                WHOAMI "first and third types differ");
+                UTIL_ASSERT(E, Expr::are_same_type<false>(first, second),
+                            "first and second types differ");
+                UTIL_ASSERT(E, Expr::are_same_type<false>(first, third),
+                            "first and third types differ");
             }
         }
     };

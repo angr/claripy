@@ -6,7 +6,7 @@
 #ifndef R_UTIL_DEMANGLE_HPP_
 #define R_UTIL_DEMANGLE_HPP_
 
-#include "affirm.hpp"
+#include "assert.hpp"
 #include "err.hpp"
 
 #include "../constants.hpp"
@@ -34,11 +34,11 @@ namespace Util {
             case -1:
                 throw std::bad_alloc();
             case -2:
-                throw std::runtime_error("Demangling failed.");
+                UTIL_THROW(std::runtime_error, "Demangling failed.");
             case -3:
-                throw Err::Usage(WHOAMI);
+                UTIL_THROW(Err::Usage, "__cxa_demangle failed");
             default:
-                throw Err::Unknown(WHOAMI "Impossible return value");
+                UTIL_THROW(Err::Unknown, "Impossible return value");
         };
     }
 

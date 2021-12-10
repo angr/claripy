@@ -19,7 +19,7 @@ namespace CUID {
     template <typename T, bool AllowKin, typename Base> constexpr bool is_t(CTSC<Base> x) {
         static_assert(Util::Type::Is::ancestor<HasCUID, Base>, "Base must subclass HasCUID");
         static_assert(Util::Type::Is::ancestor<Base, T>, "T must subclass Base");
-        UTIL_AFFIRM_NOT_NULL_DEBUG(x);
+        UTIL_ASSERT_NOT_NULL_DEBUG(x);
         if constexpr (std::is_final_v<T>) {
             return x->cuid == T::static_cuid; // NOLINT (*null possible in release mode)
         }

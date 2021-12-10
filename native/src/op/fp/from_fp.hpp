@@ -52,8 +52,8 @@ namespace Op::FP {
         explicit inline FromFP(const Hash::Hash &h, const Mode::FP::Rounding m,
                                const Expr::BasePtr &f, const Mode::FP::Width w)
             : Base { h, static_cuid }, mode { m }, fp { f }, width { w } {
-            Util::affirm<Error::Expr::Type>(CUID::is_t<Expr::FP>(fp),
-                                            WHOAMI "Operand fp must be an Expr::FP");
+            UTIL_ASSERT(Error::Expr::Type, CUID::is_t<Expr::FP>(fp),
+                        "Operand fp must be an Expr::FP");
         }
     };
 

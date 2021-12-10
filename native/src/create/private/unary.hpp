@@ -25,9 +25,9 @@ namespace Create::Private {
         static_assert(Op::is_unary<OpT>, "Create::Private::unary requires OpT to be unary");
 
         // Dynamic checks
-        Util::affirm<Err::Usage>(x != nullptr, WHOAMI "x cannot be nullptr");
-        Util::affirm<Err::Type>(CUID::is_any_t<const Expr::Base, Allowed...>(x),
-                                WHOAMI "operand of invalid type; allowed types: ", allowed);
+        UTIL_ASSERT(Err::Usage, x != nullptr, "x cannot be nullptr");
+        const bool type_ok { CUID::is_any_t<const Expr::Base, Allowed...>(x) };
+        UTIL_ASSERT(Err::Type, type_ok, "operand of invalid type; allowed types: ", allowed);
 
         // Construct expr
         if constexpr (std::is_same_v<Expr::Bool, Out>) {
@@ -55,9 +55,9 @@ namespace Create::Private {
         }
 
         // Dynamic checks
-        Util::affirm<Err::Usage>(x != nullptr, WHOAMI "x cannot be nullptr");
-        Util::affirm<Err::Type>(CUID::is_any_t<const Expr::Base, Allowed...>(x),
-                                WHOAMI "operand of wrong type");
+        UTIL_ASSERT(Err::Usage, x != nullptr, "x cannot be nullptr");
+        const bool type_ok { CUID::is_any_t<const Expr::Base, Allowed...>(x) };
+        UTIL_ASSERT(Err::Type, type_ok, "operand of wrong type");
 
         // Construct expr
         if constexpr (Util::Type::Is::in<Expr::Bool, Allowed...>) {

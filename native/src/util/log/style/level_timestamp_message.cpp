@@ -4,8 +4,8 @@
  */
 #include "level_timestamp_message.hpp"
 
-#include "../../affirm_not_null_debug.hpp"
 #include "../../ansi_color_codes.hpp"
+#include "../../assert_not_null_debug.hpp"
 
 #include <ctime>
 #include <iomanip>
@@ -52,11 +52,11 @@ std::string LevelTimestampMessage::str(CCSC, const Lvl &lvl, const std::ostrings
             color = ANSIColorCodes::blk;
             break;
         case Lvl::Disabled: // Should not be possible
-            throw Err::Usage("Log backend given disabled level");
+            UTIL_THROW(Err::Usage, "Log backend given disabled level");
         default: // Should not be possible
-            throw Err::Unknown("Logger was given unknown level");
+            UTIL_THROW(Err::Unknown, "Logger was given unknown level");
     }
-    UTIL_AFFIRM_NOT_NULL_DEBUG(color);
+    UTIL_ASSERT_NOT_NULL_DEBUG(color);
 
     // Get time
     const auto tm { get_time() };

@@ -35,8 +35,8 @@ namespace Util {
                     iter->second = std::move(Value { std::forward<Args...>(args)... });
                 }
                 else {
-                    throw Util::Err::Collision(
-                        WHOAMI, "Key collision during addition to map with const value type");
+                    UTIL_THROW(Util::Err::Collision,
+                               "Key collision during addition to map with const value type");
                 }
             }
             return iter;

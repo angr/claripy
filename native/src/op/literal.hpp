@@ -83,7 +83,7 @@ namespace Op {
                 VCASE_POST;
                     // Bad variant
                 default:
-                    throw Util::Err::Unknown(WHOAMI, "unknown type in variant");
+                    UTIL_THROW(Util::Err::Unknown, "unknown type in variant");
             }
             out << " }";
 
@@ -120,7 +120,7 @@ namespace Op {
                 CASE(8);
                 CASE(9);
                 default:
-                    throw Util::Err::Unknown(WHOAMI "Broken variant detected");
+                    UTIL_THROW(Util::Err::Unknown, "Broken variant detected");
             }
 // Cleanup
 #undef CASE
@@ -141,7 +141,7 @@ namespace Op {
         P_CTOR(std::string) {};
         P_CTOR(float) {};
         P_CTOR(double) {};
-        P_CTOR(PyObj::VSPtr) { UTIL_AFFIRM_NOT_NULL_DEBUG(std::get<PyObj::VSPtr>(value)); }
+        P_CTOR(PyObj::VSPtr) { UTIL_ASSERT_NOT_NULL_DEBUG(std::get<PyObj::VSPtr>(value)); }
         // BV constructors
         P_CTOR(uint8_t) {};
         P_CTOR(uint16_t) {};
@@ -186,11 +186,10 @@ namespace Op {
                 // VS
                 VCASE_PRE(4, PyObj::VSPtr);
 #ifdef DEBUG
-                UTIL_AFFIRM_NOT_NULL_DEBUG(std::get<PyObj::VSPtr>(value));
+                UTIL_ASSERT_NOT_NULL_DEBUG(std::get<PyObj::VSPtr>(value));
                 const auto bl { std::get<PyObj::VSPtr>(value)->bit_length };
-                Util::affirm<Util::Err::Size>(bl % C_CHAR_BIT == 0, WHOAMI "VS of bit length ", bl,
-                                              " which is not divisible by ", C_CHAR_BIT,
-                                              " aka C_CHAR_BIT");
+                UTIL_ASSERT(Util::Err::Size, bl % C_CHAR_BIT == 0, "VS of bit length ", bl,
+                            " which is not divisible by ", C_CHAR_BIT, " aka C_CHAR_BIT");
 #endif
                 RET(got->bit_length / C_CHAR_BIT);
                 // BV
@@ -200,11 +199,10 @@ namespace Op {
                 VCASE(8, uint64_t);
                 // Bool
                 default: {
-                    throw Util::Err::Usage(WHOAMI,
-                                           "invoked when internal type does not correspond"
-                                           " to an Expr which subclasses BitLength."
-                                           " Current variant index is: ",
-                                           value.index());
+                    UTIL_THROW(Util::Err::Usage,
+                               "invoked when internal type does not correspond to an Expr which "
+                               "subclasses BitLength. Current variant index is: ",
+                               value.index());
                 };
             }
 

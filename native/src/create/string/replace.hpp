@@ -21,19 +21,18 @@ namespace Create::String {
         namespace Err = Error::Expr;
 
         // Checks
-        Util::affirm<Err::Usage>(full != nullptr && search != nullptr && replacement != nullptr,
-                                 WHOAMI "Expr pointers cannot be nullptr");
-        Util::affirm<Err::Type>(CUID::is_t<Expr::String>(full) &&
-                                    CUID::is_t<Expr::String>(search) &&
-                                    CUID::is_t<Expr::String>(replacement),
-                                WHOAMI "operands must be each be of type Expr::String");
+        UTIL_ASSERT(Err::Usage, full != nullptr && search != nullptr && replacement != nullptr,
+                    "Expr pointers cannot be nullptr");
+        UTIL_ASSERT(Err::Type,
+                    CUID::is_t<Expr::String>(full) && CUID::is_t<Expr::String>(search) &&
+                        CUID::is_t<Expr::String>(replacement),
+                    "operands must be each be of type Expr::String");
 
         // Construct size
         UInt new_bit_length { Expr::get_bit_length(full) };
         const auto s2 { Expr::get_bit_length(search) };
-        Util::affirm<Err::Size>(
-            new_bit_length >= s2,
-            WHOAMI "The pattern that has to be replaced is longer than the string itself");
+        UTIL_ASSERT(Err::Size, new_bit_length >= s2,
+                    "The pattern that has to be replaced is longer than the string itself");
         const auto s3 { Expr::get_bit_length(replacement) };
         if (s2 < s3) {
             new_bit_length += s3 - s2;

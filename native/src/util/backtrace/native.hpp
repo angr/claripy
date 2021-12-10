@@ -6,7 +6,7 @@
 #ifndef R_UTIL_BACKTRACE_NATIVE_HPP_
 #define R_UTIL_BACKTRACE_NATIVE_HPP_
 
-#include "../affirm.hpp"
+#include "../assert.hpp"
 #include "../demangle.hpp"
 #include "../err.hpp"
 #include "../min.hpp"
@@ -61,12 +61,12 @@ namespace Util::Backtrace {
         // Try to get a back trace
         try {
             namespace Err = Util::Err;
-            Util::affirm<Err::Usage>(max_frames > 0, "max_frames must be strictly positive");
+            UTIL_ASSERT(Err::Usage, max_frames > 0, "max_frames must be strictly positive");
             // Get a human read-able call stack
             callstack = Util::Safe::malloc<void *>(Util::widen<uint32_t, true>(max_frames));
             const int n_frames { ::backtrace(callstack, max_frames) };
-            Util::affirm<Err::Unknown>(n_frames > 0, WHOAMI "backtrace failed");
-            Util::affirm<Err::Unknown>(n_frames <= max_frames, WHOAMI "backtrace overflow failure");
+            UTIL_ASSERT(Err::Unknown, n_frames > 0, "backtrace failed");
+            UTIL_ASSERT(Err::Unknown, n_frames <= max_frames, "backtrace overflow failure");
             CCSC *const symbols { ::backtrace_symbols(callstack, n_frames) };
             // Used for formatting
             const auto n_to_print { Util::widen<UInt, true>(

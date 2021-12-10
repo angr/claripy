@@ -8,7 +8,7 @@
  *  in may not be nullptr
  */
 Expr::BasePtr Expr::make_like(const Expr::BasePtr &in, Annotation::SPAV &&sp) {
-    UTIL_AFFIRM_NOT_NULL_DEBUG(in);
+    UTIL_ASSERT_NOT_NULL_DEBUG(in);
     if (CUID::is_t<Bool>(in)) {
         return ::Expr::factory<Bool>(in->symbolic, Op::BasePtr { in->op }, std::move(sp));
     }

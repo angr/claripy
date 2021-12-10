@@ -52,8 +52,8 @@ namespace Op::FP {
         explicit inline From2sComplementBV(const Hash::Hash &h, const Mode::FP::Rounding m,
                                            const Expr::BasePtr &b, const Mode::FP::Width w)
             : Base { h, static_cuid }, mode { m }, bv { b }, width { w } {
-            Util::affirm<Error::Expr::Type>(CUID::is_t<Expr::BV>(bv),
-                                            WHOAMI "Operand fp must be an Expr::BV");
+            UTIL_ASSERT(Error::Expr::Type, CUID::is_t<Expr::BV>(bv),
+                        "Operand fp must be an Expr::BV");
         }
     };
 

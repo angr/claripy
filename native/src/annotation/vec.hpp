@@ -23,7 +23,7 @@ namespace Annotation {
         explicit inline Vec(RawVec &&in) : Hashed { Hash::hash(in) }, vec { std::move(in) } {
 #ifdef DEBUG
             for (auto &i : vec) {
-                UTIL_AFFIRM_NOT_NULL_DEBUG(i);
+                UTIL_ASSERT_NOT_NULL_DEBUG(i);
             }
 #endif
         }

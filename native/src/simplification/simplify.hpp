@@ -16,7 +16,7 @@ namespace Simplification {
          *  old may not be nullptr
          */
         inline Expr::BasePtr simplify(const Expr::BasePtr &old) {
-            UTIL_AFFIRM_NOT_NULL_DEBUG(old->op); // Sanity check
+            UTIL_ASSERT_NOT_NULL_DEBUG(old->op); // Sanity check
             if (const auto itr { op_map.find(old->op->cuid) }; itr != op_map.end()) {
                 return itr->second(old);
             }
@@ -32,7 +32,7 @@ namespace Simplification {
      *  old may not be nullptr
      */
     inline Expr::BasePtr simplify(const Expr::BasePtr &old) {
-        UTIL_AFFIRM_NOT_NULL_DEBUG(old);
+        UTIL_ASSERT_NOT_NULL_DEBUG(old);
         if (auto lookup { Private::cache.find(old->hash) }; lookup) {
             Util::Log::verbose("Simplification cache hit");
             return lookup;

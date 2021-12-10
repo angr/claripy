@@ -15,7 +15,7 @@ namespace Create::Private {
         bool sym { false };
         for (const Expr::BasePtr &i : o) {
 #ifdef DEBUG
-            Util::affirm<Error::Expr::Usage>(i != nullptr, WHOAMI "Null operand detected");
+            UTIL_ASSERT(Error::Expr::Usage, i != nullptr, "Null operand detected");
 #endif
             sym |= i->symbolic;
         }
@@ -35,10 +35,10 @@ namespace Create::Private {
         static_assert(Op::is_flat<OpT>, "Create::Private::flat requires OpT to be flat");
         static_assert(Util::Type::Is::in<Out, Allowed...>,
                       "Create::Private::flat argument types must be in Allowed");
-        Util::affirm<Err::Size>(operands.size() >= 2, WHOAMI "operands are empty.");
-        UTIL_AFFIRM_NOT_NULL_DEBUG(operands[0]);
-        Util::affirm<Err::Type>(CUID::is_t<Out>(operands[0]),
-                                WHOAMI "operands[0] of invalid type; allowed types: ", allowed);
+        UTIL_ASSERT(Err::Size, operands.size() >= 2, "operands are empty.");
+        UTIL_ASSERT_NOT_NULL_DEBUG(operands[0]);
+        UTIL_ASSERT(Err::Type, CUID::is_t<Out>(operands[0]),
+                    "operands[0] of invalid type; allowed types: ", allowed);
 
         const bool sym { flat_sym(operands) };
         if constexpr (std::is_same_v<Expr::Bool, Out>) {
@@ -68,10 +68,10 @@ namespace Create::Private {
 
         // Checks
         static_assert(Op::is_flat<OpT>, "Create::Private::flat requires OpT to be flat");
-        Util::affirm<Err::Size>(operands.size() >= 2, WHOAMI "operands are empty.");
-        UTIL_AFFIRM_NOT_NULL_DEBUG(operands[0]);
-        Util::affirm<Err::Type>(CUID::is_any_t<const Expr::Base, Allowed...>(operands[0]),
-                                WHOAMI "operands[0] is the wrong type");
+        UTIL_ASSERT(Err::Size, operands.size() >= 2, "operands are empty.");
+        UTIL_ASSERT_NOT_NULL_DEBUG(operands[0]);
+        const bool type_ok { CUID::is_any_t<const Expr::Base, Allowed...>(operands[0]) };
+        UTIL_ASSERT(Err::Type, type_ok, "operands[0] is the wrong type");
 
         // Create Expr
         const bool sym { flat_sym(operands) };

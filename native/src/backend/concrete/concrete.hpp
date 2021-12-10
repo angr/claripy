@@ -41,7 +41,7 @@ namespace Backend::Concrete {
          *  expr may not be nullptr
          */
         inline Expr::BasePtr simplify(const Expr::RawPtr expr) final {
-            UTIL_AFFIRM_NOT_NULL_DEBUG(expr);
+            UTIL_ASSERT_NOT_NULL_DEBUG(expr);
             (void) expr;
             return nullptr; // todo
         }

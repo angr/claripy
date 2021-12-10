@@ -40,7 +40,7 @@ namespace Util::ThreadSafe {
 
         /** Move assignment */
         MoveLock &operator=(MoveLock &&old) noexcept {
-            UTIL_AFFIRM_NOT_NULL_DEBUG(old.mutex); // It is probably never intended to hit this
+            UTIL_ASSERT_NOT_NULL_DEBUG(old.mutex); // It is probably never intended to hit this
             if (this != &old) {
                 mutex = old.mutex;
                 old.mutex = nullptr;

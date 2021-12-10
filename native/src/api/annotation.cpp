@@ -24,12 +24,12 @@ extern "C" {
         if (UNLIKELY(len == 0)) {
             return claricpp_annotation_create_empty_spav();
         }
-        UTIL_AFFIRM_NOT_NULL_DEBUG(list);
+        UTIL_ASSERT_NOT_NULL_DEBUG(list);
         Annotation::Vec::RawVec raw;
         raw.reserve(len);
         for (SIZE_T i = 0; i < len; ++i) {
             raw.emplace_back(API::to_cpp(list[i])); // NOLINT
-            UTIL_AFFIRM_NOT_NULL_DEBUG(raw.back());
+            UTIL_ASSERT_NOT_NULL_DEBUG(raw.back());
         }
         using CV = Util::Type::Internal<Annotation::SPAV>;
         return API::to_c(std::make_shared<CV>(std::move(raw)));
@@ -51,8 +51,7 @@ extern "C" {
 
     ClaricppAnnotation claricpp_annotation_spav_get(const ClaricppSPAV spav, const SIZE_T i) {
 #ifdef DEBUG
-        Util::affirm<Util::Err::Index>(i < API::to_cpp_ref(spav).vec.size(),
-                                       WHOAMI "Index out of bounds");
+        UTIL_ASSERT(Util::Err::Index, i < API::to_cpp_ref(spav).vec.size(), "Index out of bounds");
 #endif
         return API::copy_to_c(API::to_cpp_ref(spav).vec[i]);
     }

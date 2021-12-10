@@ -43,9 +43,9 @@ namespace Create::Private {
                       "Create::Private::uint_binary requires a int binary OpT");
 
         // Dynamic checks
-        Util::affirm<Err::Usage>(expr != nullptr, WHOAMI "expr cannot be nullptr");
-        Util::affirm<Err::Type>(CUID::is_any_t<const Expr::Base, Allowed...>(expr),
-                                WHOAMI "Expr operand of invalid type; allowed types: ", allowed);
+        UTIL_ASSERT(Err::Usage, expr != nullptr, "expr cannot be nullptr");
+        const bool type_ok { CUID::is_any_t<const Expr::Base, Allowed...>(expr) };
+        UTIL_ASSERT(Err::Type, type_ok, "Expr operand of invalid type; allowed types: ", allowed);
 
         // Construct expr (static casts are safe because of previous checks)
         return simplify(Expr::factory<Expr::BV>(expr->symbolic, Op::factory<OpT>(expr, integer),

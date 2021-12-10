@@ -41,7 +41,7 @@ namespace Util {
 
         /** Reclaim the memory pointed to by non-null pointer x, calls x's destructor */
         inline void free(T *const x) {
-            UTIL_AFFIRM_NOT_NULL_DEBUG(x);
+            UTIL_ASSERT_NOT_NULL_DEBUG(x);
             x->~T(); // Destruct x
             data.emplace_back(x);
         }

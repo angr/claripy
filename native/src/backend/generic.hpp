@@ -48,7 +48,7 @@ namespace Backend {
          *  expr may not be nullptr
          */
         bool handles(const Expr::RawPtr expr) override {
-            UTIL_AFFIRM_NOT_NULL_DEBUG(expr);
+            UTIL_ASSERT_NOT_NULL_DEBUG(expr);
             try {
                 (void) convert(expr);
                 return true;
@@ -80,7 +80,7 @@ namespace Backend {
          */
         BackendObj convert(const Expr::RawPtr input) {
             auto &conversion_cache { conversion_cache_g() };
-            UTIL_AFFIRM_NOT_NULL_DEBUG(input);
+            UTIL_ASSERT_NOT_NULL_DEBUG(input);
 
             // Functionally a stack of lists of exprs to be converted
             // We flatten and reverse this list for performance reasons
@@ -101,7 +101,7 @@ namespace Backend {
                 // If the expr does not represent the end of a list
                 if (expr != nullptr) {
                     const auto *const op { expr->op.get() };
-                    UTIL_AFFIRM_NOT_NULL_DEBUG(op);
+                    UTIL_ASSERT_NOT_NULL_DEBUG(op);
 
                     // Cache lookups
                     if (const auto lookup = conversion_cache.find(expr->hash);
@@ -111,8 +111,8 @@ namespace Backend {
                     }
                     else if (const auto [map, _] = errored_cache.scoped_shared();
                              map.find(expr->hash) != map.end()) {
-                        using Unsupported = Error::Backend::Unsupported;
-                        throw Unsupported(name(), " cannot handle operation: ", op->op_name());
+                        UTIL_THROW(Error::Backend::Unsupported, name(),
+                                   " cannot handle operation: ", op->op_name());
                     }
 
                     // Update stacks
@@ -142,18 +142,19 @@ namespace Backend {
             }
 #ifdef DEBUG
             // Sanity checks
-            constexpr auto chk { [](const auto &...x) { Util::affirm<Util::Err::Unknown>(x...); } };
-            chk(op_stack.empty(), WHOAMI "op_stack should be empty");
-            chk(expr_stack.empty(), WHOAMI "expr_stack should be empty");
-            chk(arg_stack.size() == 1, WHOAMI "arg_stack should be of size: 1");
+            constexpr auto chk { [](const bool b, const auto &...x) {
+                UTIL_ASSERT(Util::Err::Unknown, b, x...);
+            } };
+            chk(op_stack.empty(), "op_stack should be empty");
+            chk(expr_stack.empty(), "expr_stack should be empty");
+            chk(arg_stack.size() == 1, "arg_stack should be of size: 1");
             const auto lookup { conversion_cache.find(input->hash) };
-            chk(lookup != conversion_cache.end(),
-                WHOAMI "conversion_cache does not contain expr hash");
+            chk(lookup != conversion_cache.end(), "conversion_cache does not contain expr hash");
             chk(&lookup->second == arg_stack.back(),
-                WHOAMI "conversion_cache lookup does not match arg_stack back()");
+                "conversion_cache lookup does not match arg_stack back()");
             chk(arg_stack.back() == &conversion_cache.find(input->hash)->second,
-                WHOAMI "arg_stack / conversion_cache mismatch at end of convert");
-            UTIL_AFFIRM_NOT_NULL_DEBUG(arg_stack.back());
+                "arg_stack / conversion_cache mismatch at end of convert");
+            UTIL_ASSERT_NOT_NULL_DEBUG(arg_stack.back());
 #endif
             // Return result
             return *arg_stack.back(); // shortcut for conversion_cache.find(input->hash)->second;
@@ -166,9 +167,9 @@ namespace Backend {
                 return std::get<Expr::BasePtr>(variant);
             }
             catch (std::bad_variant_access &) {
-                throw Util::Err::Unknown(
-                    WHOAMI, "Abstraction culminated in a non-Expr object.\nVariant index: ",
-                    variant.index(), "\nPlease report this.");
+                UTIL_THROW(Util::Err::Unknown,
+                           "Abstraction culminated in a non-Expr object.\nVariant index: ",
+                           variant.index(), "\nPlease report this.");
             }
         }
 
@@ -208,8 +209,8 @@ namespace Backend {
          *  If the given backend does not support this, this function will never be called
          */
         virtual BackendObj apply_annotations_helper(const BackendObj &, Annotation::SPAV &&) const {
-            throw Util::Err::NotSupported(
-                "The backend has failed to implement this method. Please report this");
+            UTIL_THROW(Util::Err::NotSupported,
+                       "The backend has failed to implement this method. Please report this");
         }
 
         // Caches
