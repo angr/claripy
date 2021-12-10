@@ -10,12 +10,17 @@
 /** A local helper function for create methods */
 template <typename F, typename... Args>
 static inline auto make(const F &f, ClaricppSPAV &spav, Args &&...args) {
+    using CppType = std::invoke_result_t<F, Args..., Annotation::SPAV>;
+    using Ret = decltype(API::to_c(std::declval<CppType>()));
+    API_FUNC_START
     if (spav.ptr == nullptr) {
         return API::to_c(f(std::forward<Args>(args)..., { nullptr }));
     }
-    auto ret { API::to_c(f(std::forward<Args>(args)..., std::move(API::to_cpp(spav)))) };
+    Ret ret { API::to_c(f(std::forward<Args>(args)..., std::move(API::to_cpp(spav)))) };
     API::free(spav);
     return ret;
+    API_FUNC_END_NO_RETURN
+    return Ret { 0 }; // Required since we used the no return statement
 }
 
 extern "C" {
@@ -167,61 +172,25 @@ extern "C" {
         return make(Create::neq, spav, API::to_cpp(left), API::to_cpp(right));
     }
 
-    ClaricppExpr claricpp_create_slt(const ClaricppExpr left, const ClaricppExpr right,
-                                     ClaricppSPAV spav) {
-        using C = Mode::Compare;
-        static constexpr auto mask { C::Signed | C::Less | C::Neq };
-        return make(Create::compare<mask>, spav, API::to_cpp(left), API::to_cpp(right));
+/** A local macro used for consistency */
+#define CMP(NAME, FLAGS)                                                                           \
+    ClaricppExpr claricpp_create_##NAME(const ClaricppExpr left, const ClaricppExpr right,         \
+                                        ClaricppSPAV spav) {                                       \
+        using C = Mode::Compare;                                                                   \
+        return make(Create::compare<FLAGS>, spav, API::to_cpp(left), API::to_cpp(right));          \
     }
 
-    ClaricppExpr claricpp_create_sle(const ClaricppExpr left, const ClaricppExpr right,
-                                     ClaricppSPAV spav) {
-        using C = Mode::Compare;
-        static constexpr auto mask { C::Signed | C::Less | C::Eq };
-        return make(Create::compare<mask>, spav, API::to_cpp(left), API::to_cpp(right));
-    }
+    CMP(slt, C::Signed | C::Less | C::Neq)
+    CMP(sle, C::Signed | C::Less | C::Eq)
+    CMP(sgt, C::Signed | C::Greater | C::Neq)
+    CMP(sge, C::Signed | C::Greater | C::Eq)
+    CMP(ult, C::Unsigned | C::Less | C::Neq)
+    CMP(ule, C::Unsigned | C::Less | C::Eq)
+    CMP(ugt, C::Unsigned | C::Greater | C::Neq)
+    CMP(uge, C::Unsigned | C::Greater | C::Eq)
 
-    ClaricppExpr claricpp_create_sgt(const ClaricppExpr left, const ClaricppExpr right,
-                                     ClaricppSPAV spav) {
-        using C = Mode::Compare;
-        static constexpr auto mask { C::Signed | C::Greater | C::Neq };
-        return make(Create::compare<mask>, spav, API::to_cpp(left), API::to_cpp(right));
-    }
-
-    ClaricppExpr claricpp_create_sge(const ClaricppExpr left, const ClaricppExpr right,
-                                     ClaricppSPAV spav) {
-        using C = Mode::Compare;
-        static constexpr auto mask { C::Signed | C::Greater | C::Eq };
-        return make(Create::compare<mask>, spav, API::to_cpp(left), API::to_cpp(right));
-    }
-
-    ClaricppExpr claricpp_create_ult(const ClaricppExpr left, const ClaricppExpr right,
-                                     ClaricppSPAV spav) {
-        using C = Mode::Compare;
-        static constexpr auto mask { C::Unsigned | C::Less | C::Neq };
-        return make(Create::compare<mask>, spav, API::to_cpp(left), API::to_cpp(right));
-    }
-
-    ClaricppExpr claricpp_create_ule(const ClaricppExpr left, const ClaricppExpr right,
-                                     ClaricppSPAV spav) {
-        using C = Mode::Compare;
-        static constexpr auto mask { C::Unsigned | C::Less | C::Eq };
-        return make(Create::compare<mask>, spav, API::to_cpp(left), API::to_cpp(right));
-    }
-
-    ClaricppExpr claricpp_create_ugt(const ClaricppExpr left, const ClaricppExpr right,
-                                     ClaricppSPAV spav) {
-        using C = Mode::Compare;
-        static constexpr auto mask { C::Unsigned | C::Greater | C::Neq };
-        return make(Create::compare<mask>, spav, API::to_cpp(left), API::to_cpp(right));
-    }
-
-    ClaricppExpr claricpp_create_uge(const ClaricppExpr left, const ClaricppExpr right,
-                                     ClaricppSPAV spav) {
-        using C = Mode::Compare;
-        static constexpr auto mask { C::Unsigned | C::Greater | C::Eq };
-        return make(Create::compare<mask>, spav, API::to_cpp(left), API::to_cpp(right));
-    }
+// Cleanup
+#undef CMP
 
     // Math
 
