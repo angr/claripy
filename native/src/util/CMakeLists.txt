@@ -2,6 +2,7 @@
 target_sources("${CLARICPP}" PRIVATE
 	recurrence_guard.cpp
 	stack_limit.cpp
+	terminate.cpp
 )
 
 # Add subdirectories
