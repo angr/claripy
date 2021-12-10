@@ -15,13 +15,14 @@
 /** A unittest assertion macro */
 #define UNITTEST_ASSERT(B)                                                                         \
     if (!(B)) {                                                                                    \
-        UnitTest::TestLib::ut_fail("UnitTest Assertion failed.");                                  \
+        UnitTest::TestLib::ut_fail(Util::to_str(WHOAMI "UnitTest Assertion failed."));             \
     }
 
 /** A unittest assertion macro */
 #define UNITTEST_ASSERT_MSG(B, ...)                                                                \
     if (!(B)) {                                                                                    \
-        UnitTest::TestLib::ut_fail(Util::to_str("UnitTest Assertion failed.", __VA_ARGS__));       \
+        UnitTest::TestLib::ut_fail(                                                                \
+            Util::to_str(WHOAMI "UnitTest Assertion failed.", __VA_ARGS__));                       \
     }
 
 
@@ -37,7 +38,7 @@ namespace UnitTest::TestLib {
     UTIL_ERR_DEFINE_NAMESPACED_FINAL_EXCEPTION(Error, Claricpp, Util::Err)
 
     /** A function used to fail a unit test; the thrown exception should *not* be caught */
-    template <typename... Args> void ut_fail(std::string &&msg) {
+    [[noreturn]] inline void ut_fail(std::string &&msg) {
         if (original_bk != nullptr) {
             auto copy { original_bk }; // Just in case someone is dumb and catches the error
             Util::Log::Backend::unsafe_set(std::move(original_bk));
@@ -47,7 +48,7 @@ namespace UnitTest::TestLib {
             Util::Log::Style::unsafe_set(std::move(original_sty));
         }
         // Do not catch this
-        UNITTEST_ERR(std::move(msg));
+        throw UnitTest::TestLib::Error(std::move(msg));
     }
 
 } // namespace UnitTest::TestLib
