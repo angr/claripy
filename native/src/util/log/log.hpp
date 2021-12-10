@@ -2,7 +2,6 @@
  * @file
  * \ingroup util
  * @brief This file defines public logging functions
- * @todo: Check to see if stream style would be faster than function style
  */
 #ifndef R_UTIL_LOG_LOG_HPP_
 #define R_UTIL_LOG_LOG_HPP_

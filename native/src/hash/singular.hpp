@@ -86,7 +86,7 @@ namespace Hash {
     }
 
     /** A specialization for T = float
-     *  \todo: For C++20 look into std::bit_cast to make this constexpr
+     *  @todo: For C++20 look into std::bit_cast to make this constexpr
      */
     template <> inline Hash singular(const float &f) noexcept {
         static_assert(sizeof(float) == sizeof(uint32_t),
@@ -97,7 +97,7 @@ namespace Hash {
     }
 
     /** A specialization for T = double
-     *  \todo: For C++20 look into std::bit_cast to make this constexpr
+     *  @todo: For C++20 look into std::bit_cast to make this constexpr
      */
     template <> inline Hash singular(const double &d) noexcept {
         Hash tmp; // NOLINT

@@ -403,7 +403,7 @@ if(ENABLE_MEMCHECK AND APPLE AND NOT ALLOW_NO_MEMCHECK_APPLE)
 endif()
 
 # Enable good coding checks as actual warnings
-if(NOT EFFECTIVE_CPP_STYLE_CHECK) # TODO
+if(NOT EFFECTIVE_CPP_STYLE_CHECK)
 	target_compile_options("${CLARICPP}" PUBLIC
 		"-Weffc++" # Enforces a few generally good C++ coding practices
 		"-Wno-error=effc++" # Allow effc++ warnings to remain warnings

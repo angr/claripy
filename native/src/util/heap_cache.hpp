@@ -26,11 +26,10 @@ namespace Util {
         /** Constructor */
         inline HeapCache() { reserve(); }
 
-        /** Move x onto the heap
-         * \todo: T return value in std::launder? I don't think it is needed
-         */
+        /** Move x onto the heap */
         inline T *move_to_heap(T &&x) {
             // Construct our new T on pop()'s memory
+            // std::launder is not needed here since we do not have any aliases
             return new (pop()) T { std::move(x) }; // NOLINT
         }
 

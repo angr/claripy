@@ -11,7 +11,6 @@ extern "C" {
 };
 #include "../backend.hpp"
 
-// @todo: Handle exceptions
 
 // Static checks
 
@@ -36,9 +35,11 @@ static_assert((FALSE == false) && (false == FALSE) && (TRUE == true) && (true ==
 // Cleanup
 #undef SAME_U
 
+
 /********************************************************************/
 /*                               C++                                */
 /********************************************************************/
+
 
 namespace API {
 

@@ -3,7 +3,6 @@
  * @brief This file contains the possible Expr exceptions claricpp can raise
  * These exceptions have python analogs and must be caught and set to python
  * via a different method.
- * @todo Document method when known
  */
 #ifndef R_ERROR_EXPR_HPP_
 #define R_ERROR_EXPR_HPP_
@@ -19,7 +18,7 @@ namespace Error::Expr {
     // Intermediate classes
 
     /** Expr Balance exception */
-    UTIL_ERR_DEFINE_NONFINAL_EXCEPTION(Balancer, Claripy);
+    //    UTIL_ERR_DEFINE_NONFINAL_EXCEPTION(Balancer, Claripy);
     /** Expr Operation exception */
     UTIL_ERR_DEFINE_NONFINAL_EXCEPTION(Operation, Claripy);
 
@@ -28,17 +27,11 @@ namespace Error::Expr {
     /** Expr usage exception */
     UTIL_ERR_DEFINE_NONFINAL_EXCEPTION(Usage, Claripy);
     /** @todo document */
-    UTIL_ERR_DEFINE_FINAL_EXCEPTION(BalancerUnsat, Balancer);
-    /** @todo document */
     UTIL_ERR_DEFINE_FINAL_EXCEPTION(Type, Claripy);
     /** @todo document */
     UTIL_ERR_DEFINE_FINAL_EXCEPTION(Value, Claripy);
     /** @todo document */
     UTIL_ERR_DEFINE_FINAL_EXCEPTION(Size, Claripy);
-    /** @todo document */
-    UTIL_ERR_DEFINE_FINAL_EXCEPTION(Replacement, Claripy);
-    /** @todo document */
-    UTIL_ERR_DEFINE_FINAL_EXCEPTION(Recursion, Operation);
     /** @todo document */
     UTIL_ERR_DEFINE_FINAL_EXCEPTION(ZeroDivision, Operation);
 

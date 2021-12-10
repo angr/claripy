@@ -32,9 +32,7 @@ namespace Op {
             }
         }
 
-        /** Python's repr function (outputs json)
-         *  @todo This could be a switch-case statement; do when more stable
-         */
+        /** Python's repr function (outputs json) */
         inline void repr(std::ostream &out) const final {
 
 /** A local macro used for consistency */

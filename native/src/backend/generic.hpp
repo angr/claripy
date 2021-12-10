@@ -44,7 +44,6 @@ namespace Backend {
         /** Checks whether this backend can handle the expr
          *  Note: If the backend will not simplify the expr, but will accept it, returns true
          *  @todo Make this better than this simplistic way
-         *  @todo Prevent the error message from printing
          *  expr may not be nullptr
          */
         bool handles(const Expr::RawPtr expr) override {
