@@ -12,8 +12,13 @@ thread_local std::exception_ptr API::exception_ptr { nullptr };
 void claricpp_init_for_python_usage() {}
 
 BOOL claricpp_has_exception() {
-    static_assert(noexcept(API::exception_ptr.operator bool()), "Should not throw");
-    return API::bool_(API::exception_ptr.operator bool()); // Avoid static cast to be explicit
+    try {
+        return API::bool_(API::exception_ptr);
+    }
+    catch (...) {
+        // @todo: fallback log
+        Util::terminate();
+    }
 }
 
 

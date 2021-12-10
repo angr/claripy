@@ -14,6 +14,7 @@
 void claricpp_init_for_python_usage();
 
 /** Returns true if and only if the previous API function failed with an exception
+ *  If this fails, the program will crash as we have no way of functionally using claricpp
  *  @return true if and only if the previous API function failed with an exception
  */
 BOOL claricpp_has_exception();
