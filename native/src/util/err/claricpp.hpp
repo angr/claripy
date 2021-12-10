@@ -33,9 +33,7 @@ namespace Util::Err {
 
       public:
         /** Constructor: This constructor consumes its arguments via const reference */
-        template <typename... Args>
-        explicit Claricpp(Args &&...args)
-            : msg { Util::to_str(std::forward<Args>(args)...) }, bt { save_backtrace() } {}
+        explicit inline Claricpp(std::string &&msg_) : msg { msg_ }, bt { save_backtrace() } {}
 
         /** Default virtual destructor */
         ~Claricpp() noexcept override = default;
