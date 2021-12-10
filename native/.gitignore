@@ -1,18 +1,25 @@
 # IDE
-.build*
-.idea/*
+/.build*
+/.idea/*
 
 # Explicit
-Ignore/*
-ignore/*
-build/*
-Build/*
+/Ignore/*
+/ignore/*
+/build/*
+/Build/*
+/old/*
 
 # Build artifacts
-.cache/clangd
-Doxyfile
-compile_commands.json
-z3/*
+/.cache/*
+/Doxyfile
+/compile_commands.json
+/z3/*
+
+# For vim
+**/.ycm_extra_conf.py
+**/*.swp
+**/*.swo
+**/*.swn
 
 # Prerequisites
 *.d
@@ -46,14 +53,3 @@ z3/*
 *.exe
 *.out
 *.app
-
-# For vim
-**/.ycm_extra_conf.py
-**/*.swp
-**/*.swo
-**/*.swn
-
-# Directories
-**/build/*
-dr*.log
-old/*
