@@ -80,7 +80,7 @@ ClaricppException claricpp_get_exception() {
         API::exception_ptr = nullptr;
         return ret;
     }
-    catch (std::bad_alloc) {
+    catch (std::bad_alloc &) {
         return { .type = ClaricppExceptionEnumFailAlloc,
                  .msg = try_gen_msg("Got std::bad_alloc within get_exception"),
                  .trace = nullptr };
