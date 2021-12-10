@@ -31,12 +31,8 @@ namespace PyObj {
         /** If not DEBUG, returns ret; else if ret and not cond report user error detected */
         inline bool eq(const bool ret, const bool cond) {
 #ifdef DEBUG
-            if (!cond) {
-                using E = Util::Err::HashCollision;
-                Util::affirm<E>(WHOAMI
-                                "PyObjects differ but have identical hashes; this is probably "
-                                "due to user error");
-            }
+            UTIL_ASSERT(Util::Err::HashCollision, ret && !cond,
+                        "PyObjects equate but are different; this is probably due to user error");
 #else
             (void) cond;
 #endif

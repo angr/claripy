@@ -200,7 +200,8 @@ namespace Hash {
     }
 
     /** A specialization for T = std::vector<Internal> */
-    template <typename Internal> inline Hash singular(const std::vector<Internal> &v) noexcept {
+    template <typename Internal>
+    inline Hash singular(const std::vector<Internal> &v) NOEXCEPT_UNLESS_DEBUG {
         UInt hashes[v.size()]; // NOLINT
         UInt i { -1_ui };
         for (const auto &p : v) {
@@ -208,8 +209,8 @@ namespace Hash {
         }
 #ifdef DEBUG
         // Verify no memory corruption
-        Util::affirm<Util::Err::Unknown>(v.size() == i + 1,
-                                         WHOAMI "Incorrect value of i within Hash::hash");
+        UTIL_ASSERT(Util::Err::Unknown, v.size() == i + 1,
+                    "Incorrect value of i within Hash::hash");
 #endif
         // Return hash
         return fnv1a<UInt>(hashes, v.size());

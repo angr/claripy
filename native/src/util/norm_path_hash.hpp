@@ -6,10 +6,11 @@
 #ifndef R_UTIL_NORMPATHHASH_HPP_
 #define R_UTIL_NORMPATHHASH_HPP_
 
-#include "affirm.hpp"
+#include "assert.hpp"
 #include "err.hpp"
 #include "fnv1a.hpp"
 #include "str_prefix.hpp"
+#include "terminate.hpp"
 
 #include "../constants.hpp"
 
@@ -20,7 +21,7 @@ namespace Util {
 
     /** Return the FNV1a of the normal path of s
      *  Len must be the length of s
-     *  Will throw in noexcept context if s goes outside of '/' or './' (depending on the prefix)
+     *  Will Util::terminate if s goes outside of '/' or './' (depending on the prefix)
      *  For example /../foo is not ok; likewise ./../foo is not ok. But /bar/../foo is fine
      */
     template <UInt Len> constexpr uint64_t norm_path_hash(const char *s) noexcept {
@@ -80,7 +81,10 @@ namespace Util {
             if (str_prefix(s, "../")) {
                 ADVANCE(3)
                 // Rewinding segments
-                affirm<Err::BadPath>(n_seg > 0, WHOAMI, "given path that goes outside of / or ./");
+                if (n_seg <= 0) {
+                    Util::Log::critical(WHOAMI, "given path that goes outside of / or ./");
+                    Util::terminate();
+                }
                 n_seg -= 1;
                 continue;
             }

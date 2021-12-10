@@ -46,13 +46,13 @@ namespace Expr {
       protected:
         /** Protected Constructor */
         explicit inline Base(const Hash::Hash h, const CUID::CUID &c, const bool sym,
-                             Op::BasePtr &&op_, Annotation::SPAV &&sp) noexcept
-            : FactoryMade { h, c },
-              symbolic { sym },
-              op { std::move(op_) },
-              annotations { std::move(sp) } {
-            Util::affirm<Util::Err::Usage>(op != nullptr, "op may not be nullptr");
+                             Op::BasePtr &&op_, Annotation::SPAV &&sp) NOEXCEPT_UNLESS_DEBUG :
+            FactoryMade { h, c },
+            symbolic { sym },
+            op { std::move(op_) },
+            annotations { std::move(sp) } {
 #ifdef DEBUG
+            UTIL_ASSERT(Util::Err::Usage, op != nullptr, "op may not be nullptr");
             ctor_debug_checks();
 #endif
         }

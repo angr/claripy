@@ -90,17 +90,17 @@ namespace API {
     /** Returns a reference to the C++ type held by the C type x
      *  Warning: Returns a reference to part of x
      */
-    template <typename InC> inline auto &to_cpp(const InC &x) noexcept {
-        UTIL_AFFIRM_NOT_NULL_DEBUG(x.ptr);
+    template <typename InC> inline auto &to_cpp(const InC &x) NOEXCEPT_UNLESS_DEBUG {
+        UTIL_ASSERT_NOT_NULL_DEBUG(x.ptr);
         return *static_cast<Private::Map<InC> *const>(x.ptr);
     }
 
     /** Returns a reference to the dereference of the C++ type held by the C type x
      *  Warning: Returns a reference to part of x
      */
-    template <typename InC> inline auto &to_cpp_ref(const InC &x) noexcept {
+    template <typename InC> inline auto &to_cpp_ref(const InC &x) NOEXCEPT_UNLESS_DEBUG {
         auto ptr { to_cpp(x) };
-        UTIL_AFFIRM_NOT_NULL_DEBUG(ptr);
+        UTIL_ASSERT_NOT_NULL_DEBUG(ptr);
         return *ptr;
     }
 
@@ -116,7 +116,7 @@ namespace API {
             return dynamic_cast<RealOut &>(ref);
         }
         catch (std::bad_cast &e) {
-            throw Util::Err::BadCast(WHOAMI, e.what());
+            UTIL_THROW(Util::Err::BadCast, e.what());
         }
     }
 
@@ -270,7 +270,7 @@ namespace API {
                     if constexpr (MayFail) {
                         return ClaricppPrim {}; // Garbage data
                     }
-                    throw Util::Err::Unknown(WHOAMI "Variant shouldn't have this index");
+                    UTIL_THROW(Util::Err::Unknown, "Variant shouldn't have this index");
                 }
             }
         };
@@ -310,7 +310,7 @@ namespace API {
             }
             CASE_END
             default:
-                throw Util::Err::Unknown(WHOAMI "Variant shouldn't have this index");
+                UTIL_THROW(Util::Err::Unknown, "Variant shouldn't have this index");
         }
     }
 
@@ -348,7 +348,8 @@ namespace API {
                 x.arr = nullptr;
             }
             else if (x.len > 0) {
-                Util::Log::error(WHOAMI, "Array being freed has null data but non-zero length");
+                Util::Log::error(WHOAMI "Array being freed has null data but non-zero length");
+                // No need to throw probably
             }
             x.len = 0;
         }

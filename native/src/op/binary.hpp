@@ -75,17 +75,11 @@ namespace Op {
         explicit inline Binary(const Hash::Hash &h, const CUID::CUID &cuid_, const Expr::BasePtr &l,
                                const Expr::BasePtr &r)
             : Base { h, cuid_ }, left { l }, right { r } {
-            using E = Error::Expr::Type;
 
             // Type / size checking
-            if constexpr (ConsiderSize) {
-                Util::affirm<E>(Expr::are_same_type<true>(left, right),
-                                WHOAMI "left and right types or sizes differ");
-            }
-            else {
-                Util::affirm<E>(Expr::are_same_type<false>(left, right),
-                                WHOAMI "left and right types differ");
-            }
+            const bool same { Expr::are_same_type<ConsiderSize>(left, right) };
+            UTIL_ASSERT(Error::Expr::Type, same, "left and right differ by type",
+                        ConsiderSize ? " or size" : "");
         }
 
         /** Python's repr function (outputs json), but without the closing '}' */

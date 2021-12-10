@@ -52,7 +52,7 @@ namespace Op {
          */
         inline void unsafe_add_reversed_children(Stack &s) const final {
             for (auto i { operands.crbegin() }; i != operands.crend(); ++i) {
-                UTIL_AFFIRM_NOT_NULL_DEBUG(i->get());
+                UTIL_ASSERT_NOT_NULL_DEBUG(i->get());
                 s.emplace(i->get());
             }
         }
@@ -63,7 +63,7 @@ namespace Op {
         inline void python_children(std::vector<ArgVar> &v) const final {
             v.reserve(v.size() + operands.size());
             for (const auto &i : operands) {
-                UTIL_AFFIRM_NOT_NULL_DEBUG(i);
+                UTIL_ASSERT_NOT_NULL_DEBUG(i);
                 v.emplace_back(i);
             }
         }
@@ -113,19 +113,14 @@ namespace Op {
             namespace Err = Error::Expr;
 
             // Operands size
-            Util::affirm<Err::Size>(operands.size() >= 2,
-                                    WHOAMI "constructor requires at least two arguments");
+            UTIL_ASSERT(Err::Size, operands.size() >= 2,
+                        "constructor requires at least two arguments");
 
             // Verify all inputs are the same type
             for (const auto &i : operands) {
-                if constexpr (ConsiderSize) {
-                    Util::affirm<Err::Type>(Expr::are_same_type<true>(operands[0], i),
-                                            WHOAMI "operands differ by size or type");
-                }
-                else {
-                    Util::affirm<Err::Type>(Expr::are_same_type<false>(operands[0], i),
-                                            WHOAMI "operands differ by size");
-                }
+                const bool same { Expr::are_same_type<ConsiderSize>(operands[0], i) };
+                UTIL_ASSERT(Err::Type, same, "operands differ by type",
+                            ConsiderSize ? " or size" : "");
             }
         }
     };

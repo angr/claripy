@@ -6,7 +6,7 @@
 #ifndef R_UTIL_TYPE_UNCONSTRUCTABLE_HPP_
 #define R_UTIL_TYPE_UNCONSTRUCTABLE_HPP_
 
-#include "../macros.hpp"
+#include "../../macros.hpp"
 
 
 namespace Util::Type {

@@ -10,9 +10,9 @@
 #ifndef R_UTIL_HPP_
 #define R_UTIL_HPP_
 
-#include "util/affirm.hpp"
-#include "util/affirm_not_null_debug.hpp"
 #include "util/ansi_color_codes.hpp"
+#include "util/assert.hpp"
+#include "util/assert_not_null_debug.hpp"
 #include "util/avg.hpp"
 #include "util/backtrace.hpp"
 #include "util/bitmask.hpp"
@@ -51,7 +51,9 @@
 #include "util/stack_limit.hpp"
 #include "util/str_prefix.hpp"
 #include "util/strlen.hpp"
+#include "util/terminate.hpp"
 #include "util/thread_safe.hpp"
+#include "util/throw.hpp"
 #include "util/to_hex.hpp"
 #include "util/to_str.hpp"
 #include "util/to_underlying.hpp"
