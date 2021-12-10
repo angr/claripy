@@ -29,7 +29,7 @@ static auto get_time() {
 }
 
 // Return "<level>: <timestamp>: <raw>"
-std::string LevelTimestampMessage::str(CCSC, const Lvl &lvl, const std::ostringstream &raw) const {
+std::string LevelTimestampMessage::str(CCSC, const Lvl &lvl, std::string &&raw) const {
     // Color label
     const char *color { nullptr };
     switch (lvl) {
@@ -64,6 +64,6 @@ std::string LevelTimestampMessage::str(CCSC, const Lvl &lvl, const std::ostrings
     // Output
     std::ostringstream ret;
     ret << color << lvl << ANSIColorCodes::reset << ": " << std::put_time(&tm, "%c %Z") << " -- "
-        << raw.str();
+        << std::move(raw);
     return ret.str();
 }

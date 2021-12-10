@@ -25,10 +25,14 @@ namespace Util::Log::Backend {
     struct Multiplex final : public Base {
 
         /** Log the given message, level, to the correct log given by log_id with each backend */
-        inline void log(CCSC id, const Level::Level &lvl, const std::string &msg) const final {
-            for (const auto &i : backends) {
-                UTIL_ASSERT_NOT_NULL_DEBUG(i);
-                i->log(id, lvl, msg);
+        inline void log(CCSC id, const Level::Level &lvl, std::string &&msg) const final {
+            for (UInt i { 1 }; i < backends.size(); ++i) {
+                const auto &bk { backends[i - 1] };
+                UTIL_ASSERT_NOT_NULL_DEBUG(bk)
+                bk->log(id, lvl, std::string { msg });
+            }
+            if (!backends.empty()) {
+                backends.back()->log(id, lvl, std::move(msg));
             }
         }
 

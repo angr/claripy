@@ -8,8 +8,7 @@
 
 #include "base.hpp"
 
-#include "../../affirm.hpp"
-#include "../../err.hpp"
+#include "../../terminate.hpp"
 
 #include <exception>
 #include <memory>
@@ -31,11 +30,15 @@ namespace Util::Log::Backend {
          *  or something, flush_on_exit should be false as static destruction is done without
          *  a defined order.
          */
-        explicit inline OStream(std::shared_ptr<std::ostream> stream_, const bool flush_,
+        explicit inline OStream(std::shared_ptr<std::ostream> stream_, const bool should_flush_,
                                 const bool flush_on_exit_ = true) noexcept
-            : stream(std::move(stream_)), flush(flush_), flush_on_exit(flush_on_exit_) {
-            Util::affirm<Util::Err::Usage>(stream != nullptr, WHOAMI,
-                                           "stream may not be a null shared_ptr");
+            : stream { std::move(stream_) },
+              should_flush { should_flush_ },
+              flush_on_exit { flush_on_exit_ } {
+            // @todo: fallback_log: stream may not be a null
+            if (UNLIKELY(stream == nullptr)) {
+                ::Util::terminate();
+            }
         }
 
         /** A virtual destructor */
@@ -54,20 +57,23 @@ namespace Util::Log::Backend {
         SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(OStream, delete)
 
         /** Log the message */
-        inline void log(CCSC, const Level::Level &, const std::string &msg) const final {
+        inline void log(CCSC, const Level::Level &, std::string &&msg) const final {
             std::lock_guard<decltype(m)> lock(m);
-            *stream << msg << "\n";
-            if (flush) {
-                stream->flush();
+            *stream << std::move(msg) << "\n";
+            if (should_flush) {
+                flush();
             }
         }
+
+        /** Flush the log */
+        inline void flush() const final { stream->flush(); }
 
       private:
         /** The stream we log to; this may not be nullptr */
         const std::shared_ptr<std::ostream> stream;
 
         /** If true, every time stream is written to the contents are flushed */
-        const bool flush;
+        const bool should_flush;
 
         /** True if the stream should be flushed at exit */
         const bool flush_on_exit;

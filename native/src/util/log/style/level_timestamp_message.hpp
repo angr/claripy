@@ -13,9 +13,8 @@ namespace Util::Log::Style {
 
     /** A Log Style which prints out the log level, a timestamp, and the message */
     struct LevelTimestampMessage final : public Base {
-
         /** Format the log message */
-        std::string str(CCSC, const Level::Level &lvl, const std::ostringstream &raw) const final;
+        std::string str(CCSC, const Level::Level &lvl, std::string &&raw) const final;
     };
 
 } // namespace Util::Log::Style

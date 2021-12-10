@@ -12,8 +12,8 @@ using namespace UnitTest::TestLib;
 /** Create a style class */
 struct Plain final : Style::Base {
     /** The style function */
-    std::string str(CCSC, const Level::Level &, const std::ostringstream &s) const final {
-        return s.str();
+    inline std::string str(CCSC, const Level::Level &, std::string &&s) const final {
+        return std::move(s);
     }
 };
 
