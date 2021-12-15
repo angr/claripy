@@ -21,7 +21,7 @@ static ThreadSafe::Access<const Sty> access {
 
 void Style::unsafe_set(std::shared_ptr<const Base> &&ptr) {
     UTIL_ASSERT_NOT_NULL_DEBUG(ptr);
-    debug("Logging style about to update");
+    info("Logging style about to update");
     access.set_shared_ptr_move(std::move(ptr));
     info("Logging style updated");
 }

@@ -16,7 +16,7 @@ namespace Level = Util::Log::Level;
 static std::atomic<Level::Level> lvl { Level::default_ };
 
 void Level::set(Level l) noexcept {
-    debug(WHOAMI "Log level updating from: ", get());
+    info(WHOAMI "Log level updating from: ", get());
     lvl.store(l);
     info(WHOAMI "Log level updated to: ", l);
 }

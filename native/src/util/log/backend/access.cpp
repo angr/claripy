@@ -21,7 +21,7 @@ static ThreadSafe::Access<const Bk> access {
 
 void Backend::unsafe_set(std::shared_ptr<const Base> &&ptr) {
     UTIL_ASSERT_NOT_NULL_DEBUG(ptr);
-    debug(WHOAMI "Logging backend about to update");
+    info(WHOAMI "Logging backend about to update");
     access.set_shared_ptr_move(std::move(ptr));
     info(WHOAMI "Logging backend updated");
 }
