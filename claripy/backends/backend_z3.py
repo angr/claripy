@@ -460,9 +460,9 @@ class BackendZ3(Backend):
             # else:
             args = [symbol_str]
             args.extend(children)
-            func = Func(op=symbol_str, args=args, _ret_size = bv_size)
+            func = Func(op=symbol_str, args=args, _ret_size=bv_size)
             func_result = func.func_op(*args)
-            if symbol_str in str(func_result.args[0]):
+            if len(func_result.args) > 0 and symbol_str in str(func_result.args[0]):
                 func_result.args = func_result.args[1:]
             return func_result
 
