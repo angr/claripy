@@ -177,7 +177,7 @@ DECLARE_OUT_ARRAY(ClaricppArg);
  *  @todo: Make this support more
  */
 typedef enum {
-    ClaricppExceptionEnumNone = 0, // No exception
+    ClaricppExceptionEnumNone = 0,     // No exception
     ClaricppExceptionEnumFailAlloc,    // Called when get_exception fails due to bad_alloc
     ClaricppExceptionEnumFailCritical, // Called when get_exception fails for some other reason
     ClaricppExceptionEnumUnknown,      // Called when an unknown exception type is returned
