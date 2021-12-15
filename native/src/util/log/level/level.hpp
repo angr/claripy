@@ -1,30 +1,19 @@
 /**
  * @file
- * \ingroup util
- * @brief This file defines the Util::Log::Level typesafe enum
- * Also defines the << stream operator for this class
+ * @brief This file defines log level modes
  */
 #ifndef R_UTIL_LOG_LEVEL_LEVEL_HPP_
 #define R_UTIL_LOG_LEVEL_LEVEL_HPP_
 
-
-#ifdef CONSTANT_LOG_LEVEL
-    /** Constexpr if and only if the log level is immutable */
-    #define UTIL_LOG_LEVEL_CONSTEXPR constexpr
-#else
-    /** Constexpr if and only if the log level is immutable */
-    #define UTIL_LOG_LEVEL_CONSTEXPR
-#endif
-
+extern "C" {
+#include "level.h"
+};
 
 namespace Util::Log::Level {
 
-    /** A typesafe enum denoting different log levels
-     *  The higher the level the more serious the error
-     */
-    enum class Level { Verbose = 0, Debug, Info, Warning, Error, Critical, Disabled };
+    /** A mask used to define the type of comparison to be used */
+    enum class Level { UTIL_LOG_LEVEL_VALS() };
 
 } // namespace Util::Log::Level
-
 
 #endif
