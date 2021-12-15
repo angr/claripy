@@ -70,9 +70,10 @@ namespace API {
         /** Bidirectionally maps between C++ and C strong / weak enums
          *  Warning: Enums are assumed to have the same values between both
          */
-        using EnumMap = Util::Type::Map<    //
-            ClaricppRM, Mode::FP::Rounding, // Rounding Mode
-            ClaricppBIM, Mode::BigInt       // Big Int
+        using EnumMap = Util::Type::Map<             //
+            ClaricppLogLvl, Util::Log::Level::Level, // Log Level
+            ClaricppRM, Mode::FP::Rounding,          // Rounding Mode
+            ClaricppBIM, Mode::BigInt                // Big Int
             >;
 
         /** Bidirectionally maps between C++ and C variants / unions */

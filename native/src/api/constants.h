@@ -18,6 +18,7 @@ struct ClaricppFFIStart;
 
 // Copy enum generation macros
 #include "../mode.h"
+#include "../util.h"
 
 
 // Macros
@@ -91,6 +92,11 @@ typedef ARRAY_IN(char) PyStr;
  *  See mode/fp/rounding.h for more info
  */
 typedef enum { MODE_FP_ROUNDING_VALS(ClaricppRm) } ClaricppRM;
+
+/** Claricpp log level modes
+ *  See mode/log_level.h for more info
+ */
+typedef enum { UTIL_LOG_LEVEL_VALS(ClaricppLogLvl) } ClaricppLogLvl;
 
 /** Claricpp BigInt modes
  *  See mode/big_int.h for more info
