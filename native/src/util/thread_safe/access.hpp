@@ -92,6 +92,9 @@ namespace Util::ThreadSafe {
         /** A setter that takes in a shared pointer of type type */
         void set_shared_ptr_move(Ptr &&ptr) { set_move(std::move(ptr)); }
 
+        /** A setter that takes in a shared pointer of type type */
+        void set_shared_ptr_swap(Ptr &ptr) { set_swap(ptr); }
+
 
         /** A setter by default constructor */
         template <typename Derived = BaseT> void set_default() {
@@ -162,10 +165,16 @@ namespace Util::ThreadSafe {
             obj = ptr;
         }
 
-        /** A private member used to set m safely */
+        /** A private member used to set m safely*/
         inline void set_move(Ptr &&ptr) {
             std::lock_guard<decltype(m)> lg(m);
-            obj = ptr;
+            obj = std::move(ptr);
+        }
+
+        /** A private member used to set m safely*/
+        inline void set_swap(Ptr &ptr) {
+            std::lock_guard<decltype(m)> lg(m);
+            std::swap(obj, ptr);
         }
 
         /** A mutex to protect obj */
