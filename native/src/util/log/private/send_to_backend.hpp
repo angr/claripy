@@ -13,10 +13,10 @@
 namespace Util::Log::Private {
 
     /** Prep the arguments then call the logging backend */
-    inline void send_to_backend(CCSC id, const Level::Level lvl, std::string &&msg) {
+    inline void send_to_backend(CCSC id, const Level::Level lvl, Util::LazyStr &&msg) {
         UTIL_ASSERT_NOT_NULL_DEBUG(Style::get());   // Sanity check
         UTIL_ASSERT_NOT_NULL_DEBUG(Backend::get()); // Sanity check
-        Backend::get()->log(id, lvl, Style::get()->str(id, lvl, std::move(msg)));
+        Backend::get()->log(id, lvl, std::move(msg));
     }
 
 } // namespace Util::Log::Private

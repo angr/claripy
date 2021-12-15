@@ -10,7 +10,10 @@
 #include "macros.hpp"
 #include "private/send_to_backend.hpp"
 
+#include "../lazy_str.hpp"
 #include "../sink.hpp"
+
+#include <tuple>
 
 
 /** A local macro used to define standard log functions */
@@ -19,8 +22,9 @@
     template <typename Log, typename... Args> inline void NAME(Args &&...args) {                   \
         if UTIL_LOG_LEVEL_CONSTEXPR (Level::enabled(Level::Level::LEVEL)) {                        \
             static UTIL_LOG_LEVEL_CONSTEXPR const LogID id { Log::log_id };                        \
-            Private::send_to_backend(id, Level::Level::LEVEL,                                      \
-                                     Util::to_str(std::forward<Args>(args)...));                   \
+            Private::send_to_backend(                                                              \
+                id, Level::Level::LEVEL,                                                           \
+                Util::ConcreteLazyStr(std::make_tuple(std::forward<Args>(args)...)));              \
         }                                                                                          \
         else {                                                                                     \
             sink(std::forward<Args>(args)...); /* nop */                                           \
