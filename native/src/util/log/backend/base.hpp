@@ -8,6 +8,7 @@
 
 #include "../../../constants.hpp"
 #include "../../../macros.hpp"
+#include "../../lazy_str.hpp"
 #include "../level.hpp"
 
 #include <string>
@@ -22,21 +23,18 @@ namespace Util::Log::Backend {
     struct Base {
       protected:
         /** Protected pure virtual destructor */
-        virtual inline ~Base() noexcept = 0;
+        virtual inline ~Base() noexcept = default;
 
       public:
         // Rule of 5
         DEFINE_IMPLICITS_ALL_NOEXCEPT(Base);
 
-        /** Log the given message, level, to the correct log given by log_id */
-        virtual void log(CCSC id, const Level::Level &lvl, std::string &&msg) const = 0;
+        /** Log the given message */
+        virtual void log(CCSC id, const Level::Level &lvl, Util::LazyStr &&msg) const = 0;
 
         /** Flush the log if applicable */
         virtual void flush() const = 0;
     };
-
-    /** Default virtual destructor */
-    Base::~Base() noexcept = default;
 
 } // namespace Util::Log::Backend
 
