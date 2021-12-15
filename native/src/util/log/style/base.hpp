@@ -28,6 +28,9 @@ namespace Util::Log::Style {
         // Rule of 5
         DEFINE_IMPLICITS_ALL_NOEXCEPT(Base);
 
+        /** Style name */
+        virtual CCSC name() const noexcept = 0;
+
         /** Format the log message */
         virtual std::string str(CCSC log_id, const Level::Level &lvl, std::string &&raw) const = 0;
     };

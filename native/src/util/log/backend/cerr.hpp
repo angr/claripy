@@ -18,6 +18,8 @@ namespace Util::Log::Backend {
      *  When the buffer is flushed after each log call
      */
     struct Cerr final : public OStream {
+        /** Backend name */
+        inline CCSC name() const noexcept final { return "Cerr"; }
         /** Constructor */
         inline Cerr() : OStream(std::make_shared<std::ostream>(std::cerr.rdbuf()), true, false) {}
     };

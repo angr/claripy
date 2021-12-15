@@ -23,6 +23,8 @@ namespace Util::Log::Backend {
      *  This backend itself is multiplexable
      */
     struct Multiplex final : public Multiplexable {
+        /** Backend name */
+        inline CCSC name() const noexcept final { return "Multiplex"; }
 
         /** Log the given message */
         inline void log(CCSC id, const Level::Level &lvl, Util::LazyStr &&lazy) const final {

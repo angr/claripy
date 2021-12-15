@@ -26,6 +26,9 @@ namespace API {
         /** An alias for log level */
         using Lvl = Util::Log::Level::Level;
 
+        /** Backend name */
+        inline CCSC name() const noexcept final { return "PythonLogShim"; }
+
         /** Constructor */
         inline PythonLogShim(ClaricppPyLog plog, ClaricppPyLevel plvl) noexcept
             : py_log { plog }, py_lvl { plvl } {}

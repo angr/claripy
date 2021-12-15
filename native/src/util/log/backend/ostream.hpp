@@ -21,6 +21,8 @@ namespace Util::Log::Backend {
      *  Note, we do logging in a threadsafe context
      */
     struct OStream : public Multiplexable {
+        /** Backend name */
+        inline CCSC name() const noexcept override { return "OStream"; }
 
         /** Constructor: Use default with initializer list
          *  If flush, every time s is written to the contents are flushed; by default flush = true
