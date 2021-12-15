@@ -6,7 +6,9 @@
 #ifndef R_UTIL_LOG_BACKEND_OSTREAM_HPP_
 #define R_UTIL_LOG_BACKEND_OSTREAM_HPP_
 
-#include "base.hpp"
+#include "multiplex.hpp"
+
+#include "../style.hpp"
 
 #include <mutex>
 #include <ostream>
@@ -18,7 +20,7 @@ namespace Util::Log::Backend {
      *  This takes in an ostream and logs to it
      *  Note, we do logging in a threadsafe context
      */
-    struct OStream : public Base {
+    struct OStream : public Multiplexable {
 
         /** Constructor: Use default with initializer list
          *  If flush, every time s is written to the contents are flushed; by default flush = true
@@ -49,10 +51,16 @@ namespace Util::Log::Backend {
         // We don't want to mess with the shared ostream
         SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(OStream, delete)
 
-        /** Log the message */
-        inline void log(CCSC, const Level::Level &, std::string &&msg) const final {
+        /** Log the given message */
+        inline void log(CCSC id, const Level::Level &lvl, Util::LazyStr &&msg) const final {
+            log_str(id, lvl, msg());
+        }
+
+        /** Log the given string message */
+        inline void log_str(CCSC id, const Level::Level &lvl, std::string &&msg) const final {
+            std::string out { Style::get()->str(id, lvl, std::move(msg)) };
             std::lock_guard<decltype(m)> lock(m);
-            *stream << std::move(msg) << "\n";
+            *stream << std::move(out) << '\n';
             if (should_flush) {
                 flush();
             }
