@@ -5,7 +5,9 @@
 #ifndef R_MODE_BIGINT_HPP_
 #define R_MODE_BIGINT_HPP_
 
+extern "C" {
 #include "big_int.h"
+};
 
 namespace Mode {
 

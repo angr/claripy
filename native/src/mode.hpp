@@ -6,6 +6,10 @@
 #ifndef R_MODE_HPP_
 #define R_MODE_HPP_
 
+extern "C" {
+#include "mode.h"
+};
+
 #include "mode/big_int.hpp"
 #include "mode/compare.hpp"
 #include "mode/fp.hpp"
