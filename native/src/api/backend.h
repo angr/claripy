@@ -3,8 +3,8 @@
  * @brief This header defines the C API for Backend
  * \ingroup api
  */
-#ifndef R_BACKEND_H_
-#define R_BACKEND_H_
+#ifndef R_API_BACKEND_H_
+#define R_API_BACKEND_H_
 
 #include "constants.h"
 

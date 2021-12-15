@@ -3,8 +3,8 @@
  * @brief This header defines general aspects of the API
  * \ingroup api
  */
-#ifndef R_API_GENERAL_HPP_
-#define R_API_GENERAL_HPP_
+#ifndef R_API_GENERAL_H_
+#define R_API_GENERAL_H_
 
 #include "constants.h"
 
@@ -26,4 +26,4 @@ BOOL claricpp_has_exception();
  */
 ClaricppException claricpp_get_exception();
 
-#endif // R_GENERAL_HPP_
+#endif
