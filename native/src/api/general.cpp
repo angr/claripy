@@ -3,13 +3,19 @@
  * \ingroup api
  */
 #include "cpp.hpp"
+#include "python_log_shim.hpp"
 
 
 // Initialize to nullptr
 thread_local std::exception_ptr API::exception_ptr { nullptr };
 
 
-void claricpp_init_for_python_usage() {}
+void claricpp_init_for_python_usage(ClaricppPyLog py_log, ClaricppPyLevel py_lvl,
+                                    ClaricppPyFlush py_flush) {
+    // Pass all log messages to the python logging backend
+    Util::Log::Level::set(Util::Log::Level::Level::Verbose);
+    Util::Log::Backend::set<API::PythonLogShim<true>>(py_log, py_lvl, py_flush);
+}
 
 BOOL claricpp_has_exception() {
     try {
