@@ -22,18 +22,16 @@ static_assert(ClaricppLogLvlCritical == 50, "Does not match python Debug value")
 namespace API {
 
     /** The python log backend; forwards logs to python */
-    template <bool ShouldFlush>
     struct PythonLogShim final : public Util::Log::Backend::Multiplexable {
         /** An alias for log level */
         using Lvl = Util::Log::Level::Level;
 
         /** Constructor */
-        inline PythonLogShim(ClaricppPyLog plog, ClaricppPyLevel plvl,
-                             ClaricppPyFlush pflush) noexcept
-            : py_log { plog }, py_lvl { plvl }, py_flush { pflush } {}
+        inline PythonLogShim(ClaricppPyLog plog, ClaricppPyLevel plvl) noexcept
+            : py_log { plog }, py_lvl { plvl } {}
 
         /** Destructor */
-        inline ~PythonLogShim() noexcept { flush(); }
+        inline ~PythonLogShim() noexcept = default;
 
         /** Log the given message */
         inline void log(CCSC id, const Lvl &lvl, Util::LazyStr &&msg) const final {
@@ -45,8 +43,8 @@ namespace API {
             log_body(id, lvl, std::move(msg));
         }
 
-        /** Flush the log */
-        inline void flush() const final { py_flush(); }
+        /** Flush is a no-op here @todo: should it be? */
+        inline void flush() const final {}
 
       private:
         /** Helper log function */
@@ -54,15 +52,12 @@ namespace API {
             UTIL_CCBOOL is_lazy { std::is_same_v<T, Util::LazyStr> };
             static_assert(std::is_same_v<T, std::string> || is_lazy, "Unexpected choice of T");
             const auto c_lvl { API::mode(lvl) };
-            if (c_lvl >= py_lvl()) { // Technically a data race here
+            if (c_lvl >= py_lvl(id)) { // Technically a data race here
                 if constexpr (is_lazy) {
                     py_log(id, c_lvl, msg().c_str()); // Lazy
                 }
                 else {
                     py_log(id, c_lvl, msg.c_str()); // std::string
-                }
-                if constexpr (ShouldFlush) {
-                    flush();
                 }
             }
         }
@@ -71,8 +66,6 @@ namespace API {
         ClaricppPyLog py_log;
         /** The python level getter function */
         ClaricppPyLevel py_lvl;
-        /** The python flush function */
-        ClaricppPyFlush py_flush;
     };
 
 } // namespace API

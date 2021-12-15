@@ -13,10 +13,7 @@
 typedef void (*const ClaricppPyLog)(PyStr, const ClaricppLogLvl, PyStr);
 
 /** The level getter callback type */
-typedef ClaricppLogLvl (*const ClaricppPyLevel)();
-
-/** The flush callback type */
-typedef void (*const ClaricppPyFlush)();
+typedef ClaricppLogLvl (*const ClaricppPyLevel)(PyStr);
 
 
 #endif

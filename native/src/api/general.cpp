@@ -9,12 +9,16 @@
 // Initialize to nullptr
 thread_local std::exception_ptr API::exception_ptr { nullptr };
 
+// @todo: test cases?
 
-void claricpp_init_for_python_usage(ClaricppPyLog py_log, ClaricppPyLevel py_lvl,
-                                    ClaricppPyFlush py_flush) {
-    // Pass all log messages to the python logging backend
+void claricpp_init_for_python_usage(ClaricppPyLog py_log, ClaricppPyLevel py_lvl) {
+    Util::Log::info("Installing Python logging backend");
+    Util::Log::Backend::set<API::PythonLogShim>(py_log, py_lvl);
+
+    Util::Log::info("Configuring Claricpp to send all logs to allow Python to handle log levels.");
     Util::Log::Level::set(Util::Log::Level::Level::Verbose);
-    Util::Log::Backend::set<API::PythonLogShim<true>>(py_log, py_lvl, py_flush);
+
+    Util::Log::info("Claricpp successfully configured for python usage");
 }
 
 BOOL claricpp_has_exception() {

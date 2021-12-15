@@ -6,6 +6,13 @@ import argparse
 import sys
 import os
 
+
+callbacks = '''
+extern "Python" void claripy_log(PyStr, const ClaricppLogLvl, PyStr);
+extern "Python" ClaricppLogLvl claripy_level(PyStr);
+'''
+
+
 # Helper functions
 
 def one_line_delims(inp, pairs):
@@ -93,7 +100,9 @@ def get_cdefs(build_dir):
     # Cleanup source
     source = one_line_delims(source, ['{}', '()'])
     source = source.replace(';;', ';').replace('  ', ' ')
-    cdefs = condense(source, ';}')
+    cdefs = condense(source, ';}').strip()
+    # Add callbacks
+    cdefs = cdefs + '\n' + callbacks.strip()
     return cdefs
 
 def build_ffi(lib_name, build_dir):
