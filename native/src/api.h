@@ -12,10 +12,8 @@
 
 #include "api/annotation.h"
 #include "api/backend.h"
-#include "api/callbacks.h"
 #include "api/create.h"
 #include "api/expr.h"
-#include "api/free.h"
 #include "api/general.h"
 
 #endif

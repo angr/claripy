@@ -1,5 +1,5 @@
 # Add tests
-simple_test(api)
+simple_test(general)
 simple_test(annotation)
 simple_test(expr)
 simple_test(create)

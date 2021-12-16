@@ -9,27 +9,9 @@
 // Initialize to nullptr
 thread_local std::exception_ptr API::exception_ptr { nullptr };
 
-// @todo: test cases?
-
-void claricpp_init_for_python_usage(ClaricppPyLog py_log, ClaricppPyLevel py_lvl) {
-    Util::Log::info("Installing Python logging backend");
-    Util::Log::Backend::set<API::PythonLogShim>(py_log, py_lvl);
-
-    Util::Log::info("Configuring Claricpp to send all logs to allow Python to handle log levels.");
-    Util::Log::Level::set(Util::Log::Level::Level::Verbose);
-
-    Util::Log::info("Claricpp successfully configured for python usage");
-}
-
-BOOL claricpp_has_exception() {
-    try {
-        return API::bool_(bool { API::exception_ptr });
-    }
-    catch (...) {
-        Util::terminate("has_exception failed");
-    }
-}
-
+/********************************************************************/
+/*                             General                              */
+/********************************************************************/
 
 /** A helper function that tries to dynamically allocate a copy of prime */
 static inline char *try_gen_msg(CCSC prime) noexcept {
@@ -85,23 +67,103 @@ static inline ClaricppException get_exception() noexcept {
     }
 }
 
+// @todo: test cases?
+extern "C" {
+    void claricpp_init_for_python_usage(ClaricppPyLog py_log, ClaricppPyLevel py_lvl) {
+        Util::Log::info("Installing Python logging backend");
+        Util::Log::Backend::set<API::PythonLogShim>(py_log, py_lvl);
 
-ClaricppException claricpp_get_exception() {
-    // Exempt from need of API_FUNC_START and such
-    static_assert(noexcept(API::exception_ptr = nullptr), "Should be noexcept");
-    try {
-        const auto ret { get_exception() };
-        API::exception_ptr = nullptr;
-        return ret;
+        Util::Log::info(
+            "Configuring Claricpp to send all logs to allow Python to handle log levels.");
+        Util::Log::Level::set(Util::Log::Level::Level::Verbose);
+
+        Util::Log::info("Claricpp successfully configured for python usage");
     }
-    catch (std::bad_alloc &) {
-        return { .type = ClaricppExceptionEnumFailAlloc,
-                 .msg = try_gen_msg("Got std::bad_alloc within get_exception"),
-                 .trace = nullptr };
+
+    BOOL claricpp_has_exception() {
+        try {
+            return API::bool_(bool { API::exception_ptr });
+        }
+        catch (...) {
+            Util::terminate("has_exception failed");
+        }
     }
-    catch (...) {
-        return { .type = ClaricppExceptionEnumFailCritical,
-                 .msg = try_gen_msg("get_exception failed for unknown reason"),
-                 .trace = nullptr };
+
+    ClaricppException claricpp_get_exception() {
+        // Exempt from need of API_FUNC_START and such
+        static_assert(noexcept(API::exception_ptr = nullptr), "Should be noexcept");
+        try {
+            const auto ret { get_exception() };
+            API::exception_ptr = nullptr;
+            return ret;
+        }
+        catch (std::bad_alloc &) {
+            return { .type = ClaricppExceptionEnumFailAlloc,
+                     .msg = try_gen_msg("Got std::bad_alloc within get_exception"),
+                     .trace = nullptr };
+        }
+        catch (...) {
+            return { .type = ClaricppExceptionEnumFailCritical,
+                     .msg = try_gen_msg("get_exception failed for unknown reason"),
+                     .trace = nullptr };
+        }
     }
 }
+
+/********************************************************************/
+/*                          Free Functions                          */
+/********************************************************************/
+
+/** A local macro used for consistency */
+#define DEFINE_FREE_FUNC(TYPE, NAME)                                                               \
+    void claricpp_free_##NAME(TYPE *const c_object) {                                              \
+        API_FUNC_START                                                                             \
+        UTIL_ASSERT_NOT_NULL_DEBUG(c_object);                                                      \
+        API::free(*c_object);                                                                      \
+        API_FUNC_END_NO_RETURN                                                                     \
+    }
+
+/** A local macro used for consistency */
+#define DEFINE_ARR_FREE_FUNC(TYPE, NAME)                                                           \
+    void claricpp_free_array_##NAME(ARRAY_OUT(TYPE) *const c_array) {                              \
+        API_FUNC_START                                                                             \
+        UTIL_ASSERT_NOT_NULL_DEBUG(c_array);                                                       \
+        API::free<true>(*c_array);                                                                 \
+        API_FUNC_END_NO_RETURN                                                                     \
+    }
+
+/** A local macro used for consistency */
+#define DEFINE_DOUBLE_ARR_FREE_FUNC(TYPE, NAME)                                                    \
+    void claricpp_free_double_array_##NAME(DOUBLE_ARRAY_OUT(TYPE) *const c_array) {                \
+        API_FUNC_START                                                                             \
+        UTIL_ASSERT_NOT_NULL_DEBUG(c_array);                                                       \
+        API::free<2>(*c_array);                                                                    \
+        API_FUNC_END_NO_RETURN                                                                     \
+    }
+
+extern "C" {
+    // Unions
+    DEFINE_FREE_FUNC(ClaricppPrim, prim);
+    DEFINE_FREE_FUNC(ClaricppArg, arg);
+
+    // Structs
+    DEFINE_FREE_FUNC(ClaricppAnnotation, annotation);
+    DEFINE_FREE_FUNC(ClaricppSPAV, spav);
+    DEFINE_FREE_FUNC(ClaricppExpr, expr);
+    DEFINE_FREE_FUNC(ClaricppBackend, backend);
+    DEFINE_FREE_FUNC(ClaricppSolver, solver);
+
+    // Arrays
+    DEFINE_ARR_FREE_FUNC(ClaricppAnnotation, annotation);
+    DEFINE_ARR_FREE_FUNC(ClaricppExpr, expr);
+    DEFINE_ARR_FREE_FUNC(ClaricppPrim, prim);
+    DEFINE_ARR_FREE_FUNC(ClaricppArg, arg);
+
+    // Doubles Arrays
+    DEFINE_DOUBLE_ARR_FREE_FUNC(ClaricppPrim, prim);
+}
+
+// Cleanup
+#undef DEFINE_FREE_FUNC
+#undef DEFINE_ARR_FREE_FUNC
+#undef DEFINE_DOUBLE_ARR_FREE_FUNC
