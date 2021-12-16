@@ -1,7 +1,7 @@
 # cppcheck
 if(CPP_CHECK)
 	message(WARNING "cppcheck's internal AST can break because of control block initalizers."
-			"Until this bug is fixed cppcheck may not pass.")
+			" Until this bug is fixed cppcheck may not pass.")
 	find_program(CPP_CHECK_PATH "cpp-check" REQUIRED)
 	set(CPPCHECK_CMD "${CPP_CHECK_PATH}"
 		"--enable=all"

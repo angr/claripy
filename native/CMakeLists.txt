@@ -359,7 +359,7 @@ endif()
 if(NOT CMAKE_CXX_COMPILER_ID MATCHES "(C|c?)lang")
 	if(CLANG_TIDY)
 		message(WARNING "Clang (from clang-tidy) cannot handle gcc specific warning options."
-						"Disabling them to allow clang-tidy to function.")
+						" Disabling them to allow clang-tidy to function.")
 	else()
 		add_compile_options(
 			"-Wsuggest-override"
