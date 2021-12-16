@@ -161,7 +161,7 @@ void general() {
     UNITTEST_ASSERT(!claricpp_has_exception()); // Getting should clear it
 
     // Verify exception
-    UNITTEST_ASSERT(exception.type == ClaricppExceptionEnumPython);
+    UNITTEST_ASSERT(exception.type == ClaricppExceptionEnumExprType);
     UNITTEST_ASSERT(std::strstr(exception.msg, "invalid type") != nullptr);
     UNITTEST_ASSERT(std::strstr(exception.trace, "general") != nullptr);
 }

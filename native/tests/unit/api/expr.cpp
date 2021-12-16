@@ -51,7 +51,7 @@ void expr() {
     UNITTEST_ASSERT(!claricpp_expr_symbolic(API::copy_to_c(Create::literal(true)))); // NOLINT
 
     // annotations
-    UNITTEST_ASSERT(claricpp_expr_annotations(e_c).ptr == nullptr);
+    UNITTEST_ASSERT(claricpp_expr_annotations(e_c).ptr == nullptr); // NOLINT (leak ok)
     UNITTEST_ASSERT(API::to_cpp_ref(claricpp_expr_annotations(ml_c)).hash == ans()->hash);
 
     // args of zero extend

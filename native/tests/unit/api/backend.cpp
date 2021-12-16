@@ -54,7 +54,7 @@ void backend() {
     UNITTEST_ASSERT(not claricpp_backend_handles(z3_manual, API::copy_to_c(vs)));
 
     // Test simplify
-    Util::Log::debug("  - simplify");
+    Util::Log::debug("  - simplify"); // NOLINT (false positive, not a leak)
     UNITTEST_ASSERT(API::to_cpp(claricpp_backend_simplify(z3_manual, sum_c))->hash == two->hash);
 
     // Test BigInt mode functions

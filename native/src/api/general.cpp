@@ -19,9 +19,11 @@ thread_local std::exception_ptr API::exception_ptr { nullptr };
 static inline char *try_gen_msg(CCSC prime) noexcept {
     char *msg { nullptr }; // NOLINT (false positive)
     try {
-        msg = new char[std::strlen(prime) + 1];
+        const auto len { std::strlen(prime) };
+        msg = new char[len + 1]; // NOLINT (non-owning memory ok, this is for C)
         if (msg != nullptr) {
-            std::strcpy(msg, prime);
+            std::memcpy(msg, prime, len);
+            msg[len] = 0; // NOLINT (null termination)
         }
     }
     catch (...) {
