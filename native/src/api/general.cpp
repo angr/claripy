@@ -17,7 +17,7 @@ thread_local std::exception_ptr API::exception_ptr { nullptr };
 
 /** A helper function that tries to dynamically allocate a copy of prime */
 static inline char *try_gen_msg(CCSC prime) noexcept {
-    char *msg { nullptr };
+    char *msg { nullptr }; // NOLINT (false positive)
     try {
         msg = new char[std::strlen(prime) + 1];
         if (msg != nullptr) {
