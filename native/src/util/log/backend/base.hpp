@@ -30,7 +30,7 @@ namespace Util::Log::Backend {
         DEFINE_IMPLICITS_ALL_NOEXCEPT(Base);
 
         /** Backend name */
-        virtual CCSC name() const noexcept = 0;
+        virtual const char *name() const noexcept = 0;
 
         /** Log the given message */
         virtual void log(CCSC id, const Level::Level &lvl, Util::LazyStr &&msg) const = 0;

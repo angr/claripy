@@ -19,7 +19,7 @@ namespace Util::Log::Backend {
      */
     struct Clog final : public OStream {
         /** Backend name */
-        inline CCSC name() const noexcept final { return "Clog"; }
+        inline const char *name() const noexcept final { return "Clog"; }
         /** Constructor */
         inline Clog() : OStream(std::make_shared<std::ostream>(std::clog.rdbuf()), false, false) {}
     };

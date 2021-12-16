@@ -19,7 +19,7 @@ namespace Util::Log::Backend {
      */
     struct Cerr final : public OStream {
         /** Backend name */
-        inline CCSC name() const noexcept final { return "Cerr"; }
+        inline const char *name() const noexcept final { return "Cerr"; }
         /** Constructor */
         inline Cerr() : OStream(std::make_shared<std::ostream>(std::cerr.rdbuf()), true, false) {}
     };

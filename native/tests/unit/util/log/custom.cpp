@@ -32,6 +32,8 @@ void test(std::shared_ptr<std::ostringstream> &s, Lvl) {
 
 /** Create a style class */
 struct CustomSty final : L::Style::Base {
+    /** Name */
+    inline const char *name() const noexcept final { return "CustomSty"; }
     /** The style function */
     std::string str(CCSC, const Lvl &, std::string &&) const final { return MSG; }
 };
