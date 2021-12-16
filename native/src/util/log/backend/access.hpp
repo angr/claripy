@@ -21,13 +21,21 @@ namespace Util::Log::Backend {
      *  Warning: Because the logging system is so critical, ensure that all other
      *  copies of ptr do not edit the internals of *ptr in dangerous ways
      *  ptr cannot be nullptr
+     *  If silent, internal logging will be limited
      */
-    void unsafe_set(std::shared_ptr<const Base> &&ptr);
+    void unsafe_set(std::shared_ptr<const Base> &&ptr, const bool silent);
+
+    /** Set the Log Backend to a new T constructed with arguments: args
+     *  If Silent, internal logging will be limited
+     */
+    template <typename T, bool Silent, typename... Args> inline void set(Args &&...args) {
+        static_assert(Type::Is::ancestor<Base, T>, "T must subclass log backend Base");
+        unsafe_set(make_derived_shared<const Base, T>(std::forward<Args>(args)...), Silent);
+    }
 
     /** Set the Log Backend to a new T constructed with arguments: args	*/
     template <typename T, typename... Args> inline void set(Args &&...args) {
-        static_assert(Type::Is::ancestor<Base, T>, "T must subclass log backend Base");
-        unsafe_set(std::move(make_derived_shared<const Base, T>(std::forward<Args>(args)...)));
+        set<T, false, Args...>(std::forward<Args>(args)...);
     }
 
     /** Set the Log Backend to a new T copy constructed from c */

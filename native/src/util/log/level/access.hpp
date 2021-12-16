@@ -23,8 +23,10 @@ namespace Util::Log::Level {
 
 #else
 
-    /** Set the log level */
-    void set(Level l) noexcept;
+    /** Set the log level
+     *  If silent, internal logging will be limited
+     */
+    void set(const Level l, const bool silent = false) noexcept;
 
     /** Return the log level */
     Level get() noexcept;

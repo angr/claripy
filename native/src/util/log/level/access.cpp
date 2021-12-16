@@ -15,10 +15,14 @@ namespace Level = Util::Log::Level;
 
 static std::atomic<Level::Level> lvl { Level::default_ };
 
-void Level::set(Level l) noexcept {
-    info("Log level updating from: ", get());
+void Level::set(const Level l, const bool silent) noexcept {
+    if (!silent) {
+        info("Log level updating from: ", get());
+    }
     lvl.store(l);
-    info("Log level updated to: ", l);
+    if (!silent) {
+        info("Log level updated to: ", l);
+    }
 }
 
 Level::Level Level::get() noexcept {

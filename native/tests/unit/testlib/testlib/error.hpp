@@ -39,13 +39,13 @@ namespace UnitTest::TestLib {
 
     /** A function used to fail a unit test; the thrown exception should *not* be caught */
     [[noreturn]] inline void ut_fail(std::string &&msg) {
-        if (original_bk != nullptr) {
+        if (original_bk != nullptr && original_bk != Util::Log::Backend::get()) {
             auto copy { original_bk }; // Just in case someone is dumb and catches the error
-            Util::Log::Backend::unsafe_set(std::move(original_bk));
+            Util::Log::Backend::unsafe_set(std::move(original_bk), true);
         }
-        if (original_sty != nullptr) {
+        if (original_sty != nullptr && original_sty != Util::Log::Style::get()) {
             auto copy { original_sty }; // Just in case someone is dumb and catches the error
-            Util::Log::Style::unsafe_set(std::move(original_sty));
+            Util::Log::Style::unsafe_set(std::move(original_sty), true);
         }
         // Do not catch this
         throw UnitTest::TestLib::Error(std::move(msg));
