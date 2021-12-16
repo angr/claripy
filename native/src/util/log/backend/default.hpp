@@ -6,7 +6,7 @@
 #ifndef R_UTIL_LOG_BACKEND_DEFAULT_HPP_
 #define R_UTIL_LOG_BACKEND_DEFAULT_HPP_
 
-#include "clog.hpp"
+#include "cerr.hpp"
 
 
 namespace Util::Log::Backend {
@@ -14,7 +14,7 @@ namespace Util::Log::Backend {
     /** Define the default Log backend
      *  This must be default constructable
      */
-    using Default = Clog;
+    using Default = Cerr;
 
 } // namespace Util::Log::Backend
 
