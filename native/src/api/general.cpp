@@ -23,7 +23,7 @@ void claricpp_init_for_python_usage(ClaricppPyLog py_log, ClaricppPyLevel py_lvl
 
 BOOL claricpp_has_exception() {
     try {
-        return API::bool_(API::exception_ptr);
+        return API::bool_(bool { API::exception_ptr });
     }
     catch (...) {
         Util::terminate("has_exception failed");
