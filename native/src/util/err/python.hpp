@@ -24,9 +24,6 @@ namespace Util::Err::Python {
      */
     UTIL_ERR_DEFINE_NONFINAL_EXCEPTION(Claripy, Base);
 
-    /** Analogous to python's ValueError exception */
-    UTIL_ERR_DEFINE_FINAL_EXCEPTION(ValueError, Base);
-
 } // namespace Util::Err::Python
 
 #endif

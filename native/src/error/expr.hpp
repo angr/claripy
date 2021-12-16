@@ -15,25 +15,16 @@ namespace Error::Expr {
     /** Claripy Expr exception */
     using Claripy = Util::Err::Python::Claripy;
 
-    // Intermediate classes
-
-    /** Expr Balance exception */
-    //    UTIL_ERR_DEFINE_NONFINAL_EXCEPTION(Balancer, Claripy);
     /** Expr Operation exception */
-    UTIL_ERR_DEFINE_NONFINAL_EXCEPTION(Operation, Claripy);
-
-    // Final classes
-
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(Operation, Claripy);
     /** Expr usage exception */
     UTIL_ERR_DEFINE_NONFINAL_EXCEPTION(Usage, Claripy);
-    /** @todo document */
+    /** Expr type exception */
     UTIL_ERR_DEFINE_FINAL_EXCEPTION(Type, Claripy);
-    /** @todo document */
+    /** Expr value exception */
     UTIL_ERR_DEFINE_FINAL_EXCEPTION(Value, Claripy);
-    /** @todo document */
+    /** Expr size exception */
     UTIL_ERR_DEFINE_FINAL_EXCEPTION(Size, Claripy);
-    /** @todo document */
-    UTIL_ERR_DEFINE_FINAL_EXCEPTION(ZeroDivision, Operation);
 
 } // namespace Error::Expr
 
