@@ -9,9 +9,11 @@
 // Initialize to nullptr
 thread_local std::exception_ptr API::exception_ptr { nullptr };
 
+
 /********************************************************************/
 /*                             General                              */
 /********************************************************************/
+
 
 /** A helper function that tries to dynamically allocate a copy of prime */
 static inline char *try_gen_msg(CCSC prime) noexcept {
@@ -25,6 +27,41 @@ static inline char *try_gen_msg(CCSC prime) noexcept {
     catch (...) {
     }
     return msg;
+}
+
+/** A helper macro */
+#define IS_EXCEPT(TYPE, ENUM_VALUE)                                                                \
+    static_assert(Util::Type::Is::ancestor<Util::Err::Claricpp, TYPE>,                             \
+                  "Must be a Claricpp error");                                                     \
+    if (const auto ptr { dynamic_cast<CTSC<TYPE>>(&e) }; ptr != nullptr) {                         \
+        return { .type = (ENUM_VALUE), .msg = msg, .trace = trace };                               \
+    }
+
+/** A helper function to get a python exception */
+static inline ClaricppException get_py_exception(const Util::Err::Python::Base &e, CCSC msg,
+                                                 CCSC trace) noexcept {
+
+    // Error::Expr
+    IS_EXCEPT(Error::Expr::Type, ClaricppExceptionEnumExprType);
+    IS_EXCEPT(Error::Expr::Usage, ClaricppExceptionEnumExprUsage);
+    IS_EXCEPT(Error::Expr::Value, ClaricppExceptionEnumExprValue);
+    IS_EXCEPT(Error::Expr::Size, ClaricppExceptionEnumExprSize);
+    IS_EXCEPT(Error::Expr::Operation, ClaricppExceptionEnumExprOperation);
+
+    // Error::Backend
+    IS_EXCEPT(Error::Backend::Abstraction, ClaricppExceptionEnumBackendAbstraction);
+    IS_EXCEPT(Error::Backend::Unsupported, ClaricppExceptionEnumBackendUnsupported);
+
+    // Fallbacks
+    IS_EXCEPT(Util::Err::Python::Claripy, ClaricppExceptionEnumClaripy);
+    return { .type = ClaricppExceptionEnumPython, .msg = msg, .trace = trace };
+}
+
+/** A helper function to get a C++ exception */
+static inline ClaricppException get_cpp_exception(const Util::Err::Unexpected &, CCSC msg,
+                                                  CCSC trace) noexcept {
+    // Fallback
+    return { .type = ClaricppExceptionEnumUnexpected, .msg = msg, .trace = trace };
 }
 
 /** A helper function that tries to get the exception the last API call threw */
@@ -49,11 +86,11 @@ static inline ClaricppException get_exception() noexcept {
             using CppE = CTSC<Util::Err::Unexpected>;
             // Python analog
             if (PyE py { dynamic_cast<PyE>(ce) }; LIKELY(py != nullptr)) {
-                return { .type = ClaricppExceptionEnumPython, .msg = msg, .trace = trace };
+                return get_py_exception(*py, msg, trace);
             }
             // Unexpected
             else if (CppE cpp { dynamic_cast<CppE>(ce) }; LIKELY(cpp != nullptr)) {
-                return { .type = ClaricppExceptionEnumUnexpected, .msg = msg, .trace = trace };
+                return get_cpp_exception(*cpp, msg, trace);
             }
             // This should never happen
             else {
@@ -110,9 +147,11 @@ extern "C" {
     }
 }
 
+
 /********************************************************************/
 /*                          Free Functions                          */
 /********************************************************************/
+
 
 /** A local macro used for consistency */
 #define DEFINE_FREE_FUNC(TYPE, NAME)                                                               \
