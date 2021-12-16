@@ -34,7 +34,7 @@ void backtrace() {
 
     // Set logging to be done to a string stream
     auto s { std::make_shared<std::ostringstream>() };
-    B::set<B::OStream>(s, true);
+    B::silent_set<B::OStream>(s, true);
 
     // Generate a backtrace
     const auto backtrace { []() {
@@ -75,7 +75,7 @@ void backtrace() {
      */
 
     // Log the backtrace
-    B::unsafe_set(std::move(old));
+    B::silent_less_safe_set(std::move(old));
     Util::Log::info("Logging caught backtrace");
     Util::Log::debug(WHOAMI, backtrace);
 

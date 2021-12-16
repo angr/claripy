@@ -18,15 +18,16 @@ static ThreadSafe::Access<const Bk> access {
     make_derived_shared<const Bk, const Backend::Default>()
 };
 
-void Backend::unsafe_set(std::shared_ptr<const Base> &&ptr, const bool silent) {
-    UTIL_ASSERT_NOT_NULL_DEBUG(ptr);
-    if (!silent) {
-        info("Replacing log backend \"", get()->name(), "\" with log backend \"", ptr->name(), '"');
-    }
+
+void Backend::silent_less_safe_set(std::shared_ptr<const Base> &&ptr) {
     access.set_shared_ptr_move(std::move(ptr));
-    if (!silent) {
-        info("Log backend successfully installed!");
-    }
+}
+
+void Backend::less_safe_set(std::shared_ptr<const Base> &&ptr) {
+    UTIL_ASSERT_NOT_NULL_DEBUG(ptr);
+    info("Replacing log backend \"", get()->name(), "\" with log backend \"", ptr->name(), '"');
+    access.set_shared_ptr_move(std::move(ptr));
+    info("Log backend successfully installed!");
 }
 
 std::shared_ptr<const Backend::Base> Backend::get() {

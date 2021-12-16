@@ -41,11 +41,11 @@ namespace UnitTest::TestLib {
     [[noreturn]] inline void ut_fail(std::string &&msg) {
         if (original_bk != nullptr && original_bk != Util::Log::Backend::get()) {
             auto copy { original_bk }; // Just in case someone is dumb and catches the error
-            Util::Log::Backend::unsafe_set(std::move(original_bk), true);
+            Util::Log::Backend::silent_less_safe_set(std::move(original_bk));
         }
         if (original_sty != nullptr && original_sty != Util::Log::Style::get()) {
             auto copy { original_sty }; // Just in case someone is dumb and catches the error
-            Util::Log::Style::unsafe_set(std::move(original_sty), true);
+            Util::Log::Style::silent_less_safe_set(std::move(original_sty));
         }
         // Do not catch this
         throw UnitTest::TestLib::Error(std::move(msg));

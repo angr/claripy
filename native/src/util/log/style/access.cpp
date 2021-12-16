@@ -19,15 +19,16 @@ static ThreadSafe::Access<const Sty> access {
 };
 
 
-void Style::unsafe_set(std::shared_ptr<const Base> &&ptr, const bool silent) {
+void Style::silent_less_safe_set(std::shared_ptr<const Base> &&ptr) {
     UTIL_ASSERT_NOT_NULL_DEBUG(ptr);
-    if (!silent) {
-        info("Replacing log style \"", get()->name(), "\" with log style \"", ptr->name(), '"');
-    }
     access.set_shared_ptr_move(std::move(ptr));
-    if (!silent) {
-        info("Log style successfully installed!");
-    }
+}
+
+void Style::less_safe_set(std::shared_ptr<const Base> &&ptr) {
+    UTIL_ASSERT_NOT_NULL_DEBUG(ptr);
+    info("Replacing log style \"", get()->name(), "\" with log style \"", ptr->name(), '"');
+    access.set_shared_ptr_move(std::move(ptr));
+    info("Log style successfully installed!");
 }
 
 std::shared_ptr<const Style::Base> Style::get() {

@@ -11,21 +11,22 @@
     #include "../log.hpp"
 
 
-namespace Level = Util::Log::Level;
+namespace Lev = Util::Log::Level;
 
-static std::atomic<Level::Level> lvl { Level::default_ };
+static std::atomic<Lev::Level> lvl { Lev::default_ };
 
-void Level::set(const Level l, const bool silent) noexcept {
-    if (!silent) {
-        info("Log level updating from: ", get());
-    }
+
+void Lev::silent_set(const Level l) noexcept {
     lvl.store(l);
-    if (!silent) {
-        info("Log level updated to: ", l);
-    }
 }
 
-Level::Level Level::get() noexcept {
+void Lev::set(const Level l) noexcept {
+    info("Log level updating from: ", get());
+    silent_set(l);
+    info("Log level updated to: ", l);
+}
+
+Lev::Level Lev::get() noexcept {
     return lvl.load();
 }
 
