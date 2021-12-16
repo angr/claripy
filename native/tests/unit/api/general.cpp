@@ -8,6 +8,10 @@
 /** Verify the API's basic functionality works */
 void general() {
 
+    /********************************************************************/
+    /*                            Non-Arrays                            */
+    /********************************************************************/
+
     // C++
     const auto lit { Create::literal(1_ui) };
     auto old_uc { lit.use_count() };
@@ -41,23 +45,9 @@ void general() {
     UNITTEST_ASSERT(copied_c.ptr == nullptr);
     UNITTEST_ASSERT(lit.use_count() == old_uc);
 
-    // Create Array
-    const std::vector<Expr::BasePtr> vec { lit, lit };
-    old_uc = lit.use_count();
-    auto arr_c { API::copy_to_arr(vec) }; // NOLINT
-
-    // Test array
-    UNITTEST_ASSERT(lit.use_count() == old_uc + static_cast<decltype(old_uc)>(vec.size()));
-    UNITTEST_ASSERT(arr_c.len == vec.size());
-    for (SIZE_T i { 0 }; i < vec.size(); ++i) {
-        UNITTEST_ASSERT(API::to_cpp(arr_c.arr[i]) == vec[i]); // NOLINT (false positive)
-    }
-
-    // Free array
-    claricpp_free_array_expr(&arr_c);
-    UNITTEST_ASSERT(arr_c.len == 0);
-    UNITTEST_ASSERT(arr_c.arr == nullptr);
-    UNITTEST_ASSERT(lit.use_count() == old_uc);
+    /********************************************************************/
+    /*                              Unions                              */
+    /********************************************************************/
 
     // Create, translate, and free Prim string
     const Op::PrimVar prim { std::string("Hello") };
@@ -81,22 +71,50 @@ void general() {
     claricpp_free_arg(&arg_c);
     UNITTEST_ASSERT(lit.use_count() + 1 == old_uc);
 
-    // Free array of Args of exprs
+    /********************************************************************/
+    /*                              Arrays                              */
+    /********************************************************************/
+
+    // Create array of Exprs
+    const std::vector<Expr::BasePtr> vec { lit, lit };
+    old_uc = lit.use_count();
+    auto arr_c { API::copy_to_arr(vec) }; // NOLINT
+
+    // Test array of Exprs
+    UNITTEST_ASSERT(lit.use_count() == old_uc + static_cast<decltype(old_uc)>(vec.size()));
+    UNITTEST_ASSERT(arr_c.len == vec.size());
+    for (SIZE_T i { 0 }; i < vec.size(); ++i) {
+        UNITTEST_ASSERT(API::to_cpp(arr_c.arr[i]) == vec[i]); // NOLINT (false positive)
+    }
+
+    // Free array of Exprs
+    claricpp_free_array_expr(&arr_c);
+    UNITTEST_ASSERT(arr_c.len == 0);
+    UNITTEST_ASSERT(arr_c.arr == nullptr);
+    UNITTEST_ASSERT(lit.use_count() == old_uc);
+
+    // Create array of Args containing Exprs
     const std::vector<Op::ArgVar> arg_vec { lit, lit };
     old_uc = lit.use_count();
     auto arg_vec_c { API::copy_to_arr(arg_vec) };
+
+    // Test array of Args containing Exprs
     UNITTEST_ASSERT(lit.use_count() == old_uc + 2);
     UNITTEST_ASSERT(arg_vec_c.len == 2);
     for (UInt i { 0 }; i < arg_vec_c.len; ++i) {
         UNITTEST_ASSERT(arg_vec_c.arr[i].type == ClaricppTypeEnumExpr);  // NOLINT
         UNITTEST_ASSERT(API::to_cpp(arg_vec_c.arr[i].data.expr) == lit); // NOLINT
     }
-    old_uc = lit.use_count();
+
+    // Free array of Args containing Exprs
     claricpp_free_array_arg(&arg_vec_c);
-    UNITTEST_ASSERT(lit.use_count() + 2 == old_uc);
+    UNITTEST_ASSERT(lit.use_count() == old_uc);
     UNITTEST_ASSERT(arg_vec_c.arr == nullptr);
     UNITTEST_ASSERT(arg_vec_c.len == 0);
 
+    /********************************************************************/
+    /*                          Double Arrays                           */
+    /********************************************************************/
 
     // Create a double array
     const std::vector<Op::PrimVar> prim_vec { prim, prim };
@@ -121,6 +139,10 @@ void general() {
     claricpp_free_double_array_prim(&double_prim_vec_c);
     UNITTEST_ASSERT(double_prim_vec_c.arr == nullptr);
     UNITTEST_ASSERT(double_prim_vec_c.len == 0);
+
+    /********************************************************************/
+    /*                            Exceptions                            */
+    /********************************************************************/
 }
 
 // Define the test
