@@ -10,7 +10,7 @@ namespace US = Util::StackLimit;
 
 
 // Not all systems support this
-#if !__has_include(<sys/resource.h>)
+#ifndef UTIL_HASSYSRESOURCE
 
 
 /** A helper function which reports that StackLimit operations are not supported on this system */

@@ -14,6 +14,7 @@ namespace Util {
      *  Note: avg rounds down
      */
     template <typename T> constexpr inline T avg(T a, T b) {
+        // cppcheck-suppress shiftNegativeLHS
         static_assert(-2 >> 1 == -1, "Avg assumes << is arithmetic, for this system it is not.");
         return (a & b) + ((a ^ b) >> 1);
     }

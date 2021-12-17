@@ -11,11 +11,20 @@
 #include "macros.hpp"
 
 
+// Determine if <sys/resource.h> exists
+#if defined(__has_include)
+    #if __has_include(<sys/resource.h>)
+        /** Note that we do have <sys/resource.h> */
+        #define UTIL_HASSYSRESOURCE
+    #endif
+#endif
+
+
 namespace Util::StackLimit {
 
     /** true iff stack limit operations are supported */
     UTIL_ICCBOOL supported {
-#if __has_include(<sys/resource.h>)
+#ifdef UTIL_HASSYSRESOURCE
         true
 #else
         false

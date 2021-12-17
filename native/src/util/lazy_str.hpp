@@ -42,7 +42,8 @@ namespace Util {
         using Tuple = std::tuple<Args...>;
 
         /** Constructor */
-        inline ConcreteLazyStr(Tuple &&tup) noexcept : LazyStr(), data { std::move(tup) } {}
+        explicit inline ConcreteLazyStr(Tuple &&tup) noexcept
+            : LazyStr(), data { std::move(tup) } {}
 
         /** Destructor */
         inline ~ConcreteLazyStr() noexcept {}

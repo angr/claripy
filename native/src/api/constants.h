@@ -183,28 +183,28 @@ DECLARE_OUT_ARRAY(ClaricppArg);
  *  @todo: Make this support more
  */
 typedef enum {
-    ClaricppExceptionEnumNone = 0,     // No exception
+    ClaricppExceptionEnumNone = 0, // No exception
     // Special
     ClaricppExceptionEnumFailAlloc,    // If get_exception fails due to std::bad_alloc
     ClaricppExceptionEnumFailCritical, // If get_exception fails for some other reason
     // General fallbacks
-    ClaricppExceptionEnumUnknown = 10,      // Fallback exception type
+    ClaricppExceptionEnumUnknown = 10, // Fallback exception type
     ClaricppExceptionEnumStd,          // An std::exception
     // C++
     ClaricppExceptionEnumUnexpected = 1000,
 
     // Python
     ClaricppExceptionEnumPython = 2000, // Python fallback
-    ClaricppExceptionEnumClaripy, // Claripy fallback
+    ClaricppExceptionEnumClaripy,       // Claripy fallback
 
     ClaricppExceptionEnumExprType = 2100, // Expr::Type
-    ClaricppExceptionEnumExprUsage, // Expr::Usage
-    ClaricppExceptionEnumExprValue, // Expr::Value
-    ClaricppExceptionEnumExprSize, // Expr::Size
-    ClaricppExceptionEnumExprOperation, // Expr::Operation
+    ClaricppExceptionEnumExprUsage,       // Expr::Usage
+    ClaricppExceptionEnumExprValue,       // Expr::Value
+    ClaricppExceptionEnumExprSize,        // Expr::Size
+    ClaricppExceptionEnumExprOperation,   // Expr::Operation
 
     ClaricppExceptionEnumBackendAbstraction = 2200, // Error::Backend::Abstraction
-    ClaricppExceptionEnumBackendUnsupported, // Error::Backend::Unsupported
+    ClaricppExceptionEnumBackendUnsupported,        // Error::Backend::Unsupported
 } ClaricppExceptionEnum;
 
 /** The exception struct Claricpp sends to python */

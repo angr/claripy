@@ -16,7 +16,7 @@ namespace Util {
         if (what != nullptr) {
             try {
                 // In case flushing causes an error we call it separately
-                std::cerr << what << '\n'; // No flush
+                std::cerr << what << '\n'; // No direct flush
                 std::cerr.flush();         // Distinct flush call
             }
             catch (...) {
