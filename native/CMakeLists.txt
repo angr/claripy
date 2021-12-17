@@ -87,6 +87,8 @@ option( CONSTANT_LOG_LEVEL "Force log level to be set at compiletime for release
 option( ENABLE_SECURITY "Build with security flags at the cost of runtime performance" OFF )
 option( ENABLE_CET "Builds with CET fcf-protection, requires ENABLE_SECURITY" OFF )
 
+# Override what the compiler says about it handling RTTI
+default(RTTI_OVERRIDE FALSE)
 
 #################################################
 #                  Z3 Options                   #
@@ -378,13 +380,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	add_compile_options("-EHsc") # Allow C++ exceptions
 endif()
 
-# RTTI override
-default(RTTI_OVERRIDE FALSE)
-if(RTTI_OVERRIDE)
-	add_compile_definitions("-DRTTI_OVERRIDE")
-	message("RTTI_OVERRIDE enabled; forcibly assuming compiler supports RTTI")
-endif()
-
 
 #################################################
 #                                               #
@@ -425,6 +420,12 @@ if(OPTIMIZE_FOR_NATIVE)
 		"-march=native"
 		"-mtune=native"
 	)
+endif()
+
+# RTTI override
+if(RTTI_OVERRIDE)
+	message("RTTI_OVERRIDE enabled; forcibly assuming compiler supports RTTI")
+	target_compile_definitions("${CLARICPP}" PUBLIC "RTTI_OVERRIDE") # Export this macro
 endif()
 
 # Fix compile time logging
