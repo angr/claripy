@@ -7,6 +7,7 @@
 #define R_UTIL_THREADSAFE_MOVELOCK_HPP_
 
 #include "../../macros.hpp"
+#include "../fallback_error_log.hpp"
 
 #include <shared_mutex>
 
@@ -23,6 +24,7 @@ namespace Util::ThreadSafe {
         /** Constructor
          *  Lock on construction
          *  Shared lock if Shared, else exclusive lock
+         *  Warning: The program muse ensure m is kept alive!
          */
         explicit MoveLock(Mutex &m) : mutex { &m } {
             if constexpr (Shared) {
@@ -36,11 +38,15 @@ namespace Util::ThreadSafe {
         /** Move constructor
          *  Disables the auto-locking on destruction of old
          */
-        explicit MoveLock(MoveLock &&old) noexcept : mutex { old.mutex } { old.mutex = nullptr; }
+        explicit MoveLock(MoveLock &&old) noexcept : mutex { old.mutex } { old.valid = nullptr; }
 
         /** Move assignment */
         MoveLock &operator=(MoveLock &&old) noexcept {
-            UTIL_ASSERT_NOT_NULL_DEBUG(old.mutex); // It is probably never intended to hit this
+            if (UNLIKELY(old.mutex == nullptr)) {
+                fallback_error_log(
+                    "MoveLock move assignment operator detected null mutex pointer on input; this "
+                    "is probably indicates the improper usage of a dead mutex! This is dangerous!");
+            }
             if (this != &old) {
                 mutex = old.mutex;
                 old.mutex = nullptr;

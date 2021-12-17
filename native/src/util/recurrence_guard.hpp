@@ -8,6 +8,7 @@
 
 #include "assert.hpp"
 #include "err.hpp"
+#include "fallback_error_log.hpp"
 
 #include "../constants.hpp"
 #include "../macros.hpp"
@@ -26,9 +27,6 @@
 namespace Util {
 
     /** A thread-safe recurrence guard class
-     *  Warning: The destructor of the recurrence guard may throw!
-     *  Note: The destructor will not throw if std::uncaught_exceptions differs
-     *  from the value it had during the initial construction of RecurrenceGuard
      *  Note that a recurrence in another thread, even if created by this thread, will not count
      */
     class RecurrenceGuard final {
@@ -37,51 +35,31 @@ namespace Util {
          *  Takes in optional recurrence limit argument
          *  Default argument value: 1000
          */
-        explicit inline RecurrenceGuard(CCSC f, const UInt lim = 1000)
-            : func(f)
-#ifdef DEBUG
-              ,
-              n_except(std::uncaught_exceptions())
-#endif
-        {
+        explicit inline RecurrenceGuard(CCSC f, const UInt lim = 1000) : func(f) {
             const auto num { ++count[func] };
             UTIL_ASSERT(Err::RecurrenceLimit, num <= lim, func,
                         " has reached its recurrence limit of: ", lim);
         }
 
-        /** Destructor
-         *  Warning: This destructor may throw when DEBUG mode is enabled
-         */
-        inline ~RecurrenceGuard()
-#ifdef DEBUG
-            noexcept(false) {
+        /** Destructor */
+        inline ~RecurrenceGuard() noexcept {
             auto &num { count[func] };
+#ifdef DEBUG
             // Check for stack unwinding
-            if (n_except == std::uncaught_exceptions()) {
-                // Error checking
-                UTIL_ASSERT(
-                    Err::Unknown, num != 0,
+            if (UNLIKELY(num == 0)) {
+                fallback_error_log(
                     "RecurrenceGuard is trying to decrement a count of 0."
                     "\nThis probably happened because something went wrong with control flow."
                     "\nFor example, an exception was thrown in a guarded function but nothing was "
                     "cleaned up.");
             }
+#endif
             num -= 1;
         }
-#else
-        {
-            count[func] -= 1;
-        }
-#endif
 
       private:
         /** The name of the function */
         const std::string func;
-
-#ifdef DEBUG
-        /** The number of uncaught exceptions alive during construction */
-        const int n_except;
-#endif
 
         /** Static map to keep track of recurrences */
         static thread_local std::map<std::string, UInt> count;

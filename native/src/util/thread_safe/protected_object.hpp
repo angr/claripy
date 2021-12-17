@@ -11,7 +11,9 @@
 
 #include "../assert.hpp"
 #include "../err.hpp"
+#include "../fallback_error_log.hpp"
 #include "../macros.hpp"
+#include "../terminate.hpp"
 
 #include <shared_mutex>
 
@@ -22,15 +24,13 @@ namespace Util::ThreadSafe {
      *  Note: Lock should *not* be a mutex, but rather a lock that guards a mutex
      */
     template <typename T, typename Lock> class ProtectedObject final : Base {
-      public:
-        // Representation
-
+      private:
         /** A pointer to the object being protected */
         T *pointer;
-
         /** Lock */
         mutable Lock lock;
 
+      public:
         // Constructors / destructors
 
         /** Constructor
@@ -75,10 +75,10 @@ namespace Util::ThreadSafe {
         /** Get the internal pointer; generally the -> operator should be preferred
          *  Warning: Do *not* let this pointer dangle
          */
-        const T &unprotected_ptr() const { return ptr(); }
+        const T *unprotected_ptr() const { return ptr(); }
 
         /** Get the internal reference */
-        ENABLE_IF_T_MUTABLE(T &) unprotected_ptr() { return ptr(); }
+        ENABLE_IF_T_MUTABLE(T *) unprotected_ptr() { return ptr(); }
 
         /** Get the internal reference; generally the -> operator should be preferred
          *  Warning: Do *not* let this reference dangle
@@ -92,48 +92,43 @@ namespace Util::ThreadSafe {
 
         /** Copy assignment */
         ENABLE_OP_IF_T_MUTABLE(const T &) {
-            throw_if_null();
+            nullcheck(false);
             ref() = o;
             return *this;
         }
 
-        /** We expose this operator to be the '.' operator, except that it is still
-         *  protected by the lock
-         */
+        /** We expose this operator to be the '.' operator, it is protected by the lock */
         T *operator->() noexcept { return ptr(); }
 
-        /** We expose this operator to be the '.' operator, except that it is still
-         *  protected by the lock
-         */
+        /** We expose this operator to be the '.' operator, it is protected by the lock */
         ENABLE_IF_T_MUTABLE(const T *) operator->() const noexcept {
-            throw_if_null();
+            nullcheck(true);
             return ptr;
         }
 
       private:
-        /** Throws an exception if ptr is nullptr */
-        template <typename E = Util::Err::Usage> void throw_if_null() const {
-            UTIL_ASSERT(E, pointer, "attempted to dereference a null pointer");
+        /** Warns if ptr is nullptr; terminates the program if critical */
+        inline void nullcheck(const bool critical) const noexcept {
+            if (UNLIKELY(pointer == nullptr)) {
+                static const constexpr auto term { [](CCSC m) { Util::terminate(m, false); } };
+                (critical ? term : fallback_error_log)(
+                    "ProtectedObject trying to operate on a nullptr; this probably indicates "
+                    "improper usage of a ThreadSafe object.");
+            }
         }
 
         /** Return a T pointer */
-        const T *ptr() const {
-            throw_if_null();
-            return pointer;
-        }
+        const T *ptr() const noexcept { return pointer; }
         /** Return a T pointer */
-        ENABLE_IF_T_MUTABLE(T *) ptr() {
-            throw_if_null();
-            return pointer;
-        }
+        ENABLE_IF_T_MUTABLE(T *) ptr() noexcept { return pointer; }
 
         /** Return a T reference */
-        const T &ref() const {
-            throw_if_null();
+        const T &ref() const noexcept {
+            nullcheck(true);
             return *pointer;
         }
-        ENABLE_IF_T_MUTABLE(T &) ref() {
-            throw_if_null();
+        ENABLE_IF_T_MUTABLE(T &) ref() noexcept {
+            nullcheck(true);
             return *pointer;
         }
 
