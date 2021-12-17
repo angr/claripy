@@ -8,6 +8,7 @@ set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Functions to be used later
+include(find_required_program)
 include(default)
 
 
@@ -375,6 +376,13 @@ endif()
 # MSVC enable exceptions
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	add_compile_options("-EHsc") # Allow C++ exceptions
+endif()
+
+# RTTI override
+default(RTTI_OVERRIDE FALSE)
+if(RTTI_OVERRIDE)
+	add_compile_definitions("-DRTTI_OVERRIDE")
+	message("RTTI_OVERRIDE enabled; forcibly assuming compiler supports RTTI")
 endif()
 
 
