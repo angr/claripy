@@ -46,7 +46,7 @@ void bv() {
     UNITTEST_ASSERT(l1 == z3.simplify(one_same.get()));
 
     // Sizes differ
-    Util::Log::debug("Testing x/x with different sized x's; this *should* error");
+    Util::Log::debug("Testing x/x with different sized x's; this *should* fail");
     try {
         const auto fail { Create::div<false>(l1, l2) };
         UNITTEST_ERR("It should not be possible to construct this: ", fail);

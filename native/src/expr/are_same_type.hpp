@@ -14,6 +14,7 @@ namespace Expr {
     /** Return true if x and y are the same expr type
      *  If ConsiderSize is true, sizes are compared if the types are sized
      *  x and y may not be null pointers
+     *  Logs warnings if are_same_type returns will false
      */
     template <bool ConsiderSize> bool are_same_type(const BasePtr &x, const BasePtr &y) {
         UTIL_ASSERT_NOT_NULL_DEBUG(x);

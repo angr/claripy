@@ -65,7 +65,6 @@ void expr() {
     // repr
     const std::string ml_c_repr { claricpp_expr_repr(ml_c) };
     const std::string ml_repr { ml->repr() };
-    Util::Log::critical(ml_repr);
     UNITTEST_ASSERT(ml_repr == ml_c_repr);
 
     // names
