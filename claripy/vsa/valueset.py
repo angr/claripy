@@ -476,6 +476,30 @@ class ValueSet(BackendObject):
 
         return ~ (self == other)
 
+    def __le__(self, other):
+        return MaybeResult()
+
+    def __lt__(self, other):
+        return MaybeResult()
+
+    def __gt__(self, other):
+        return MaybeResult()
+
+    def __ge__(self, other):
+        return MaybeResult()
+
+    def SLT(self, other):
+        return MaybeResult()
+
+    def SGT(self, other):
+        return MaybeResult()
+
+    def SLE(self, other):
+        return MaybeResult()
+
+    def SGE(self, other):
+        return MaybeResult()
+
     #
     # Backend operations
     #
