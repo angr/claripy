@@ -9,7 +9,7 @@
 void expr() {
 
     // Note: Below is full of memory leaks (this is a test so that's fine)
-    // Because of it though there are multiple no lint statements
+    // However, because of it there are multiple NOLINT statements below
 
     namespace A = Annotation;
     using SA = A::SimplificationAvoidance;
