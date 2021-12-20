@@ -1,9 +1,8 @@
 import unittest
-from unittest import skipIf
-import claripy
-from claripy.backends.backend_smtlib_solvers.cvc4_popen import SolverBackendCVC4
 import common_backend_smt_solver
 from common_backend_smt_solver import if_installed
+import claripy
+from claripy.backends.backend_smtlib_solvers.cvc4_popen import SolverBackendCVC4
 
 
 class SmtLibSolverTest_CVC4(common_backend_smt_solver.SmtLibSolverTestBase):

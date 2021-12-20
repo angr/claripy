@@ -1,7 +1,8 @@
-import claripy
 import unittest
+import claripy
 
 
+# pylint: disable=R0201
 class TestExpression(unittest.TestCase):
     def test_smudging(self):
         x = claripy.BVS('x', 32)
@@ -89,7 +90,6 @@ class TestExpression(unittest.TestCase):
         assert r is not rr
         ii = claripy.BVS('ii', 32)
         ij = claripy.BVS('ij', 32)
-        assert ii is ii
         assert ii is not ij
 
         si = claripy.SI(bits=32, stride=2, lower_bound=20, upper_bound=100)
@@ -167,7 +167,6 @@ class TestExpression(unittest.TestCase):
         # TODO: Properly delay reversing: should not be eager
 
         assert rb is not bb
-        assert rb is rb
 
         # test some alternate bvv creation methods
         assert claripy.BVV('AAAA') is claripy.BVV(0x41414141, 32)
@@ -230,11 +229,11 @@ class TestExpression(unittest.TestCase):
         assert iii.ite_excavated is iiii
 
     def test_ite(self):
-        yield raw_ite, claripy.Solver
-        yield raw_ite, claripy.SolverHybrid
-        yield raw_ite, claripy.SolverComposite
+        yield self.raw_ite, claripy.Solver
+        yield self.raw_ite, claripy.SolverHybrid
+        yield self.raw_ite, claripy.SolverComposite
 
-    def raw_ite(solver_type):
+    def raw_ite(self, solver_type):
         s = solver_type()
         x = claripy.BVS("x", 32)
         y = claripy.BVS("y", 32)
@@ -290,14 +289,14 @@ class TestExpression(unittest.TestCase):
         bc = claripy.backends.concrete
 
         a = claripy.And(*[False, False, True])
-        assert bc.convert(a) == False
+        assert not bc.convert(a)
         a = claripy.And(*[True, True, True])
-        assert bc.convert(a) == True
+        assert bc.convert(a)
 
         o = claripy.Or(*[False, False, True])
-        assert bc.convert(o) == True
+        assert bc.convert(o)
         o = claripy.Or(*[False, False, False])
-        assert bc.convert(o) == False
+        assert not bc.convert(o)
 
     def test_extract(self):
         a = claripy.BVS("a", 32)

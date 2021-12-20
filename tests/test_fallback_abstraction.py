@@ -1,8 +1,8 @@
-import claripy
 import unittest
+import claripy
 
 
-class TestFallbackAbstraction(unittest.Testcae):
+class TestFallbackAbstraction(unittest.TestCase):
     def test_fallback_abstraction(self):
         bz = claripy.backends.z3
 
@@ -24,11 +24,11 @@ class TestFallbackAbstraction(unittest.Testcae):
         assert type(claripy.backends.concrete.convert(a)) is claripy.bv.BVV
         assert type(claripy.backends.concrete.convert(g)) is claripy.bv.BVV
 
-        self.assertRaise(claripy.errors.BackendError, claripy.backends.concrete.convert, b)
-        self.assertRaise(claripy.errors.BackendError, claripy.backends.concrete.convert, c)
-        self.assertRaise(claripy.errors.BackendError, claripy.backends.concrete.convert, d)
-        self.assertRaise(claripy.errors.BackendError, claripy.backends.concrete.convert, e)
-        self.assertRaise(claripy.errors.BackendError, claripy.backends.concrete.convert, f)
+        self.assertRaises(claripy.errors.BackendError, claripy.backends.concrete.convert, b)
+        self.assertRaises(claripy.errors.BackendError, claripy.backends.concrete.convert, c)
+        self.assertRaises(claripy.errors.BackendError, claripy.backends.concrete.convert, d)
+        self.assertRaises(claripy.errors.BackendError, claripy.backends.concrete.convert, e)
+        self.assertRaises(claripy.errors.BackendError, claripy.backends.concrete.convert, f)
 
         assert str(bz.convert(b)) == 'x'
         assert bz.convert(b).__module__ == 'z3.z3'
