@@ -1090,7 +1090,13 @@ class Base:
 
     @property
     def concrete(self):
-        # import ipdb; ipdb.set_trace()
+        # fast path
+        if self.op in {"BVV", "BoolV", "FPV"}:
+            return True
+        if self.op in {"BVS", "BoolS", "FPS"}:
+            return False
+        if self.variables:
+            return False
         return backends.concrete.handles(self)
 
     @property
