@@ -451,7 +451,7 @@ class SimplificationManager:
     def _flatten_simplifier(op_name, filter_func, *args, **kwargs):
         # we cannot further flatten if any top-level argument has non-relocatable annotations
         if any(not anno.relocatable for anno in itertools.chain.from_iterable(arg.annotations for arg in args)):
-            return
+            return None
 
         new_args = tuple(itertools.chain.from_iterable(
             (a.args if isinstance(a, ast.Base) and a.op == op_name else (a,)) for a in args
