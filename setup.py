@@ -28,4 +28,7 @@ setup(
     ],
     description='An abstraction layer for constraint solvers',
     url='https://github.com/angr/claripy',
+    package_data={
+        'claripy': ["py.typed"]
+    },
 )
