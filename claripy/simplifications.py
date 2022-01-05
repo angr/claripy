@@ -451,7 +451,7 @@ class SimplificationManager:
     def _flatten_simplifier(op_name, filter_func, *args, **kwargs):
         # we cannot further flatten if any top-level argument has non-relocatable annotations
         if any(not anno.relocatable for anno in itertools.chain.from_iterable(arg.annotations for arg in args)):
-            return
+            return None
 
         new_args = tuple(itertools.chain.from_iterable(
             (a.args if isinstance(a, ast.Base) and a.op == op_name else (a,)) for a in args
@@ -604,11 +604,15 @@ class SimplificationManager:
         if not args:
             if a is ast.all_operations.BVV(0, a.size()):
                 return b
-            elif b is ast.all_operations.BVV(0, a.size()):
+            if b is ast.all_operations.BVV(0, a.size()):
                 return a
+            if a.op == b.op and a.op in {"BVV", "BoolV", "FPV"}:
+                if a.args == b.args:
+                    if (a == b).is_true():
+                        return a
             elif (a == b).is_true():
                 return a
-            elif a is b:
+            if a is b:
                 return a
 
         return SimplificationManager._flatten_simplifier('__or__', SimplificationManager._deduplicate_filter, a, b, *args)
@@ -620,20 +624,25 @@ class SimplificationManager:
             r = SimplificationManager.rotate_shift_mask_simplifier(a, b)
             if r is not None:
                 return r
-
-            if (a == 2**a.size()-1).is_true():
+            # we do not use (a == 2 ** a.size()-1).is_true() to avoid creating redundant ASTs
+            if a.op == "BVV" and a.args[0] == 2**a.size()-1:
                 return b
-            elif (b == 2**a.size()-1).is_true():
+            if b.op == "BVV" and b.args[0] == 2**b.size()-1:
                 return a
+            if a is b:
+                return a
+            # for concrete values, we delay the AST creation as much as possible
+            if a.op == b.op and a.op in {"BVV", "BoolV", "FPV"}:
+                if a.args == b.args:
+                    if (a == b).is_true():
+                        return a
             elif (a == b).is_true():
                 return a
-            elif a is b:
-                return a
-            elif (a == 0).is_true():
+            if a.op == "BVV" and a.args[0] == 0:
                 return ast.all_operations.BVV(0, a.size())
-            elif (b == 0).is_true():
+            if b.op == "BVV" and b.args[0] == 0:
                 return ast.all_operations.BVV(0, a.size())
-            elif a.op == "Concat" and len(a.args) == 2:
+            if a.op == "Concat" and len(a.args) == 2:
                 # Concat(a.args[0], a.args[1]) & b  ==>  ZeroExt(size, a.args[1])
                 # maybe we can drop the second argument
                 if (b == 2 ** (a.size() - a.args[0].size()) - 1).is_true():

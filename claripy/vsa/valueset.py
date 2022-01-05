@@ -1,3 +1,4 @@
+# pylint:disable=unused-argument,no-self-use,wrong-import-position
 import functools
 import itertools
 import numbers
@@ -376,16 +377,15 @@ class ValueSet(BackendObject):
             # TODO: Handle more cases
             raise NotImplementedError()
 
-        else:
-            new_vs = self.copy()
+        new_vs = self.copy()
 
-            # Call __mode__ on the base class
-            new_vs._si = self._si.__mod__(other)
+        # Call __mode__ on the base class
+        new_vs._si = self._si.__mod__(other)
 
-            for region, si in new_vs._regions.items():
-                new_vs._regions[region] = si % other
+        for region, si in new_vs._regions.items():
+            new_vs._regions[region] = si % other
 
-            return new_vs
+        return new_vs
 
     @normalize_types_one_arg
     def __and__(self, other):
@@ -475,6 +475,30 @@ class ValueSet(BackendObject):
         """
 
         return ~ (self == other)
+
+    def __le__(self, other):
+        return MaybeResult()
+
+    def __lt__(self, other):
+        return MaybeResult()
+
+    def __gt__(self, other):
+        return MaybeResult()
+
+    def __ge__(self, other):
+        return MaybeResult()
+
+    def SLT(self, other):
+        return MaybeResult()
+
+    def SGT(self, other):
+        return MaybeResult()
+
+    def SLE(self, other):
+        return MaybeResult()
+
+    def SGE(self, other):
+        return MaybeResult()
 
     #
     # Backend operations
