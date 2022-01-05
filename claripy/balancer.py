@@ -409,6 +409,8 @@ class Balancer:
 
     @staticmethod
     def _balance___add__(truism):
+        if len(truism.args) != 2:
+            return truism
         new_lhs = truism.args[0].args[0]
         old_rhs = truism.args[1]
         other_adds = truism.args[0].args[1:]
@@ -417,6 +419,8 @@ class Balancer:
 
     @staticmethod
     def _balance___sub__(truism):
+        if len(truism.args) != 2:
+            return truism
         new_lhs = truism.args[0].args[0]
         old_rhs = truism.args[1]
         other_adds = truism.args[0].args[1:]
@@ -492,6 +496,8 @@ class Balancer:
 
     @staticmethod
     def _balance___and__(truism):
+        if len(truism.args[0].args) != 2:
+            return truism
         op0, op1 = truism.args[0].args
 
         if op1.op == "BVV":
