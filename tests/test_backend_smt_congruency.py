@@ -152,7 +152,6 @@ class SmtLibSolverTestCongruency(unittest.TestCase):
         sep_idx_1 = field_sep_idx(recv_input)
         sep_idx_2 = field_sep_idx(recv_input, start_idx=sep_idx_1 + 1)
         sep_idx_3 = field_sep_idx(recv_input, start_idx=sep_idx_2 + 1)
-        sep_idx_4 = field_sep_idx(recv_input, start_idx=sep_idx_3 + 1)
 
         constraints.append(sep_idx_1 >= 0)
         constraints.append(sep_idx_2 >= 0)
