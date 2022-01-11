@@ -48,31 +48,22 @@ function(_build_z3)
 			# Parallelization args depend on the make generator
 			# First we must locate the system's make program from a list of make
 			# generators which support build parallelization
-			find_program(MAKER NAMES gmake make)
-
-			# If no such generator is found, we look for generators which do not
-			if (MAKER MATCHES "-NOTFOUND$")
-				find_program(MAKER NAMES nmake)
-
-				# If no such option is found we error out
-				if (MAKER MATCHES "-NOTFOUND$")
-					message(FATAL_ERROR "No suitable make program found.")
-				else()
-					message(WARNING
-						"Program ${MAKER} does not support build parallelization."
-						" Building Z3 without build parallelization enabled."
-					)
-					set(BUILD_COMMAND "BUILD_COMMAND" "${MAKER}") # No args, nmake doesn't support -j
-				endif()
-
-			# If we find an acceptable generator, use it
+			get_filename_component(MAKER "${CMAKE_MAKE_PROGRAM}" NAME)
+			if ((MAKER STREQUAL "make") OR (MAKER STREQUAL "gmake"))
+				 message(STATUS "Using ${Z3_NUM_CORES} cores to build Z3.")
+				 set(BUILD_COMMAND
+					  "BUILD_COMMAND"
+					  "${MAKER}"
+					  "-j${Z3_NUM_CORES}"
+				 )
+			elseif (MAKER STREQUAL "nmake")
+				 message(FATAL_ERROR "No suitable make program found.")
+				 set(BUILD_COMMAND "BUILD_COMMAND" "${MAKER}") # No args, nmake doesn't support -j
 			else()
-				message(STATUS "Using ${Z3_NUM_CORES} cores to build Z3.")
-				set(BUILD_COMMAND
-					"BUILD_COMMAND"
-					"${MAKER}"
-					"-j${Z3_NUM_CORES}"
-				)
+				 message(WARNING
+					  "Program ${MAKER} does not support build parallelization."
+					  " Building Z3 without build parallelization enabled."
+				 )
 			endif()
 		endif()
 
