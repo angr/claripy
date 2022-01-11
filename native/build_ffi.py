@@ -12,8 +12,16 @@ extern "Python" void claripy_log(PyStr, const ClaricppLogLvl, PyStr);
 extern "Python" ClaricppLogLvl claripy_level(PyStr);
 '''
 
-
 # Helper functions
+
+def log(add = ''):
+    '''
+    Adds data to an internal log
+    Returns the internal log
+    '''
+    log.log += '\n' + add
+    return log.log
+log.log = ''
 
 def one_line_delims(inp, pairs):
     '''
@@ -21,7 +29,8 @@ def one_line_delims(inp, pairs):
     The result is returned, inp is not modified
     '''
     assert type(inp) == str, 'inp must be a str'
-    adj = defaultdict(lambda: 0, { i:1 for i,_ in pairs } | { k:-1 for _,k in pairs })
+    weighted_pairs = { **{ i:1 for i,_ in pairs }, **{ k:-1 for _,k in pairs } }
+    adj = defaultdict(lambda: 0, weighted_pairs)
     out = ''
     count = 0
     for i in inp:
@@ -51,6 +60,7 @@ def get_source_f(native_dir):
     '''
     Returns native/src/api.h
     '''
+    log('Extracting source...')
     # Sanity check
     native_dir = os.path.realpath(native_dir)
     assert os.path.exists(native_dir), 'Native dir does not exist: ' + native_dir
@@ -64,7 +74,7 @@ def get_source_f(native_dir):
     assert os.path.isfile(source_f), 'Source file is not a file: ' + source_f
     return source_f
 
-def get_processed_source_f(build_dir):
+def get_processed_source_f(build_dir, intermediate_f):
     '''
     Returns the preprocessor expanded version of native/src/api.h
     '''
@@ -75,16 +85,17 @@ def get_processed_source_f(build_dir):
     assert os.path.exists(cache_file), 'Build dir has not had CMake run in it. Cache file missing!'
     assert os.path.isfile(cache_file), 'Cache file not a file'
     # Processed source
-    psf = os.path.join(build_dir, 'CMakeFiles/claricpp.dir/src/ffi.cpp.i')
+    psf = os.path.join(build_dir, 'CMakeFiles/claricpp.dir/' + intermediate_f)
     assert os.path.exists(psf), 'Processed source file does not exist: ' + psf
     assert os.path.isfile(psf), 'Processed source file is not a file: ' + psf
     return psf
 
-def get_cdefs(build_dir):
+def get_cdefs(build_dir, intermediate_f):
     '''
     Returns the cdefs python needs to use
     '''
-    with open(get_processed_source_f(build_dir)) as f:
+    log('Extracting cdefs...')
+    with open(get_processed_source_f(build_dir, intermediate_f)) as f:
         raw_source = f.read()
     # Delete non-code
     lines = [ i.strip() for i in raw_source.split('\n') ]
@@ -105,28 +116,35 @@ def get_cdefs(build_dir):
     cdefs = cdefs + '\n' + callbacks.strip()
     return cdefs
 
-def build_ffi(lib_name, build_dir):
+def build_ffi(lib_name, build_dir, intermediate_f, verbose):
     '''
     Build lib_name
     '''
+    assert len(build_dir) > 0, 'Build dir argument is empty'
+    log('Building: ' + lib_name)
+    log('Build dir: ' + build_dir)
+    log('Intermediate_f: ' + intermediate_f)
     build_dir = os.path.realpath(build_dir)
     # Extract data
     source_f = get_source_f(os.path.dirname(__file__))
-    cdefs = get_cdefs(build_dir)
+    cdefs = get_cdefs(build_dir, intermediate_f)
     # Output dir
+    log('Making output dir...')
     ffi_tmp = os.path.join(build_dir, 'ffi')
     if not os.path.exists(ffi_tmp):
         os.mkdir(ffi_tmp)
+    log('Writing out cdefs...')
     with open(os.path.join(ffi_tmp, 'cdefs.txt'), 'w') as f:
         f.write(cdefs)
     # FFI
+    log('FFI config...')
     ffibuilder = FFI()
     ffibuilder.cdef(cdefs)
     include = '#include "' + source_f + '"'
-    ffibuilder.set_source(lib_name, include, libraries=['claricpp'], library_dirs=[build_dir], extra_link_args=['-Wl,-rpath,' + build_dir],
-    )
+    ffibuilder.set_source(lib_name, include, libraries=['claricpp'], library_dirs=[build_dir], extra_link_args=['-Wl,-rpath,' + build_dir])
     # Compile
-    ffibuilder.compile(tmpdir=ffi_tmp, verbose=True)
+    log('FFI compiling...')
+    ffibuilder.compile(tmpdir=ffi_tmp, verbose=verbose)
 
 def parse_args(prog, *args):
     '''
@@ -134,15 +152,21 @@ def parse_args(prog, *args):
     '''
     parser = argparse.ArgumentParser(prog=os.path.basename(prog))
     parser.add_argument('build_dir', type=str, help='The build directory where CMake ran.')
-    parser.add_argument('--lib_name', '-o', type=str, help='The output library name.', default='claricpp_ffi')
+    parser.add_argument('intermediate_f', type=str, help='The intermediate file to parse cdefs from.') # src/ffi.cpp.i
+    parser.add_argument('--lib_name', '-o', type=str, default='claricpp_ffi', help='The output library name.')
+    parser.add_argument('--verbose', '-v', action='store_true', help='If the compilation should be verbose.')
     return parser.parse_args(args)
 
 def main(argv):
     '''
     Main function
     '''
-    ns = parse_args(*argv)
-    return build_ffi(**vars(ns))
+    try:
+        ns = parse_args(*argv)
+        return build_ffi(**vars(ns))
+    except:
+        print(log().strip(), file=sys.stderr)
+        raise
 
 # Don't run on import
 if __name__ == '__main__':
