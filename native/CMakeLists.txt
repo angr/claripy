@@ -531,3 +531,59 @@ target_link_libraries("${CLARICPP}"
 if(ENABLE_TESTING)
 	add_subdirectory(tests)
 endif()
+
+
+#################################################
+#                                               #
+#            Generate Python Targets            #
+#                                               #
+#################################################
+
+
+# FindPackage python works, no need for find_program
+# This is more powerful and lets us find specific components
+# Important output variable: Python3_EXECUTABLE
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+
+# FFI target
+# We only add this if the build system supports intermediate files as targets
+if (CMAKE_MAKE_PROGRAM MATCHES "make$")
+	set(INTERMEDIATE_F "${CDEFS_SOURCE_F}.i")
+
+	set(VERBOSE_FLAG "")
+	if (CMAKE_VERBOSE_MAKEFILE)
+		set(VERBOSE_FLAG "--verbose")
+	endif()
+
+	# Note: We choose not to add this to the 'all' target
+	# Let it be a dependency called only as needed
+	add_custom_target(
+		 "ffi-intermediate-file"
+		 "$(MAKE)" "${INTERMEDIATE_F}"
+		 WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+		 COMMENT "Generate the ${INTERMEDIATE_F} intermediate file"
+		 VERBATIM # Just in case
+		 SOURCES "${CMAKE_SOURCE_DIR}/${CDEFS_SOURCE_F}"
+	)
+
+	# Note: We choose not to add this to the 'all' target
+	# No need to compile this unless explicitly requested
+	add_custom_target(
+		ffi
+		# make src/ffi.cpp.7 && python3 build_ffy.py <build_dir>
+		"${Python3_EXECUTABLE}"
+			"${CMAKE_CURRENT_SOURCE_DIR}/build_ffi.py"
+			"${CMAKE_CURRENT_BINARY_DIR}"
+			"${INTERMEDIATE_F}"
+			${VERBOSE_FLAG} # No quotes
+		# We link to claricpp
+		DEPENDS "${CLARICPP}" "ffi-intermediate-file"
+		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+		COMMENT "Compiling the FFI shared library that wraps claricpp"
+		VERBATIM # Just in case
+		USES_TERMINAL # Probably not required
+		SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/build_ffi.py"
+	)
+else()
+	message(WARNING "Will not generate ffi target given current make generator: ${CMAKE_MAKE_PROGRAM}")
+endif()
