@@ -14,7 +14,7 @@
 /********************************************************************/
 
 /** Get the name of the backend
- *  @return The name of the backend
+ *  @return The name of the backend as a statically allocated C string
  */
 const char *claricpp_backend_name(ClaricppBackend bk);
 

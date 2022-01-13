@@ -7,6 +7,6 @@
 #define R_MODE_BIGINT_H_
 
 /** A macro defining the internals of BigInt; this is needed for the C API */
-#define MODE_BIGINT_VALS(PREFIX) PREFIX##Str = 0, PREFIX##Int
+#define MODE_BIGINT_VALS(PREFIX) PREFIX##Str = 0, PREFIX##Int = 1
 
 #endif

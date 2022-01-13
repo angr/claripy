@@ -41,11 +41,11 @@ extern "C" {
     }
 
     const char *claricpp_expr_type_name(const ClaricppExpr expr) {
-        return API::c_str(API::to_cpp_ref(expr).type_name());
+        return API::to_cpp_ref(expr).type_name();
     }
 
     const char *claricpp_expr_op_name(const ClaricppExpr expr) {
-        return API::c_str(API::to_cpp_ref(expr).op->op_name());
+        return API::to_cpp_ref(expr).op->op_name();
     }
 
     CUID_T claricpp_expr_cuid(const ClaricppExpr expr) { return API::to_cpp_ref(expr).cuid; }

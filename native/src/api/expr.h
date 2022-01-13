@@ -41,19 +41,19 @@ ARRAY_OUT(ClaricppArg) claricpp_expr_args(const ClaricppExpr expr);
 
 /** Get the repr of the expr
  * @param expr The expr to get the repr of
- * @return The repr of expr as a C string
+ * @return The repr of expr as a dynamically allocated C string
  */
 const char *claricpp_expr_repr(const ClaricppExpr expr);
 
 /** Get the type name of the expr
  * @param expr The expr to get the type name of
- * @return The name of the type of expr as a C string
+ * @return The name of the type of expr as a statically allocated C string
  */
 const char *claricpp_expr_type_name(const ClaricppExpr expr);
 
 /** Get the op name of the expr
  * @param expr The expr to get the op name of
- * @return The name of the op in expr as a C string
+ * @return The name of the op in expr as a statically allocated C string
  */
 const char *claricpp_expr_op_name(const ClaricppExpr expr);
 

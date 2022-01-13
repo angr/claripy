@@ -68,15 +68,13 @@ static inline ClaricppException get_cpp_exception(const Util::Err::Unexpected &,
 
 /** A helper function that tries to get the exception the last API call threw */
 static inline ClaricppException get_exception() noexcept {
-    // No exception (just in case)
     try {
         if (LIKELY(API::exception_ptr)) {
+            // Re-throw exception so we can catch it
             std::rethrow_exception(API::exception_ptr);
         }
-        // No exception
-        else {
-            return { .type = ClaricppExceptionEnumNone, .msg = nullptr, .trace = nullptr };
-        }
+        // No exception (just in case)
+        return { .type = ClaricppExceptionEnumNone, .msg = nullptr, .trace = nullptr };
     }
     catch (const std::exception &e) {
         const char *msg { API::c_str(e.what(), std::strlen(e.what())) };
@@ -137,9 +135,12 @@ extern "C" {
             return ret;
         }
         catch (std::bad_alloc &) {
-            return { .type = ClaricppExceptionEnumFailAlloc,
-                     .msg = try_gen_msg("Got std::bad_alloc within get_exception"),
-                     .trace = nullptr };
+            return {
+                .type = ClaricppExceptionEnumFailAlloc,
+                .msg = try_gen_msg(
+                    "Got std::bad_alloc within get_exception while processing another exception"),
+                .trace = nullptr
+            };
         }
         catch (...) {
             return { .type = ClaricppExceptionEnumFailCritical,
