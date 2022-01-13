@@ -90,6 +90,7 @@ option( ENABLE_CET "Builds with CET fcf-protection, requires ENABLE_SECURITY" OF
 # Override what the compiler says about it handling RTTI
 default(RTTI_OVERRIDE FALSE)
 
+
 #################################################
 #                  Z3 Options                   #
 #################################################
@@ -310,6 +311,7 @@ endif()
 
 # Global required compilation flags
 add_compile_options(
+	"-g"
 	"-Wall"
 	"-Wextra"
 	"-Wcast-align"
@@ -413,7 +415,6 @@ if(NOT EFFECTIVE_CPP_STYLE_CHECK)
 	)
 endif()
 
-
 # Optimize for native code
 if(OPTIMIZE_FOR_NATIVE)
 	target_compile_options("${CLARICPP}" PRIVATE
@@ -457,7 +458,6 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 	)
 	target_compile_options("${CLARICPP}" PUBLIC
 		"-O0"
-		"-g"
 		"-fasynchronous-unwind-tables"
 		"-grecord-gcc-switches"
 	)
