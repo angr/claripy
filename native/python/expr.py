@@ -1,4 +1,4 @@
-__all__ = [ 'LazyArg', 'Expr', 'Bits' ]
+__all__ = [ 'LazyPrim', 'LazyArg', 'Expr', 'Bits' ]
 
 from claricpp import *
 import annotation_spav
@@ -7,6 +7,42 @@ from functools import cache, cached_property
 # TODO: deal with destruction / freeing memory
 # TODO: slots!
 
+
+class LazyPrim:
+    '''
+    Wraps a Claricpp Prim. The .prim value is lazily evaluated
+    '''
+    def __init__(self, raw):
+        self._raw = raw
+
+    @cached_property
+    def prim(self):
+        '''
+        Returns the python arg generated from the Claricpp object raw
+        '''
+        tp = self._raw.type
+        # Primitive
+        if tp == claricpp.ClaricppTypeEnumBool:
+            return bool(self._raw.data.prim.boolean)
+        elif tp == claricpp.ClaricppTypeEnumStr:
+            return to_utf8(self._raw.data.prim.str)
+        elif tp == claricpp.ClaricppTypeEnumFloat:
+            return self._raw.data.prim.flt
+        elif tp == claricpp.ClaricppTypeEnumDouble:
+            return self._raw.data.prim.dbl
+        elif tp == claricpp.ClaricppTypeEnumVS:
+            raise NotImplementedError() # TODO: implement
+        elif tp == claricpp.ClaricppTypeEnumU8:
+            return self._raw.data.prim.u8
+        elif tp == claricpp.ClaricppTypeEnumU16:
+            return self._raw.data.prim.u16
+        elif tp == claricpp.ClaricppTypeEnumU32:
+            return self._raw.data.prim.u32
+        elif tp == claricpp.ClaricppTypeEnumU64:
+            return self._raw.data.prim.u64
+        # Invalid
+        else:
+            raise NotImplementedError('Unknown Arg type: ' + str(self._raw.type))
 
 class LazyArg:
     '''
@@ -20,45 +56,17 @@ class LazyArg:
         '''
         Returns the python arg generated from the Claricpp object raw
         '''
-        return self._gen_arg()
-
-    def _gen_arg(self):
-        '''
-        Generates and sets _arg given self._raw
-        '''
         tp = self._raw.type
-        # Primitive
-        if tp == claricpp.ClaricppTypeEnumBool:
-            self._arg = bool(self._raw.data.prim.boolean)
-        elif tp == claricpp.ClaricppTypeEnumStr:
-            self._arg = to_utf8(self._raw.data.prim.str)
-        elif tp == claricpp.ClaricppTypeEnumFloat:
-            self._arg = self._raw.data.prim.flt
-        elif tp == claricpp.ClaricppTypeEnumDouble:
-            self._arg = self._raw.data.prim.dbl
-        elif tp == claricpp.ClaricppTypeEnumVS:
-            raise NotImplementedError() # TODO: implement
-        elif tp == claricpp.ClaricppTypeEnumU8:
-            self._arg = self._raw.data.prim.u8
-        elif tp == claricpp.ClaricppTypeEnumU16:
-            self._arg = self._raw.data.prim.u16
-        elif tp == claricpp.ClaricppTypeEnumU32:
-            self._arg = self._raw.data.prim.u32
-        elif tp == claricpp.ClaricppTypeEnumU64:
-            self._arg = self._raw.data.prim.u64
-        # Not primitive
-        elif tp == claricpp.ClaricppTypeEnumBigInt:
-            self._arg = to_utf8(self._raw.data.big_int)
+        if tp == claricpp.ClaricppTypeEnumBigInt:
+            return to_utf8(self._raw.data.big_int)
         elif tp == claricpp.ClaricppTypeEnumExpr:
-            self._arg = Expr(self._raw.data.expr)
+            return Expr(self._raw.data.expr)
         elif tp == claricpp.ClaricppTypeEnumRM:
-            self._arg = RM(self._raw.data.rm)
+            return RM(self._raw.data.rm)
         elif tp == claricpp.ClaricppTypeEnumWidth:
-            self._arg = Width(self._raw.data.width)
-        # Invalid
+            return Width(self._raw.data.width)
         else:
-            raise NotImplementedError('Unknown Arg type: ' + str(self._raw.type))
-        return self._arg
+            return Prim(self._raw).prim
 
 class Expr:
     '''
