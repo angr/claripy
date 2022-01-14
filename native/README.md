@@ -16,9 +16,9 @@ Provided by cppcheck
 
 Enforced by clang-format.
 
-## Building
+## Build System
 
-The build system is cmake / make.
+The build system is cmake.
 
 ## Building
 
