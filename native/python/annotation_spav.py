@@ -1,4 +1,4 @@
-__all__ = [ 'AnnotationSPAV' ]
+__all__ = ["AnnotationSPAV"]
 
 from claricpp import *
 from annotation import *
@@ -7,16 +7,18 @@ from functools import cache, cached_property
 # TODO: deal with destruction / freeing memory
 # TODO: slots!
 
+
 class AnnotationSPAV:
-    '''
+    """
     Wraps a ClaricppSPAV
-    '''
+    """
+
     _empty_raw = claricpp.claricpp_annotation_create_empty_spav()
 
-    def __init__(self, data = None):
-        '''
+    def __init__(self, data=None):
+        """
         Convert a list of Annotations to an AnnotationSPAV or wrap a Claricpp SPAV
-        '''
+        """
         if data is None:
             self._spav = self._empty_raw
         elif type(data) is List:
@@ -34,13 +36,13 @@ class AnnotationSPAV:
 
     @cache
     def __len__(self) -> int:
-        return claricpp_annotation_spav_len(self._spav);
+        return claricpp_annotation_spav_len(self._spav)
 
     @cached_property
     def _as_c_arr(self):
-        '''
+        """
         Convert self._spav to an array of annotations
-        '''
+        """
         return self.claricpp_annotation_spav_to_array(self._spav)
 
     @cache
@@ -53,8 +55,8 @@ class AnnotationSPAV:
 
     @cached_property
     def raw(self):
-        '''
+        """
         Get the raw spav self holds
         Warning: Do not call this function unless you know what you are doing!
-        '''
+        """
         return self._spav
