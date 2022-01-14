@@ -279,7 +279,7 @@ claricpp_backend_z3_eval_ec(const ClaricppBackend z3, const ClaricppExpr expr,
                             const ClaricppSolver solver, const SIZE_T n,
                             ARRAY_IN(ClaricppExpr) extra_constraints, const SIZE_T len);
 
-/** Evaluates the exprs expr with solver and returns up to n primitive value(s) they corresponds to
+/** Evaluates the exprs expr with solver and returns up to n primitive value(s) they correspond to
  *  @param z3 The Z3 backend to use
  *  @param exprs The array of expressions to evaluate
  *  @param exprs_len The length of the exprs array
@@ -291,7 +291,7 @@ DOUBLE_ARRAY_OUT(ClaricppPrim)
 claricpp_backend_z3_batch_eval(const ClaricppBackend z3, ARRAY_IN(ClaricppExpr) exprs,
                                const SIZE_T exprs_len, const ClaricppSolver solver, const SIZE_T n);
 
-/** Evaluates the exprs expr with solver and returns up to n primitive value(s) they corresponds to
+/** Evaluates the exprs expr with solver and returns up to n primitive value(s) they correspond to
  *  @param z3 The Z3 backend to use
  *  @param exprs The array of expressions to evaluate
  *  @param exprs_len The length of the exprs array
