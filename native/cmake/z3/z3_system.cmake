@@ -19,7 +19,8 @@ function(_system_z3)
 	else()
 
 		# Find Z3 + headers
-		find_library(Z3_LIB_FIND z3 REQUIRED)
+		find_library(Z3_LIB_FIND z3)
+		find_required_library(Z3_LIB_FIND z3)
 		if(NOT EXISTS "${Z3_INCLUDE_PATH}")
 			message(FATAL_ERROR "Cannot find ${Z3_INCLUDE_PATH}")
 		endif()
