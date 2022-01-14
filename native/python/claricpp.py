@@ -1,13 +1,8 @@
 __all__ = [ 'ffi', 'to_utf8', 'claricpp', 'ClaricppException' ]
 
-import os
-import sys
 import functools
 import logging
-
-sys.path.append(os.environ['CLARICPP_FFI_LIB_DIR']) # TODO
 from claricpp_ffi import ffi, lib as raw_lib
-sys.path.pop()
 
 # TODO: slots!
 
