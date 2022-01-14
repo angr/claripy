@@ -11,6 +11,14 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(find_required_program)
 include(default)
 
+# Common library paths
+list(APPEND CMAKE_LIBRARY_PATH
+	"/usr/lib64"
+	"/usr/lib"
+	"/lib64"
+	"/lib"
+)
+
 
 #################################################
 #                                               #
@@ -545,6 +553,17 @@ endif()
 # Important output variable: Python3_EXECUTABLE
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
+# Possible python include directories
+default(PY_INCLUDE_DIRS
+	"/include/python3.11"
+	"/include/python3.10"
+	"/include/python3.9"
+	"/include/python3.8"
+	"/include/python3.7"
+	"/include/python3.6"
+)
+list(APPEND PY_INCLUDE_DIRS ${Python_INCLUDE_DIRS})
+
 # FFI target
 # We only add this if the build system supports intermediate files as targets
 if (CMAKE_MAKE_PROGRAM MATCHES "make$")
@@ -554,6 +573,7 @@ if (CMAKE_MAKE_PROGRAM MATCHES "make$")
 	if (CMAKE_VERBOSE_MAKEFILE)
 		set(VERBOSE_FLAG "--verbose")
 	endif()
+
 
 	# Note: We choose not to add this to the 'all' target
 	# Let it be a dependency called only as needed
@@ -575,6 +595,7 @@ if (CMAKE_MAKE_PROGRAM MATCHES "make$")
 			"${CMAKE_CURRENT_SOURCE_DIR}/build_ffi.py"
 			"${CMAKE_CURRENT_BINARY_DIR}"
 			"${INTERMEDIATE_F}"
+			-I "${PY_INCLUDE_DIRS}"
 			${VERBOSE_FLAG} # No quotes
 		# We link to claricpp
 		DEPENDS "${CLARICPP}" "ffi-intermediate-file"

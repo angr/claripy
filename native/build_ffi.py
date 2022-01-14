@@ -116,7 +116,7 @@ def get_cdefs(build_dir, intermediate_f):
     cdefs = cdefs + '\n' + callbacks.strip()
     return cdefs
 
-def build_ffi(lib_name, build_dir, intermediate_f, verbose):
+def build_ffi(lib_name, build_dir, intermediate_f, verbose, include_dirs):
     '''
     Build lib_name
     '''
@@ -124,6 +124,7 @@ def build_ffi(lib_name, build_dir, intermediate_f, verbose):
     log('Building: ' + lib_name)
     log('Build dir: ' + build_dir)
     log('Intermediate_f: ' + intermediate_f)
+    log('Include_dir: ' + str(include_dirs))
     build_dir = os.path.realpath(build_dir)
     # Extract data
     source_f = get_source_f(os.path.dirname(__file__))
@@ -136,12 +137,27 @@ def build_ffi(lib_name, build_dir, intermediate_f, verbose):
     log('Writing out cdefs...')
     with open(os.path.join(ffi_tmp, 'cdefs.txt'), 'w') as f:
         f.write(cdefs)
+    # Include directories
+    inc_dir = []
+    if include_dirs is not None:
+        for i in ';'.split(include_dirs):
+            i = os.path.abspath(i)
+            if os.path.exists(i):
+                if os.path.isdir(i):
+                    inc_dir.append(i)
+        log("Directories to include: " + str(inc_dir))
     # FFI
     log('FFI config...')
     ffibuilder = FFI()
     ffibuilder.cdef(cdefs)
-    include = '#include "' + source_f + '"'
-    ffibuilder.set_source(lib_name, include, libraries=['claricpp'], library_dirs=[build_dir], extra_link_args=['-Wl,-rpath,' + build_dir])
+    ffibuilder.set_source(
+        lib_name,
+        '#include "' + source_f + '"',
+        include_dirs = inc_dir,
+        libraries=['claricpp'],
+        library_dirs=[build_dir],
+        extra_link_args=['-Wl,-rpath,' + build_dir]
+    )
     # Compile
     log('FFI compiling...')
     ffibuilder.compile(tmpdir=ffi_tmp, verbose=verbose)
@@ -155,6 +171,8 @@ def parse_args(prog, *args):
     parser.add_argument('intermediate_f', type=str, help='The intermediate file to parse cdefs from.') # src/ffi.cpp.i
     parser.add_argument('--lib_name', '-o', type=str, default='claricpp_ffi', help='The output library name.')
     parser.add_argument('--verbose', '-v', action='store_true', help='If the compilation should be verbose.')
+    parser.add_argument('--include_dirs', '-I', type=str, default=None,
+                        help='A ;-separated list of possible python include directories')
     return parser.parse_args(args)
 
 def main(argv):
@@ -165,7 +183,7 @@ def main(argv):
         ns = parse_args(*argv)
         return build_ffi(**vars(ns))
     except:
-        print(log().strip(), file=sys.stderr)
+        print('\nPrinting log:\n' + log().strip(), file=sys.stderr)
         raise
 
 # Don't run on import
