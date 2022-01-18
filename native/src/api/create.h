@@ -1,6 +1,6 @@
 /**
- * @file
- * @brief This header defines the C API for Create
+ *  @file
+ *  @brief This header defines the C API for Create
  * \ingroup api
  */
 #ifndef R_API_CREATE_H_
@@ -487,36 +487,36 @@ ClaricppExpr claricpp_create_xor(ARRAY_IN(ClaricppExpr) operands, const SIZE_T l
 /********************************************************************/
 
 /** Create a String::from_int Expr
- * @param x The BV to convert to a String
- * @param spav A ClaricppSPAV; spav.ptr may be nullptr
- * @return A ClaricppExpr containing a String::from_int expression
+ *  @param x The BV to convert to a String
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a String::from_int expression
  */
 ClaricppExpr claricpp_create_string_from_int(const ClaricppExpr x, ClaricppSPAV spav);
 
 /** Create a String::index_of Expr
- * @param str The String to search
- * @param pattern The pattern to search for
- * @param start_index The index to start looking at
- * @param spav A ClaricppSPAV; spav.ptr may be nullptr
- * @return A ClaricppExpr containing a String::index_of expression
+ *  @param str The String to search
+ *  @param pattern The pattern to search for
+ *  @param start_index The index to start looking at
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a String::index_of expression
  */
 ClaricppExpr claricpp_create_string_index_of(const ClaricppExpr str, const ClaricppExpr pattern, const ClaricppExpr start_index, const UINT bit_length, ClaricppSPAV spav);
 
 /** Create a String::replace Expr
- * @param str The String to replace within
- * @param search The pattern to replace
- * @param replacement The string to replace search with
- * @param spav A ClaricppSPAV; spav.ptr may be nullptr
- * @return A ClaricppExpr containing a String::replace expression
+ *  @param str The String to replace within
+ *  @param search The pattern to replace
+ *  @param replacement The string to replace search with
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a String::replace expression
  */
 ClaricppExpr claricpp_create_string_replace(const ClaricppExpr full, const ClaricppExpr search, const ClaricppExpr replacement, ClaricppSPAV spav);
 
 /** Create a String::sub_string Expr
- * @param start_index @todo: document
- * @param count @todo: document
- * @param full_string The string to search in
- * @param spav A ClaricppSPAV; spav.ptr may be nullptr
- * @return A ClaricppExpr containing a String::sub_string expression
+ *  @param start_index @todo: document
+ *  @param count @todo: document
+ *  @param full_string The string to search in
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a String::sub_string expression
  */
 ClaricppExpr claricpp_create_string_sub_string(const ClaricppExpr start_index, const ClaricppExpr count, const ClaricppExpr full_string, ClaricppSPAV spav);
 
@@ -690,9 +690,9 @@ ClaricppExpr claricpp_create_fp_div(const ClaricppExpr left, const ClaricppExpr 
 // Ternary
 
 /** Create an FP::fp Expr
- * @param first The first FP operand of the fp function
- * @param second The first FP operand of the fp function
- * @param third The first FP operand of the fp function
+ *  @param first The first FP operand of the fp function
+ *  @param second The first FP operand of the fp function
+ *  @param third The first FP operand of the fp function
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing an FP::fp expression
  */
