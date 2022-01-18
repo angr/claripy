@@ -486,6 +486,40 @@ ClaricppExpr claricpp_create_xor(ARRAY_IN(ClaricppExpr) operands, const SIZE_T l
 /*                              String                              */
 /********************************************************************/
 
+/** Create a String::from_int Expr
+ * @param x The BV to convert to a String
+ * @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ * @return A ClaricppExpr containing a String::from_int expression
+ */
+ClaricppExpr claricpp_create_string_from_int(const ClaricppExpr x, ClaricppSPAV spav);
+
+/** Create a String::index_of Expr
+ * @param str The String to search
+ * @param pattern The pattern to search for
+ * @param start_index The index to start looking at
+ * @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ * @return A ClaricppExpr containing a String::index_of expression
+ */
+ClaricppExpr claricpp_create_string_index_of(const ClaricppExpr str, const ClaricppExpr pattern, const ClaricppExpr start_index, const UINT bit_length, ClaricppSPAV spav);
+
+/** Create a String::replace Expr
+ * @param str The String to replace within
+ * @param search The pattern to replace
+ * @param replacement The string to replace search with
+ * @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ * @return A ClaricppExpr containing a String::replace expression
+ */
+ClaricppExpr claricpp_create_string_replace(const ClaricppExpr full, const ClaricppExpr search, const ClaricppExpr replacement, ClaricppSPAV spav);
+
+/** Create a String::sub_string Expr
+ * @param start_index @todo: document
+ * @param count @todo: document
+ * @param full_string The string to search in
+ * @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ * @return A ClaricppExpr containing a String::sub_string expression
+ */
+ClaricppExpr claricpp_create_string_sub_string(const ClaricppExpr start_index, const ClaricppExpr count, const ClaricppExpr full_string, ClaricppSPAV spav);
+
 // Unary
 
 /** Create a String::is_digit Expr
@@ -547,6 +581,61 @@ ClaricppExpr claricpp_create_string_suffix_of(const ClaricppExpr full, const Cla
 /*                                FP                                */
 /********************************************************************/
 
+/** Create a signed FP::from_2s_complement_bv Expr
+ *  @mode The rounding mode to be used
+ *  @x The 2s complement BV to convert to an FP
+ *  @exp_width The bit width of the exponent
+ *  @exp_mantissa The bit width of the exponent
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a signed FP::from_2s_complement_bv expression
+ */
+ClaricppExpr claricpp_create_fp_from_2s_complement_bv_signed(const ClaricppRM mode, const ClaricppExpr x, const uint32_t exp_width, const uint32_t mantissa_width, ClaricppSPAV spav);
+
+/** Create a unsigned FP::from_2s_complement_bv Expr
+ *  @mode The rounding mode to be used
+ *  @x The 2s complement BV to convert to an FP
+ *  @exp_width The bit width of the exponent
+ *  @exp_mantissa The bit width of the exponent
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a unsigned FP::from_2s_complement_bv expression
+ */
+ClaricppExpr claricpp_create_fp_from_2s_complement_bv_unsigned(const ClaricppRM mode, const ClaricppExpr x, const uint32_t exp_width, const uint32_t mantissa_width, ClaricppSPAV spav);
+
+/** Create a FP::from_fp Expr
+ *  @mode The rounding mode to be used
+ *  @fp The Expr to convert
+ *  @exp_width The bit width of the exponent
+ *  @exp_mantissa The bit width of the exponent
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a FP::from_fp expression
+ */
+ClaricppExpr claricpp_create_fp_from_fp(const ClaricppRM mode, const ClaricppExpr fp, const uint32_t exp_width, const uint32_t mantissa_width, ClaricppSPAV spav);
+
+/** Create a FP::from_not_2s_complement_bv Expr
+ *  @x The Expr to convert
+ *  @exp_width The bit width of the exponent
+ *  @exp_mantissa The bit width of the exponent
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a FP::from_fp expression
+ */
+ClaricppExpr claricpp_create_fp_from_not_2s_complement_bv(const ClaricppExpr x, const uint32_t exp_width, const uint32_t mantissa_width, ClaricppSPAV spav);
+
+/** Create a signed FP::to_bv Expr
+ *  @fp The FP Expr to convert to a BV
+ *  @bit_length @todo: document
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a signed FP::to_bv expression
+ */
+ClaricppExpr claricpp_create_fp_to_bv_signed(const ClaricppRM mode, const ClaricppExpr fp, const UINT bit_length, ClaricppSPAV spav);
+
+/** Create a unsigned FP::to_bv Expr
+ *  @fp The FP Expr to convert to a BV
+ *  @bit_length @todo: document
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a unsigned FP::to_bv expression
+ */
+ClaricppExpr claricpp_create_fp_to_bv_unsigned(const ClaricppRM mode, const ClaricppExpr fp, const UINT bit_length, ClaricppSPAV spav);
+
 // Unary
 
 /** Create an FP::to_ieee_bv Expr
@@ -597,5 +686,16 @@ ClaricppExpr claricpp_create_fp_mul(const ClaricppExpr left, const ClaricppExpr 
  */
 ClaricppExpr claricpp_create_fp_div(const ClaricppExpr left, const ClaricppExpr right,
                                     const ClaricppRM mode, ClaricppSPAV spav);
+
+// Ternary
+
+/** Create an FP::fp Expr
+ * @param first The first FP operand of the fp function
+ * @param second The first FP operand of the fp function
+ * @param third The first FP operand of the fp function
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing an FP::fp expression
+ */
+ClaricppExpr claricpp_create_fp_fp(const ClaricppExpr first, const ClaricppExpr second, const ClaricppExpr third, ClaricppSPAV spav);
 
 #endif

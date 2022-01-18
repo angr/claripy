@@ -298,6 +298,33 @@ extern "C" {
     /*                              String                              */
     /********************************************************************/
 
+    ClaricppExpr claricpp_create_string_from_int(const ClaricppExpr x, ClaricppSPAV spav) {
+        return make(Create::String::from_int, spav, API::to_cpp(x));
+    }
+
+    ClaricppExpr claricpp_create_string_index_of(const ClaricppExpr str, const ClaricppExpr pattern,
+                                                 const ClaricppExpr start_index,
+                                                 const UINT bit_length, ClaricppSPAV spav) {
+        return make(Create::String::index_of, spav, API::to_cpp(str), API::to_cpp(pattern),
+                    API::to_cpp(start_index), bit_length);
+    }
+
+    ClaricppExpr claricpp_create_string_replace(const ClaricppExpr full, const ClaricppExpr search,
+                                                const ClaricppExpr replacement, ClaricppSPAV spav) {
+        return make(Create::String::replace, spav, API::to_cpp(full), API::to_cpp(search),
+                    API::to_cpp(replacement));
+    }
+
+    ClaricppExpr claricpp_create_string_sub_string(const ClaricppExpr start_index,
+                                                   const ClaricppExpr count,
+                                                   const ClaricppExpr full_string,
+                                                   ClaricppSPAV spav) {
+        return make(Create::String::sub_string, spav, API::to_cpp(start_index), API::to_cpp(count),
+                    API::to_cpp(full_string));
+    }
+
+    // Trivial
+
     ClaricppExpr claricpp_create_string_is_digit(const ClaricppExpr x, ClaricppSPAV spav) {
         return make(Create::String::is_digit, spav, API::to_cpp(x));
     }
@@ -331,6 +358,51 @@ extern "C" {
     /*                                FP                                */
     /********************************************************************/
 
+    ClaricppExpr claricpp_create_fp_from_2s_complement_bv_signed(const ClaricppRM mode,
+                                                                 const ClaricppExpr x,
+                                                                 const uint32_t exp_width,
+                                                                 const uint32_t mantissa_width,
+                                                                 ClaricppSPAV spav) {
+        return make(Create::FP::from_2s_complement_bv<true>, spav, API::mode(mode), API::to_cpp(x),
+                    Mode::FP::Width { exp_width, mantissa_width });
+    }
+
+    ClaricppExpr claricpp_create_fp_from_2s_complement_bv_unsigned(const ClaricppRM mode,
+                                                                   const ClaricppExpr x,
+                                                                   const uint32_t exp_width,
+                                                                   const uint32_t mantissa_width,
+                                                                   ClaricppSPAV spav) {
+        return make(Create::FP::from_2s_complement_bv<false>, spav, API::mode(mode), API::to_cpp(x),
+                    Mode::FP::Width { exp_width, mantissa_width });
+    }
+
+    ClaricppExpr claricpp_create_fp_from_fp(const ClaricppRM mode, const ClaricppExpr fp,
+                                            const uint32_t exp_width, const uint32_t mantissa_width,
+                                            ClaricppSPAV spav) {
+        return make(Create::FP::from_fp, spav, API::mode(mode), API::to_cpp(fp),
+                    Mode::FP::Width { exp_width, mantissa_width });
+    }
+
+    ClaricppExpr claricpp_create_fp_from_not_2s_complement_bv(const ClaricppExpr x,
+                                                              const uint32_t exp_width,
+                                                              const uint32_t mantissa_width,
+                                                              ClaricppSPAV spav) {
+        return make(Create::FP::from_not_2s_complement_bv, spav, API::to_cpp(x),
+                    Mode::FP::Width { exp_width, mantissa_width });
+    }
+
+    ClaricppExpr claricpp_create_fp_to_bv_signed(const ClaricppRM mode, const ClaricppExpr fp,
+                                                 const UINT bit_length, ClaricppSPAV spav) {
+        return make(Create::FP::to_bv<true>, spav, API::mode(mode), API::to_cpp(fp), bit_length);
+    }
+
+    ClaricppExpr claricpp_create_fp_to_bv_unsigned(const ClaricppRM mode, const ClaricppExpr fp,
+                                                   const UINT bit_length, ClaricppSPAV spav) {
+        return make(Create::FP::to_bv<false>, spav, API::mode(mode), API::to_cpp(fp), bit_length);
+    }
+
+    // Trivial
+
     ClaricppExpr claricpp_create_fp_to_ieee_bv(const ClaricppExpr x, ClaricppSPAV spav) {
         return make(Create::FP::to_ieee_bv, spav, API::to_cpp(x));
     }
@@ -353,5 +425,11 @@ extern "C" {
     ClaricppExpr claricpp_create_fp_div(const ClaricppExpr left, const ClaricppExpr right,
                                         const ClaricppRM mode, ClaricppSPAV spav) {
         return make(Create::FP::div, spav, API::to_cpp(left), API::to_cpp(right), API::mode(mode));
+    }
+
+    ClaricppExpr claricpp_create_fp_fp(const ClaricppExpr first, const ClaricppExpr second,
+                                       const ClaricppExpr third, ClaricppSPAV spav) {
+        return make(Create::FP::fp, spav, API::to_cpp(first), API::to_cpp(second),
+                    API::to_cpp(third));
     }
 }
