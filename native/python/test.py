@@ -24,6 +24,8 @@ try:
     print(ii.args)
     print("\nSucess")
 
+    bv2 = add(bv1, bv0)
+    print(repr(bv2))
 # except ClaricppException as e:
 #     print('\nCaught')
 #     print(e)
