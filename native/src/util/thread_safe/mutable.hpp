@@ -37,7 +37,7 @@ namespace Util::ThreadSafe {
         Mutable() = default;
 
         /** Emplacement constructor, take object by move */
-        explicit Mutable(T &&o) : Base { std::forward<Base>(o) }, obj { o } {}
+        explicit Mutable(T &&o) : obj { o } {}
 
         /** Destructor */
         ~Mutable() noexcept final = default;
