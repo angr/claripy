@@ -8,7 +8,7 @@
 #include "base.hpp"
 
 #include "../op.hpp"
-#include "../simplification.hpp"
+#include "../simplify.hpp"
 
 #include <stack>
 #include <variant>

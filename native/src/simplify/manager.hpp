@@ -2,8 +2,8 @@
  * @file
  * @brief Define the simplification manager class
  */
-#ifndef R_SIMPLIFICATION_MANAGER_HPP_
-#define R_SIMPLIFICATION_MANAGER_HPP_
+#ifndef R_SIMPLIFY_MANAGER_HPP_
+#define R_SIMPLIFY_MANAGER_HPP_
 
 #include "constants.hpp"
 

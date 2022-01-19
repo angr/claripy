@@ -9,6 +9,6 @@
 #include "../error.hpp"
 #include "../expr.hpp"
 #include "../op.hpp"
-#include "../simplification.hpp"
+#include "../simplify.hpp"
 
 #endif
