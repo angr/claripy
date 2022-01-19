@@ -74,6 +74,14 @@ namespace Util {
          */
         void insert(const Hash &h, const std::shared_ptr<const Cached> &c) {
             std::unique_lock<decltype(s_m)> rw(s_m);
+            cache.insert(h, c);
+        }
+
+        /** Add an entry into the cache (will overwrite existing entries)
+         *  This function is thread-safe
+         */
+        void put(const Hash &h, const std::shared_ptr<const Cached> &c) {
+            std::unique_lock<decltype(s_m)> rw(s_m);
             cache[h] = c;
         }
 
