@@ -7,99 +7,14 @@
 
 #include "constants.hpp"
 
+namespace Simplify {
 
-namespace Simplification::Simplifier {
+    /** Generates a Vec of built in simplifiers to be used on all Exprs */
+    Vec builtin_vec();
 
-    /************************************************/
-    /*                 Miscellaneous                */
-    /************************************************/
+    /** Generates a Map of built in simplifiers and which Ops to use them on */
+    Map builtin_map();
 
-    /** Return if_true, if_false, or original depending on what cond evaluates to */
-    SimplifierFunc if_;
-
-    /** @todo document */
-    SimplifierFunc concat;
-
-    namespace BV {
-
-        /** @todo document */
-        SimplifierFunc reverse;
-
-    } // namespace BV
-
-    /************************************************/
-    /*                    Shift                     */
-    /************************************************/
-
-    namespace Shift {
-
-        /** @todo document */
-        SimplifierFunc r;
-
-        /** @todo document */
-        SimplifierFunc l;
-
-        /** @todo document */
-        SimplifierFunc lshr;
-
-    } // namespace Shift
-
-    /************************************************/
-    /*                   Equality                   */
-    /************************************************/
-
-    /** @todo document */
-    SimplifierFunc eq;
-
-    /** @todo document */
-    SimplifierFunc ne;
-
-    /************************************************/
-    /*                   Boolean                    */
-    /************************************************/
-
-    namespace Boolean {
-
-        /** @todo document */
-        SimplifierFunc and_;
-
-        /** @todo document */
-        SimplifierFunc or_;
-
-        /** @todo document */
-        SimplifierFunc not_;
-
-    } // namespace Boolean
-
-    /************************************************/
-    /*                   Bitwise                    */
-    /************************************************/
-
-    namespace Bitwise {
-
-        /** @todo document */
-        SimplifierFunc add;
-
-        /** @todo document */
-        SimplifierFunc mul;
-
-        /** @todo document */
-        SimplifierFunc sub;
-
-        /** @todo document */
-        SimplifierFunc xor_minmax;
-
-        /** @todo document */
-        SimplifierFunc or_;
-
-        /** @todo document */
-        SimplifierFunc and_;
-
-        /** @todo document */
-        SimplifierFunc xor_;
-
-    } // namespace Bitwise
-
-} // namespace Simplification::Simplifier
+} // namespace Simplify
 
 #endif

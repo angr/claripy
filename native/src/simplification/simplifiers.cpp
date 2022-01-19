@@ -4,70 +4,63 @@
 #include "../op.hpp"
 
 
-// For clarity
-using namespace Simplification;
+// For brevity
+using SL = Simplify::SimplifyLog;
 
 
 /** @todo
  *  original may not be nullptr
  */
-Expr::BasePtr Simplifier::if_(const Expr::BasePtr &original) {
+static Expr::BasePtr if_(const Expr::BasePtr &original) {
     UTIL_ASSERT_NOT_NULL_DEBUG(original);
-    /* Expr::Bool { Expr::cast_throw_on_fail<Expr::Bool>(original->args[0]) }; */
-
-    /* if (cond->is_true()) { */
-    /* return if_true; */
-    /* } */
-    /* else if (cond->is_false()) { */
-    /* return if_false; */
-    /* } */
-    /* else { */
-    /* return original; */
-    /* } */
     return original;
 }
 
 /** @todo
  *  original may not be nullptr
  */
-Expr::BasePtr Simplifier::concat(const Expr::BasePtr &original) {
+static Expr::BasePtr concat(const Expr::BasePtr &original) {
     UTIL_ASSERT_NOT_NULL_DEBUG(original);
     return original; // todo
 }
 
-/** @todo
- *  original may not be nullptr
- */
-Expr::BasePtr Simplifier::BV::reverse(const Expr::BasePtr &original) {
-    UTIL_ASSERT_NOT_NULL_DEBUG(original);
-    return original; // todo
-}
+namespace BV {
+    /** @todo
+     *  original may not be nullptr
+     */
+    static Expr::BasePtr reverse(const Expr::BasePtr &original) {
+        UTIL_ASSERT_NOT_NULL_DEBUG(original);
+        return original; // todo
+    }
+} // namespace BV
 
 /************************************************/
 /*                    Shift                     */
 /************************************************/
 
-/** @todo
- *  original may not be nullptr
- */
-Expr::BasePtr Simplifier::Shift::r(const Expr::BasePtr &original) {
-    UTIL_ASSERT_NOT_NULL_DEBUG(original);
-    return original; // todo
-}
+namespace Shift {
+    /** @todo
+     *  original may not be nullptr
+     */
+    static Expr::BasePtr r(const Expr::BasePtr &original) {
+        UTIL_ASSERT_NOT_NULL_DEBUG(original);
+        return original; // todo
+    }
 
-/** @todo
- *  original may not be nullptr
- */
-Expr::BasePtr Simplifier::Shift::l(const Expr::BasePtr &original) {
-    return original; // todo
-}
+    /** @todo
+     *  original may not be nullptr
+     */
+    static Expr::BasePtr l(const Expr::BasePtr &original) {
+        return original; // todo
+    }
 
-/** @todo
- *  original may not be nullptr
- */
-Expr::BasePtr Simplifier::Shift::lshr(const Expr::BasePtr &original) {
-    return original; // todo
-}
+    /** @todo
+     *  original may not be nullptr
+     */
+    static Expr::BasePtr lshr(const Expr::BasePtr &original) {
+        return original; // todo
+    }
+} // namespace Shift
 
 /************************************************/
 /*                   Equality                   */
@@ -76,20 +69,20 @@ Expr::BasePtr Simplifier::Shift::lshr(const Expr::BasePtr &original) {
 /** @todo
  *  original may not be nullptr
  */
-Expr::BasePtr Simplifier::eq(const Expr::BasePtr &original) {
+static Expr::BasePtr eq(const Expr::BasePtr &original) {
 #ifdef DEBUG
     UTIL_ASSERT_NOT_NULL_DEBUG(original);
     Util::Cast::Dynamic::test_throw_on_fail<Op::Eq, Util::Err::Type>(
         original->op, "Simplifer::eq's Expr's op must be an Op::Eq");
 #endif
-    Util::Log::verbose("Eq simplifier invoked");
+    Util::Log::verbose<SL>("Eq simplifier invoked");
     return original; // todo
 }
 
 /** @todo
  *  original may not be nullptr
  */
-Expr::BasePtr Simplifier::ne(const Expr::BasePtr &original) {
+static Expr::BasePtr ne(const Expr::BasePtr &original) {
     UTIL_ASSERT_NOT_NULL_DEBUG(original);
     return original; // todo
 }
@@ -98,86 +91,116 @@ Expr::BasePtr Simplifier::ne(const Expr::BasePtr &original) {
 /*                   Boolean                    */
 /************************************************/
 
-/** @todo
- *  original may not be nullptr
- */
-Expr::BasePtr Simplifier::Boolean::and_(const Expr::BasePtr &original) {
-    UTIL_ASSERT_NOT_NULL_DEBUG(original);
-    return original; // todo
-}
+namespace Boolean {
+    /** @todo
+     *  original may not be nullptr
+     */
+    static Expr::BasePtr and_(const Expr::BasePtr &original) {
+        UTIL_ASSERT_NOT_NULL_DEBUG(original);
+        return original; // todo
+    }
 
-/** @todo
- *  original may not be nullptr
- */
-Expr::BasePtr Simplifier::Boolean::or_(const Expr::BasePtr &original) {
-    UTIL_ASSERT_NOT_NULL_DEBUG(original);
-    return original; // todo
-}
+    /** @todo
+     *  original may not be nullptr
+     */
+    static Expr::BasePtr or_(const Expr::BasePtr &original) {
+        UTIL_ASSERT_NOT_NULL_DEBUG(original);
+        return original; // todo
+    }
 
-/** @todo
- *  original may not be nullptr
- */
-Expr::BasePtr Simplifier::Boolean::not_(const Expr::BasePtr &original) {
-    UTIL_ASSERT_NOT_NULL_DEBUG(original);
-    return original; // todo
-}
+    /** @todo
+     *  original may not be nullptr
+     */
+    static Expr::BasePtr not_(const Expr::BasePtr &original) {
+        UTIL_ASSERT_NOT_NULL_DEBUG(original);
+        return original; // todo
+    }
+} // namespace Boolean
 
 /************************************************/
 /*                   Bitwise                    */
 /************************************************/
 
-/** @todo
- *  original may not be nullptr
- */
-Expr::BasePtr Simplifier::Bitwise::add(const Expr::BasePtr &original) {
-    UTIL_ASSERT_NOT_NULL_DEBUG(original);
-    return original; // todo
+namespace Bitwise {
+    /** @todo
+     *  original may not be nullptr
+     */
+    static Expr::BasePtr add(const Expr::BasePtr &original) {
+        UTIL_ASSERT_NOT_NULL_DEBUG(original);
+        return original; // todo
+    }
+
+    /** @todo
+     *  original may not be nullptr
+     */
+    static Expr::BasePtr mul(const Expr::BasePtr &original) {
+        UTIL_ASSERT_NOT_NULL_DEBUG(original);
+        return original; // todo
+    }
+
+    /** @todo
+     *  original may not be nullptr
+     */
+    static Expr::BasePtr sub(const Expr::BasePtr &original) {
+        UTIL_ASSERT_NOT_NULL_DEBUG(original);
+        return original; // todo
+    }
+
+    /** @todo
+     *  original may not be nullptr
+     */
+    static Expr::BasePtr xor_minmax(const Expr::BasePtr &original) {
+        UTIL_ASSERT_NOT_NULL_DEBUG(original);
+        return original; // todo
+    }
+
+    /** @todo
+     *  original may not be nullptr
+     */
+    static Expr::BasePtr or_(const Expr::BasePtr &original) {
+        UTIL_ASSERT_NOT_NULL_DEBUG(original);
+        return original; // todo
+    }
+
+    /** @todo
+     *  original may not be nullptr
+     */
+    static Expr::BasePtr and_(const Expr::BasePtr &original) {
+        UTIL_ASSERT_NOT_NULL_DEBUG(original);
+        return original; // todo
+    }
+
+    /** @todo
+     *  original may not be nullptr
+     */
+    static Expr::BasePtr xor_(const Expr::BasePtr &original) {
+        UTIL_ASSERT_NOT_NULL_DEBUG(original);
+        return original; // todo
+    }
+} // namespace Bitwise
+
+
+// From header
+
+/** A local macro for consistency */
+#define ENTRY(X, ...)                                                                              \
+    {                                                                                              \
+        (::Op::X::static_cuid), { __VA_ARGS__ }                                                    \
+    }
+
+Simplify::Vec Simplify::builtin_vec() {
+    return {};
 }
 
-/** @todo
- *  original may not be nullptr
- */
-Expr::BasePtr Simplifier::Bitwise::mul(const Expr::BasePtr &original) {
-    UTIL_ASSERT_NOT_NULL_DEBUG(original);
-    return original; // todo
+Simplify::Map Simplify::builtin_map() {
+    // @todo: Remove sink
+    Util::sink(concat, BV::reverse, Shift::r, Shift::l, Shift::lshr, eq, ne, Boolean::and_,
+               Boolean::or_, Boolean::not_, Bitwise::add, Bitwise::mul, Bitwise::sub,
+               Bitwise::xor_minmax, Bitwise::or_, Bitwise::and_, Bitwise::xor_);
+    return {
+        ENTRY(If, if_),
+    };
 }
 
-/** @todo
- *  original may not be nullptr
- */
-Expr::BasePtr Simplifier::Bitwise::sub(const Expr::BasePtr &original) {
-    UTIL_ASSERT_NOT_NULL_DEBUG(original);
-    return original; // todo
-}
-
-/** @todo
- *  original may not be nullptr
- */
-Expr::BasePtr Simplifier::Bitwise::xor_minmax(const Expr::BasePtr &original) {
-    UTIL_ASSERT_NOT_NULL_DEBUG(original);
-    return original; // todo
-}
-
-/** @todo
- *  original may not be nullptr
- */
-Expr::BasePtr Simplifier::Bitwise::or_(const Expr::BasePtr &original) {
-    UTIL_ASSERT_NOT_NULL_DEBUG(original);
-    return original; // todo
-}
-
-/** @todo
- *  original may not be nullptr
- */
-Expr::BasePtr Simplifier::Bitwise::and_(const Expr::BasePtr &original) {
-    UTIL_ASSERT_NOT_NULL_DEBUG(original);
-    return original; // todo
-}
-
-/** @todo
- *  original may not be nullptr
- */
-Expr::BasePtr Simplifier::Bitwise::xor_(const Expr::BasePtr &original) {
-    UTIL_ASSERT_NOT_NULL_DEBUG(original);
-    return original; // todo
-}
+// Cleanup
+#undef ENTRY

@@ -1,46 +1,29 @@
 /**
  * @file
- * @brief Define the simplify method
+ * @brief Define the simplify and cache methods
  */
 #ifndef R_SIMPLIFICATION_SIMPLIFY_HPP_
 #define R_SIMPLIFICATION_SIMPLIFY_HPP_
 
-#include "cache.hpp"
-#include "op_map.hpp"
+#include "manager.hpp"
 
 
-namespace Simplification {
+namespace Simplify {
+    /** thread local Simplify Manager */
+    static thread_local Manager manager {};
 
-    namespace Private {
-        /** Simplify old and return the result
-         *  old may not be nullptr
-         */
-        inline Expr::BasePtr simplify(const Expr::BasePtr &old) {
-            UTIL_ASSERT_NOT_NULL_DEBUG(old->op); // Sanity check
-            if (const auto itr { op_map.find(old->op->cuid) }; itr != op_map.end()) {
-                return itr->second(old);
-            }
-            else {
-                Util::Log::verbose(
-                    "Simplify found no suitable claricpp simplifier for the given expr");
-                return old;
-            }
-        }
-    } // namespace Private
+    /** Simplifies a given Expr */
+    inline Expr::BasePtr simplify(const Expr::BasePtr &e) { return manager.simplify(e); }
 
-    /** Simplify old and return the result
-     *  old may not be nullptr
-     */
-    inline Expr::BasePtr simplify(const Expr::BasePtr &old) {
-        UTIL_ASSERT_NOT_NULL_DEBUG(old);
-        if (auto lookup { Private::cache.find(old->hash) }; lookup) {
-            Util::Log::verbose("Simplification cache hit");
-            return lookup;
-        }
-        auto ret { Private::simplify(old) };
-        cache(old->hash, ret);
-        return ret;
-    }
-} // namespace Simplification
+    /** Cache a simplification result done outside of simplify()
+     *  This will override any result previously stored by simplify
+     **/
+    inline void cache(const Hash::Hash h, const Expr::BasePtr &e) { return manager.cache(h, e); }
+
+    static_assert(std::is_same_v<Func, decltype(simplify)>, "simplify of wrong type");
+} // namespace Simplify
+
+// @todo
+namespace Simplification = Simplify;
 
 #endif
