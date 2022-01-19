@@ -45,14 +45,20 @@ namespace Simplify {
 
         /** Add a simplifier function to use on Exprs of the given op cuid */
         inline void register_(const CUID::CUID cuid, CTSC<Func> func) {
-            auto [m, lock] { map.scoped_unique() };
-            add_to_vec(m[cuid], func);
+            {
+                auto [m, lock] { map.scoped_unique() };
+                add_to_vec(m[cuid], func);
+            }
+            Util::Log::debug<SimplifyLog>("Simplify::Manager registered new op simplifier");
         }
 
         /** Add a simplifier function to use on all Exprs */
         inline void register_(CTSC<Func> func) {
-            auto [v, lock] { vec.scoped_unique() };
-            add_to_vec(v, func);
+            {
+                auto [v, lock] { vec.scoped_unique() };
+                add_to_vec(v, func);
+            }
+            Util::Log::info<SimplifyLog>("Simplify::Manager registered new global simplifier");
         }
 
       private:

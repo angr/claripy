@@ -20,6 +20,8 @@ typedef void (*const ClaricppPyLog)(PyStr, const ClaricppLogLvl, PyStr);
 /** The level getter callback type */
 typedef ClaricppLogLvl (*const ClaricppPyLevel)(PyStr);
 
+/** The python simplification callback */
+typedef ClaricppExpr (*ClaricppSimp)(const ClaricppExpr);
 
 /********************************************************************/
 /*                             General                              */
@@ -30,8 +32,9 @@ typedef ClaricppLogLvl (*const ClaricppPyLevel)(PyStr);
  *  This does things like change the logging backend
  *  @param py_log The python logging callback the logging system should use
  *  @param py_lvl The python log level getter callback the logging system should use
+ *  @param py_simp The claricpp python simplifier callback (may be null)
  */
-void claricpp_init_for_python_usage(ClaricppPyLog py_log, ClaricppPyLevel py_lvl);
+void claricpp_init_for_python_usage(ClaricppPyLog py_log, ClaricppPyLevel py_lvl, ClaricppSimp py_simp);
 
 /** Returns true if and only if the previous API function failed with an exception
  *  This function will not override the saved exception, on failure the program will crash

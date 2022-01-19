@@ -104,16 +104,43 @@ static inline ClaricppException get_exception() noexcept {
     }
 }
 
+/** A static global to allow converting the python function into a function pointer */
+ClaricppSimp global_py_simp { nullptr };
+
+static Expr::BasePtr simp_wrapper(const Expr::BasePtr &e) {
+    ClaricppExpr in { API::copy_to_c(e) };
+    ClaricppExpr out { global_py_simp(in) };
+    API::free(in); // Clean up after python stuff
+    Expr::BasePtr ret { std::move(API::to_cpp(out)) };
+    API::free(out); // Clean up after python stuff
+    return ret;
+}
+
 // @todo: test cases?
 extern "C" {
-    void claricpp_init_for_python_usage(ClaricppPyLog py_log, ClaricppPyLevel py_lvl) {
+    void claricpp_init_for_python_usage(ClaricppPyLog py_log, ClaricppPyLevel py_lvl,
+                                        ClaricppSimp py_simp) {
+        // This should only be called once
+        static bool first { true };
+        UTIL_ASSERT(Util::Err::Usage, first, "This function should only be called once!");
+        first = false;
+
+        // Log backend
         Util::Log::info("Installing Python logging backend");
         Util::Log::Backend::set<API::PythonLogShim>(py_log, py_lvl);
 
+        // Log levels
         Util::Log::info(
             "Configuring Claricpp to send all logs to allow Python to handle log levels.");
         Util::Log::Level::set(Util::Log::Level::Level::Verbose);
 
+        // Simplifiers
+        if (py_simp != nullptr) {
+            global_py_simp = py_simp;
+            Simplify::manager.register_(simp_wrapper);
+        }
+
+        // Success
         Util::Log::info("Claricpp successfully configured for python usage");
     }
 
