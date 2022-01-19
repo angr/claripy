@@ -24,6 +24,9 @@ namespace Util::Err::Python {
      */
     UTIL_ERR_DEFINE_NONFINAL_EXCEPTION(Claripy, Base);
 
+    /** A custom claripy exception for python runtime errors */
+    UTIL_ERR_DEFINE_NONFINAL_EXCEPTION(Runtime, Base);
+
 } // namespace Util::Err::Python
 
 #endif
