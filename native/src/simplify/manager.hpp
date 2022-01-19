@@ -46,7 +46,7 @@ namespace Simplify {
         /** Add a simplifier function to use on Exprs of the given op cuid */
         inline void register_(const CUID::CUID cuid, CTSC<Func> func) {
             {
-                auto [m, lock] { map.scoped_unique() };
+                auto [m, lock] { map.unique() };
                 add_to_vec(m[cuid], func);
             }
             Util::Log::debug<SimplifyLog>("Simplify::Manager registered new op simplifier");
@@ -55,7 +55,7 @@ namespace Simplify {
         /** Add a simplifier function to use on all Exprs */
         inline void register_(CTSC<Func> func) {
             {
-                auto [v, lock] { vec.scoped_unique() };
+                auto [v, lock] { vec.unique() };
                 add_to_vec(v, func);
             }
             Util::Log::info<SimplifyLog>("Simplify::Manager registered new global simplifier");
@@ -70,7 +70,7 @@ namespace Simplify {
             Expr::BasePtr ret { old };
             // Op map
             {
-                auto [m, lock] = map.scoped_shared();
+                auto [m, lock] = map.shared();
                 if (const auto itr { m.find(old->op->cuid) }; itr != m.end()) {
                     for (const auto &f : itr->second) {
                         ret = f(ret);
@@ -79,7 +79,7 @@ namespace Simplify {
             }
             // Base vector
             {
-                auto [v, lock] = vec.scoped_shared();
+                auto [v, lock] = vec.shared();
                 for (const auto &f : v) {
                     ret = f(ret);
                 }

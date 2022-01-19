@@ -8,7 +8,6 @@
 
 #include "base.hpp"
 #include "move_lock.hpp"
-#include "protected_object.hpp"
 
 #include <shared_mutex>
 
@@ -42,23 +41,17 @@ namespace Util::ThreadSafe {
         /** Destructor */
         ~Mutable() noexcept final = default;
 
-        /** Request read-write access */
-        [[nodiscard]] auto unique() { return ProtectedObject { obj, UniqueLock { m } }; }
-
         /** Request scoped read-write access
          *  Structure bind to the return type as follows:
          *  auto [ref, lock] = mutable.unique();
          */
-        [[nodiscard]] auto scoped_unique() { return std::pair<T &, const UniqueLock> { obj, m }; }
-
-        /** Request read-only access */
-        [[nodiscard]] auto shared() { return ProtectedObject { obj, SharedLock { m } }; }
+        [[nodiscard]] auto unique() { return std::pair<T &, const UniqueLock> { obj, m }; }
 
         /** Request scoped read-only access
          *  Structure bind to the return type as follows:
          *  const auto [ref, lock] = mutable.shared();
          */
-        [[nodiscard]] auto scoped_shared() const {
+        [[nodiscard]] auto shared() const {
             return std::pair<const T &, const SharedLock> { obj, m };
         }
 

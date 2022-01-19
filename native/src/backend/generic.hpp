@@ -62,12 +62,14 @@ namespace Backend {
          */
         void downsize() override {
             Util::Log::info("Z3 backend downsizing...");
-            errored_cache.scoped_unique().first.clear();
             // Thread locals
             conversion_cache_g().clear();
 #ifndef BACKEND_DISABLE_ABSTRACTION_CACHE
             abstraction_cache_g().clear();
 #endif
+            // Globals
+            auto [ec, _] { errored_cache.unique() };
+            ec.clear();
         }
 
       protected:
@@ -108,7 +110,7 @@ namespace Backend {
                         arg_stack.emplace_back(&(lookup->second));
                         continue;
                     }
-                    else if (const auto [map, _] = errored_cache.scoped_shared();
+                    else if (const auto [map, _] = errored_cache.shared();
                              map.find(expr->hash) != map.end()) {
                         UTIL_THROW(Error::Backend::Unsupported, name(),
                                    " cannot handle operation: ", op->op_name());
