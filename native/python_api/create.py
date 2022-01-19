@@ -54,9 +54,9 @@ __all__ = [
     "fp",
 ]
 
-from claricpp import *
-from expr import *
-from annotation_spav import AnnotationSPAV
+from .claricpp import *
+from .expr import *
+from .annotation_spav import AnnotationSPAV
 from typing import List, Union
 from enum import Enum
 

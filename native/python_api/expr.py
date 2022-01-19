@@ -1,7 +1,7 @@
 __all__ = ["LazyPrim", "LazyArg", "Expr", "Bits"]
 
-from claricpp import *
-import annotation_spav
+from .claricpp import *
+from .annotation_spav import *
 from functools import cache, cached_property
 
 # TODO: deal with destruction / freeing memory
@@ -112,7 +112,7 @@ class Expr:
         return to_utf8(claricpp.claricpp_expr_op_name(self._expr))
 
     @cached_property
-    def annotations() -> annotation_spav:
+    def annotations() -> AnnotationSPAV:
         return AnnotationSPAV(claricpp.claricpp_expr_annotations(self._expr))
 
     @cached_property

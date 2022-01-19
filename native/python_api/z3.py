@@ -1,10 +1,10 @@
-__all__ = ["Solver", "Z3"]
+__all__ = ["Z3"]
 
 import typing
 
-from claricpp import *
-from expr import *
-from backend import Backend
+from .claricpp import *
+from .expr import *
+from .backend import Backend
 from functools import cache, cached_property
 from typing import List, Union, Optional
 
@@ -12,27 +12,26 @@ from typing import List, Union, Optional
 # TODO: slots!
 
 
-class Solver:
-    """
-    The wrapper for a Z3 solver
-    """
-
-    def __init__(self, solver):
-        self._solver = solver
-
-    @cached_property
-    def raw(self):
-        """
-        Get the raw solver self holds
-        Warning: Do not call this function unless you know what you are doing!
-        """
-        return self._solver
-
-
 class Z3(Backend):
     """
     The public API for the Z3 backend
     """
+
+    class Solver:
+        """
+        The wrapper for a Z3 solver
+        """
+
+        def __init__(self, solver):
+            self._solver = solver
+
+        @cached_property
+        def raw(self):
+            """
+            Get the raw solver self holds
+            Warning: Do not call this function unless you know what you are doing!
+            """
+            return self._solver
 
     def __init__(self):
         super().__init__(claricpp.claricpp_backend_z3_new())

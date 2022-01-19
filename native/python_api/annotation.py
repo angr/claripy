@@ -1,6 +1,6 @@
 __all__ = ["Annotation", "SimplificationAvoidanceAnnotation"]
 
-from claricpp import *
+from .claricpp import *
 
 # TODO: deal with destruction / freeing memory
 # TODO: slots!

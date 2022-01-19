@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-from create import *
-from z3 import Z3
+from python_api import * # Imports like 12 things
+from python_api.create import bool_v, bv_v, if_, add
 
 
 try:

@@ -1,7 +1,7 @@
 __all__ = ["AnnotationSPAV"]
 
-from claricpp import *
-from annotation import *
+from .claricpp import *
+from .annotation import *
 from functools import cache, cached_property
 
 # TODO: deal with destruction / freeing memory

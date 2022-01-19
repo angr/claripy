@@ -2,7 +2,7 @@ __all__ = ["ffi", "to_utf8", "claricpp", "ClaricppException"]
 
 import functools
 import logging
-from claricpp_ffi import ffi, lib as raw_lib
+from .claricpp_ffi import ffi, lib as raw_lib
 
 # TODO: slots!
 

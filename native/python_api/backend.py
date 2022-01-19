@@ -1,7 +1,7 @@
 __all__ = ["BigIntMode", "Backend"]
 
-from claricpp import *
-from expr import Expr
+from .claricpp import *
+from .expr import Expr
 from enum import Enum
 from functools import cache, cached_property
 
