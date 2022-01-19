@@ -33,7 +33,7 @@ namespace Create::Private {
     inline Expr::BasePtr uint_binary(const Expr::BasePtr &expr, const IntT integer,
                                      Annotation::SPAV &&sp) {
         static const Expr::TypeNames<Allowed...> allowed;
-        using namespace Simplification;
+        using namespace Simplify;
         namespace Err = Error::Expr;
 
         // Static checks

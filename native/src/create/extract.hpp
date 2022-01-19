@@ -16,7 +16,7 @@ namespace Create {
     inline Expr::BasePtr extract(const UInt high, const UInt low, const Expr::BasePtr &from,
                                  Annotation::SPAV &&sp = nullptr) {
         namespace E = Error::Expr;
-        using namespace Simplification;
+        using namespace Simplify;
 
         // Checks
         UTIL_ASSERT(E::Usage, from != nullptr, "from may not be nullptr");

@@ -17,7 +17,7 @@ namespace Create::String {
     inline Expr::BasePtr replace(const Expr::BasePtr &full, const Expr::BasePtr &search,
                                  const Expr::BasePtr &replacement,
                                  Annotation::SPAV &&sp = nullptr) {
-        using namespace Simplification;
+        using namespace Simplify;
         namespace Err = Error::Expr;
 
         // Checks

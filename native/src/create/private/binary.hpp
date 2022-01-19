@@ -40,7 +40,7 @@ namespace Create::Private {
     inline Expr::BasePtr binary_explicit(const Expr::BasePtr &left, const Expr::BasePtr &right,
                                          Annotation::SPAV &&sp) {
         static const Expr::TypeNames<Allowed...> allowed;
-        using namespace Simplification;
+        using namespace Simplify;
         namespace Err = Error::Expr;
 
         // Static checks
@@ -75,7 +75,7 @@ namespace Create::Private {
     inline Expr::BasePtr binary(const Expr::BasePtr &left, const Expr::BasePtr &right,
                                 Annotation::SPAV &&sp) {
         static_assert(Op::is_binary<OpT>, "Create::Private::binary requires a binary OpT");
-        using namespace Simplification;
+        using namespace Simplify;
         namespace Err = Error::Expr;
 
         // For speed

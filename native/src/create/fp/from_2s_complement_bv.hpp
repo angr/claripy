@@ -18,7 +18,7 @@ namespace Create::FP {
                                         const Mode::FP::Width &w, Annotation::SPAV &&sp = nullptr) {
         UTIL_ASSERT(Error::Expr::Usage, bv != nullptr, "bv may not be nullptr");
         using FromBV = Op::FP::From2sComplementBV<Signed>;
-        return Simplification::simplify(Expr::factory<Expr::FP>(
+        return Simplify::simplify(Expr::factory<Expr::FP>(
             bv->symbolic, Op::factory<FromBV>(m, bv, w), w.width(), std::move(sp)));
     }
 

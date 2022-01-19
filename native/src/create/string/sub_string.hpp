@@ -47,7 +47,7 @@ namespace Create::String {
                     start_index != nullptr && count != nullptr && full_string != nullptr,
                     "Expr pointers cannot be nullptr");
         const UInt bit_length { Private::sub_string_length(count, full_string) };
-        return Simplification::simplify(Expr::factory<Expr::String>(
+        return Simplify::simplify(Expr::factory<Expr::String>(
             start_index->symbolic || count->symbolic || full_string->symbolic,
             Op::factory<Op::String::SubString>(start_index, count, full_string), bit_length,
             std::move(sp)));

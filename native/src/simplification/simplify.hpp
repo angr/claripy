@@ -23,7 +23,4 @@ namespace Simplify {
     static_assert(std::is_same_v<Func, decltype(simplify)>, "simplify of wrong type");
 } // namespace Simplify
 
-// @todo
-namespace Simplification = Simplify;
-
 #endif

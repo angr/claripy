@@ -16,7 +16,7 @@ namespace Create::FP {
     inline Expr::BasePtr from_fp(const Mode::FP::Rounding m, const Expr::BasePtr &fp,
                                  const Mode::FP::Width &w, Annotation::SPAV &&sp = nullptr) {
         UTIL_ASSERT(Error::Expr::Usage, fp != nullptr, "fp may not be nullptr");
-        return Simplification::simplify(Expr::factory<Expr::FP>(
+        return Simplify::simplify(Expr::factory<Expr::FP>(
             fp->symbolic, Op::factory<Op::FP::FromFP>(m, fp, w), w.width(), std::move(sp)));
     }
 

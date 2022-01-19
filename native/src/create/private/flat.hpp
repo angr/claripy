@@ -28,7 +28,7 @@ namespace Create::Private {
     template <typename Out, typename OpT, typename... Allowed>
     inline Expr::BasePtr flat_explicit(Op::FlatArgs &&operands, Annotation::SPAV &&sp) {
         static const Expr::TypeNames<Allowed...> allowed;
-        using namespace Simplification;
+        using namespace Simplify;
         namespace Err = Error::Expr;
 
         // Checks
@@ -58,7 +58,7 @@ namespace Create::Private {
      */
     template <typename OpT, typename... Allowed>
     inline Expr::BasePtr flat(Op::FlatArgs &&operands, Annotation::SPAV &&sp) {
-        using namespace Simplification;
+        using namespace Simplify;
         namespace Err = Error::Expr;
 
         // For speed

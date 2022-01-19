@@ -17,7 +17,7 @@ namespace Create::Private {
     inline Expr::BasePtr ternary_explicit(const Expr::BasePtr &first, const Expr::BasePtr &second,
                                           const Expr::BasePtr &third, Annotation::SPAV &&sp) {
         static const Expr::TypeNames<Allowed...> allowed;
-        using namespace Simplification;
+        using namespace Simplify;
         namespace Err = Error::Expr;
 
         // Static checks

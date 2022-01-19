@@ -271,7 +271,7 @@ namespace Backend {
 #endif
             if (LIKELY(std::holds_alternative<Expr::BasePtr>(ret))) {
                 const auto &tmp { std::get<Expr::BasePtr>(ret) };
-                Simplification::cache(tmp->hash, tmp);
+                Simplify::cache(tmp->hash, tmp);
             }
             return ret;
         }

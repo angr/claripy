@@ -21,7 +21,7 @@ namespace Create::String {
         namespace Err = Error::Expr;
         UTIL_ASSERT(Err::Usage, x != nullptr, "Expr pointers cannot be nullptr");
         UTIL_ASSERT(Err::Type, CUID::is_t<Expr::BV>(x), "operand must be each be of type Expr::BV");
-        return Simplification::simplify(Expr::factory<Expr::String>(
+        return Simplify::simplify(Expr::factory<Expr::String>(
             x->symbolic, Op::factory<Op::String::FromInt>(x),
             Expr::get_bit_length(x) + 2_ui * BitLength::char_bit, std::move(sp)));
     }

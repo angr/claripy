@@ -18,8 +18,8 @@ namespace Create::FP {
                                                    Annotation::SPAV &&sp = nullptr) {
         UTIL_ASSERT(Error::Expr::Usage, bv != nullptr, "bv may not be nullptr");
         using Not2s = Op::FP::FromNot2sComplementBV;
-        return Simplification::simplify(Expr::factory<Expr::FP>(
-            bv->symbolic, Op::factory<Not2s>(bv, w), w.width(), std::move(sp)));
+        return Simplify::simplify(Expr::factory<Expr::FP>(bv->symbolic, Op::factory<Not2s>(bv, w),
+                                                          w.width(), std::move(sp)));
     }
 
 } // namespace Create::FP

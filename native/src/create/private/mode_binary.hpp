@@ -19,7 +19,7 @@ namespace Create::Private {
     template <typename OpT>
     inline Expr::BasePtr mode_binary(const Expr::BasePtr &left, const Expr::BasePtr &right,
                                      const Mode::FP::Rounding mode, Annotation::SPAV &&sp) {
-        using namespace Simplification;
+        using namespace Simplify;
         namespace Err = Error::Expr;
 
         // Checks

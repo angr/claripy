@@ -16,7 +16,7 @@ namespace Create::Private {
     template <typename Out, typename OpT, typename... Allowed>
     inline Expr::BasePtr unary_explicit(const Expr::BasePtr &x, Annotation::SPAV &&sp) {
         static const Expr::TypeNames<Allowed...> allowed;
-        using namespace Simplification;
+        using namespace Simplify;
         namespace Err = Error::Expr;
 
         // Static checks
@@ -46,7 +46,7 @@ namespace Create::Private {
     template <typename OpT, typename... Allowed>
     inline Expr::BasePtr unary(const Expr::BasePtr &x, Annotation::SPAV &&sp) {
         static_assert(Op::is_unary<OpT>, "Create::Private::unary requires OpT to be unary");
-        using namespace Simplification;
+        using namespace Simplify;
         namespace Err = Error::Expr;
 
         // For speed

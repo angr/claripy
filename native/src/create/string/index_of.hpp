@@ -19,7 +19,7 @@ namespace Create::String {
         UTIL_ASSERT(Error::Expr::Usage,
                     str != nullptr && pattern != nullptr && start_index != nullptr,
                     "Exprs pointers cannot be nullptr");
-        return Simplification::simplify(
+        return Simplify::simplify(
             Expr::factory<Expr::BV>(str->symbolic || pattern->symbolic,
                                     Op::factory<Op::String::IndexOf>(str, pattern, start_index),
                                     bit_length, std::move(sp)));
