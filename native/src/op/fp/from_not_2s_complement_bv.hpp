@@ -47,7 +47,10 @@ namespace Op::FP {
          */
         explicit inline FromNot2sComplementBV(const Hash::Hash &h, const Expr::BasePtr &b,
                                               const Mode::FP::Width w)
-            : Base { h, static_cuid }, bv { b }, width { w } {}
+            : Base { h, static_cuid }, bv { b }, width { w } {
+            UTIL_ASSERT(Error::Expr::Type, CUID::is_t<Expr::BV>(b),
+                        "Operand b must be an Expr::BV");
+        }
     };
 
 } // namespace Op::FP
