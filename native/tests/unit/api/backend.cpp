@@ -2,6 +2,7 @@
  * @file
  * \ingroup unittest
  */
+#include "exc.hpp"
 #include "testlib.hpp"
 
 
@@ -45,39 +46,40 @@ void backend() {
     // Tests
     Util::Log::debug("Testing base funtions");
     Util::Log::debug("  - name");
-    UNITTEST_ASSERT(std::string { "z3" } == claricpp_backend_name(z3_manual));
+    UNITTEST_ASSERT(std::string { "z3" } == exc(claricpp_backend_name(z3_manual)));
 
     // Test handles
     Util::Log::debug("  - handles");
     const auto sum_c { API::copy_to_c(sum) };
-    UNITTEST_ASSERT(claricpp_backend_handles(z3_manual, sum_c));
-    UNITTEST_ASSERT(not claricpp_backend_handles(z3_manual, API::copy_to_c(vs)));
+    UNITTEST_ASSERT(exc(claricpp_backend_handles(z3_manual, sum_c)));
+    UNITTEST_ASSERT(!exc(claricpp_backend_handles(z3_manual, API::copy_to_c(vs))));
 
     // Test simplify
     Util::Log::debug("  - simplify"); // NOLINT (false positive, not a leak)
-    UNITTEST_ASSERT(API::to_cpp(claricpp_backend_simplify(z3_manual, sum_c))->hash == two->hash);
+    UNITTEST_ASSERT(API::to_cpp(exc(claricpp_backend_simplify(z3_manual, sum_c)))->hash ==
+                    two->hash);
 
     // Test BigInt mode functions
     Util::Log::debug("  - big int");
-    const auto old_mode { claricpp_backend_get_big_int_mode() };
-    const auto got_mode { claricpp_backend_set_big_int_mode(ClaricppBimInt) };
-    const auto new_mode { claricpp_backend_get_big_int_mode() };
-    UNITTEST_ASSERT(old_mode == ClaricppBimStr); // This should be default
-    UNITTEST_ASSERT(old_mode == got_mode);       // This should be default
-    UNITTEST_ASSERT(new_mode == ClaricppBimInt); // This should be default
-    claricpp_backend_set_big_int_mode(old_mode); // Restore for future tests
+    const auto old_mode { exc(claricpp_backend_get_big_int_mode()) };
+    const auto got_mode { exc(claricpp_backend_set_big_int_mode(ClaricppBimInt)) };
+    const auto new_mode { exc(claricpp_backend_get_big_int_mode()) };
+    UNITTEST_ASSERT(old_mode == ClaricppBimStr);      // This should be default
+    UNITTEST_ASSERT(old_mode == got_mode);            // This should be default
+    UNITTEST_ASSERT(new_mode == ClaricppBimInt);      // This should be default
+    exc(claricpp_backend_set_big_int_mode(old_mode)); // Restore for future tests
 
     // Test downsizing backend data
     Util::Log::debug("  - downsize");
     UNITTEST_ASSERT(z3_priv.conv_cache_size() != 0);
-    claricpp_backend_downsize(z3_manual);
+    exc(claricpp_backend_downsize(z3_manual));
     UNITTEST_ASSERT(z3_priv.conv_cache_size() == 0);
 
     // Test clearing persistent data
     Util::Log::debug("  - clear_persistent_data");
     (void) z3_cpp->simplify(bv_sym_with_ans.get()); // Populate satd
     UNITTEST_ASSERT(z3_priv.satd_cache_size() != 0);
-    claricpp_backend_clear_persistent_data(z3_manual);
+    exc(claricpp_backend_clear_persistent_data(z3_manual));
     UNITTEST_ASSERT(z3_priv.satd_cache_size() == 0);
 
     /********************************************************************/
@@ -88,19 +90,19 @@ void backend() {
 
     // Test creating a z3 backend
     Util::Log::debug("  - new");
-    auto z3 { claricpp_backend_z3_new() };
+    auto z3 { exc(claricpp_backend_z3_new()) };
     auto *const z3_ptr { dynamic_cast<Backend::Z3::Z3 *const>(API::to_cpp(z3).get()) };
     UNITTEST_ASSERT(z3_ptr != nullptr);
     auto &raw_z3 { *z3_ptr };
 
     // Test creating solvers
     Util::Log::debug("  - new solver");
-    const auto solver { claricpp_backend_z3_tls_solver(z3, 0) };
+    const auto solver { exc(claricpp_backend_z3_tls_solver(z3, 0)) };
     UNITTEST_ASSERT(API::to_cpp(solver) != nullptr);
-    const auto new_solver { claricpp_backend_z3_new_tls_solver(z3, 0) };
+    const auto new_solver { exc(claricpp_backend_z3_new_tls_solver(z3, 0)) };
     UNITTEST_ASSERT(API::to_cpp(new_solver) != nullptr);
     UNITTEST_ASSERT(API::to_cpp(new_solver) != API::to_cpp(solver));
-    const auto fst_solver_dup { claricpp_backend_z3_tls_solver(z3, 0) };
+    const auto fst_solver_dup { exc(claricpp_backend_z3_tls_solver(z3, 0)) };
     UNITTEST_ASSERT(API::to_cpp(solver) == API::to_cpp(fst_solver_dup));
 
     // Prep
@@ -122,14 +124,14 @@ void backend() {
     // Test add tracked
     Util::Log::debug("  - add tracked");
     [&raw_z3, &z3_solver](auto x) { raw_z3.add(z3_solver, x.get()); }(uleq(0));
-    claricpp_backend_z3_add_tracked(z3, solver, API::to_c(ugeq(1)));
+    exc(claricpp_backend_z3_add_tracked(z3, solver, API::to_c(ugeq(1))));
     UNITTEST_ASSERT(z3_solver.assertions().size() == 2);
     (void) z3_solver.check(); // Generate unsat_core
     UNITTEST_ASSERT(z3_solver.unsat_core().size() == 1);
     z3_solver.reset();
 
     [&raw_z3, &z3_solver](auto x) { raw_z3.add(z3_solver, x.get()); }(uleq(0));
-    claricpp_backend_z3_add_vec_tracked(z3, solver, ugeq3, 2);
+    exc(claricpp_backend_z3_add_vec_tracked(z3, solver, ugeq3, 2));
     UNITTEST_ASSERT(z3_solver.assertions().size() == 3);
     (void) z3_solver.check(); // Generate unsat_core
     UNITTEST_ASSERT(z3_solver.unsat_core().size() == 1);
@@ -137,12 +139,12 @@ void backend() {
 
     // Test add untracked
     Util::Log::debug("  - add untracked");
-    claricpp_backend_z3_add_untracked(z3, solver, API::to_c(ugeq(1)));
+    exc(claricpp_backend_z3_add_untracked(z3, solver, API::to_c(ugeq(1))));
     UNITTEST_ASSERT(z3_solver.assertions().size() == 1);
     UNITTEST_ASSERT(z3_solver.unsat_core().empty());
     z3_solver.reset();
 
-    claricpp_backend_z3_add_vec_untracked(z3, solver, ugeq3, 2);
+    exc(claricpp_backend_z3_add_vec_untracked(z3, solver, ugeq3, 2));
     UNITTEST_ASSERT(z3_solver.assertions().size() == 2);
     UNITTEST_ASSERT(z3_solver.unsat_core().empty());
     z3_solver.reset();
@@ -156,26 +158,27 @@ void backend() {
     // Test satisfiable
     Util::Log::debug("  - satisfiable");
     add(z3_solver, Create::eq(one, one));
-    UNITTEST_ASSERT(claricpp_backend_z3_satisfiable(z3, solver));
+    UNITTEST_ASSERT(exc(claricpp_backend_z3_satisfiable(z3, solver)));
     z3_solver.push();
     add(z3_solver, Create::neq(one, one));
-    UNITTEST_ASSERT(!claricpp_backend_z3_satisfiable(z3, solver));
+    UNITTEST_ASSERT(!exc(claricpp_backend_z3_satisfiable(z3, solver)));
     z3_solver.pop();
-    UNITTEST_ASSERT(claricpp_backend_z3_satisfiable_ec(z3, solver, ugeq3, ugeq3_len));
+    UNITTEST_ASSERT(exc(claricpp_backend_z3_satisfiable_ec(z3, solver, ugeq3, ugeq3_len)));
     add(z3_solver, Create::eq(bv_sym, one));
-    UNITTEST_ASSERT(!claricpp_backend_z3_satisfiable_ec(z3, solver, ugeq3, ugeq3_len));
+    UNITTEST_ASSERT(!exc(claricpp_backend_z3_satisfiable_ec(z3, solver, ugeq3, ugeq3_len)));
     z3_solver.reset();
 
     // Test solution
     Util::Log::debug("  - solution");
     add(z3_solver, uleq(2));
     const auto bv_sym_c { API::copy_to_c(bv_sym) };
-    UNITTEST_ASSERT(claricpp_backend_z3_solution(z3, bv_sym_c, cl(1), solver));
-    UNITTEST_ASSERT(!claricpp_backend_z3_solution(z3, bv_sym_c, cl(3), solver));
+    UNITTEST_ASSERT(exc(claricpp_backend_z3_solution(z3, bv_sym_c, cl(1), solver)));
+    UNITTEST_ASSERT(!exc(claricpp_backend_z3_solution(z3, bv_sym_c, cl(3), solver)));
     UNITTEST_ASSERT(
-        !claricpp_backend_z3_solution_ec(z3, bv_sym_c, cl(3), solver, ugeq3, ugeq3_len));
+        !exc(claricpp_backend_z3_solution_ec(z3, bv_sym_c, cl(3), solver, ugeq3, ugeq3_len)));
     z3_solver.reset();
-    UNITTEST_ASSERT(claricpp_backend_z3_solution_ec(z3, bv_sym_c, cl(3), solver, ugeq3, ugeq3_len));
+    UNITTEST_ASSERT(
+        exc(claricpp_backend_z3_solution_ec(z3, bv_sym_c, cl(3), solver, ugeq3, ugeq3_len)));
 
     // Prep
     const auto sgeq { [&bv_sym](const Int i) {
@@ -196,29 +199,31 @@ void backend() {
     // Test min
     Util::Log::debug("  - min");
     add(z3_solver, sgeq(1));
-    UNITTEST_ASSERT(claricpp_backend_z3_min_signed(z3, bv_sym_c, solver) == 1);
-    UNITTEST_ASSERT(claricpp_backend_z3_min_signed_ec(z3, bv_sym_c, solver, sgeq3, sgeq3_len) == 3);
+    UNITTEST_ASSERT(exc(claricpp_backend_z3_min_signed(z3, bv_sym_c, solver)) == 1);
+    UNITTEST_ASSERT(
+        exc(claricpp_backend_z3_min_signed_ec(z3, bv_sym_c, solver, sgeq3, sgeq3_len)) == 3);
     z3_solver.reset();
     add(z3_solver, ugeq(1));
-    UNITTEST_ASSERT(claricpp_backend_z3_min_unsigned(z3, bv_sym_c, solver) == 1);
-    UNITTEST_ASSERT(claricpp_backend_z3_min_unsigned_ec(z3, bv_sym_c, solver, ugeq3, ugeq3_len) ==
-                    3);
+    UNITTEST_ASSERT(exc(claricpp_backend_z3_min_unsigned(z3, bv_sym_c, solver)) == 1);
+    UNITTEST_ASSERT(
+        exc(claricpp_backend_z3_min_unsigned_ec(z3, bv_sym_c, solver, ugeq3, ugeq3_len)) == 3);
 
     // Test max
     Util::Log::debug("  - max");
     add(z3_solver, sleq(10));
-    UNITTEST_ASSERT(claricpp_backend_z3_max_signed(z3, bv_sym_c, solver) == 10);
-    UNITTEST_ASSERT(claricpp_backend_z3_max_signed_ec(z3, bv_sym_c, solver, &sleq5c, 1) == 5);
+    UNITTEST_ASSERT(exc(claricpp_backend_z3_max_signed(z3, bv_sym_c, solver)) == 10);
+    UNITTEST_ASSERT(exc(claricpp_backend_z3_max_signed_ec(z3, bv_sym_c, solver, &sleq5c, 1)) == 5);
     z3_solver.reset();
     add(z3_solver, uleq(10));
-    UNITTEST_ASSERT(claricpp_backend_z3_max_unsigned(z3, bv_sym_c, solver) == 10);
-    UNITTEST_ASSERT(claricpp_backend_z3_max_unsigned_ec(z3, bv_sym_c, solver, &uleq5c, 1) == 5);
+    UNITTEST_ASSERT(exc(claricpp_backend_z3_max_unsigned(z3, bv_sym_c, solver)) == 10);
+    UNITTEST_ASSERT(exc(claricpp_backend_z3_max_unsigned_ec(z3, bv_sym_c, solver, &uleq5c, 1)) ==
+                    5);
 
     // Test unsat_core
     Util::Log::debug("  - unsat core");
     z3_cpp->add<true>(z3_solver, bv_neq_bv.get());
-    UNITTEST_ASSERT(!claricpp_backend_z3_satisfiable(z3, solver)); // Generate unsat core
-    const auto ucore { claricpp_backend_z3_unsat_core(z3, solver) };
+    UNITTEST_ASSERT(!exc(claricpp_backend_z3_satisfiable(z3, solver))); // Generate unsat core
+    const auto ucore { exc(claricpp_backend_z3_unsat_core(z3, solver)) };
     UNITTEST_ASSERT(ucore.len == 1);
     auto &ucore_0 { API::to_cpp(ucore.arr[0]) }; // NOLINT (not pointer arith)
     UNITTEST_ASSERT(ucore_0 != nullptr);
@@ -229,20 +234,20 @@ void backend() {
     z3_solver.reset();
     add(z3_solver, uleq(1)); // 0, 1 possible
     // Test n too big
-    ARRAY_OUT(ClaricppPrim) evald { claricpp_backend_z3_eval(z3, bv_sym_c, solver, 10) };
+    ARRAY_OUT(ClaricppPrim) evald { exc(claricpp_backend_z3_eval(z3, bv_sym_c, solver, 10)) };
     UNITTEST_ASSERT(evald.len == 2); // Only 0, 1 should have been found
     for (UInt i { 0 }; i < evald.len; ++i) {
         UNITTEST_ASSERT(evald.arr[i].type == ClaricppTypeEnumU64); // NOLINT (not pointer arith)
         UNITTEST_ASSERT(evald.arr[i].data.u64 == i);               // NOLINT (union ok)
     }
     // Test n too small
-    evald = claricpp_backend_z3_eval(z3, bv_sym_c, solver, 1);
+    evald = exc(claricpp_backend_z3_eval(z3, bv_sym_c, solver, 1));
     UNITTEST_ASSERT(evald.len == 1);
 
     z3_solver.reset();
     add(z3_solver, uleq(4)); // 0, 1, 2, 3, 4 possible
     // Test n = 2 with constraint >= 3
-    evald = claricpp_backend_z3_eval_ec(z3, bv_sym_c, solver, 2, ugeq3, ugeq3_len);
+    evald = exc(claricpp_backend_z3_eval_ec(z3, bv_sym_c, solver, 2, ugeq3, ugeq3_len));
     UNITTEST_ASSERT(evald.len == 2); // Only 3, 4 should have been found
     for (UInt i { 0 }; i < evald.len; ++i) {
         UNITTEST_ASSERT(evald.arr[i].type == ClaricppTypeEnumU64); // NOLINT (not pointer arith)
@@ -271,21 +276,21 @@ void backend() {
     add(z3_solver, raw_uleq(bv_sym2, Create::literal(UInt(1)))); // 4 solutions
     // Test n too big
     DOUBLE_ARRAY_OUT(ClaricppPrim)
-    batch_evald { claricpp_backend_z3_batch_eval(z3, both_bv_syms, 2, solver, 10) };
+    batch_evald { exc(claricpp_backend_z3_batch_eval(z3, both_bv_syms, 2, solver, 10)) };
     UNITTEST_ASSERT(batch_evald.len == 4); // 4 solutions should be found
     const std::set<std::pair<UInt, UInt>> be_solutions { { 0, 0 }, { 0, 1 }, { 1, 0 }, { 1, 1 } };
     auto eval_got { to_pairs(batch_evald) };
     UNITTEST_ASSERT(be_solutions == eval_got);
     // Test n too small
-    batch_evald = claricpp_backend_z3_batch_eval(z3, both_bv_syms, 2, solver, 1);
+    batch_evald = exc(claricpp_backend_z3_batch_eval(z3, both_bv_syms, 2, solver, 1));
     UNITTEST_ASSERT(batch_evald.len == 1);
     eval_got = to_pairs(batch_evald);
     UNITTEST_ASSERT(eval_got.size() == 1);
     UNITTEST_ASSERT(be_solutions.find(*eval_got.begin()) != be_solutions.end());
 
     const auto disjoint_syms_c { API::to_c(Create::neq(bv_sym, bv_sym2)) };
-    batch_evald =
-        claricpp_backend_z3_batch_eval_ec(z3, both_bv_syms, 2, solver, 10, &disjoint_syms_c, 1);
+    batch_evald = exc(
+        claricpp_backend_z3_batch_eval_ec(z3, both_bv_syms, 2, solver, 10, &disjoint_syms_c, 1));
     UNITTEST_ASSERT(batch_evald.len == 2);
     eval_got = to_pairs(batch_evald);
     const std::set<std::pair<UInt, UInt>> be_solutions_ec { { 0, 1 }, { 1, 0 } };

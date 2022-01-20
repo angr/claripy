@@ -2,6 +2,7 @@
  * @file
  * \ingroup unittest
  */
+#include "exc.hpp"
 #include "testlib.hpp"
 
 
@@ -12,13 +13,13 @@ void annotation() {
 
     // Use API to create annotations
     const ClaricppAnnotation arr[] = { // NOLINT
-                                       claricpp_annotation_new_base(),
-                                       claricpp_annotation_new_simplification_avoidance()
+                                       exc(claricpp_annotation_new_base()),
+                                       exc(claricpp_annotation_new_simplification_avoidance())
     };
-    const ClaricppSPAV spav { claricpp_annotation_create_spav(arr, 2) };
+    const ClaricppSPAV spav { exc(claricpp_annotation_create_spav(arr, 2)) };
 
     // Empty spav
-    const ClaricppSPAV empty_spav { claricpp_annotation_create_empty_spav() };
+    const ClaricppSPAV empty_spav { exc(claricpp_annotation_create_empty_spav()) };
     UNITTEST_ASSERT(empty_spav.ptr == nullptr);
 
     // Constants
@@ -41,18 +42,18 @@ void annotation() {
     // Accessors
 
     // Array
-    const auto spav_arr { claricpp_annotation_spav_to_array(spav) };
+    const auto spav_arr { exc(claricpp_annotation_spav_to_array(spav)) };
     const Annotation::BasePtr cpp_arr[] { API::to_cpp(arr[0]), API::to_cpp(arr[1]) }; // NOLINT
     UNITTEST_ASSERT(spav_arr.len == 2);
     UNITTEST_ASSERT(API::to_cpp(spav_arr.arr[0]) == cpp_arr[0]); // NOLINT (not pointer arith)
     UNITTEST_ASSERT(API::to_cpp(spav_arr.arr[1]) == cpp_arr[1]); // NOLINT (not pointer arith)
 
     // Len
-    UNITTEST_ASSERT(claricpp_annotation_spav_len(spav) == 2);
+    UNITTEST_ASSERT(exc(claricpp_annotation_spav_len(spav)) == 2);
 
     // Get
-    UNITTEST_ASSERT(API::to_cpp(claricpp_annotation_spav_get(spav, 0)) == cpp_arr[0]);
-    UNITTEST_ASSERT(API::to_cpp(claricpp_annotation_spav_get(spav, 1)) == cpp_arr[1]);
+    UNITTEST_ASSERT(API::to_cpp(exc(claricpp_annotation_spav_get(spav, 0))) == cpp_arr[0]);
+    UNITTEST_ASSERT(API::to_cpp(exc(claricpp_annotation_spav_get(spav, 1))) == cpp_arr[1]);
 }
 
 // Define the test

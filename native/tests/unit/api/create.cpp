@@ -2,6 +2,7 @@
  * @file
  * \ingroup unittest
  */
+#include "exc.hpp"
 #include "testlib.hpp"
 
 
@@ -73,42 +74,47 @@ void create() {
 
     // Symbol
     Util::Log::debug("Testing symbol creation functions...");
-    symbol<Expr::Bool>(claricpp_create_symbol_bool(name, { nullptr }), name, 0);
-    symbol<Expr::String>(claricpp_create_symbol_string(name, bl, { nullptr }), name, bl);
-    symbol<Expr::VS>(claricpp_create_symbol_vs(name, bl, { nullptr }), name, bl);
-    symbol<Expr::FP>(claricpp_create_symbol_fp(name, bl, { nullptr }), name, bl);
-    symbol<Expr::BV>(claricpp_create_symbol_bv(name, bl, { nullptr }), name, bl);
+    symbol<Expr::Bool>(exc(claricpp_create_symbol_bool(name, { nullptr })), name, 0);
+    symbol<Expr::String>(exc(claricpp_create_symbol_string(name, bl, { nullptr })), name, bl);
+    symbol<Expr::VS>(exc(claricpp_create_symbol_vs(name, bl, { nullptr })), name, bl);
+    symbol<Expr::FP>(exc(claricpp_create_symbol_fp(name, bl, { nullptr })), name, bl);
+    symbol<Expr::BV>(exc(claricpp_create_symbol_bv(name, bl, { nullptr })), name, bl);
 
     // Literal
     Util::Log::debug("Testing literal creation functions...");
-    literal<Expr::Bool, bool>(claricpp_create_literal_bool(TRUE, { nullptr }), true, 0);
-    literal<Expr::String, std::string>(claricpp_create_literal_string(name, { nullptr }), name,
+    literal<Expr::Bool, bool>(exc(claricpp_create_literal_bool(TRUE, { nullptr })), true, 0);
+    literal<Expr::String, std::string>(exc(claricpp_create_literal_string(name, { nullptr })), name,
                                        std::strlen(name) * C_CHAR_BIT);
-    literal<Expr::FP, float>(claricpp_create_literal_fp_float(3.F, { nullptr }), 3.F,
+    literal<Expr::FP, float>(exc(claricpp_create_literal_fp_float(3.F, { nullptr })), 3.F,
                              32); // NOLINT
-    literal<Expr::FP, double>(claricpp_create_literal_fp_double(3., { nullptr }), 3.,
+    literal<Expr::FP, double>(exc(claricpp_create_literal_fp_double(3., { nullptr })), 3.,
                               64); // NOLINT
-    literal<Expr::VS, PyObj::VSPtr>(claricpp_create_literal_vs(1, 2, n, { nullptr }), pyobj,
-                                    n);                                                 // NOLINT
-    literal<Expr::BV, uint8_t>(claricpp_create_literal_bv_u8(n, { nullptr }), n, 8);    // NOLINT
-    literal<Expr::BV, uint16_t>(claricpp_create_literal_bv_u16(n, { nullptr }), n, 16); // NOLINT
-    literal<Expr::BV, uint32_t>(claricpp_create_literal_bv_u32(n, { nullptr }), n, 32); // NOLINT
-    literal<Expr::BV, uint64_t>(claricpp_create_literal_bv_u64(n, { nullptr }), n, 64); // NOLINT
-    literal<Expr::BV, BigInt>(claricpp_create_literal_bv_big_int_mode_str("10", n, { nullptr }),
-                              BigInt { "10", n }, n);
-    literal<Expr::BV, BigInt>(claricpp_create_literal_bv_big_int_mode_int("10", n, { nullptr }),
-                              BigInt { 10, n }, n);
+    literal<Expr::VS, PyObj::VSPtr>(exc(claricpp_create_literal_vs(1, 2, n, { nullptr })), pyobj,
+                                    n);                                                   // NOLINT
+    literal<Expr::BV, uint8_t>(exc(claricpp_create_literal_bv_u8(n, { nullptr })), n, 8); // NOLINT
+    literal<Expr::BV, uint16_t>(exc(claricpp_create_literal_bv_u16(n, { nullptr })), n,
+                                16); // NOLINT
+    literal<Expr::BV, uint32_t>(exc(claricpp_create_literal_bv_u32(n, { nullptr })), n,
+                                32); // NOLINT
+    literal<Expr::BV, uint64_t>(exc(claricpp_create_literal_bv_u64(n, { nullptr })), n,
+                                64); // NOLINT
+    literal<Expr::BV, BigInt>(
+        exc(claricpp_create_literal_bv_big_int_mode_str("10", n, { nullptr })), BigInt { "10", n },
+        n);
+    literal<Expr::BV, BigInt>(
+        exc(claricpp_create_literal_bv_big_int_mode_int("10", n, { nullptr })), BigInt { 10, n },
+        n);
 
     // Non-Trivial
 
     Util::Log::debug("Testing extract...");
-    const auto extract { claricpp_create_extract(2, 1, API::copy_to_c(bv_sym), { nullptr }) };
+    const auto extract { exc(claricpp_create_extract(2, 1, API::copy_to_c(bv_sym), { nullptr })) };
     UNITTEST_ASSERT(API::to_cpp(extract)->hash == Create::extract(2, 1, bv_sym)->hash);
     UNITTEST_ASSERT(API::to_cpp(extract)->hash != Create::extract(1, 0, bv_sym)->hash);
 
     Util::Log::debug("Testing if...");
-    const auto if_ { claricpp_create_if(API::copy_to_c(bool_sym), API::copy_to_c(bv_sym),
-                                        API::copy_to_c(bv_64), { nullptr }) };
+    const auto if_ { exc(claricpp_create_if(API::copy_to_c(bool_sym), API::copy_to_c(bv_sym),
+                                            API::copy_to_c(bv_64), { nullptr })) };
     UNITTEST_ASSERT(API::to_cpp(if_)->hash == Create::if_(bool_sym, bv_sym, bv_64)->hash);
     UNITTEST_ASSERT(API::to_cpp(if_)->hash != Create::if_(bool_sym, bv_64, bv_64)->hash);
 
@@ -117,38 +123,39 @@ void create() {
     /** A local macro used for testing */
 #define UNARY(CF, CPPF, TYPE, OTHER)                                                               \
     Util::Log::debug("Testing " #CPPF "...");                                                      \
-    const auto test_##CF { claricpp_create_##CF(API::copy_to_c(TYPE##_sym), { nullptr }) };        \
+    const auto test_##CF { exc(claricpp_create_##CF(API::copy_to_c(TYPE##_sym), { nullptr })) };   \
     UNITTEST_ASSERT(API::to_cpp(test_##CF)->hash == Create::CPPF(TYPE##_sym)->hash);               \
     UNITTEST_ASSERT(API::to_cpp(test_##CF)->hash != Create::CPPF(TYPE##_##OTHER)->hash)
 
     /** A local macro used for testing */
 #define UINT_BINARY(CF, CPPF, TYPE)                                                                \
     Util::Log::debug("Testing " #CPPF "...");                                                      \
-    const auto test_##CF { claricpp_create_##CF(API::copy_to_c(TYPE##_sym), 4, { nullptr }) };     \
+    const auto test_##CF { exc(                                                                    \
+        claricpp_create_##CF(API::copy_to_c(TYPE##_sym), 4, { nullptr })) };                       \
     UNITTEST_ASSERT(API::to_cpp(test_##CF)->hash == Create::CPPF(TYPE##_sym, 4)->hash);            \
     UNITTEST_ASSERT(API::to_cpp(test_##CF)->hash != Create::CPPF(TYPE##_sym, 5)->hash)
 
 /** A local macro used for testing */
 #define BINARY(CF, CPPF, ARG, BAD_ARG)                                                             \
     Util::Log::debug("Testing " #CPPF "...");                                                      \
-    const auto test_##CF { claricpp_create_##CF(API::copy_to_c(ARG), API::copy_to_c(ARG),          \
-                                                { nullptr }) };                                    \
+    const auto test_##CF { exc(                                                                    \
+        claricpp_create_##CF(API::copy_to_c(ARG), API::copy_to_c(ARG), { nullptr })) };            \
     UNITTEST_ASSERT(API::to_cpp(test_##CF)->hash == Create::CPPF(ARG, ARG)->hash);                 \
     UNITTEST_ASSERT(API::to_cpp(test_##CF)->hash != Create::CPPF(ARG, BAD_ARG)->hash)
 
 /** A local macro used for testing */
 #define TERNARY(CF, CPPF, ARG, BAD_ARG)                                                            \
     Util::Log::debug("Testing " #CPPF "...");                                                      \
-    const auto test_##CF { claricpp_create_##CF(API::copy_to_c(ARG), API::copy_to_c(ARG),          \
-                                                API::copy_to_c(ARG), { nullptr }) };               \
+    const auto test_##CF { exc(claricpp_create_##CF(API::copy_to_c(ARG), API::copy_to_c(ARG),      \
+                                                    API::copy_to_c(ARG), { nullptr })) };          \
     UNITTEST_ASSERT(API::to_cpp(test_##CF)->hash == Create::CPPF(ARG, ARG, ARG)->hash);            \
-    UNITTEST_ASSERT(API::to_cpp(test_##CF)->hash != Create::CPPF(ARG, ARG, BAD_ARG)->hash)
+    UNITTEST_ASSERT(API::to_cpp(test_##CF)->hash != Create::CPPF(ARG, ARG, BAD_ARG)->hash);
 
 /** A local macro used for testing */
 #define MODE_BINARY(FUN, MODE)                                                                     \
     Util::Log::debug("Testing FP::" #FUN "...");                                                   \
-    const auto test_fp_##FUN { claricpp_create_fp_##FUN(                                           \
-        API::copy_to_c(fp_sym), API::copy_to_c(fp_sym), API::mode(MODE), { nullptr }) };           \
+    const auto test_fp_##FUN { exc(claricpp_create_fp_##FUN(                                       \
+        API::copy_to_c(fp_sym), API::copy_to_c(fp_sym), API::mode(MODE), { nullptr })) };          \
     UNITTEST_ASSERT(API::to_cpp(test_fp_##FUN)->hash ==                                            \
                     Create::FP::FUN(fp_sym, fp_sym, MODE)->hash);                                  \
     UNITTEST_ASSERT(API::to_cpp(test_fp_##FUN)->hash != Create::FP::FUN(fp_sym, fp_64, MODE)->hash);
@@ -156,7 +163,7 @@ void create() {
 /** A local macro used for testing */
 #define FLAT(CF, CPPF, INP, REAL_INP, BAD_INP)                                                     \
     Util::Log::debug("Testing " #CPPF "...");                                                      \
-    const auto test_##CF { claricpp_create_##CF(INP, (REAL_INP).size(), { nullptr }) };            \
+    const auto test_##CF { exc(claricpp_create_##CF(INP, (REAL_INP).size(), { nullptr })) };       \
     UNITTEST_ASSERT(API::to_cpp(test_##CF)->hash == Create::CPPF((REAL_INP))->hash);               \
     UNITTEST_ASSERT(API::to_cpp(test_##CF)->hash != Create::CPPF((BAD_INP))->hash)
 
@@ -221,31 +228,31 @@ void create() {
 
     // Non-Trivial
     Util::Log::debug("Testing String::from_int...");
-    const auto sfi { claricpp_create_string_from_int(API::copy_to_c(bv_64), { nullptr }) };
+    const auto sfi { exc(claricpp_create_string_from_int(API::copy_to_c(bv_64), { nullptr })) };
     UNITTEST_ASSERT(API::to_cpp(sfi)->hash == Create::String::from_int(bv_64)->hash);
     UNITTEST_ASSERT(API::to_cpp(sfi)->hash != Create::String::from_int(bv_sym)->hash);
 
     Util::Log::debug("Testing String::index_of...");
-    const auto sif { claricpp_create_string_index_of(API::copy_to_c(string_sym),
-                                                     API::copy_to_c(string_sym),
-                                                     API::copy_to_c(bv_sym), bl, { nullptr }) };
+    const auto sif { exc(
+        claricpp_create_string_index_of(API::copy_to_c(string_sym), API::copy_to_c(string_sym),
+                                        API::copy_to_c(bv_sym), bl, { nullptr })) };
     UNITTEST_ASSERT(API::to_cpp(sif)->hash ==
                     Create::String::index_of(string_sym, string_sym, bv_sym, bl)->hash);
     UNITTEST_ASSERT(API::to_cpp(sif)->hash !=
                     Create::String::index_of(string_sym, string_sym2, bv_sym, bl)->hash);
 
     Util::Log::debug("Testing String::replace...");
-    const auto sr { claricpp_create_string_replace(API::copy_to_c(string_sym),
-                                                   API::copy_to_c(string_sym),
-                                                   API::copy_to_c(string_sym), { nullptr }) };
+    const auto sr { exc(claricpp_create_string_replace(API::copy_to_c(string_sym),
+                                                       API::copy_to_c(string_sym),
+                                                       API::copy_to_c(string_sym), { nullptr })) };
     UNITTEST_ASSERT(API::to_cpp(sr)->hash ==
                     Create::String::replace(string_sym, string_sym, string_sym)->hash);
     UNITTEST_ASSERT(API::to_cpp(sr)->hash !=
                     Create::String::replace(string_sym, string_sym, string_sym2)->hash);
 
     Util::Log::debug("Testing String::sub_string...");
-    const auto ss { claricpp_create_string_sub_string(
-        API::copy_to_c(bv_sym), API::copy_to_c(bv_sym), API::copy_to_c(string_sym), { nullptr }) };
+    const auto ss { exc(claricpp_create_string_sub_string(
+        API::copy_to_c(bv_sym), API::copy_to_c(bv_sym), API::copy_to_c(string_sym), { nullptr })) };
     UNITTEST_ASSERT(API::to_cpp(ss)->hash ==
                     Create::String::sub_string(bv_sym, bv_sym, string_sym)->hash);
     UNITTEST_ASSERT(API::to_cpp(ss)->hash !=
@@ -266,8 +273,8 @@ void create() {
     // Non-Trivial
     Util::Log::debug("Testing FP::from_2s_complement_bv<true>...");
     (void) Create::FP::from_2s_complement_bv<true>(md, bv_sym, wid);
-    const auto fp2bvs { claricpp_create_fp_from_2s_complement_bv_signed(
-        API::mode(md), API::copy_to_c(bv_sym), wid.exp, wid.mantissa, { nullptr }) };
+    const auto fp2bvs { exc(claricpp_create_fp_from_2s_complement_bv_signed(
+        API::mode(md), API::copy_to_c(bv_sym), wid.exp, wid.mantissa, { nullptr })) };
     UNITTEST_ASSERT(API::to_cpp(fp2bvs)->hash ==
                     Create::FP::from_2s_complement_bv<true>(md, bv_sym, wid)->hash);
     UNITTEST_ASSERT(API::to_cpp(fp2bvs)->hash !=
@@ -275,36 +282,36 @@ void create() {
 
     Util::Log::debug("Testing FP::from_2s_complement_bv<false>...");
     (void) Create::FP::from_2s_complement_bv<false>(md, bv_sym, wid);
-    const auto fpf2bvs { claricpp_create_fp_from_2s_complement_bv_unsigned(
-        API::mode(md), API::copy_to_c(bv_sym), wid.exp, wid.mantissa, { nullptr }) };
+    const auto fpf2bvs { exc(claricpp_create_fp_from_2s_complement_bv_unsigned(
+        API::mode(md), API::copy_to_c(bv_sym), wid.exp, wid.mantissa, { nullptr })) };
     UNITTEST_ASSERT(API::to_cpp(fpf2bvs)->hash ==
                     Create::FP::from_2s_complement_bv<false>(md, bv_sym, wid)->hash);
     UNITTEST_ASSERT(API::to_cpp(fpf2bvs)->hash !=
                     Create::FP::from_2s_complement_bv<false>(md, bv_64, wid)->hash);
 
     Util::Log::debug("Testing FP::from_fp...");
-    const auto fpffp { claricpp_create_fp_from_fp(API::mode(md), API::copy_to_c(fp_sym), wid.exp,
-                                                  wid.mantissa, { nullptr }) };
+    const auto fpffp { exc(claricpp_create_fp_from_fp(API::mode(md), API::copy_to_c(fp_sym),
+                                                      wid.exp, wid.mantissa, { nullptr })) };
     UNITTEST_ASSERT(API::to_cpp(fpffp)->hash == Create::FP::from_fp(md, fp_sym, wid)->hash);
     UNITTEST_ASSERT(API::to_cpp(fpffp)->hash != Create::FP::from_fp(md, fp_64, wid)->hash);
 
     Util::Log::debug("Testing FP::from_not_2s_complement_bv...");
-    const auto fpfn2bv { claricpp_create_fp_from_not_2s_complement_bv(
-        API::copy_to_c(bv_sym), wid.exp, wid.mantissa, { nullptr }) };
+    const auto fpfn2bv { exc(claricpp_create_fp_from_not_2s_complement_bv(
+        API::copy_to_c(bv_sym), wid.exp, wid.mantissa, { nullptr })) };
     UNITTEST_ASSERT(API::to_cpp(fpfn2bv)->hash ==
                     Create::FP::from_not_2s_complement_bv(bv_sym, wid)->hash);
     UNITTEST_ASSERT(API::to_cpp(fpfn2bv)->hash !=
                     Create::FP::from_not_2s_complement_bv(bv_64, wid)->hash);
 
     Util::Log::debug("Testing FP::to_bv<true>...");
-    const auto fpt2bvs { claricpp_create_fp_to_bv_signed(API::mode(md), API::copy_to_c(fp_sym), bl,
-                                                         { nullptr }) };
+    const auto fpt2bvs { exc(
+        claricpp_create_fp_to_bv_signed(API::mode(md), API::copy_to_c(fp_sym), bl, { nullptr })) };
     UNITTEST_ASSERT(API::to_cpp(fpt2bvs)->hash == Create::FP::to_bv<true>(md, fp_sym, bl)->hash);
     UNITTEST_ASSERT(API::to_cpp(fpt2bvs)->hash != Create::FP::to_bv<true>(md, fp_64, bl)->hash);
 
     Util::Log::debug("Testing FP::to_bv<false>...");
-    const auto fpt2bvu { claricpp_create_fp_to_bv_unsigned(API::mode(md), API::copy_to_c(fp_sym),
-                                                           bl, { nullptr }) };
+    const auto fpt2bvu { exc(claricpp_create_fp_to_bv_unsigned(
+        API::mode(md), API::copy_to_c(fp_sym), bl, { nullptr })) };
     UNITTEST_ASSERT(API::to_cpp(fpt2bvu)->hash == Create::FP::to_bv<false>(md, fp_sym, bl)->hash);
     UNITTEST_ASSERT(API::to_cpp(fpt2bvu)->hash != Create::FP::to_bv<false>(md, fp_64, bl)->hash);
 

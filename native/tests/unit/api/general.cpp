@@ -2,6 +2,7 @@
  * @file
  * \ingroup unittest
  */
+#include "exc.hpp"
 #include "testlib.hpp"
 
 
@@ -38,14 +39,18 @@ void general() {
 
     // Free
     claricpp_free_expr(&moved_c);
+    exc();
     claricpp_free_expr(&copied_c);
+    exc();
     UNITTEST_ASSERT(moved_c.ptr == nullptr);
     UNITTEST_ASSERT(copied_c.ptr == nullptr);
     UNITTEST_ASSERT(bv1.use_count() == old_uc);
 
     // Double free (memcheck test but should be a nop)
     claricpp_free_expr(&moved_c);
+    exc();
     claricpp_free_expr(&copied_c);
+    exc();
     UNITTEST_ASSERT(moved_c.ptr == nullptr);
     UNITTEST_ASSERT(copied_c.ptr == nullptr);
     UNITTEST_ASSERT(bv1.use_count() == old_uc); // Just in case something catastrophic happens
@@ -61,6 +66,7 @@ void general() {
     UNITTEST_ASSERT(std::strlen(prim_c.data.str) == std::get<std::string>(prim).size()); // NOLINT
     UNITTEST_ASSERT(std::string(prim_c.data.str) == std::get<std::string>(prim));        // NOLINT
     claricpp_free_prim(&prim_c);
+    exc();
     UNITTEST_ASSERT(prim_c.data.str == nullptr); // NOLINT
 
     // Repeat Arg and expr
@@ -74,6 +80,7 @@ void general() {
     UNITTEST_ASSERT(API::to_cpp(arg_c.data.expr) == bv1); // NOLINT
     old_uc = bv1.use_count();
     claricpp_free_arg(&arg_c);
+    exc();
     UNITTEST_ASSERT(bv1.use_count() + 1 == old_uc);
 
     /********************************************************************/
@@ -94,6 +101,7 @@ void general() {
 
     // Free array of Exprs
     claricpp_free_array_expr(&arr_c);
+    exc();
     UNITTEST_ASSERT(arr_c.len == 0);
     UNITTEST_ASSERT(arr_c.arr == nullptr);
     UNITTEST_ASSERT(bv1.use_count() == old_uc);
@@ -113,6 +121,7 @@ void general() {
 
     // Free array of Args containing Exprs
     claricpp_free_array_arg(&arg_vec_c);
+    exc();
     UNITTEST_ASSERT(bv1.use_count() == old_uc);
     UNITTEST_ASSERT(arg_vec_c.arr == nullptr);
     UNITTEST_ASSERT(arg_vec_c.len == 0);
@@ -142,6 +151,7 @@ void general() {
 
     // Free it
     claricpp_free_double_array_prim(&double_prim_vec_c);
+    exc();
     UNITTEST_ASSERT(double_prim_vec_c.arr == nullptr);
     UNITTEST_ASSERT(double_prim_vec_c.len == 0);
 
@@ -150,15 +160,15 @@ void general() {
     /********************************************************************/
 
     // Preliminary test
-    UNITTEST_ASSERT(!claricpp_has_exception());
+    UNITTEST_ASSERT(!exc(claricpp_has_exception()));
 
     // Test generating an exception
-    (void) claricpp_create_not(API::copy_to_c(bv1), { nullptr });
-    UNITTEST_ASSERT(claricpp_has_exception());
+    (void) claricpp_create_not(API::copy_to_c(bv1), { nullptr }); // No exc, we are generating one
+    UNITTEST_ASSERT(claricpp_has_exception());                    // exc would fail
 
     // Test retrieving an exception
-    auto exception { claricpp_get_exception() };
-    UNITTEST_ASSERT(!claricpp_has_exception()); // Getting should clear it
+    auto exception { claricpp_get_exception() };     // No exc (that's the next assertion)
+    UNITTEST_ASSERT(!exc(claricpp_has_exception())); // Getting should clear it
 
     // Verify exception
     UNITTEST_ASSERT(exception.type == ClaricppExceptionEnumExprType);

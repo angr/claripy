@@ -34,7 +34,8 @@ typedef ClaricppExpr (*ClaricppSimp)(const ClaricppExpr);
  *  @param py_lvl The python log level getter callback the logging system should use
  *  @param py_simp The claricpp python simplifier callback (may be null)
  */
-void claricpp_init_for_python_usage(ClaricppPyLog py_log, ClaricppPyLevel py_lvl, ClaricppSimp py_simp);
+void claricpp_init_for_python_usage(ClaricppPyLog py_log, ClaricppPyLevel py_lvl,
+                                    ClaricppSimp py_simp);
 
 /** Returns true if and only if the previous API function failed with an exception
  *  This function will not override the saved exception, on failure the program will crash
