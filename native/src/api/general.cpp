@@ -110,7 +110,9 @@ ClaricppSimp global_py_simp { nullptr };
 static Expr::BasePtr simp_wrapper(const Expr::BasePtr &e) {
     ClaricppExpr in { API::copy_to_c(e) };
     ClaricppExpr out { global_py_simp(in) };
-    API::free(in); // Clean up after python stuff
+    if (in.ptr != out.ptr) { // Python would handle this via reference counting
+        API::free(in);
+    }
     Expr::BasePtr ret { std::move(API::to_cpp(out)) };
     API::free(out); // Clean up after python stuff
     return ret;
@@ -136,6 +138,7 @@ extern "C" {
 
         // Simplifiers
         if (py_simp != nullptr) {
+            Util::Log::info("Installing Python simplifier");
             global_py_simp = py_simp;
             Simplify::manager.register_(simp_wrapper);
         }
