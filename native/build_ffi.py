@@ -10,6 +10,7 @@ import os
 callbacks = """
 extern "Python" void claripy_log(PyStr, const ClaricppLogLvl, PyStr);
 extern "Python" ClaricppLogLvl claripy_level(PyStr);
+extern "Python" ClaricppExpr claripy_simplify(const ClaricppExpr);
 """
 
 # Helper functions

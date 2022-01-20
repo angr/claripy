@@ -40,6 +40,15 @@ def claripy_level(id_):
     return logging.getLogger(name=to_utf8(id_)).getEffectiveLevel()
 
 
+@ffi.def_extern()
+def claripy_simplify(expr):
+    """
+    Claricpp's python shell out to simplify
+    """
+    logging.debug('Python simplifier callback invoked')
+    return expr
+
+
 # Exceptions
 class ClaricppException(Exception):
     """
@@ -106,4 +115,4 @@ claricpp = Claricpp()
 
 # Configure Claricpp for use with python
 # TODO: only run on first import
-claricpp.claricpp_init_for_python_usage(raw_lib.claripy_log, raw_lib.claripy_level)
+claricpp.claricpp_init_for_python_usage(raw_lib.claripy_log, raw_lib.claripy_level, raw_lib.claripy_simplify)
