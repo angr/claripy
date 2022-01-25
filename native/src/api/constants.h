@@ -190,21 +190,24 @@ typedef enum {
     // General fallbacks
     ClaricppExceptionEnumUnknown = 10, // Fallback exception type
     ClaricppExceptionEnumStd,          // An std::exception
+
     // C++
-    ClaricppExceptionEnumUnexpected = 1000,
+    ClaricppExceptionEnumUnexpected = 1000, // Util::Err::Unexpected:: (General claricpp error)
 
     // Python
     ClaricppExceptionEnumPython = 2000, // Python fallback
     ClaricppExceptionEnumClaripy,       // Claripy fallback
 
-    ClaricppExceptionEnumExprType = 2100, // Expr::Type
+    ClaricppExceptionRuntimeError = 2100,
+
+    ClaricppExceptionEnumExprType = 2200, // Expr::Type
     ClaricppExceptionEnumExprUsage,       // Expr::Usage
     ClaricppExceptionEnumExprValue,       // Expr::Value
     ClaricppExceptionEnumExprSize,        // Expr::Size
     ClaricppExceptionEnumExprOperation,   // Expr::Operation
 
-    ClaricppExceptionEnumBackendAbstraction = 2200, // Error::Backend::Abstraction
-    ClaricppExceptionEnumBackendUnsupported,        // Error::Backend::Unsupported
+    ClaricppExceptionEnumBackendAbstraction = 2300, // Backend::Abstraction
+    ClaricppExceptionEnumBackendUnsupported,        // Backend::Unsupported
 } ClaricppExceptionEnum;
 
 /** The exception struct Claricpp sends to python */
