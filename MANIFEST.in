@@ -1,3 +1,14 @@
 include LICENSE
 include README.md
 include VERSION
+
+prune native
+include native/README.md native/CMakeLists.txt native/build_ffi.py
+recursive-include native/cmake *
+recursive-include native/src *
+recursive-include native/backward-cpp *
+include native/Doxyfile.in native/logo.png
+
+global-exclude *.so
+global-exclude *.dylib
+global-exclude *.dll
