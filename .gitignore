@@ -1,7 +1,12 @@
 *.xcodeproj
+*.idea
 *.pyc
 *.egg-info
 *.swp
 *.swo
+
+# From setup.py
 dist
 MANIFEST
+build
+claripy.egg-info
