@@ -72,14 +72,16 @@ void backend() {
     // Test downsizing backend data
     Util::Log::debug("  - downsize");
     UNITTEST_ASSERT(z3_priv.conv_cache_size() != 0);
-    exc(claricpp_backend_downsize(z3_manual));
+    claricpp_backend_downsize(z3_manual);
+    exc();
     UNITTEST_ASSERT(z3_priv.conv_cache_size() == 0);
 
     // Test clearing persistent data
     Util::Log::debug("  - clear_persistent_data");
     (void) z3_cpp->simplify(bv_sym_with_ans.get()); // Populate satd
     UNITTEST_ASSERT(z3_priv.satd_cache_size() != 0);
-    exc(claricpp_backend_clear_persistent_data(z3_manual));
+    claricpp_backend_clear_persistent_data(z3_manual);
+    exc();
     UNITTEST_ASSERT(z3_priv.satd_cache_size() == 0);
 
     /********************************************************************/
@@ -124,14 +126,16 @@ void backend() {
     // Test add tracked
     Util::Log::debug("  - add tracked");
     [&raw_z3, &z3_solver](auto x) { raw_z3.add(z3_solver, x.get()); }(uleq(0));
-    exc(claricpp_backend_z3_add_tracked(z3, solver, API::to_c(ugeq(1))));
+    claricpp_backend_z3_add_tracked(z3, solver, API::to_c(ugeq(1)));
+    exc();
     UNITTEST_ASSERT(z3_solver.assertions().size() == 2);
     (void) z3_solver.check(); // Generate unsat_core
     UNITTEST_ASSERT(z3_solver.unsat_core().size() == 1);
     z3_solver.reset();
 
     [&raw_z3, &z3_solver](auto x) { raw_z3.add(z3_solver, x.get()); }(uleq(0));
-    exc(claricpp_backend_z3_add_vec_tracked(z3, solver, ugeq3, 2));
+    claricpp_backend_z3_add_vec_tracked(z3, solver, ugeq3, 2);
+    exc();
     UNITTEST_ASSERT(z3_solver.assertions().size() == 3);
     (void) z3_solver.check(); // Generate unsat_core
     UNITTEST_ASSERT(z3_solver.unsat_core().size() == 1);
@@ -139,12 +143,14 @@ void backend() {
 
     // Test add untracked
     Util::Log::debug("  - add untracked");
-    exc(claricpp_backend_z3_add_untracked(z3, solver, API::to_c(ugeq(1))));
+    claricpp_backend_z3_add_untracked(z3, solver, API::to_c(ugeq(1)));
+    exc();
     UNITTEST_ASSERT(z3_solver.assertions().size() == 1);
     UNITTEST_ASSERT(z3_solver.unsat_core().empty());
     z3_solver.reset();
 
-    exc(claricpp_backend_z3_add_vec_untracked(z3, solver, ugeq3, 2));
+    claricpp_backend_z3_add_vec_untracked(z3, solver, ugeq3, 2);
+    exc();
     UNITTEST_ASSERT(z3_solver.assertions().size() == 2);
     UNITTEST_ASSERT(z3_solver.unsat_core().empty());
     z3_solver.reset();
