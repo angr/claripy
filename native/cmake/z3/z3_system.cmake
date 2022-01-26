@@ -8,30 +8,18 @@
 # Wrapping this in a function to create a new scope
 function(_system_z3)
 
-	# Don't bother re-linking if it already works
-	if (EXISTS "${Z3_LIB}")
-		message(STATUS "Existing z3 library linked, prioritizing it above all else.")
-	elseif (EXISTS "${Z3_DIR}/include/" OR EXISTS "${Z3_DIR}/bin/")
-		message(STATUS
-			"Directory ${Z3_DIR} is polluted."
-			" Refusing to continue. Please clean it and try again"
-		)
-	else()
-
-		# Find Z3 + headers
-		find_library(Z3_LIB_FIND z3)
-		find_required_library(Z3_LIB_FIND z3)
-		if(NOT EXISTS "${Z3_INCLUDE_PATH}")
-			message(FATAL_ERROR "Cannot find ${Z3_INCLUDE_PATH}")
-		endif()
-
-		# Setup symlinks
-		include(symlink_required)
-		file(MAKE_DIRECTORY "${Z3_DIR}/bin/")
-		symlink_required("${Z3_LIB_FIND}" "${Z3_LIB}")
-		symlink_required("${Z3_INCLUDE_PATH}" "${Z3_DIR}/include")
-
+	# Find Z3 + headers
+	find_library(Z3_LIB_FIND z3)
+	find_required_library(Z3_LIB_FIND z3)
+	if(NOT EXISTS "${Z3_INCLUDE_PATH}")
+		message(FATAL_ERROR "Cannot find ${Z3_INCLUDE_PATH}")
 	endif()
+
+	# Setup symlinks
+	include(symlink_required)
+	file(MAKE_DIRECTORY "${Z3_DIR}/bin/")
+	symlink_required_rm_old("${Z3_LIB_FIND}" "${Z3_LIB}")
+	symlink_required_rm_old("${Z3_INCLUDE_PATH}" "${Z3_DIR}/include")
 
 endfunction()
 
