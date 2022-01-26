@@ -1,2 +1,3 @@
-claricpp_ffi.o
-claricpp_ffi.*.so
+*.so
+*.dylib
+*.dll
