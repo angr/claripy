@@ -46,7 +46,7 @@ def claripy_simplify(expr):
     """
     Claricpp's python shell out to simplify
     """
-    logging.debug('Python simplifier callback invoked')
+    logging.debug("Python simplifier callback invoked")
     return expr
 
 
@@ -68,81 +68,91 @@ class ClaricppException(Exception):
 
     def msg_trace(self):
         return (
-            "Type: "
-            + str(self.type)
-            + "\nMsg: "
-            + self.msg
-            + "\nTrace: "
-            + self.trace
+            "Type: " + str(self.type) + "\nMsg: " + self.msg + "\nTrace: " + self.trace
         )
 
     def __repr__(self):
-        return ("Type: " + str(self.type) + "\n" + msg_trace() + "\n\nEND OF TRACE")
+        return "Type: " + str(self.type) + "\n" + msg_trace() + "\n\nEND OF TRACE"
+
 
 # 'Crash now' exception handlers
 
+
 def alloc_fail(_):
-    logging.critical('Memory allocation failure within claricpp; memory may be corrupted')
-    raise OSError('Cannot allocate memory')
+    logging.critical(
+        "Memory allocation failure within claricpp; memory may be corrupted"
+    )
+    raise OSError("Cannot allocate memory")
+
 
 def fail_critical(ex):
-    logging.critical('Critical claricpp error detected. Please report this.')
-    logging.critical('Given error: ' + ex)
-    logging.critical('Terminating program')
+    logging.critical("Critical claricpp error detected. Please report this.")
+    logging.critical("Given error: " + ex)
+    logging.critical("Terminating program")
     raise SystemExit(1)
+
 
 # Fallbacks (report these)
 
+
 def unknown_exception(ex):
-    logging.critical('Unknown exception type raised; claricpp does not recognize the error. Please report this.')
+    logging.critical(
+        "Unknown exception type raised; claricpp does not recognize the error. Please report this."
+    )
     raise ex
+
 
 def std_exception(ex):
-    logging.critical('Uncaught std::exception in claricpp. Please report this.')
+    logging.critical("Uncaught std::exception in claricpp. Please report this.")
     raise ex
+
 
 def unexpected_exception(ex):
-    logging.critical('Intnernal claricpp error. Please report this.')
+    logging.critical("Intnernal claricpp error. Please report this.")
     raise ex
 
+
 def unknown_py_exception(ex):
-    logging.critical('Unknown python exception raised in claricpp. Please report this.')
-    raise Exception('Given Error: ' + repr(ex))
+    logging.critical("Unknown python exception raised in claricpp. Please report this.")
+    raise Exception("Given Error: " + repr(ex))
+
 
 def unknown_claripy(ex):
-    logging.critical('Unknown claripy exception raised in claricpp. Please report this.')
-    raise Exception('Given Error: ' + repr(ex)) # @todo: claripy exception
+    logging.critical(
+        "Unknown claripy exception raised in claricpp. Please report this."
+    )
+    raise Exception("Given Error: " + repr(ex))  # @todo: claripy exception
+
 
 # Direct mappings
 def _map_ex_to_func(typ):
     def f(ex):
         raise typ(ex.msg_trace())
+
     return f
+
 
 # Maps exception types to corresponding functions
 exception_map = {
     # Crash now
-    raw_lib.ClaricppExceptionEnumFailAlloc     : alloc_fail,
-    raw_lib.ClaricppExceptionEnumFailCritical  : fail_critical,
+    raw_lib.ClaricppExceptionEnumFailAlloc: alloc_fail,
+    raw_lib.ClaricppExceptionEnumFailCritical: fail_critical,
     # Fallbacks (report these)
-    raw_lib.ClaricppExceptionEnumUnknown       : unknown_exception,
-    raw_lib.ClaricppExceptionEnumStd           : std_exception,
-    raw_lib.ClaricppExceptionEnumUnexpected    : unexpected_exception,
-    raw_lib.ClaricppExceptionEnumPython        : unknown_py_exception,
-    raw_lib.ClaricppExceptionEnumClaripy       : unknown_claripy,
+    raw_lib.ClaricppExceptionEnumUnknown: unknown_exception,
+    raw_lib.ClaricppExceptionEnumStd: std_exception,
+    raw_lib.ClaricppExceptionEnumUnexpected: unexpected_exception,
+    raw_lib.ClaricppExceptionEnumPython: unknown_py_exception,
+    raw_lib.ClaricppExceptionEnumClaripy: unknown_claripy,
     # Direct mappings
-    raw_lib.ClaricppExceptionRuntimeError      : _map_ex_to_func(RuntimeError)
-
+    raw_lib.ClaricppExceptionRuntimeError: _map_ex_to_func(RuntimeError)
     # claricpp.ClaricppExceptionEnumExprType          : @todo
     # claricpp.ClaricppExceptionEnumExprUsage         : @todo
     # claricpp.ClaricppExceptionEnumExprValue         : @todo
     # claricpp.ClaricppExceptionEnumExprSize          : @todo
     # claricpp.ClaricppExceptionEnumExprOperation     : @todo
-
     # claricpp.ClaricppExceptionEnumBackendAbstraction: @todo
     # claricpp.ClaricppExceptionEnumBackendUnsupported: @todo
 }
-
 
 
 ######################################################################
@@ -155,6 +165,7 @@ def wrap(func):
     """
     Wrap a raw_lib function call with exception handling
     """
+
     @functools.wraps(func)
     def internal(*args, **kwargs):
         res = func(*args, **kwargs)
@@ -162,13 +173,16 @@ def wrap(func):
             ex = ClaricppException(raw_lib.claricpp_get_exception())
             exception_map[ex.type](ex)
         return res
+
     return internal
+
 
 # Wrap raw_lib to handle exceptions
 class Claricpp:
     """
     Wraps raw_lib with exception handling code
     """
+
     def __getattribute__(self, attr):
         """
         When a function is requested, return the wrapped version
@@ -191,4 +205,6 @@ claricpp = Claricpp()
 
 # Configure Claricpp for use with python
 # TODO: only run on first import
-claricpp.claricpp_init_for_python_usage(raw_lib.claripy_log, raw_lib.claripy_level, raw_lib.claripy_simplify)
+claricpp.claricpp_init_for_python_usage(
+    raw_lib.claripy_log, raw_lib.claripy_level, raw_lib.claripy_simplify
+)
