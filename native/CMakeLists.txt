@@ -567,7 +567,7 @@ file(APPEND "${FOR_SETUP_PY_F}" "\nPython_INCLUDE_DIRS=${Python_INCLUDE_DIRS}\n"
 
 #################################################
 #                                               #
-#            Generate Python Targets            #
+#             Generate FFI Targets              #
 #                                               #
 #################################################
 
@@ -588,11 +588,6 @@ list(APPEND PY_INCLUDE_DIRS ${Python_INCLUDE_DIRS})
 if (CMAKE_MAKE_PROGRAM MATCHES "make$")
 	set(INTERMEDIATE_F "${CDEFS_SOURCE_F}.i")
 
-	set(VERBOSE_FLAG "")
-	if (CMAKE_VERBOSE_MAKEFILE)
-		set(VERBOSE_FLAG "--verbose")
-	endif()
-
 	# Note: We choose not to add this to the 'all' target
 	# Let it be a dependency called only as needed
 	add_custom_target(
@@ -604,8 +599,15 @@ if (CMAKE_MAKE_PROGRAM MATCHES "make$")
 		 SOURCES "${CMAKE_SOURCE_DIR}/${CDEFS_SOURCE_F}"
 	)
 
+	# Verbose options for later targets
+	set(VERBOSE_FLAG "")
+	if (CMAKE_VERBOSE_MAKEFILE)
+		set(VERBOSE_FLAG "--verbose")
+	endif()
+
 	# Note: We choose not to add this to the 'all' target
 	# No need to compile this unless explicitly requested
+	# Note: This is *not* needed if using setup.py
 	add_custom_target(
 		ffi
 		# make src/ffi.cpp.7 && python3 build_ffy.py <build_dir>
