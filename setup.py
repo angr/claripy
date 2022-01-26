@@ -198,9 +198,7 @@ def _build_native():
 
     ### Move files into place
     print("Moving files libs into place")
-    print(find_lib(d["build"], "lib" + claricpp), d["lib"])
     shutil.copy2(find_lib(d["build"], "lib" + claricpp), d["lib"])
-    print(find_lib(d["ffi"], claricpp_ffi), d["lib"])
     shutil.copy2(find_lib(d["ffi"], claricpp_ffi), d["lib"])
 
     ### Cleanup
