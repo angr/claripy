@@ -14,3 +14,9 @@ function(symlink_required SRC DST)
 		)
 	endif()
 endfunction()
+
+
+function(symlink_required_rm_old SRC DST)
+	file(REMOVE_RECURSE "${DST}")
+	symlink_required("${SRC}" "${DST}")
+endfunction()
