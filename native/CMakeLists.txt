@@ -44,7 +44,8 @@ option( ENABLE_ANSI_COLOR_CODES "Enable ansi color codes"    ON )
 ### Constants ###
 
 # Shared library name
-set( CLARICPP "claricpp" )
+default( CLARICPP "claricpp" )
+message("Library name: ${CLARICPP}")
 
 # API Version
 # This is different from version which is read from /VERSION
@@ -57,7 +58,7 @@ set( DOC_MAKE_TARGET "docs" )
 # Default build type
 # Default to debug mode
 # Use cache to override defaults
-# Can override this by running cmake with "-DCMAKE_BUILD_TYPE=Release"
+# Can override this by running cmake with "-DCMAKE_BUILD_TYPE=RelWithDebugInfo" or Release
 set( CMAKE_BUILD_TYPE "Debug" CACHE STRING "Cmake build type" )
 
 # Log levels are defined in ./src/utils/log/level/level/hpp
@@ -69,6 +70,7 @@ default( DEFAULT_OTHER_LOG_LEVEL "Info" )
 ### Config Options ###
 
 # The VERSION file
+# This is ignored if VERSION is set
 set( VERSION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../VERSION" )
 
 # Static Analysis Options
@@ -123,6 +125,12 @@ set( Z3_LIB_PRIVATE_TARGET "lib-z3" )
 # The 'bin' directory should include the shared library claricpp can link to
 # The 'include' directory should include the header files claricpp can use
 default( Z3_ACQUISITION_MODE SYSTEM )
+
+# If on, forces re-creation of Z3 links and such
+# If on and Z3_ACQUISITION_MODE is BUID, forces a rebuild of libz3
+# For build: Note: It is reccomended you reconfigure cmake after a libz3 build otherwise
+# libz3 may re-build every time make is invoked as it is using an old configuration
+default( Z3_FORCE_CLEAN OFF )
 
 # This option is used to help locate the Z3 library.
 # If left undefined cmake will attempt to locate it automatically
@@ -196,11 +204,6 @@ endif()
 ######################
 
 if (Z3_ACQUISITION_MODE STREQUAL BUILD)
-
-	# If false, rebuilds will not occur if libz3 is present during configuration
-	# Note: It is reccomended you reconfigure cmake after a libz3 build otherwise
-	# libz3 may re-build every time make is invoked as it is using an old configuration
-	option( Z3_FORCE_REBUILD "If false, rebuilds will not occur if libz3 is present during configuration" OFF )
 
 	# Specify the repo and commit that should be used to build Z3
 	# Z3_GIT_COMMIT can be a branch, tag, or commit hash
@@ -472,7 +475,7 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 	target_link_options("${CLARICPP}" PUBLIC
 		"-rdynamic"
 	)
-elseif(CMAKE_BUILD_TYPE MATCHES Rel)
+elseif(CMAKE_BUILD_TYPE MATCHES Rel) # Release / RelWithDebugInfo
     message("Release Build enabled!")
 	target_compile_definitions("${CLARICPP}"
 		 PUBLIC "DEFAULT_LOG_LEVEL=${DEFAULT_RELEASE_LOG_LEVEL}" # Export this macro
@@ -543,15 +546,31 @@ endif()
 
 #################################################
 #                                               #
-#            Generate Python Targets            #
+#               Data for setup.py               #
 #                                               #
 #################################################
 
+
+# Save generator
+default(FOR_SETUP_PY_F "${CMAKE_CURRENT_BINARY_DIR}/setup.txt")
+file(WRITE "${FOR_SETUP_PY_F}" "CMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}\n")
+
+# The cdefs source file
+file(APPEND "${FOR_SETUP_PY_F}" "\nCDEFS_SOURCE_F=${CDEFS_SOURCE_F}\n")
 
 # FindPackage python works, no need for find_program
 # This is more powerful and lets us find specific components
 # Important output variable: Python3_EXECUTABLE
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
+file(APPEND "${FOR_SETUP_PY_F}" "\nPython_INCLUDE_DIRS=${Python_INCLUDE_DIRS}\n")
+
+
+#################################################
+#                                               #
+#            Generate Python Targets            #
+#                                               #
+#################################################
+
 
 # Possible python include directories
 default(PY_INCLUDE_DIRS
@@ -573,7 +592,6 @@ if (CMAKE_MAKE_PROGRAM MATCHES "make$")
 	if (CMAKE_VERBOSE_MAKEFILE)
 		set(VERBOSE_FLAG "--verbose")
 	endif()
-
 
 	# Note: We choose not to add this to the 'all' target
 	# Let it be a dependency called only as needed
