@@ -16,6 +16,9 @@ class BackendError(ClaripyError):
 class BackendUnsupportedError(BackendError):
     pass
 
+class BackendAbstractionError(BackendError):
+    pass
+
 class ClaripyZ3Error(ClaripyError):
     pass
 
@@ -30,6 +33,9 @@ class MissingSolverError(ClaripyError):
 #
 
 class ClaripyASTError(ClaripyError):
+    pass
+
+class ClaripyASTUsageError(ClaripyError):
     pass
 
 class ClaripyBalancerError(ClaripyASTError):

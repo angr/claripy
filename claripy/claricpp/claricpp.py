@@ -4,6 +4,7 @@ import sys
 import functools
 import logging
 from .claricpp_ffi import ffi, lib as raw_lib
+from ..errors import *
 
 # TODO: slots!
 
@@ -61,7 +62,7 @@ class ClaricppException(Exception):
     """
 
     def __init__(self, exc):
-        self.type = exc.type
+        self.type: int = exc.type
         self.msg: str = to_utf8(exc.msg)
         self.trace: str = to_utf8(exc.trace)
         super().__init__(repr(self))
@@ -126,13 +127,17 @@ def unknown_claripy(ex):
 
 # Direct mappings
 def _map_ex_to_func(typ):
-    def f(ex):
-        raise typ(ex.msg_trace())
+    def f(ex) -> None:
+        out: Exception = typ(ex.msg_trace())
+        out.trace: str = ex.trace
+        out.msg: str = ex.msg
+        raise out
 
     return f
 
 
 # Maps exception types to corresponding functions
+# @todo: Edit errors.py (remove unneeded errors?)
 exception_map = {
     # Crash now
     raw_lib.ClaricppExceptionEnumFailAlloc: alloc_fail,
@@ -144,14 +149,18 @@ exception_map = {
     raw_lib.ClaricppExceptionEnumPython: unknown_py_exception,
     raw_lib.ClaricppExceptionEnumClaripy: unknown_claripy,
     # Direct mappings
-    raw_lib.ClaricppExceptionRuntimeError: _map_ex_to_func(RuntimeError)
-    # claricpp.ClaricppExceptionEnumExprType          : @todo
-    # claricpp.ClaricppExceptionEnumExprUsage         : @todo
-    # claricpp.ClaricppExceptionEnumExprValue         : @todo
-    # claricpp.ClaricppExceptionEnumExprSize          : @todo
-    # claricpp.ClaricppExceptionEnumExprOperation     : @todo
-    # claricpp.ClaricppExceptionEnumBackendAbstraction: @todo
-    # claricpp.ClaricppExceptionEnumBackendUnsupported: @todo
+    raw_lib.ClaricppExceptionRuntimeError: _map_ex_to_func(RuntimeError),
+    raw_lib.ClaricppExceptionEnumExprType: _map_ex_to_func(ClaripyTypeError),
+    raw_lib.ClaricppExceptionEnumExprUsage: _map_ex_to_func(ClaripyASTUsageError),
+    raw_lib.ClaricppExceptionEnumExprValue: _map_ex_to_func(ClaripyValueError),
+    raw_lib.ClaricppExceptionEnumExprSize: _map_ex_to_func(ClaripySizeError),
+    raw_lib.ClaricppExceptionEnumExprOperation: _map_ex_to_func(ClaripyOperationError),
+    raw_lib.ClaricppExceptionEnumBackendAbstraction: _map_ex_to_func(
+        BackendAbstractionError
+    ),
+    raw_lib.ClaricppExceptionEnumBackendUnsupported: _map_ex_to_func(
+        BackendUnsupportedError
+    ),
 }
 
 
@@ -204,7 +213,6 @@ class Claricpp:
 claricpp = Claricpp()
 
 # Configure Claricpp for use with python
-# TODO: only run on first import
 claricpp.claricpp_init_for_python_usage(
     raw_lib.claripy_log, raw_lib.claripy_level, raw_lib.claripy_simplify
 )
