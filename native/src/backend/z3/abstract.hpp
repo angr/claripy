@@ -251,7 +251,7 @@ namespace Backend::Z3 {
             using BVVar = Op::BVTL::Apply<std::variant>;
 
             /** Abstraction function for Z3_OP_BNUM to a primitive */
-            static BVVar num_primtive(const z3::expr &b_obj, const Z3 &bk) {
+            static BVVar num_primtive(const z3::expr &b_obj) {
                 using E = Util::Err::Type;
                 const auto bl { b_obj.get_sort().bv_size() };
 
@@ -276,14 +276,12 @@ namespace Backend::Z3 {
                 // Get the BV as a BigInt
                 std::string str;
                 UTIL_ASSERT(E, b_obj.is_numeral(str), "given z3 object is not a numeral");
-                return (bk.big_int_mode() == Mode::BigInt::Int)
-                         ? BigInt { BigInt::Int(std::move(str)), bl }
-                         : BigInt { std::move(str), bl };
+                return BigInt::from_str(std::move(str), bl);
             }
 
             /** Abstraction function for Z3_OP_BNUM */
-            static Expr::BasePtr num(const z3::expr &b_obj, const Z3 &bk) {
-                BVVar x { num_primtive(b_obj, bk) }; // Not const for move purposes
+            static Expr::BasePtr num(const z3::expr &b_obj) {
+                BVVar x { num_primtive(b_obj) }; // Not const for move purposes
 /** A local helper macro */
 #define G_CASE(I)                                                                                  \
     case I:                                                                                        \

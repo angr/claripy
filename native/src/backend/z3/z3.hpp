@@ -303,8 +303,8 @@ namespace Backend::Z3 {
         /** Abstract a backend object into a claricpp expr */
         inline AbstractionVariant
         dispatch_abstraction(const z3::expr &b_obj, std::vector<AbstractionVariant> &args) final {
-            return Dispatch<Z3>::dispatch_abstraction(
-                b_obj, args, tls.symbol_annotation_translocation_data, *this);
+            return Dispatch<Z3>::dispatch_abstraction(b_obj, args,
+                                                      tls.symbol_annotation_translocation_data);
         }
 
         /********************************************************************/
@@ -464,7 +464,7 @@ namespace Backend::Z3 {
             Util::map_add(abstraction_prim_cache, hash, ret);
             return ret;
 #else
-            return Dispatch<Z3>::dispatch_abstraction_to_prim(b_obj, *this);
+            return Dispatch<Z3>::dispatch_abstraction_to_prim(b_obj);
 #endif
         }
 

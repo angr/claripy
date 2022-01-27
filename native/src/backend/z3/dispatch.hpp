@@ -339,7 +339,7 @@ namespace Backend::Z3 {
         static typename Z3::AbstractionVariant
         dispatch_abstraction(const z3::expr &b_obj,
                              std::vector<typename Z3::AbstractionVariant> &args,
-                             SymAnTransData &satd, Z3 &bk) {
+                             SymAnTransData &satd) {
 
             // For brevity
             using C = Mode::Compare;
@@ -418,7 +418,7 @@ namespace Backend::Z3 {
                     // Bit-vectors
                 case Z3_OP_BNUM:
                     ASSERT_ARG_EMPTY(args);
-                    return Abs::BV::num(b_obj, bk);
+                    return Abs::BV::num(b_obj);
                 case Z3_OP_BNEG:
                     return Abs::neg(args);
                 case Z3_OP_BADD:
@@ -548,7 +548,7 @@ namespace Backend::Z3 {
         }
 
         /** Abstract a backend object into a primitive stored in a PrimVar */
-        static Op::PrimVar dispatch_abstraction_to_prim(const z3::expr &b_obj, const Z3 &bk) {
+        static Op::PrimVar dispatch_abstraction_to_prim(const z3::expr &b_obj) {
             UTIL_ASSERT(Util::Err::Size, b_obj.num_args() == 0, "Op should have no children");
 
             // Get switching variables
@@ -571,7 +571,7 @@ namespace Backend::Z3 {
 
                     // Conversions
                 case Z3_OP_BNUM: {
-                    const auto x { Abs::BV::num_primtive(b_obj, bk) };
+                    const auto x { Abs::BV::num_primtive(b_obj) };
                     /** A local helper macro */
 #define G_CASE(INDEX)                                                                              \
     case INDEX:                                                                                    \
