@@ -53,6 +53,7 @@ static void literal(const ClaricppExpr in, const Val value, const SIZE_T bit_len
  * @todo test spav
  */
 void create() {
+    BigInt::mode(BigInt::Mode::Str);
 
     // Constants
     const char name[] { "name" }; // NOLINT
@@ -98,12 +99,14 @@ void create() {
                                 32); // NOLINT
     literal<Expr::BV, uint64_t>(exc(claricpp_create_literal_bv_u64(n, { nullptr })), n,
                                 64); // NOLINT
+    literal<Expr::BV, BigInt>(exc(claricpp_create_literal_bv_big_int("10", n, { nullptr })),
+                              BigInt { "10", n }, n);
     literal<Expr::BV, BigInt>(
-        exc(claricpp_create_literal_bv_big_int_mode_str("10", n, { nullptr })), BigInt { "10", n },
-        n);
+        exc(claricpp_create_literal_bv_big_int_force_mode_str("10", n, { nullptr })),
+        BigInt { "10", n }, n);
     literal<Expr::BV, BigInt>(
-        exc(claricpp_create_literal_bv_big_int_mode_int("10", n, { nullptr })), BigInt { 10, n },
-        n);
+        exc(claricpp_create_literal_bv_big_int_force_mode_int("10", n, { nullptr })),
+        BigInt { 10, n }, n);
 
     // Non-Trivial
 

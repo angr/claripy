@@ -59,16 +59,6 @@ void backend() {
     UNITTEST_ASSERT(API::to_cpp(exc(claricpp_backend_simplify(z3_manual, sum_c)))->hash ==
                     two->hash);
 
-    // Test BigInt mode functions
-    Util::Log::debug("  - big int");
-    const auto old_mode { exc(claricpp_backend_get_big_int_mode()) };
-    const auto got_mode { exc(claricpp_backend_set_big_int_mode(ClaricppBimInt)) };
-    const auto new_mode { exc(claricpp_backend_get_big_int_mode()) };
-    UNITTEST_ASSERT(old_mode == ClaricppBimStr);      // This should be default
-    UNITTEST_ASSERT(old_mode == got_mode);            // This should be default
-    UNITTEST_ASSERT(new_mode == ClaricppBimInt);      // This should be default
-    exc(claricpp_backend_set_big_int_mode(old_mode)); // Restore for future tests
-
     // Test downsizing backend data
     Util::Log::debug("  - downsize");
     UNITTEST_ASSERT(z3_priv.conv_cache_size() != 0);
@@ -305,6 +295,8 @@ void backend() {
     /********************************************************************/
     /*                             Concrete                             */
     /********************************************************************/
+
+    // @todo
 }
 
 // Define the test
