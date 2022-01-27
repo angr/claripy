@@ -51,18 +51,6 @@ extern "C" {
         return API::to_cpp(bk)->clear_persistent_data();
         API_FUNC_END_NO_RETURN
     }
-
-    ClaricppBIM claricpp_backend_get_big_int_mode() {
-        API_FUNC_START
-        return API::mode(Backend::Base::big_int_mode());
-        API_FUNC_END
-    }
-
-    ClaricppBIM claricpp_backend_set_big_int_mode(const ClaricppBIM m) {
-        API_FUNC_START
-        return API::mode(Backend::Base::big_int_mode(API::mode(m)));
-        API_FUNC_END
-    }
 }
 
 /********************************************************************/

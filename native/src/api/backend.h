@@ -46,17 +46,6 @@ void claricpp_backend_downsize(const ClaricppBackend bk);
  */
 void claricpp_backend_clear_persistent_data(const ClaricppBackend bk);
 
-/** Gets Backend's global BigInt mode
- *  @return The current BigInt mode
- */
-ClaricppBIM claricpp_backend_get_big_int_mode();
-
-/** Sets Backend's global BigInt mode
- *  @param m The BigInt mode to set the mode to
- *  @return The previous BigInt mode before it was updated
- */
-ClaricppBIM claricpp_backend_set_big_int_mode(const ClaricppBIM m);
-
 /********************************************************************/
 /*                                Z3                                */
 /********************************************************************/
