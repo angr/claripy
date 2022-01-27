@@ -5,6 +5,8 @@
 #ifndef R_BIGINT_HPP_
 #define R_BIGINT_HPP_
 
+#include "mode.hpp"
+
 #include <ostream>
 
 #include <boost/multiprecision/gmp.hpp>
@@ -18,6 +20,58 @@ struct BigInt {
     using Str = std::string;
     /** The type of the value */
     using Value = std::variant<Int, Str>;
+    /** The Mode type */
+    using Mode = ::Mode::BigInt;
+
+    // Constructors
+
+    /** Convert the input to a BigInt using the mode Mod */
+    template <Mode Mod> static inline BigInt from_c_str(CCSC s, const UInt bit_length) {
+        assert_valid<Mod>();
+        return (Mod == Mode::Str) ? BigInt { Str { s }, bit_length }
+                                  : BigInt { Int { s }, bit_length };
+    }
+
+    /** Convert the input to a BigInt using the default mode */
+    static inline BigInt from_c_str(CCSC s, const UInt bit_length) {
+        return (mode_ == Mode::Str) ? from_c_str<Mode::Str>(s, bit_length)
+                                    : from_c_str<Mode::Int>(s, bit_length);
+    }
+
+    /** Convert the input to a BigInt using the default Mod */
+    template <Mode Mod> static inline BigInt from_str(Str &&s, const UInt bit_length) {
+        return (Mod == Mode::Str) ? BigInt { std::move(s), bit_length }
+                                  : BigInt { Int { std::move(s) }, bit_length };
+    }
+
+    /** Convert the input to a BigInt using the default mode */
+    static inline BigInt from_str(Str &&s, const UInt bit_length) {
+        return (mode_ == Mode::Str) ? from_str<Mode::Str>(std::move(s), bit_length)
+                                    : from_str<Mode::Int>(std::move(s), bit_length);
+    }
+
+    /** Convert the input to a BigInt using the default Mod */
+    template <Mode Mod> static inline BigInt from_int(Int &&i, const UInt bit_length) {
+        return (Mod == Mode::Str) ? BigInt { i.str(), bit_length }
+                                  : BigInt { std::move(i), bit_length };
+    }
+
+    /** Convert the input to a BigInt using the default mode */
+    static inline BigInt from_int(Int &&i, const UInt bit_length) {
+        return (mode_ == Mode::Str) ? from_int<Mode::Str>(std::move(i), bit_length)
+                                    : from_int<Mode::Int>(std::move(i), bit_length);
+    }
+
+    /** Set the default BigInt mode to m */
+    static inline Mode mode(const Mode m) noexcept {
+        Util::Log::info("Setting BitInt mode to ", m);
+        return mode_.exchange(m);
+    }
+
+    // Mode methods
+
+    /** Get the default mode */
+    static inline Mode mode() noexcept { return mode_; }
 
     /** Writes value to the ostream */
     inline void write_value(std::ostream &os) const {
@@ -29,14 +83,17 @@ struct BigInt {
         }
     }
 
+    // Modifiers
+
     /** Converts the BigInt to the given mode */
-    template <typename Mode> void to() {
-        static_assert(Util::Type::Is::in<Mode, Int, Str>, "Mode may only be Int or Str");
-        if (std::holds_alternative<Mode>(value)) {
+    template <Mode Mod> void convert() {
+        assert_valid<Mod>();
+        using CMode = std::conditional_t<Mod == Mode::Str, Str, Int>;
+        if (std::holds_alternative<CMode>(value)) {
             return;
         }
-        if constexpr (std::is_same_v<Mode, Int>) {
-            value = Int { std::get<Str>(value) };
+        if constexpr (std::is_same_v<CMode, Int>) {
+            value = Int { std::move(std::get<Str>(value)) };
         }
         else {
             value = std::get<Int>(value).str();
@@ -47,6 +104,15 @@ struct BigInt {
     Value value;
     /** The bit length */
     UInt bit_length;
+
+  private:
+    /** Assert that Mod is a valide Mode */
+    template <Mode Mod> static inline void assert_valid() {
+        static_assert(Mod == Mode::Int || Mod == Mode::Str, "Mode may only be Int or Str");
+    }
+
+    /** The default mode */
+    static std::atomic<Mode> mode_;
 };
 
 /** Ostream overload for BigInt */

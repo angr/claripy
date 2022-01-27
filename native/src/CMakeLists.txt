@@ -1,6 +1,7 @@
 # Add current directory's source files
 target_sources("${CLARICPP}" PRIVATE
     ffi.cpp # Enable use of gcc -E api.h
+    big_int.cpp
 )
 
 # Add sub directories
