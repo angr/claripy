@@ -12,6 +12,7 @@
 
 #include "api/annotation.h"
 #include "api/backend.h"
+#include "api/big_int.h"
 #include "api/create.h"
 #include "api/expr.h"
 #include "api/general.h"

@@ -259,7 +259,7 @@ namespace API {
                 TRIVIAL_CASE(8, uint64_t, u64, ClaricppTypeEnumU64)
                 /* Other */
                 CASE(9, BigInt) {
-                    got.to<BigInt::Str>();
+                    got.convert<BigInt::Mode::Str>();
                     const std::string &gstr { std::get<std::string>(got.value) };
                     char *const ret { Util::Safe::malloc<char>(gstr.size() + 1) };
                     std::memcpy(ret, gstr.c_str(), gstr.size());
