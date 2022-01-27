@@ -89,15 +89,24 @@ extern "C" {
         return make(f, spav, std::make_shared<PyObj::VS>(hash, value, bit_length));
     }
 
-    ClaricppExpr claricpp_create_literal_bv_big_int_mode_str(PyStr value, const SIZE_T bit_length,
-                                                             ClaricppSPAV spav) {
+    ClaricppExpr claricpp_create_literal_bv_big_int(PyStr value, const SIZE_T bit_length,
+                                                    ClaricppSPAV spav) {
+        static constexpr Expr::BasePtr (*const f)(BigInt &&,
+                                                  Annotation::SPAV &&) { Create::literal };
+        return make(f, spav, BigInt::from_c_str(value, bit_length));
+    }
+
+    ClaricppExpr claricpp_create_literal_bv_big_int_force_mode_str(PyStr value,
+                                                                   const SIZE_T bit_length,
+                                                                   ClaricppSPAV spav) {
         static constexpr Expr::BasePtr (*const f)(BigInt &&,
                                                   Annotation::SPAV &&) { Create::literal };
         return make(f, spav, BigInt { BigInt::Str { value }, bit_length });
     }
 
-    ClaricppExpr claricpp_create_literal_bv_big_int_mode_int(PyStr value, const SIZE_T bit_length,
-                                                             ClaricppSPAV spav) {
+    ClaricppExpr claricpp_create_literal_bv_big_int_force_mode_int(PyStr value,
+                                                                   const SIZE_T bit_length,
+                                                                   ClaricppSPAV spav) {
         static constexpr Expr::BasePtr (*const f)(BigInt &&,
                                                   Annotation::SPAV &&) { Create::literal };
         return make(f, spav, BigInt { BigInt::Int { value }, bit_length });

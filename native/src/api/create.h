@@ -120,21 +120,31 @@ ClaricppExpr claricpp_create_literal_bv_u32(const uint32_t value, ClaricppSPAV s
  */
 ClaricppExpr claricpp_create_literal_bv_u64(const uint64_t value, ClaricppSPAV spav);
 
-/** Create a literal BigInt expr with the BigInt in Str mode
+/** Create a literal BigInt expr with the BigInt using Expr's default mode
  *  @param value The data held by the literal represented in base 10 by a string
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a BigInt bit vector constant stored in string form
  */
-ClaricppExpr claricpp_create_literal_bv_big_int_mode_str(PyStr value, const SIZE_T bit_length,
-                                                         ClaricppSPAV spav);
+ClaricppExpr claricpp_create_literal_bv_big_int(PyStr value, const SIZE_T bit_length,
+                                                ClaricppSPAV spav);
+
+/** Create a literal BigInt expr with the BigInt in Str mode
+ *  Warning: Use this only if you want to override the default mode (hashes will differ)
+ *  @param value The data held by the literal represented in base 10 by a string
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a BigInt bit vector constant stored in string form
+ */
+ClaricppExpr claricpp_create_literal_bv_big_int_force_mode_str(PyStr value, const SIZE_T bit_length,
+                                                               ClaricppSPAV spav);
 
 /** Create a literal BigInt expr with the BigInt in Int mode
+ *  Warning: Use this only if you want to override the default mode (hashes will differ)
  *  @param value The data held by the literal represented in base 10 by a string
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a BigInt bit vector constant stored in int form
  */
-ClaricppExpr claricpp_create_literal_bv_big_int_mode_int(PyStr value, const SIZE_T bit_length,
-                                                         ClaricppSPAV spav);
+ClaricppExpr claricpp_create_literal_bv_big_int_force_mode_int(PyStr value, const SIZE_T bit_length,
+                                                               ClaricppSPAV spav);
 
 /********************************************************************/
 /*                           Non-Trivial                            */
