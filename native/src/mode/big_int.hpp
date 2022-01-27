@@ -8,6 +8,7 @@
 extern "C" {
 #include "big_int.h"
 };
+#include <ostream>
 
 namespace Mode {
 
