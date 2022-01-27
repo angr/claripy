@@ -21,17 +21,6 @@ namespace Backend {
         // Define implicits
         DEFINE_IMPLICITS_ALL_NOEXCEPT(Base);
 
-        /** Set the BigInt abstraction mode for this backend */
-        static inline Mode::BigInt big_int_mode(const Mode::BigInt m) noexcept {
-            Util::Log::info("Setting BitInt abstraction mode to ", m);
-            return big_int_abstract_mode.exchange(m);
-        }
-
-        /** Get the BigInt abstraction mode for this backend */
-        static inline Mode::BigInt big_int_mode() noexcept { return big_int_abstract_mode; }
-
-        // Pure virtual functions
-
         /** Backend name */
         [[nodiscard]] virtual const char *name() const noexcept = 0;
 
@@ -61,12 +50,6 @@ namespace Backend {
       protected:
         /** Default destructor */
         virtual ~Base() noexcept = default;
-
-      private:
-        /** The big int abstraction mode all backends share
-         *  By default this is Mode::BigInt::Str
-         */
-        static std::atomic<Mode::BigInt> big_int_abstract_mode;
     };
 
 } // namespace Backend
