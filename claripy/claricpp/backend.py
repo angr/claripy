@@ -1,21 +1,11 @@
-__all__ = ["BigIntMode", "Backend"]
+__all__ = ["Backend"]
 
 from .claricpp import *
 from .expr import Expr
-from enum import Enum
 from functools import cache, cached_property
 
 # TODO: deal with destruction / freeing memory
 # TODO: slots!
-
-
-class BigIntMode(Enum):
-    """
-    An enum which notes how python ints should be / are stored in C
-    """
-
-    Str: int = claricpp.ClaricppBimStr
-    Int: int = claricpp.ClaricppBimInt
 
 
 class Backend:
@@ -54,18 +44,3 @@ class Backend:
         Warning: Do *not* use this function unless you know what you are doing
         """
         claricpp.claricpp_backend_clear_persistent_data(self._raw)
-
-    def get_big_int_mode(self) -> BigIntMode:
-        """
-        Get the BigIntMode this backend is using
-        """
-        return BigIntMode(claricpp.claricpp_backend_get_big_int_mode(self._raw))
-
-    def set_big_int_mode(self, mode: BigIntMode) -> BigIntMode:
-        """
-        Set the BigIntMode this backend should use
-        Returns the old BigIntMode the backend used
-        """
-        return BigIntMode(
-            claricpp.claricpp_backend_set_big_int_mode(self._raw, mode.value)
-        )

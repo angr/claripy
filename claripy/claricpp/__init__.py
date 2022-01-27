@@ -5,5 +5,6 @@ Note: We do not import all bits to avoid namespace pollution. Manually import th
 
 from .annotation import *
 from .annotation_spav import *
+from .big_int import *
 from .expr import *
 from .backend import *

@@ -174,9 +174,8 @@ def bv_v(
     """
     raw = (_empty if spav is None else spav).raw
     if type(value) == bytes:
-        expr = claricpp.claricpp_create_literal_bv_big_int_mode_str(
-            value, bit_length, raw
-        )
+        # We prefer the default mode rather than forcing one
+        expr = claricpp.claricpp_create_literal_bv_big_int(value, bit_length, raw)
     elif bit_length == 8:
         expr = claricpp.claricpp_create_literal_bv_u8(value, raw)
     elif bit_length == 16:
