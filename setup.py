@@ -35,7 +35,7 @@ def find_z3_include_dir():
     return os.path.join(base, "include")
 
 
-def cmake_config_args(out_file, claricpp, z3_include_dir):
+def cmake_config_args(out_file, claricpp, z3_include_dir, boost_inc_dir):
     # Config
     raw_config = {
         "VERSION": version,
@@ -50,6 +50,10 @@ def cmake_config_args(out_file, claricpp, z3_include_dir):
         "WARN_BACKWARD_LIMITATIONS": True,
         # So that python can access cmake data
         "FOR_SETUP_PY_F": out_file,
+        # Boost config
+        "BOOST_URL": "https://boostorg.jfrog.io/artifactory/main/release/1.66.0/source/boost_1_66_0.tar.gz",
+        "BOOST_HASH_CHECK": "sha256=94ced8b72956591c4775ae2207a9763d3600b30d9d7446562c552f0a14a63be7",
+        "BOOST_FORCE_CLEAN_DOWNLOAD": True,
         # Z3 config
         "Z3_INCLUDE_PATH": z3_include_dir,
         "Z3_ACQUISITION_MODE": "SYSTEM",
@@ -114,14 +118,18 @@ def mk_dirs(root):
     This is used for consistency
     ffi will be within build
     lib contains other files and already exists
+    boost_include will be within boost
     """
     native_dir = os.path.join(os.getcwd(), "native")
     build_dir = os.path.join(native_dir, "build")
+    boost_dir = os.path.join(native_dir, "boost")
     ret = {
         "native": native_dir,
         "build": build_dir,
         "ffi": os.path.join(build_dir, "ffi"),
         "lib": os.path.join(root, "claripy/claricpp"),
+        "boost": boost_dir,
+        "boost_include": os.path.join(boost_dir, "include"),
     }
     assert os.path.isdir(ret["lib"]), "Claripy directory is missing " + ret["lib"]
     return ret
@@ -138,7 +146,12 @@ def _build_native():
     ### CMake
     print("Configuring...")
     info_file = os.path.join(d["build"], "for_setup_py.txt")
-    cmake_args = cmake_config_args(info_file, claricpp, find_z3_include_dir())
+    cmake_args = cmake_config_args(
+        info_file,
+        claricpp,
+        find_z3_include_dir(),
+        os.path.join(d["native"], "boost/include"),
+    )
     run_cmd_no_fail(find_exe("cmake"), *cmake_args, d["native"])
     info = parse_info(info_file)
 
@@ -239,7 +252,7 @@ setup(
         "cachetools",
         "decorator",
         "pysmt>=0.9.1.dev119",
-        "six"
+        "six",
     ],
     description="An abstraction layer for constraint solvers",
     url="https://github.com/angr/claripy",

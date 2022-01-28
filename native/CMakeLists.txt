@@ -100,6 +100,26 @@ option( ENABLE_CET "Builds with CET fcf-protection, requires ENABLE_SECURITY" OF
 # Override what the compiler says about it handling RTTI
 default(RTTI_OVERRIDE FALSE)
 
+### Boost Options
+
+# A URL to download boost from
+# If empty find_package will not be used
+# Ex. https://boostorg.jfrog.io/artifactory/main/release/1.66.0/source/boost_1_66_0.tar.gz
+default(BOOST_URL "")
+
+# An optional hash algorithm and hash the download should have
+# Ignored if empty of if BOOST_URL is empty
+# Ex. "sha256=94ced8b72956591c4775ae2207a9763d3600b30d9d7446562c552f0a14a63be7"
+default(BOOST_HASH_CHECK "")
+
+# The directory to create and store boost in
+# Ignored if BOOST_URL is empty
+default(BOOST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/boost")
+
+# Force a clean download of boost
+# Does not matter if BOOST_URL is not ""
+default(BOOST_FORCE_CLEAN_DOWNLOAD OFF)
+
 
 #################################################
 #                  Z3 Options                   #
@@ -275,8 +295,7 @@ message(STATUS "Backtrace generators will look for source files in: ${SOURCE_ROO
 
 
 # BigInt support
-# set(Boost_USE_STATIC_LIBS ON) This might matter if we link, we do not at the moment
-find_package(Boost 1.7 REQUIRED)
+include(Boost)
 include(GMP) # Boost multiprecision backend
 if(NOT GMP_FOUND) # Check variable set by the included GMP cmake file
 	message(FATAL_ERROR "gmp not found")

@@ -3,6 +3,7 @@
 /.idea/*
 
 # Explicit
+/boost/*
 /Ignore/*
 /ignore/*
 /build/*
