@@ -28,6 +28,14 @@ extern "C" {
         return API::copy_to_c(ret); // Can't move a reference to a const object
     }
 
+    //    @TODO: ClaricppArg claricpp_expr_arg(const ClaricppExpr expr, const UINT index) {
+    //    const auto &op { API::to_cpp_ref(expr).op };
+    //    UTIL_ASSERT_NOT_NULL_DEBUG(op);
+    //    std::vector<Op::ArgVar> ret;
+    //    op->python_children(ret);
+    //        return API::to_arr(std::move(ret));
+    //    }
+
     ARRAY_OUT(ClaricppArg) claricpp_expr_args(const ClaricppExpr expr) {
         const auto &op { API::to_cpp_ref(expr).op };
         UTIL_ASSERT_NOT_NULL_DEBUG(op);

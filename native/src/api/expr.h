@@ -33,6 +33,13 @@ ClaricppSPAV claricpp_expr_annotations(const ClaricppExpr expr);
  */
 SIZE_T claricpp_expr_bit_length(const ClaricppExpr expr);
 
+// /** Gets the index'th arg of expr
+//  *  @param expr The Expr to get the arg from
+//  *  @param index The index of the arg desired
+//  *  @return The index'th arg of expr
+//  */
+// @ TODO ClaricppArg claricpp_expr_arg(const ClaricppExpr expr, const UINT index);
+
 /** Gets the args of expr
  *  @param expr The Expr to get the args of
  *  @return The args of expr
