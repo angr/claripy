@@ -10,6 +10,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # Functions to be used later
 include(find_required)
 include(default)
+include(fetch)
 
 # Common library paths
 list(APPEND CMAKE_LIBRARY_PATH
