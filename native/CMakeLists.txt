@@ -50,7 +50,7 @@ message("Library name: ${CLARICPP}")
 
 # API Version
 # This is different from version which is read from /VERSION
-set( SOVERSION 1 )
+default( SOVERSION 1 )
 
 # Run make <DOC_MAKE_TARGET> to build documentation if BUILD_DOC is ON
 # Running make <DOC_MAKE_TARGET> generates html, latex, and man pages
@@ -70,9 +70,10 @@ default( DEFAULT_OTHER_LOG_LEVEL "Info" )
 
 ### Config Options ###
 
-# The VERSION file
-# This is ignored if VERSION is set
-set( VERSION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../VERSION" )
+# VERSION
+default( VERSION "" )
+# If VERSION is empty the VERSION is read from this
+default( VERSION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../VERSION" )
 
 # Static Analysis Options
 option( IWYU "Enable iwyu" OFF )
@@ -264,9 +265,7 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Define the version (allow overrides by setting VERSION)
-if (DEFINED VERSION)
-	message(STATUS "Loading version from existing definition.")
-else()
+if (VERSION STREQUAL "")
 	if (EXISTS "${VERSION_FILE}")
 		message(STATUS "Loading version from version file: ${VERSION_FILE}")
 		file(READ "${VERSION_FILE}" VERSION)

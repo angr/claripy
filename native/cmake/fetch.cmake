@@ -2,11 +2,12 @@
 cmake_minimum_required( VERSION 3.18 )
 
 # Download F_URL and extract it
-# If DATA is not empty then move the DATA file/directory out of it and into BASE_DIR (removes other files)
+# If DATA is not empty then mv "${EXTRACTED_DIR}/${DATA}" "${BASE_DIR}/${DATA}"
+#   Note: Removes the rest of data afterward
 # If(PROGRESS); download progress will be provided
 # If HASH is not "", verifies that the hash of the downloaded file matches
 # HASH should be in the form of: "algo:hash"
-# Note DATA may not end in: _extracted_download.tmp
+# Note DATA may not contain: _extracted_download.tmp
 function(fetch BASE_DIR F_URL DATA PROGRESS HASH)
     # Clean
     if (EXISTS "${BASE_DIR}")
@@ -64,7 +65,7 @@ function(fetch BASE_DIR F_URL DATA PROGRESS HASH)
         message(STATUS "Moving ${DATA} into: ${BASE_DIR}")
         set(TMP "${BASE_DIR}/_extracted_download.tmp")
         file(RENAME "${EXTRACTED_DIR}" "${TMP}")
-        file(RENAME "${TMP}/boost" "${BASE_DIR}/boost")
+        file(RENAME "${TMP}/${DATA}" "${BASE_DIR}/${DATA}")
         file(REMOVE_RECURSE "${TMP}")
     endif()
 endfunction()

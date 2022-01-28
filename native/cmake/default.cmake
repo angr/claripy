@@ -1,4 +1,4 @@
-# default(x value) = if not defined(x): set(x value)
+# default(x value) = if not defined(x): set(x value) + message about it
 
 function(default VARI VAL)
 	if (NOT DEFINED "${VARI}")
