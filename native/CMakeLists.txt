@@ -104,9 +104,16 @@ default(RTTI_OVERRIDE FALSE)
 
 ### Boost Options
 
+# The default boost include location
+# This variable is ignored if empty and will be populated by find_package
+# Note: The casing on this is intentional, this is the variable find_package uses
+# Note: This may not be non-empty if BOOST_URL is
+default(Boost_INCLUDE_DIRS "")
+
 # A URL to download boost from
 # If empty find_package will not be used
 # Ex. https://boostorg.jfrog.io/artifactory/main/release/1.66.0/source/boost_1_66_0.tar.gz
+# Note: This may not be non-empty if Boost_INCLUDE_DIRS is
 default(BOOST_URL "")
 
 # An optional hash algorithm and hash the download should have

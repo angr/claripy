@@ -1,7 +1,11 @@
 from distutils.command.build import build as _build
 from distutils.command.clean import clean as _clean
+from distutils.command.sdist import sdist as _sdist
 from multiprocessing import cpu_count
 import subprocess
+import requests
+import tempfile
+import hashlib
 import shutil
 import glob
 import sys
@@ -28,16 +32,69 @@ claricpp = "claricpp"
 claricpp_ffi = "claricpp_ffi"
 
 
-def find_z3_include_dir():
+######################################################################
+#                              Helpers                               #
+######################################################################
+
+
+def dir_names(root):
+    """
+    Returns a dict of paths
+    This is used for consistency
+    ffi will be within build
+    lib contains other files and already exists
+    boost will be the child of native
+    """
     import z3
 
-    base = os.path.dirname(z3.__file__)
-    return os.path.join(base, "include")
+    native_dir = os.path.join(root, "native")
+    build_dir = os.path.join(native_dir, "build")
+    ret = {
+        "native": native_dir,
+        "build": build_dir,
+        "ffi": os.path.join(build_dir, "ffi"),
+        "boost": os.path.join(native_dir, "boost"),
+        "lib": os.path.join(root, "claripy/claricpp"),
+        "z3" : os.path.join(os.path.dirname(z3.__file__), "include")
+    }
+    assert os.path.isdir(ret["lib"]), "Claripy directory is missing " + ret["lib"]
+    return ret
+d = dir_names(os.path.dirname(__file__))
 
 
-def cmake_config_args(out_file, claricpp, z3_include_dir, boost_inc_dir):
+def find_exe(name):
+    """
+    Akin to bash's which function
+    """
+    exe = shutil.which(name, mode=os.X_OK)
+    if exe is None:
+        raise RuntimeError("Cannot find " + name)
+    return exe
+
+def find_lib(base, name, *, allow_missing=True):
+    """
+    Tries to find a library named name within the directory base
+    """
+    is_lib = lambda x: x.endswith(".so") or x.endswith(".dylib") or x.endswith(".dll")
+    files = glob.iglob(os.path.join(base, name + "*.*"))
+    files = [ i for i in files if is_lib(i) ]
+    if len(files) > 1:
+        print("Found: " + str(files))
+        raise RuntimeError("Could not find definitive lib: " + name + " in ", base)
+    if len(files) == 0:
+        if allow_missing:
+            return None
+        raise RuntimeError("Could not find lib: " + name + " in ", base)
+    return files[0]
+
+
+def cmake_config_args(out_file, claricpp):
+    """
+    Create arguments to pass to cmake for configuring claricpp
+    """
     # Config
     raw_config = {
+        "FOR_SETUP_PY_F": out_file,
         "VERSION": version,
         "CLARICPP": claricpp,
         # Build options
@@ -48,14 +105,9 @@ def cmake_config_args(out_file, claricpp, z3_include_dir, boost_inc_dir):
         "ENABLE_MEMCHECK": False,
         "LWYU": False,
         "WARN_BACKWARD_LIMITATIONS": True,
-        # So that python can access cmake data
-        "FOR_SETUP_PY_F": out_file,
-        # Boost config
-        "BOOST_URL": "https://boostorg.jfrog.io/artifactory/main/release/1.66.0/source/boost_1_66_0.tar.gz",
-        "BOOST_HASH_CHECK": "sha256=94ced8b72956591c4775ae2207a9763d3600b30d9d7446562c552f0a14a63be7",
-        "BOOST_FORCE_CLEAN_DOWNLOAD": True,
-        # Z3 config
-        "Z3_INCLUDE_PATH": z3_include_dir,
+        # Library config
+        "Boost_INCLUDE_DIRS" : d['boost'],
+        "Z3_INCLUDE_PATH": d['z3'],
         "Z3_ACQUISITION_MODE": "SYSTEM",
         "Z3_FORCE_CLEAN": "ON",
     }
@@ -75,14 +127,10 @@ def cmake_config_args(out_file, claricpp, z3_include_dir, boost_inc_dir):
     return [format(i, k) for i, k in raw_config.items()]
 
 
-def find_exe(name):
-    exe = shutil.which(name, mode=os.X_OK)
-    if exe is None:
-        raise RuntimeError("Cannot find " + name)
-    return exe
-
-
-def parse_info(info_file):
+def parse_info_file(info_file):
+    """
+    Parses the info file cmake outputs
+    """
     with open(info_file) as f:
         data = f.readlines()
     data = [i.split("=", 1) for i in data if len(i.strip()) > 0]
@@ -90,6 +138,9 @@ def parse_info(info_file):
 
 
 def run_cmd_no_fail(*args):
+    """
+    A wrapper around subprocess.run that errors on subprocess failure
+    """
     args = list(args)
     print("Running: subprocess.run(" + str(args) + ")")
     rc = subprocess.run(args)
@@ -98,47 +149,79 @@ def run_cmd_no_fail(*args):
         raise RuntimeError(what + " failed with return code: " + str(rc.returncode))
     return rc
 
-
-def find_lib(base, name):
-    files = glob.iglob(os.path.join(base, name + "*.*"))
-    files = [
-        i
-        for i in files
-        if (i.endswith(".so") or i.endswith(".dylib") or i.endswith(".dll"))
-    ]
-    if len(files) != 1:
-        print("Found: " + str(files))
-        raise RuntimeError("Could not find definitive lib: " + name + " in ", base)
-    return files[0]
-
-
-def mk_dirs(root):
+def extract(d, f, ext):
     """
-    Returns a dict of paths
-    This is used for consistency
-    ffi will be within build
-    lib contains other files and already exists
-    boost_include will be within boost
+    Extract f into d given, the compression is assumed from the extension (ext)
+    No leading period is allowed in ext
     """
-    native_dir = os.path.join(os.getcwd(), "native")
-    build_dir = os.path.join(native_dir, "build")
-    boost_dir = os.path.join(native_dir, "boost")
-    ret = {
-        "native": native_dir,
-        "build": build_dir,
-        "ffi": os.path.join(build_dir, "ffi"),
-        "lib": os.path.join(root, "claripy/claricpp"),
-        "boost": boost_dir,
-        "boost_include": os.path.join(boost_dir, "include"),
-    }
-    assert os.path.isdir(ret["lib"]), "Claripy directory is missing " + ret["lib"]
-    return ret
+    if ext == 'tar.gz':
+        import tarfile
+        with tarfile.open(f) as z:
+            z.extractall(d)
+    elif ext == 'zip':
+        from zipfile import ZipFile
+        with ZipFile(f) as z:
+            z.extractall(d)
+    else:
+        raise RuntimeError('Compression type not supported')
 
 
-def _build_native():
+######################################################################
+#                           Main Functions                           #
+######################################################################
+
+
+def get_boost():
+    '''
+    Download the boost headers and put them in d['boost']
+    This *will* overwrite the existing d['boost'] directory
+    '''
+    # Config
+    url, sha, ext = {
+        # Get this info from: https://www.boost.org/users/download/
+        "posix": (
+            "https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz",
+            "94ced8b72956591c4775ae2207a9763d3600b30d9d7446562c552f0a14a63be7",
+            "tar.gz"
+        ),
+        "nt": (
+            "https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.zip",
+            "f22143b5528e081123c3c5ed437e92f648fe69748e95fa6e2bd41484e2986cc3",
+            "zip"
+        ),
+    }[os.name]
+    # Get + checksum
+    print('Downloading boost headers...')
+    hasher = hashlib.sha256()
+    fd, comp_f = tempfile.mkstemp(suffix='.' + ext)
+    with os.fdopen(fd, "wb") as f:
+        with requests.get(url, allow_redirects=True, stream=True) as r:
+            r.raise_for_status()
+            for block in r.iter_content(chunk_size=2**16):
+                hasher.update(block)
+                f.write(block)
+    if hasher.hexdigest() != sha:
+        raise RuntimeError("Downloaded boost headers hash failure!")
+    # Extract
+    print('Extracting boost headers...')
+    raw_boost = tempfile.mkdtemp(suffix='.tmp')
+    extract(raw_boost, comp_f, ext)
+    os.remove(comp_f)
+    # Move into place
+    print('Installing boost headers...')
+    uncomp = glob.glob(os.path.join(raw_boost, '*'))
+    if len(uncomp) != 1:
+        raise RuntimeError("Boost should decompress into a single directory.")
+    shutil.rmtree(d['boost'], ignore_errors=True)
+    os.rename(os.path.join(uncomp[0], 'boost'), d['boost'])
+    # Cleanup
+    print('Cleaning temporary files...')
+    shutil.rmtree(raw_boost)
+
+
+def build_native():
     ### Prep
     old_pwd = os.getcwd()
-    d = mk_dirs(old_pwd)
     if not os.path.exists(d["build"]):
         os.mkdir(d["build"])
     os.chdir(d["build"])
@@ -146,14 +229,9 @@ def _build_native():
     ### CMake
     print("Configuring...")
     info_file = os.path.join(d["build"], "for_setup_py.txt")
-    cmake_args = cmake_config_args(
-        info_file,
-        claricpp,
-        find_z3_include_dir(),
-        os.path.join(d["native"], "boost/include"),
-    )
+    cmake_args = cmake_config_args(info_file, claricpp)
     run_cmd_no_fail(find_exe("cmake"), *cmake_args, d["native"])
-    info = parse_info(info_file)
+    info = parse_info_file(info_file)
 
     ### Generator
     generator = info["CMAKE_MAKE_PROGRAM"]
@@ -218,26 +296,46 @@ def _build_native():
     os.chdir(old_pwd)
 
 
-def _clean_native():
-    d = mk_dirs(os.getcwd())
-    os.remove(find_lib(d["lib"], "lib" + claricpp))
-    os.remove(find_lib(d["lib"], claricpp_ffi))
+def clean_native():
+    def rm_lib(name):
+        where = find_lib(d["lib"], name, allow_missing=True)
+        if where is not None:
+            os.remove(where)
+    rm_lib("lib" + claricpp)
+    rm_lib(claricpp_ffi)
     shutil.rmtree(d["build"], ignore_errors=True)
+    # Libs
+    shutil.rmtree(d["boost"], ignore_errors=True)
+    shutil.rmtree(d["z3"], ignore_errors=True)
 
+
+######################################################################
+#                             setuptools                             #
+######################################################################
+
+
+class sdist(_sdist):
+    def run(self, *args):
+        self.execute(lambda: get_boost(), (), msg="Getting boost headers")
+        _sdist.run(self, *args)
 
 class build(_build):
     def run(self, *args):
-        self.execute(_build_native, (), msg="Building claripy native")
+        if not os.path.exists(d['boost']): # No need to grab if they exist
+            self.execute(lambda: get_boost(), (), msg="Getting boost headers")
+        else:
+            print('Using existing boost headers')
+        self.execute(build_native, (), msg="Building claripy native")
         _build.run(self, *args)
 
 
 class clean(_clean):
     def run(self, *args):
-        self.execute(_clean_native, (), msg="Cleaning claripy native")
+        self.execute(clean_native, (), msg="Cleaning claripy/native")
         _clean.run(self, *args)
 
 
-cmdclass = {"build": build, "clean": clean}
+cmdclass = {"sdist": sdist, "build": build, "clean": clean}
 
 # Both
 
