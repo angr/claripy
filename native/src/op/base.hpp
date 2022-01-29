@@ -44,7 +44,7 @@ namespace Op {
     using BasePtr = Factory::Ptr<const Base>;
 
     /** Default virtual destructor */
-    Base::~Base() noexcept = default;
+    inline Base::~Base() noexcept = default;
 
 } // namespace Op
 
