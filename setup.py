@@ -55,10 +55,12 @@ def dir_names(root):
         "ffi": os.path.join(build_dir, "ffi"),
         "boost": os.path.join(native_dir, "boost"),
         "lib": os.path.join(root, "claripy/claricpp"),
-        "z3" : os.path.join(os.path.dirname(z3.__file__), "include")
+        "z3": os.path.join(os.path.dirname(z3.__file__), "include"),
     }
     assert os.path.isdir(ret["lib"]), "Claripy directory is missing " + ret["lib"]
     return ret
+
+
 d = dir_names(os.path.dirname(__file__))
 
 
@@ -71,13 +73,14 @@ def find_exe(name):
         raise RuntimeError("Cannot find " + name)
     return exe
 
+
 def find_lib(base, name, *, allow_missing=True):
     """
     Tries to find a library named name within the directory base
     """
     is_lib = lambda x: x.endswith(".so") or x.endswith(".dylib") or x.endswith(".dll")
     files = glob.iglob(os.path.join(base, name + "*.*"))
-    files = [ i for i in files if is_lib(i) ]
+    files = [i for i in files if is_lib(i)]
     if len(files) > 1:
         print("Found: " + str(files))
         raise RuntimeError("Could not find definitive lib: " + name + " in ", base)
@@ -106,8 +109,8 @@ def cmake_config_args(out_file, claricpp):
         "LWYU": False,
         "WARN_BACKWARD_LIMITATIONS": True,
         # Library config
-        "Boost_INCLUDE_DIRS" : d['boost'],
-        "Z3_INCLUDE_PATH": d['z3'],
+        "Boost_INCLUDE_DIRS": d["boost"],
+        "Z3_INCLUDE_PATH": d["z3"],
         "Z3_ACQUISITION_MODE": "SYSTEM",
         "Z3_FORCE_CLEAN": "ON",
     }
@@ -149,21 +152,24 @@ def run_cmd_no_fail(*args):
         raise RuntimeError(what + " failed with return code: " + str(rc.returncode))
     return rc
 
+
 def extract(d, f, ext):
     """
     Extract f into d given, the compression is assumed from the extension (ext)
     No leading period is allowed in ext
     """
-    if ext == 'tar.gz':
+    if ext == "tar.gz":
         import tarfile
+
         with tarfile.open(f) as z:
             z.extractall(d)
-    elif ext == 'zip':
+    elif ext == "zip":
         from zipfile import ZipFile
+
         with ZipFile(f) as z:
             z.extractall(d)
     else:
-        raise RuntimeError('Compression type not supported')
+        raise RuntimeError("Compression type not supported")
 
 
 ######################################################################
@@ -172,50 +178,50 @@ def extract(d, f, ext):
 
 
 def get_boost():
-    '''
+    """
     Download the boost headers and put them in d['boost']
     This *will* overwrite the existing d['boost'] directory
-    '''
+    """
     # Config
     url, sha, ext = {
         # Get this info from: https://www.boost.org/users/download/
         "posix": (
             "https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz",
             "94ced8b72956591c4775ae2207a9763d3600b30d9d7446562c552f0a14a63be7",
-            "tar.gz"
+            "tar.gz",
         ),
         "nt": (
             "https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.zip",
             "f22143b5528e081123c3c5ed437e92f648fe69748e95fa6e2bd41484e2986cc3",
-            "zip"
+            "zip",
         ),
     }[os.name]
     # Get + checksum
-    print('Downloading boost headers...')
+    print("Downloading boost headers...")
     hasher = hashlib.sha256()
-    fd, comp_f = tempfile.mkstemp(suffix='.' + ext)
+    fd, comp_f = tempfile.mkstemp(suffix="." + ext)
     with os.fdopen(fd, "wb") as f:
         with requests.get(url, allow_redirects=True, stream=True) as r:
             r.raise_for_status()
-            for block in r.iter_content(chunk_size=2**16):
+            for block in r.iter_content(chunk_size=2 ** 16):
                 hasher.update(block)
                 f.write(block)
     if hasher.hexdigest() != sha:
         raise RuntimeError("Downloaded boost headers hash failure!")
     # Extract
-    print('Extracting boost headers...')
-    raw_boost = tempfile.mkdtemp(suffix='.tmp')
+    print("Extracting boost headers...")
+    raw_boost = tempfile.mkdtemp(suffix=".tmp")
     extract(raw_boost, comp_f, ext)
     os.remove(comp_f)
     # Move into place
-    print('Installing boost headers...')
-    uncomp = glob.glob(os.path.join(raw_boost, '*'))
+    print("Installing boost headers...")
+    uncomp = glob.glob(os.path.join(raw_boost, "*"))
     if len(uncomp) != 1:
         raise RuntimeError("Boost should decompress into a single directory.")
-    shutil.rmtree(d['boost'], ignore_errors=True)
-    os.rename(os.path.join(uncomp[0], 'boost'), d['boost'])
+    shutil.rmtree(d["boost"], ignore_errors=True)
+    os.rename(os.path.join(uncomp[0], "boost"), d["boost"])
     # Cleanup
-    print('Cleaning temporary files...')
+    print("Cleaning temporary files...")
     shutil.rmtree(raw_boost)
 
 
@@ -297,16 +303,16 @@ def build_native():
 
 
 def clean_native():
+    # Be careful not to touch z3 or normal source files in native!
     def rm_lib(name):
         where = find_lib(d["lib"], name, allow_missing=True)
         if where is not None:
             os.remove(where)
+
     rm_lib("lib" + claricpp)
     rm_lib(claricpp_ffi)
     shutil.rmtree(d["build"], ignore_errors=True)
-    # Libs
     shutil.rmtree(d["boost"], ignore_errors=True)
-    shutil.rmtree(d["z3"], ignore_errors=True)
 
 
 ######################################################################
@@ -319,12 +325,13 @@ class sdist(_sdist):
         self.execute(lambda: get_boost(), (), msg="Getting boost headers")
         _sdist.run(self, *args)
 
+
 class build(_build):
     def run(self, *args):
-        if not os.path.exists(d['boost']): # No need to grab if they exist
+        if not os.path.exists(d["boost"]):  # No need to grab if they exist
             self.execute(lambda: get_boost(), (), msg="Getting boost headers")
         else:
-            print('Using existing boost headers')
+            print("Using existing boost headers")
         self.execute(build_native, (), msg="Building claripy native")
         _build.run(self, *args)
 
