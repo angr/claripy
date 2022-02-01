@@ -51,9 +51,8 @@ def dir_names(root):
     """
     import z3
 
-    native_dir = os.path.join(root, "native")
     ret = JDict({
-        "native": native_dir,
+        "native": os.path.join(root, "native"),
         "lib": os.path.join(root, "claripy/claricpp"),
         "z3": os.path.join(os.path.dirname(z3.__file__), "include"),
     })
@@ -98,35 +97,33 @@ def find_exe(name):
 
 
 class SLib():
-    def __init__(self, name, build_dir, install_dir):
+    def __init__(self, name: str, build_dir: str, install_dir: str):
         self._name = name
         self._build_dir = build_dir
         self._install_dir = install_dir
-    def _find(self, where, allow_missing):
+    def _find(self, where):
         """
         Tries to find a library within the directory where
         """
         is_lib = lambda x: x.endswith(".so") or x.endswith(".dylib") or x.endswith(".dll")
-        files = glob.iglob(os.path.join(where, self._name + "*.*"))
+        files = glob.iglob(os.path.join(where, self._name) + "*.*")
         files = [i for i in files if is_lib(i)]
+        if len(files) == 1:
+            return files[0]
         if len(files) > 1:
             print("Found: " + str(files))
             raise RuntimeError("Could not find definitive lib: " + self._name + " in ", where)
-        if len(files) == 0:
-            if allow_missing:
-                return None
-            raise RuntimeError("Could not find lib: " + self._name + " in ", where)
-        return files[0]
-    def find_installed(self, allow_missing):
+
+    def find_installed(self):
         """
         Look for the library in the installation directory
         """
-        return self._find(self._install_dir, self._name, allow_missing)
-    def find_built(self, *, allow_missing):
+        return self._find(self._install_dir)
+    def find_built(self):
         """
         Look for the library in the build directory
         """
-        return self._find(self._build_dir, self._name, allow_missing)
+        return self._find(self._build_dir)
     def install(self):
         """
         Copies the library from build dir to install dir
@@ -139,7 +136,7 @@ class SLib():
         Removes name from chdir and installed directories
         """
         where = [self.find_built(), self.find_installed()]
-        _ = [ os.remove(i) for i in where is i is not None ]
+        _ = [ os.remove(i) for i in where if i is not None ]
 
 
 def cmake_config_args(out_file, claricpp):
@@ -249,7 +246,7 @@ class Library:
     Native dependencies should derive from this
     """
     def __init__(self, *dependencies):
-        self._deps = dependencies
+        self._dependencies = dependencies
         self._done_set = set()
 
     def _done(self, name, path):
@@ -265,6 +262,9 @@ class Library:
             print("Reusing existing " + name + ": " + path)
             self._done_set.add(path)
         return ret
+    def _log(self, name, val, o):
+        val = str(val)
+        print(self.__class__.__name__ + "." + name + "(" + val + ") invoking dependency " + o.__class__.__name__ + "." + name + "(" + val + ")")
 
     def get(self, force):
         """
@@ -272,30 +272,39 @@ class Library:
         If force: ignores existing files, else reuses existing files
         Calls get(force) for each dependency
         """
-        _ = [ i.get(force) for i in self._dependencies ]
+        for i in self._dependencies:
+            self._log("get", force, i)
+            i.get(force)
 
     def build(self, force):
         """
         Builds dependency
         If force: ignores existing files, else reuses existing files
         Calls build(force) for each dependency
+        Will call get(force) as needed
         """
-        _ = [ i.build(force) for i in self._dependencies ]
+        for i in self._dependencies:
+            self._log("build", force, i)
+            i.build(force)
 
     def install(self, force):
         """
         Installs dependency
         If force: ignores existing files, else reuses existing files
         Calls install(force) for each dependency
+        Will call build(force) as needed
         """
-        _ = [ i.install(force) for i in self._dependencies ]
+        for i in self._dependencies:
+            self._log("install", force, i)
+            i.install(force)
 
     def clean(self, recursive):
         """
         Cleans up after the library
         """
-        if recursive:
-            _ = [ i.clean() for i in self._dependencies ]
+        for i in self._dependencies:
+            self._log("clean", recursive, i)
+            i.clean(recursive)
 
 
 class GMP(Library):
@@ -303,11 +312,11 @@ class GMP(Library):
     A class to manage GMP
     """
     _root = os.path.join(ds.native, "gmp")
-    _src = os.path.join(_root, "src")
+    _source = os.path.join(_root, "src")
     _build = os.path.join(_root, "build")
-    _lib = SLib("libgmp", ds.gmp.build, ds.install)
+    _lib = SLib("libgmp", _build, ds.lib)
 
-    def get(self, *, force = False):
+    def get(self, force):
         if force:
             shutil.rmtree(self._source, ignore_errors=True)
         super().get(force)
@@ -317,8 +326,8 @@ class GMP(Library):
         print("Downloading GMP source to: ", self._source)
         run_cmd_no_fail("hg", "clone", "https://gmplib.org/repo/gmp/", self._source)
 
-    def build(self, force = False):
-        if force_new:
+    def build(self, force):
+        if force:
             shutil.rmtree(self._build, ignore_errors=True)
         super().build(force) # Do this before done in case dep's were cleaned
         if self._done("GMP build directory", self._build):
@@ -333,7 +342,7 @@ class GMP(Library):
             os.chdir(self._build)
             print("Configuring in: " + self._build)
             config_args = ["--disable-static", "--host=none"] # TODO: host=none is slow
-            run_cmd_no_fail(os.path.join(self._source, "configure"), config_args)
+            run_cmd_no_fail(os.path.join(self._source, "configure"), *config_args)
             # Building
             print("Building GMP...")
             makej = [ "make", "-j" + str(nprocd()) ]
@@ -342,9 +351,9 @@ class GMP(Library):
             print("Checking GMP build...")
             run_cmd_no_fail(*makej, "check")
 
-    def install(self, force = False):
+    def install(self, force):
         inst = self._lib.find_installed()
-        if force_new and inst is not None:
+        if force and inst is not None:
             os.remove(inst)
         super().install(force) # Do this before done in case dep's were cleaned
         if self._done("GMP", inst):
@@ -368,7 +377,7 @@ class Boost(Library):
     root = os.path.join(ds.native, "boost")
 
     def __init__(self):
-        super().__init__(GMP) # We depend on GMP
+        super().__init__(GMP()) # We depend on GMP
 
     @staticmethod
     def url_data():
@@ -386,7 +395,7 @@ class Boost(Library):
             ),
         }[os.name]
 
-    def get(self, *, force = False):
+    def get(self, force):
         if force:
             shutil.rmtree(self.root, ignore_errors=True)
         super().get(force)
@@ -426,16 +435,16 @@ class Boost(Library):
             super().clean(recursive)
         shutil.rmtree(self.root, ignore_errors=True)
 
-class Clarpcpp(Library):
+class Claricpp(Library):
     '''
     A class to manage Claricpp
     '''
     build_dir = os.path.join(ds.native, "build")
     info_file = os.path.join(build_dir, "_for_setup_py.txt")
-    _lib = SLib("libclaricpp", build_dir, ds.install)
+    _lib = SLib("libclaricpp", build_dir, ds.lib)
 
     def __init__(self):
-        super().__init__(Boost) # We depend on Boost
+        super().__init__(Boost()) # We depend on Boost
 
     @staticmethod
     def _cmake(native, build, info_file):
@@ -450,7 +459,7 @@ class Clarpcpp(Library):
         if force:
             shutil.rmtree(self.build_dir, ignore_errors=True)
         super().build(force)
-        if self._done(self._lib.name, self._lib.find_built(True)):
+        if self._done(self._lib.name, self._lib.find_built()):
             return
         self.get() # Headers
         # Init
@@ -468,7 +477,7 @@ class Clarpcpp(Library):
         if inst is not None and force:
             os.remove(inst)
         super().install(force)
-        if self._done(self._lib.name, self._lib.find_installed(True)):
+        if self._done(self._lib.name, self._lib.find_installed()):
             return
         self.build()
         self._lib.install()
@@ -483,11 +492,11 @@ class ClaricppFFI(Library):
     """
     A class to manage ClaricppFFI
     """
-    _build = os.path.join(Claricpp.build_dir, "ffi"),
-    _lib = SLib("claricpp", _build, ds.install)
+    _build = os.path.join(Claricpp.build_dir, "ffi")
+    _lib = SLib("claricpp", _build, ds.lib)
 
     def __init__(self):
-        super().__init__(Claricpp)
+        super().__init__(Claricpp())
 
     @staticmethod
     def _verify_generator_supported(makej, is_make):
@@ -503,7 +512,7 @@ class ClaricppFFI(Library):
         if force:
             shutil.rmtree(self._build, ignore_errors=True)
         super().build(force)
-        if self._done(self._lib.name, self._lib.find_built(True)):
+        if self._done(self._lib.name, self._lib.find_built()):
             return
         # Get data from cmake
         info = parse_info_file(Claricpp.info_file)
@@ -537,7 +546,7 @@ class ClaricppFFI(Library):
         if inst is not None and force:
             os.remove(inst)
         super().install(force)
-        if self._done(self._lib.name, self._lib.find_installed(True)):
+        if self._done(self._lib.name, self._lib.find_installed()):
             return
         self.build()
         self._lib.install()
@@ -545,7 +554,7 @@ class ClaricppFFI(Library):
     def clean(self, recursive):
         if recursive:
             super().clean(recursive)
-        shutil.rmtree(self.build_dir, ignore_errors=True)
+        shutil.rmtree(self._build, ignore_errors=True)
         self._lib.clean()
 
 
@@ -556,19 +565,19 @@ class ClaricppFFI(Library):
 
 class sdist(_sdist):
     def run(self, *args):
-        self.execute(lambda: ClaricppFFI().get(), (), msg="Getting build source dependencies")
+        self.execute(lambda: ClaricppFFI().get(False), (), msg="Getting build source dependencies")
         _sdist.run(self, *args)
 
 
 class build(_build):
     def run(self, *args):
-        self.execute(lambda: ClaricppFFI().install(), (), msg="Getting build source dependencies")
+        self.execute(lambda: ClaricppFFI().install(False), (), msg="Getting build source dependencies")
         _build.run(self, *args)
 
 
 class clean(_clean):
     def run(self, *args):
-        self.execute(lambda: ClaricppFFI().clean(), (), msg="Cleaning claripy/native")
+        self.execute(lambda: ClaricppFFI().clean(True), (), msg="Cleaning claripy/native")
         _clean.run(self, *args)
 
 
