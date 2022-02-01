@@ -49,9 +49,11 @@ class JDict(dict):
     """
     A read-only dict that allows . semantics
     """
+
     __getattr__ = dict.get
     __setattr__ = None
     __delattr__ = None
+
 
 @contextmanager
 def chdir(new):
@@ -65,16 +67,20 @@ def chdir(new):
     finally:
         os.chdir(old)
 
+
 def z3_dir():
     import z3
+
     return os.path.join(os.path.dirname(z3.__file__), "include")
 
-def nprocd(delta = 1):
+
+def nprocd(delta=1):
     """
     Return: `nproc` - delta or 1, whichever is larger
     """
     assert delta >= 0, "delta may not be negative"
     return max(cpu_count() - delta, 1)
+
 
 def find_exe(name):
     """
@@ -86,34 +92,37 @@ def find_exe(name):
     return exe
 
 
-class SLib():
+class SLib:
     def __init__(self, name: str, build_dir: str, install_dir: str):
         self._name = name
         self._build_dir = build_dir
-        self._install_dir = os.path.join(claripy, "claripy/claricpp"),
+        self._install_dir = os.path.join(claripy, "claripy/claricpp")
+
     def _find(self, where):
         """
         Tries to find a library within the directory where
         """
-        is_lib = lambda x: x.endswith(".so") or x.endswith(".dylib") or x.endswith(".dll")
+        is_lib = lambda x: any(x.endswith(i) for i in [".so", ".dylib", ".dll"])
         files = glob(os.path.join(where, self._name) + "*.*")
         files = [i for i in files if is_lib(i)]
         if len(files) == 1:
             return files[0]
         if len(files) > 1:
             print("Found: " + str(files))
-            raise RuntimeError("Could not find definitive lib: " + self._name + " in ", where)
+            raise RuntimeError("Multiple " + self._name + " libraries in ", where)
 
     def find_installed(self):
         """
         Look for the library in the installation directory
         """
         return self._find(self._install_dir)
+
     def find_built(self):
         """
         Look for the library in the build directory
         """
         return self._find(self._build_dir)
+
     def install(self):
         """
         Copies the library from build dir to install dir
@@ -121,12 +130,13 @@ class SLib():
         p = self.find_built()
         assert p is not None, "Cannot install a non-built library"
         shutil.copy2(p, self._install_dir)
+
     def clean(self):
         """
         Removes name from chdir and installed directories
         """
         where = [self.find_built(), self.find_installed()]
-        _ = [ os.remove(i) for i in where if i is not None ]
+        _ = [os.remove(i) for i in where if i is not None]
 
 
 def parse_info_file(info_file):
@@ -170,6 +180,7 @@ def extract(d, f, ext):
     else:
         raise RuntimeError("Compression type not supported")
 
+
 def generator(name):
     """
     Find a build generator (e.g. make)
@@ -212,9 +223,10 @@ class Library:
             print("Reusing existing " + name + ": " + path)
             self._done_set.add(path)
         return ret
+
     def _log(self, name, val, o):
-        val = str(val)
-        print(self.__class__.__name__ + "." + name + "(" + val + ") invoking dependency " + o.__class__.__name__ + "." + name + "(" + val + ")")
+        fn = lambda x: x.__clas__.__name__ + "." + name + "(" + str(val) + ")"
+        print(fn(self) + " invoking dependency " + fn(o))
 
     def get(self, force):
         """
@@ -261,6 +273,7 @@ class GMP(Library):
     """
     A class to manage GMP
     """
+
     _root = os.path.join(ds.native, "gmp")
     _source = os.path.join(_root, "src")
     _build = os.path.join(_root, "build")
@@ -279,7 +292,7 @@ class GMP(Library):
     def build(self, force):
         if force:
             shutil.rmtree(self._build, ignore_errors=True)
-        super().build(force) # Do this before done in case dep's were cleaned
+        super().build(force)  # Do this before done in case dep's were cleaned
         if self._done("GMP build directory", self._build):
             return
         self.get(force)
@@ -291,11 +304,11 @@ class GMP(Library):
             # Configure
             os.chdir(self._build)
             print("Configuring in: " + self._build)
-            config_args = ["--disable-static", "--host=none"] # TODO: host=none is slow
+            config_args = ["--disable-static", "--host=none"]  # TODO: host=none is slow
             run_cmd_no_fail(os.path.join(self._source, "configure"), *config_args)
             # Building
             print("Building GMP...")
-            makej = [ "make", "-j" + str(nprocd()) ]
+            makej = ["make", "-j" + str(nprocd())]
             run_cmd_no_fail(*makej)
             # Checking
             print("Checking GMP build...")
@@ -305,13 +318,14 @@ class GMP(Library):
         inst = self._lib.find_installed()
         if force and inst is not None:
             os.remove(inst)
-        super().install(force) # Do this before done in case dep's were cleaned
+        super().install(force)  # Do this before done in case dep's were cleaned
         if self._done("GMP", inst):
             return
         self.build(force)
         # Installing
         import IPython
-        IPython.embed() # TODO
+
+        IPython.embed()  # TODO
         self._lib.install()
 
     def clean(self, recursive):
@@ -320,14 +334,16 @@ class GMP(Library):
         shutil.rmtree(self._root, ignore_errors=True)
         self._lib.clean()
 
+
 class Boost(Library):
-    '''
+    """
     A class used to manage Boost
-    '''
+    """
+
     root = os.path.join(ds.native, "boost")
 
     def __init__(self):
-        super().__init__(GMP()) # We depend on GMP
+        super().__init__(GMP())  # We depend on GMP
 
     @staticmethod
     def url_data():
@@ -349,7 +365,7 @@ class Boost(Library):
         if force:
             shutil.rmtree(self.root, ignore_errors=True)
         super().get(force)
-        if self._done('boost headers', self.root):
+        if self._done("boost headers", self.root):
             return
         # Config
         url, sha, ext = self.url_data()
@@ -385,10 +401,12 @@ class Boost(Library):
             super().clean(recursive)
         shutil.rmtree(self.root, ignore_errors=True)
 
+
 class Claricpp(Library):
-    '''
+    """
     A class to manage Claricpp
-    '''
+    """
+
     build_dir = os.path.join(ds.native, "build")
     info_file = os.path.join(build_dir, "_for_setup_py.txt")
     _lib = SLib("libclaricpp", build_dir)
@@ -420,7 +438,7 @@ class Claricpp(Library):
             "Z3_FORCE_CLEAN": "ON",
         }
         on_off = lambda x: ("ON" if k else "OFF") if type(k) is bool else k
-        return [ "-D" + i + "=" + on_off(k) for i,k in config.items() ]
+        return ["-D" + i + "=" + on_off(k) for i, k in config.items()]
 
     @classmethod
     def _cmake(cls, native, build, info_file):
@@ -436,7 +454,7 @@ class Claricpp(Library):
         super().build(force)
         if self._done(self._lib.name, self._lib.find_built()):
             return
-        self.get() # Headers
+        self.get()  # Headers
         # Init
         if not os.path.exists(self.build_dir):
             os.mkdir(self.build_dir)
@@ -463,10 +481,12 @@ class Claricpp(Library):
         shutil.rmtree(self.build_dir, ignore_errors=True)
         self._lib.clean()
 
+
 class ClaricppFFI(Library):
     """
     A class to manage ClaricppFFI
     """
+
     _build = os.path.join(Claricpp.build_dir, "ffi")
     _lib = SLib("claricpp", _build)
 
@@ -475,13 +495,18 @@ class ClaricppFFI(Library):
 
     @staticmethod
     def _verify_generator_supported(makej, is_make):
-        if not is_make: # Make works, not sure about other generators
+        if not is_make:  # Make works, not sure about other generators
             var = "FFI_FORCE_BUILD "
-            if var not in os.eniron:
-                print("Current generator: ", makej[0])
-                raise RuntimeError("Unknown if non-make generators support intermediate file targets. Please set the " + var + " environment variable to forcibly continue", file=sys.stderr)
+            if var in os.eniron:
+                print(var + " is set! Forcing build with non-make generator.")
             else:
-                print(var + " is set; forcing build with non-make generator; note that it is unknown if this generator supports intermediate file targets")
+                print("Current generator: ", makej[0])
+                raise RuntimeError(
+                    "Unknown if non-make generators support intermediate file targets. Set the "
+                    + var
+                    + " environment variable to forcibly continue",
+                    file=sys.stderr,
+                )
 
     def build(self, force):
         if force:
@@ -540,19 +565,22 @@ class ClaricppFFI(Library):
 
 class sdist(_sdist):
     def run(self, *args):
-        self.execute(lambda: ClaricppFFI().get(False), (), msg="Getting build source dependencies")
+        f = (lambda: ClaricppFFI().get(False),)
+        self.execute(f, (), msg="Getting build source dependencies")
         _sdist.run(self, *args)
 
 
 class build(_build):
     def run(self, *args):
-        self.execute(lambda: ClaricppFFI().install(False), (), msg="Getting build source dependencies")
+        f = (lambda: ClaricppFFI().install(False),)
+        self.execute(f, (), msg="Getting build source dependencies")
         _build.run(self, *args)
 
 
 class clean(_clean):
     def run(self, *args):
-        self.execute(lambda: ClaricppFFI().clean(True), (), msg="Cleaning claripy/native")
+        f = lambda: ClaricppFFI().clean(True)
+        self.execute(f, (), msg="Cleaning claripy/native")
         _clean.run(self, *args)
 
 
