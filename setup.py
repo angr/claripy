@@ -1,9 +1,11 @@
 from distutils.command.build import build as _build
 from distutils.command.clean import clean as _clean
 from distutils.command.sdist import sdist as _sdist
+from setuptools import find_packages, setup
 from multiprocessing import cpu_count
 from contextlib import contextmanager
 from hashlib import sha256
+from enum import Enum
 from glob import glob
 import subprocess
 import requests
@@ -28,7 +30,7 @@ with open(os.path.join(os.path.dirname(__file__), "VERSION")) as f:
     version = f.read().strip()
 
 # Paths of claripy and native
-claripy = dir_names(os.path.dirname(__file__))
+claripy = os.path.dirname(__file__)
 native = os.path.join(claripy, "native")
 
 # Claricpp library names
@@ -93,7 +95,7 @@ def find_exe(name):
 
 
 class SLib:
-    def __init__(self, name: str, build_dir: str, install_dir: str):
+    def __init__(self, name: str, build_dir: str):
         self._name = name
         self._build_dir = build_dir
         self._install_dir = os.path.join(claripy, "claripy/claricpp")
@@ -131,12 +133,15 @@ class SLib:
         assert p is not None, "Cannot install a non-built library"
         shutil.copy2(p, self._install_dir)
 
-    def clean(self):
-        """
-        Removes name from chdir and installed directories
-        """
-        where = [self.find_built(), self.find_installed()]
-        _ = [os.remove(i) for i in where if i is not None]
+    def _clean(self, x):
+        if x:
+            os.remove(x)
+
+    def clean_build(self):
+        self._clean(self.find_built())
+
+    def clean_install(self):
+        self._clean(self.find_installed())
 
 
 def parse_info_file(info_file):
@@ -149,14 +154,19 @@ def parse_info_file(info_file):
     return JDict({i[0].strip(): i[1].strip() for i in data})
 
 
-def run_cmd_no_fail(*args):
+def run_cmd_no_fail(*args, **kwargs):
     """
     A wrapper around subprocess.run that errors on subprocess failure
+    Returns subprocess.run(args, **kwargs)
     """
     args = list(args)
-    print("Running: subprocess.run(" + str(args) + ")")
-    rc = subprocess.run(args)
+    print("Running: command: " + str(args))
+    rc = subprocess.run(args, **kwargs)
     if rc.returncode != 0:
+        if rc.stdout:
+            print(rc.stdout)
+        if rc.stderr:
+            print(rc.stderr, file=sys.stderr)
         what = os.path.basename(args[0])
         raise RuntimeError(what + " failed with return code: " + str(rc.returncode))
     return rc
@@ -196,6 +206,19 @@ def generator(name):
     return makej, is_make
 
 
+class CleanLevel(Enum):
+    """
+    Higher clean levels imply lower clean levels
+    """
+
+    INSTALL = 1
+    BUILD = 2
+    GET = 3
+
+
+# Safer version of >= for this enum
+setattr(type(CleanLevel.GET), "implies", lambda self, o: self.value >= o.value)
+
 ######################################################################
 #                         Dependency Classes                         #
 ######################################################################
@@ -225,7 +248,7 @@ class Library:
         return ret
 
     def _log(self, name, val, o):
-        fn = lambda x: x.__clas__.__name__ + "." + name + "(" + str(val) + ")"
+        fn = lambda x: x.__class__.__name__ + "." + name + "(" + str(val) + ")"
         print(fn(self) + " invoking dependency " + fn(o))
 
     def get(self, force):
@@ -260,13 +283,15 @@ class Library:
             self._log("install", force, i)
             i.install(force)
 
-    def clean(self, recursive):
+    def clean(self, level: CleanLevel, recursive):
         """
         Cleans up after the library
+        level can be 'get', 'build', or 'install'
+        'get' implies 'build' which implies 'install'
         """
         for i in self._dependencies:
             self._log("clean", recursive, i)
-            i.clean(recursive)
+            i.clean(level, recursive)
 
 
 class GMP(Library):
@@ -274,7 +299,7 @@ class GMP(Library):
     A class to manage GMP
     """
 
-    _root = os.path.join(ds.native, "gmp")
+    _root = os.path.join(native, "gmp")
     _source = os.path.join(_root, "src")
     _build = os.path.join(_root, "build")
     _lib = SLib("libgmp", _build)
@@ -289,6 +314,24 @@ class GMP(Library):
         print("Downloading GMP source to: ", self._source)
         run_cmd_no_fail("hg", "clone", "https://gmplib.org/repo/gmp/", self._source)
 
+    @staticmethod
+    def _config_chk(config_log):
+        """
+        Check that GMP didn't ignore flags
+        """
+        with open(config_log) as f:
+            lines = f.readlines()
+        sh_lib_str = "Shared libraries:"
+        lines = [i for i in lines if sh_lib_str in i]
+        assert len(lines) == 1, "./configure gave weird output"
+        if lines[0].replace(sh_lib_str, "").strip() == "no":
+            print("Bad result detected in config log: " + lines[0].strip())
+            msg = (
+                "GMP refused to build shared library."
+                " Configure log file: " + config_log
+            )
+            raise RuntimeError(msg)
+
     def build(self, force):
         if force:
             shutil.rmtree(self._build, ignore_errors=True)
@@ -296,20 +339,30 @@ class GMP(Library):
         if self._done("GMP build directory", self._build):
             return
         self.get(force)
-        os.mkdir(self._build)
         # Bootstrap
-        with chdir(self._source):
-            print("Bootstrap...")
-            run_cmd_no_fail(os.path.join(self._source, ".bootstrap"))
-            # Configure
-            os.chdir(self._build)
-            print("Configuring in: " + self._build)
-            config_args = ["--disable-static", "--host=none"]  # TODO: host=none is slow
-            run_cmd_no_fail(os.path.join(self._source, "configure"), *config_args)
+        print("Copying source to build...")
+        shutil.copytree(self._source, self._build)  # Do not pollute source
+        with chdir(self._build):
+            bootstrap_log = os.path.join(self._build, "setup-py-gmp-bootstrap.log")
+            with open(bootstrap_log, "w") as f:
+                print("bootstrap... log file: ", bootstrap_log)
+                run_cmd_no_fail("./.bootstrap", stdout=f, stderr=f)
+            # Configure (GMP's online docs are incomplete)
+            # TODO: host=none is slow
+            # TODO: enable-shared=mpz ?
+            config_args = ["--disable-static", "--enable-shared", "--host=none"]
+            config_log = os.path.join(self._build, "setup-py-gmp-config.log")
+            with open(config_log, "w") as f:
+                print("Configuring... Log file: " + config_log)
+                run_cmd_no_fail("./configure", *config_args, stdout=f, stderr=f)
+            self._config_chk(config_log)
             # Building
-            print("Building GMP...")
             makej = ["make", "-j" + str(nprocd())]
-            run_cmd_no_fail(*makej)
+            build_log = os.path.join(self._build, "setup-py-gmp-build.log")
+            print("Creating GMP build log file: ", build_log)
+            with open(build_log, "w") as f:
+                print("Building GMP...")
+                run_cmd_no_fail(*makej, stdout=f, stderr=f)
             # Checking
             print("Checking GMP build...")
             run_cmd_no_fail(*makej, "check")
@@ -328,11 +381,16 @@ class GMP(Library):
         IPython.embed()  # TODO
         self._lib.install()
 
-    def clean(self, recursive):
+    def clean(self, level, recursive):
         if recursive:
-            super().clean(recursive)
-        shutil.rmtree(self._root, ignore_errors=True)
-        self._lib.clean()
+            super().clean(level, recursive)
+        if level.implies(CleanLevel.INSTALL):
+            self._lib.clean_install()
+        if level.implies(CleanLevel.BUILD):
+            shutil.rmtree(self._build, ignore_errors=True)
+            self._lib.clean_build()
+        if level.implies(CleanLevel.GET):
+            shutil.rmtree(self._root, ignore_errors=True)
 
 
 class Boost(Library):
@@ -340,7 +398,7 @@ class Boost(Library):
     A class used to manage Boost
     """
 
-    root = os.path.join(ds.native, "boost")
+    root = os.path.join(native, "boost")
 
     def __init__(self):
         super().__init__(GMP())  # We depend on GMP
@@ -372,7 +430,7 @@ class Boost(Library):
         # Get + checksum
         print("Downloading boost headers...")
         hasher = sha256()
-        fd, comp_f = tempfile.mkstemp(prefix=ds.native, suffix="-boost." + ext)
+        fd, comp_f = tempfile.mkstemp(prefix=native, suffix="-boost." + ext)
         with os.fdopen(fd, "wb") as f:
             with requests.get(url, allow_redirects=True, stream=True) as r:
                 r.raise_for_status()
@@ -382,7 +440,7 @@ class Boost(Library):
         if hasher.hexdigest() != sha:
             raise RuntimeError("Downloaded boost headers hash failure!")
         # Extract
-        raw_boost = tempfile.mkdtemp(prefix=ds.native, suffix="-boost.tmp")
+        raw_boost = tempfile.mkdtemp(prefix=native, suffix="-boost.tmp")
         print("Extracting boost headers to: " + raw_boost)
         extract(raw_boost, comp_f, ext)
         os.remove(comp_f)
@@ -396,10 +454,11 @@ class Boost(Library):
         print("Cleaning temporary files...")
         shutil.rmtree(raw_boost)
 
-    def clean(self, recursive):
+    def clean(self, level, recursive):
         if recursive:
-            super().clean(recursive)
-        shutil.rmtree(self.root, ignore_errors=True)
+            super().clean(level, recursive)
+        if level.implies(CleanLevel.GET):
+            shutil.rmtree(self.root, ignore_errors=True)
 
 
 class Claricpp(Library):
@@ -407,7 +466,7 @@ class Claricpp(Library):
     A class to manage Claricpp
     """
 
-    build_dir = os.path.join(ds.native, "build")
+    build_dir = os.path.join(native, "build")
     info_file = os.path.join(build_dir, "_for_setup_py.txt")
     _lib = SLib("libclaricpp", build_dir)
 
@@ -475,11 +534,14 @@ class Claricpp(Library):
         self.build()
         self._lib.install()
 
-    def clean(self, recursive):
+    def clean(self, level, recursive):
         if recursive:
-            super().clean(recursive)
-        shutil.rmtree(self.build_dir, ignore_errors=True)
-        self._lib.clean()
+            super().clean(level, recursive)
+        if level.implies(CleanLevel.INSTALL):
+            self._lib.clean_install()
+        if level.implies(CleanLevel.BUILD):
+            shutil.rmtree(self.build_dir, ignore_errors=True)
+            self._lib.clean_build()
 
 
 class ClaricppFFI(Library):
@@ -527,15 +589,15 @@ class ClaricppFFI(Library):
             self._verify_generator_supported(makej, is_make)
             run_cmd_no_fail(*makej, cdefs_target)
             # Run build_ffi
-            sys.path.append(ds.native)
+            sys.path.append(native)
             from build_ffi import build_ffi_wrapper
 
             sys.path.pop()
             build_ffi_wrapper(
                 input_lib=claricpp,
                 output_lib=claricpp_ffi,
-                build_dir=ds.build,
-                ffi_dir=ds.ffi,
+                build_dir=Claricpp.build_dir,
+                ffi_dir=self._build,
                 intermediate_f=intermediate_f,
                 include_dirs="/include/python" + py_version + ";" + include_dirs,
                 verbose=True,
@@ -551,11 +613,14 @@ class ClaricppFFI(Library):
         self.build()
         self._lib.install()
 
-    def clean(self, recursive):
+    def clean(self, level, recursive):
         if recursive:
-            super().clean(recursive)
-        shutil.rmtree(self._build, ignore_errors=True)
-        self._lib.clean()
+            super().clean(level, recursive)
+        if level.implies(CleanLevel.INSTALL):
+            self._lib.clean_install()
+        if level.implies(CleanLevel.BUILD):
+            shutil.rmtree(self._build, ignore_errors=True)
+            self._lib.clean_build()
 
 
 ######################################################################
@@ -565,21 +630,23 @@ class ClaricppFFI(Library):
 
 class sdist(_sdist):
     def run(self, *args):
-        f = (lambda: ClaricppFFI().get(False),)
+        f = lambda: ClaricppFFI().get(False)
         self.execute(f, (), msg="Getting build source dependencies")
         _sdist.run(self, *args)
 
 
 class build(_build):
     def run(self, *args):
-        f = (lambda: ClaricppFFI().install(False),)
+        f = lambda: ClaricppFFI().install(False)
         self.execute(f, (), msg="Getting build source dependencies")
         _build.run(self, *args)
 
 
 class clean(_clean):
     def run(self, *args):
-        f = lambda: ClaricppFFI().clean(True)
+        lvl = os.getenv("SETUP_PY_CLEAN_LEVEL", "get").upper()
+        print("Clean level set to: " + lvl)
+        f = lambda: ClaricppFFI().clean(getattr(CleanLevel, lvl), True)
         self.execute(f, (), msg="Cleaning claripy/native")
         _clean.run(self, *args)
 

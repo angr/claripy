@@ -2,18 +2,21 @@
 /.build*
 /.idea/*
 
-# Explicit
+# Dependencies
 /boost/*
+/gmp/*
+
+# Explicit
 /Ignore/*
 /ignore/*
-/build/*
-/Build/*
 /old/*
 
 # Build artifacts
 /.cache/*
 /Doxyfile
 /compile_commands.json
+/Build/*
+/build/*
 /z3/*
 
 # For vim
