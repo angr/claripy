@@ -2,72 +2,58 @@ from distutils.command.build import build as _build
 from distutils.command.clean import clean as _clean
 from distutils.command.sdist import sdist as _sdist
 from multiprocessing import cpu_count
-import contextlib
+from contextlib import contextmanager
+from hashlib import sha256
+from glob import glob
 import subprocess
 import requests
 import tempfile
-import hashlib
 import shutil
-import glob
 import sys
 import os
 
-# Python
-
-from setuptools import setup
-from setuptools import find_packages
 
 if bytes is str:
     raise Exception(
         "This module is designed for python 3 only. Please install an older version to use python 2."
     )
 
+
+######################################################################
+#                              Globals                               #
+######################################################################
+
+
 with open(os.path.join(os.path.dirname(__file__), "VERSION")) as f:
     version = f.read().strip()
 
-# Native
+# Paths of claripy and native
+claripy = dir_names(os.path.dirname(__file__))
+native = os.path.join(claripy, "native")
 
 # Claricpp library names
 # If these are changed, MANIFEST.in needs to be updated as well
 claricpp = "claricpp"
 claricpp_ffi = "claricpp_ffi"
 
+# Python version
+py_version = str(sys.version_info.major) + "." + str(sys.version_info.minor)
 
-######################################################################
-#                       Global Path Management                       #
-######################################################################
-
-class JDict(dict):
-    __getattr__ = dict.get
-    __setattr__ = None
-    __delattr__ = None
-
-def dir_names(root):
-    """
-    Returns a dict of paths / dict of paths
-    This is used for consistency
-    ffi will be within build
-    lib contains other files and already exists
-    """
-    import z3
-
-    ret = JDict({
-        "native": os.path.join(root, "native"),
-        "lib": os.path.join(root, "claripy/claricpp"),
-        "z3": os.path.join(os.path.dirname(z3.__file__), "include"),
-    })
-    assert os.path.isdir(ret["lib"]), "Claripy directory is missing " + ret["lib"]
-    return ret
-
-# We make this global since everything will use it
-ds = dir_names(os.path.dirname(__file__))
 
 ######################################################################
 #                              Helpers                               #
 ######################################################################
 
 
-@contextlib.contextmanager
+class JDict(dict):
+    """
+    A read-only dict that allows . semantics
+    """
+    __getattr__ = dict.get
+    __setattr__ = None
+    __delattr__ = None
+
+@contextmanager
 def chdir(new):
     """
     Current working directory context manager
@@ -78,6 +64,10 @@ def chdir(new):
         yield
     finally:
         os.chdir(old)
+
+def z3_dir():
+    import z3
+    return os.path.join(os.path.dirname(z3.__file__), "include")
 
 def nprocd(delta = 1):
     """
@@ -100,13 +90,13 @@ class SLib():
     def __init__(self, name: str, build_dir: str, install_dir: str):
         self._name = name
         self._build_dir = build_dir
-        self._install_dir = install_dir
+        self._install_dir = os.path.join(claripy, "claripy/claricpp"),
     def _find(self, where):
         """
         Tries to find a library within the directory where
         """
         is_lib = lambda x: x.endswith(".so") or x.endswith(".dylib") or x.endswith(".dll")
-        files = glob.iglob(os.path.join(where, self._name) + "*.*")
+        files = glob(os.path.join(where, self._name) + "*.*")
         files = [i for i in files if is_lib(i)]
         if len(files) == 1:
             return files[0]
@@ -137,45 +127,6 @@ class SLib():
         """
         where = [self.find_built(), self.find_installed()]
         _ = [ os.remove(i) for i in where if i is not None ]
-
-
-def cmake_config_args(out_file, claricpp):
-    """
-    Create arguments to pass to cmake for configuring claricpp
-    """
-    # Config
-    raw_config = {
-        "FOR_SETUP_PY_F": out_file,
-        "VERSION": version,
-        "CLARICPP": claricpp,
-        # Build options
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-        "ENABLE_TESTING": False,
-        "CPP_CHECK": False,
-        "CLANG_TIDY": False,
-        "ENABLE_MEMCHECK": False,
-        "LWYU": False,
-        "WARN_BACKWARD_LIMITATIONS": True,
-        # Library config
-        "Boost_INCLUDE_DIRS": Boost.root,
-        "Z3_INCLUDE_PATH": ds.z3,
-        "Z3_ACQUISITION_MODE": "SYSTEM",
-        "Z3_FORCE_CLEAN": "ON",
-    }
-    # Overrides
-    def override(what):
-        val = os.environ.get(what, None)
-        if val is not None:
-            raw_config[what] = val
-
-    override("Z3_INCLUDE_PATH")
-    override("DEFAULT_RELEASE_LOG_LEVEL")
-    # Gen config
-    def format(key, value):
-        value = value if type(value) is not bool else ("ON" if value else "OFF")
-        return "-D" + str(key) + "=" + str(value)
-
-    return [format(i, k) for i, k in raw_config.items()]
 
 
 def parse_info_file(info_file):
@@ -219,8 +170,6 @@ def extract(d, f, ext):
     else:
         raise RuntimeError("Compression type not supported")
 
-    py_version = str(sys.version_info.major) + "." + str(sys.version_info.minor)
-
 def generator(name):
     """
     Find a build generator (e.g. make)
@@ -245,6 +194,7 @@ class Library:
     """
     Native dependencies should derive from this
     """
+
     def __init__(self, *dependencies):
         self._dependencies = dependencies
         self._done_set = set()
@@ -314,7 +264,7 @@ class GMP(Library):
     _root = os.path.join(ds.native, "gmp")
     _source = os.path.join(_root, "src")
     _build = os.path.join(_root, "build")
-    _lib = SLib("libgmp", _build, ds.lib)
+    _lib = SLib("libgmp", _build)
 
     def get(self, force):
         if force:
@@ -405,7 +355,7 @@ class Boost(Library):
         url, sha, ext = self.url_data()
         # Get + checksum
         print("Downloading boost headers...")
-        hasher = hashlib.sha256()
+        hasher = sha256()
         fd, comp_f = tempfile.mkstemp(prefix=ds.native, suffix="-boost." + ext)
         with os.fdopen(fd, "wb") as f:
             with requests.get(url, allow_redirects=True, stream=True) as r:
@@ -422,7 +372,7 @@ class Boost(Library):
         os.remove(comp_f)
         # Move into place
         print("Installing boost headers...")
-        uncomp = glob.glob(os.path.join(raw_boost, "*"))
+        uncomp = glob(os.path.join(raw_boost, "*"))
         if len(uncomp) != 1:
             raise RuntimeError("Boost should decompress into a single directory.")
         os.rename(os.path.join(uncomp[0], "boost"), self.root)
@@ -441,19 +391,44 @@ class Claricpp(Library):
     '''
     build_dir = os.path.join(ds.native, "build")
     info_file = os.path.join(build_dir, "_for_setup_py.txt")
-    _lib = SLib("libclaricpp", build_dir, ds.lib)
+    _lib = SLib("libclaricpp", build_dir)
 
     def __init__(self):
-        super().__init__(Boost()) # We depend on Boost
+        super().__init__(Boost())
 
     @staticmethod
-    def _cmake(native, build, info_file):
+    def _cmake_config_args(out_file, claricpp):
+        """
+        Create arguments to pass to cmake for configuring claricpp
+        """
+        config = {
+            "FOR_SETUP_PY_F": out_file,
+            "VERSION": version,
+            "CLARICPP": claricpp,
+            # Build options
+            "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+            "ENABLE_TESTING": False,
+            "CPP_CHECK": False,
+            "CLANG_TIDY": False,
+            "ENABLE_MEMCHECK": False,
+            "LWYU": False,
+            "WARN_BACKWARD_LIMITATIONS": True,
+            # Library config
+            "Boost_INCLUDE_DIRS": Boost.root,
+            "Z3_INCLUDE_PATH": z3_dir(),
+            "Z3_ACQUISITION_MODE": "SYSTEM",
+            "Z3_FORCE_CLEAN": "ON",
+        }
+        on_off = lambda x: ("ON" if k else "OFF") if type(k) is bool else k
+        return [ "-D" + i + "=" + on_off(k) for i,k in config.items() ]
+
+    @classmethod
+    def _cmake(cls, native, build, info_file):
         print("Configuring...")
+        cmake_args = cls._cmake_config_args(cls.info_file, claricpp)
         with chdir(build):
-            info_file = os.path.join(build_dir, info_file)
-            cmake_args = cmake_config_args(info_file, claricpp)
             run_cmd_no_fail(find_exe("cmake"), *cmake_args, native)
-            return parse_info_file(info_file)
+        return parse_info_file(info_file)
 
     def build(self, force):
         if force:
@@ -493,7 +468,7 @@ class ClaricppFFI(Library):
     A class to manage ClaricppFFI
     """
     _build = os.path.join(Claricpp.build_dir, "ffi")
-    _lib = SLib("claricpp", _build, ds.lib)
+    _lib = SLib("claricpp", _build)
 
     def __init__(self):
         super().__init__(Claricpp())
@@ -581,10 +556,6 @@ class clean(_clean):
         _clean.run(self, *args)
 
 
-cmdclass = {"sdist": sdist, "build": build, "clean": clean}
-
-# Both
-
 setup(
     name="claripy",
     version=version,
@@ -600,7 +571,7 @@ setup(
     ],
     description="An abstraction layer for constraint solvers",
     url="https://github.com/angr/claripy",
-    cmdclass=cmdclass,
+    cmdclass={"sdist": sdist, "build": build, "clean": clean},
     include_package_data=True,
     package_data={"claripy": ["claricpp/*"]},
 )
