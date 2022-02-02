@@ -13,6 +13,7 @@ import tempfile
 import shutil
 import sys
 import os
+import re
 
 
 if bytes is str:
@@ -63,10 +64,13 @@ def chdir(new):
     Current working directory context manager
     """
     old = os.getcwd()
+    new = os.path.abspath(new)
     try:
+        print("cd " + new)
         os.chdir(new)
         yield
     finally:
+        print("cd " + old)
         os.chdir(old)
 
 
@@ -94,24 +98,34 @@ def find_exe(name):
     return exe
 
 
-class SLib:
-    def __init__(self, name: str, build_dir: str):
-        self._name = name
-        self._build_dir = build_dir
+class BuiltLib:
+    """
+    A shared or static library
+    """
+
+    def __init__(
+        self, name: str, build_dir: str, *, permit_shared: bool, permit_static: bool
+    ):
+        self.name = name
+        self.build_dir = build_dir
         self._install_dir = os.path.join(claripy, "claripy/claricpp")
+        # Determine extensions
+        self._extensions = []
+        self._extensions.extend([".so", ".dylib", ".dll"] if permit_shared else [])
+        self._extensions.extend([".a"] if permit_static else [])
 
     def _find(self, where):
         """
         Tries to find a library within the directory where
         """
-        is_lib = lambda x: any(x.endswith(i) for i in [".so", ".dylib", ".dll"])
-        files = glob(os.path.join(where, self._name) + "*.*")
+        is_lib = lambda x: any(x.endswith(i) for i in self._extensions)
+        files = glob(os.path.join(where, self.name) + "*.*")
         files = [i for i in files if is_lib(i)]
         if len(files) == 1:
             return files[0]
         if len(files) > 1:
             print("Found: " + str(files))
-            raise RuntimeError("Multiple " + self._name + " libraries in ", where)
+            raise RuntimeError("Multiple " + self.name + " libraries in ", where)
 
     def find_installed(self):
         """
@@ -123,7 +137,7 @@ class SLib:
         """
         Look for the library in the build directory
         """
-        return self._find(self._build_dir)
+        return self._find(self.build_dir)
 
     def install(self):
         """
@@ -142,6 +156,24 @@ class SLib:
 
     def clean_install(self):
         self._clean(self.find_installed())
+
+
+class SharedLib(BuiltLib):
+    """
+    A shared library
+    """
+
+    def __init__(self, name: str, build_dir: str):
+        super().__init__(name, build_dir, permit_shared=True, permit_static=False)
+
+
+class StaticLib(BuiltLib):
+    """
+    A shared library
+    """
+
+    def __init__(self, name: str, build_dir: str):
+        super().__init__(name, build_dir, permit_shared=False, permit_static=True)
 
 
 def parse_info_file(info_file):
@@ -302,7 +334,11 @@ class GMP(Library):
     _root = os.path.join(native, "gmp")
     _source = os.path.join(_root, "src")
     _build = os.path.join(_root, "build")
-    _lib = SLib("libgmp", _build)
+    # We are ok with either static or shared, but we prefer shared
+    _lib_default = BuiltLib(
+        "libgmp", os.path.join(_build, ".libs"), permit_static=True, permit_shared=True
+    )
+    _lib = _lib_default
 
     def get(self, force):
         if force:
@@ -312,25 +348,24 @@ class GMP(Library):
             return
         os.makedirs(self._source)
         print("Downloading GMP source to: ", self._source)
-        run_cmd_no_fail("hg", "clone", "https://gmplib.org/repo/gmp/", self._source)
+        run_cmd_no_fail(
+            "hg", "clone", "https://gmplib.org/repo/gmp/", self._source
+        )  # TODO: requests.get a tarball for build reproduciblity
 
-    @staticmethod
-    def _config_chk(config_log):
+    def _set_lib_type(self, config_log):
         """
-        Check that GMP didn't ignore flags
+        Determine the built library type
+        Run this during the build stage, after the build!
         """
         with open(config_log) as f:
             lines = f.readlines()
         sh_lib_str = "Shared libraries:"
         lines = [i for i in lines if sh_lib_str in i]
         assert len(lines) == 1, "./configure gave weird output"
-        if lines[0].replace(sh_lib_str, "").strip() == "no":
-            print("Bad result detected in config log: " + lines[0].strip())
-            msg = (
-                "GMP refused to build shared library."
-                " Configure log file: " + config_log
-            )
-            raise RuntimeError(msg)
+        is_static = lines[0].replace(sh_lib_str, "").strip() == "no"
+        print("GMP Lib type: " + ("static" if is_static else "shared"))
+        lib_type = StaticLib if is_static else SharedLib
+        self._lib = lib_type(self._lib.name, self._lib.build_dir)
 
     def build(self, force):
         if force:
@@ -339,33 +374,30 @@ class GMP(Library):
         if self._done("GMP build directory", self._build):
             return
         self.get(force)
-        # Bootstrap
         print("Copying source to build...")
         shutil.copytree(self._source, self._build)  # Do not pollute source
         with chdir(self._build):
-            bootstrap_log = os.path.join(self._build, "setup-py-gmp-bootstrap.log")
-            with open(bootstrap_log, "w") as f:
-                print("bootstrap... log file: ", bootstrap_log)
-                run_cmd_no_fail("./.bootstrap", stdout=f, stderr=f)
-            # Configure (GMP's online docs are incomplete)
+
+            def run(name, *args):
+                log_n = "setup-py-" + re.sub(r"\W+", "", args[0]) + ".log"
+                log_f = os.path.join(self._build, log_n)
+                with open(log_f, "w") as f:
+                    print(name + "... Log file: " + log_f)
+                    run_cmd_no_fail(*args, stdout=f, stderr=f)
+                return log_f
+
+            _ = run("Bootstrap", "./.bootstrap")
+            # GMP warnings:
+            # 1. GMP's online docs are incomplete
+            # 2. GMP's detection of ld's shared lib support is broken on at least macOS
             # TODO: host=none is slow
             # TODO: enable-shared=mpz ?
             config_args = ["--disable-static", "--enable-shared", "--host=none"]
-            config_log = os.path.join(self._build, "setup-py-gmp-config.log")
-            with open(config_log, "w") as f:
-                print("Configuring... Log file: " + config_log)
-                run_cmd_no_fail("./configure", *config_args, stdout=f, stderr=f)
-            self._config_chk(config_log)
-            # Building
+            self._set_lib_type(run("Configuring", "./configure", *config_args))
+            # Building + Checking
             makej = ["make", "-j" + str(nprocd())]
-            build_log = os.path.join(self._build, "setup-py-gmp-build.log")
-            print("Creating GMP build log file: ", build_log)
-            with open(build_log, "w") as f:
-                print("Building GMP...")
-                run_cmd_no_fail(*makej, stdout=f, stderr=f)
-            # Checking
-            print("Checking GMP build...")
-            run_cmd_no_fail(*makej, "check")
+            _ = run("Building GMP", *makej)
+            _ = run("Checking GMP build", *makej, "check")
 
     def install(self, force):
         inst = self._lib.find_installed()
@@ -375,10 +407,6 @@ class GMP(Library):
         if self._done("GMP", inst):
             return
         self.build(force)
-        # Installing
-        import IPython
-
-        IPython.embed()  # TODO
         self._lib.install()
 
     def clean(self, level, recursive):
@@ -389,6 +417,7 @@ class GMP(Library):
         if level.implies(CleanLevel.BUILD):
             shutil.rmtree(self._build, ignore_errors=True)
             self._lib.clean_build()
+            self._lib = self._lib_default  # Reset lib type
         if level.implies(CleanLevel.GET):
             shutil.rmtree(self._root, ignore_errors=True)
 
@@ -468,7 +497,7 @@ class Claricpp(Library):
 
     build_dir = os.path.join(native, "build")
     info_file = os.path.join(build_dir, "_for_setup_py.txt")
-    _lib = SLib("libclaricpp", build_dir)
+    _lib = SharedLib("libclaricpp", build_dir)
 
     def __init__(self):
         super().__init__(Boost())
@@ -496,7 +525,7 @@ class Claricpp(Library):
             "Z3_ACQUISITION_MODE": "SYSTEM",
             "Z3_FORCE_CLEAN": "ON",
         }
-        on_off = lambda x: ("ON" if k else "OFF") if type(k) is bool else k
+        on_off = lambda x: ("ON" if x else "OFF") if type(x) is bool else x
         return ["-D" + i + "=" + on_off(k) for i, k in config.items()]
 
     @classmethod
@@ -513,12 +542,12 @@ class Claricpp(Library):
         super().build(force)
         if self._done(self._lib.name, self._lib.find_built()):
             return
-        self.get()  # Headers
+        self.get(force)  # Headers
         # Init
         if not os.path.exists(self.build_dir):
             os.mkdir(self.build_dir)
         # Build
-        cmake_out = self._make(self._native, self.build_dir, "_for_setup_py.txt")
+        cmake_out = self._cmake(native, self.build_dir, self.info_file)
         makej, is_make = generator(cmake_out.CMAKE_MAKE_PROGRAM)
         print("Building " + claricpp + "...")
         with chdir(self.build_dir):
@@ -531,7 +560,7 @@ class Claricpp(Library):
         super().install(force)
         if self._done(self._lib.name, self._lib.find_installed()):
             return
-        self.build()
+        self.build(force)
         self._lib.install()
 
     def clean(self, level, recursive):
@@ -550,7 +579,7 @@ class ClaricppFFI(Library):
     """
 
     _build = os.path.join(Claricpp.build_dir, "ffi")
-    _lib = SLib("claricpp", _build)
+    _lib = SharedLib("claricpp", _build)
 
     def __init__(self):
         super().__init__(Claricpp())
@@ -610,7 +639,7 @@ class ClaricppFFI(Library):
         super().install(force)
         if self._done(self._lib.name, self._lib.find_installed()):
             return
-        self.build()
+        self.build(force)
         self._lib.install()
 
     def clean(self, level, recursive):
