@@ -392,6 +392,7 @@ class GMP(Library):
             # 2. GMP's detection of ld's shared lib support is broken on at least macOS
             # TODO: host=none is slow
             # TODO: enable-shared=mpz ?
+            # If GMP's build system refuses to use a shared library, fallback to static
             config_args = ["--disable-static", "--enable-shared", "--host=none"]
             self._set_lib_type(run("Configuring", "./configure", *config_args))
             # Building + Checking
