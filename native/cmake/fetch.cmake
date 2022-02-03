@@ -8,6 +8,7 @@ cmake_minimum_required( VERSION 3.18 )
 # If HASH is not "", verifies that the hash of the downloaded file matches
 # HASH should be in the form of: "algo:hash"
 # Note DATA may not contain: _extracted_download.tmp
+# Will return the extracted directory if DATA is "" as EXTRACTED_DIR
 function(fetch BASE_DIR F_URL DATA PROGRESS HASH)
     # Clean
     if (EXISTS "${BASE_DIR}")
@@ -28,12 +29,12 @@ function(fetch BASE_DIR F_URL DATA PROGRESS HASH)
     message(STATUS "Downloading: ${F_URL}")
     set(COMPRESSED "${BASE_DIR}/raw_download")
     file(DOWNLOAD "${F_URL}" "${COMPRESSED}"
-            TIMEOUT 600 # 10 minutes
-            ${HASH_CHECK} # This should *not* be quoted
-            TLS_VERIFY ON
-            ${SHOW_PROGRESS} # This should *not* be quoted
-            STATUS DOWNLOAD_STATUS
-            )
+        TIMEOUT 600 # 10 minutes
+        ${HASH_CHECK} # This should *not* be quoted
+        TLS_VERIFY ON
+        ${SHOW_PROGRESS} # This should *not* be quoted
+        STATUS DOWNLOAD_STATUS
+    )
     # Check if download was successful.
     list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
     if(NOT STATUS_CODE EQUAL 0)
@@ -67,5 +68,7 @@ function(fetch BASE_DIR F_URL DATA PROGRESS HASH)
         file(RENAME "${EXTRACTED_DIR}" "${TMP}")
         file(RENAME "${TMP}/${DATA}" "${BASE_DIR}/${DATA}")
         file(REMOVE_RECURSE "${TMP}")
+    else()
+        set(EXTRACTED_DIR "${EXTRACTED_DIR}" PARENT_SCOPE)
     endif()
 endfunction()
