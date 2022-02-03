@@ -256,7 +256,7 @@ def download_checksum_extract(name, where, url, sha, ext):
     if hasher.hexdigest() != sha:
         raise RuntimeError("Downloaded " + name + " hash failure!")
     # Extract
-    raw = tempfile.mkdtemp(prefix=prefix, suffix=".dir.tmp")
+    raw = tempfile.mkdtemp(prefix=prefix + "dir-", suffix=".tmp")
     print("Extracting " + name + " to: " + raw)
     extract(raw, comp_f, ext)
     os.remove(comp_f)
