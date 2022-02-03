@@ -189,10 +189,10 @@ def parse_info_file(info_file):
 def run_cmd_no_fail(*args, **kwargs):
     """
     A wrapper around subprocess.run that errors on subprocess failure
-    Returns subprocess.run(args, **kwargs)
+    Returns subprocess.run(args, **kwargs
     """
     args = list(args)
-    print("Running: command: " + str(args))
+    print("Running command: " + str(args))
     rc = subprocess.run(args, **kwargs)
     if rc.returncode != 0:
         if rc.stdout:
@@ -209,7 +209,7 @@ def extract(d, f, ext):
     Extract f into d given, the compression is assumed from the extension (ext)
     No leading period is allowed in ext
     """
-    if ext == "tar.gz":
+    if ".tar" in ext:
         import tarfile
 
         with tarfile.open(f) as z:
@@ -220,7 +220,7 @@ def extract(d, f, ext):
         with ZipFile(f) as z:
             z.extractall(d)
     else:
-        raise RuntimeError("Compression type not supported")
+        raise RuntimeError("Compression type not supported: " + ext)
 
 
 def generator(name):
@@ -238,6 +238,31 @@ def generator(name):
     return makej, is_make
 
 
+def download_checksum_extract(name, where, url, sha, ext):
+    """
+    Download a file from url, checksum it, then extract it into a temp dir
+    Return the temp dir and the files within it
+    """
+    print("Downloading " + name + "...")
+    hasher = sha256()
+    prefix = os.path.join(where, re.sub(r"\s+", "_", name)) + "-"
+    fd, comp_f = tempfile.mkstemp(prefix=prefix, suffix=ext)
+    with os.fdopen(fd, "wb") as f:
+        with requests.get(url, allow_redirects=True, stream=True) as r:
+            r.raise_for_status()
+            for block in r.iter_content(chunk_size=2 ** 16):
+                hasher.update(block)
+                f.write(block)
+    if hasher.hexdigest() != sha:
+        raise RuntimeError("Downloaded " + name + " hash failure!")
+    # Extract
+    raw = tempfile.mkdtemp(prefix=prefix, suffix=".dir.tmp")
+    print("Extracting " + name + " to: " + raw)
+    extract(raw, comp_f, ext)
+    os.remove(comp_f)
+    return raw, glob(os.path.join(raw, "*"))
+
+
 class CleanLevel(Enum):
     """
     Higher clean levels imply lower clean levels
@@ -250,6 +275,7 @@ class CleanLevel(Enum):
 
 # Safer version of >= for this enum
 setattr(type(CleanLevel.GET), "implies", lambda self, o: self.value >= o.value)
+
 
 ######################################################################
 #                         Dependency Classes                         #
@@ -346,11 +372,16 @@ class GMP(Library):
         super().get(force)
         if self._done("GMP source", self._source):
             return
-        os.makedirs(self._source)
-        print("Downloading GMP source to: ", self._source)
-        run_cmd_no_fail(
-            "hg", "clone", "https://gmplib.org/repo/gmp/", self._source
-        )  # TODO: requests.get a tarball for build reproduciblity
+        os.makedirs(self._root)
+        url = "https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.xz"
+        sha = "fd4829912cddd12f84181c3451cc752be224643e87fac497b69edddadc49b4f2"
+        raw, gmp = download_checksum_extract(
+            "GMP source", self._root, url, sha, ".tar.xz"
+        )
+        print("Installing GMP source")
+        assert len(gmp) == 1, "gmp's tarball is weird"
+        os.rename(gmp[0], self._source)
+        os.rmdir(raw)
 
     def _set_lib_type(self, config_log):
         """
@@ -382,11 +413,10 @@ class GMP(Library):
                 log_n = "setup-py-" + re.sub(r"\W+", "", args[0]) + ".log"
                 log_f = os.path.join(self._build, log_n)
                 with open(log_f, "w") as f:
-                    print(name + "... Log file: " + log_f)
+                    print(name + " log file: " + log_f)
                     run_cmd_no_fail(*args, stdout=f, stderr=f)
                 return log_f
 
-            _ = run("Bootstrap", "./.bootstrap")
             # GMP warnings:
             # 1. GMP's online docs are incomplete
             # 2. GMP's detection of ld's shared lib support is broken on at least macOS
@@ -440,12 +470,12 @@ class Boost(Library):
             "posix": (
                 "https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz",
                 "94ced8b72956591c4775ae2207a9763d3600b30d9d7446562c552f0a14a63be7",
-                "tar.gz",
+                ".tar.gz",
             ),
             "nt": (
                 "https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.zip",
                 "f22143b5528e081123c3c5ed437e92f648fe69748e95fa6e2bd41484e2986cc3",
-                "zip",
+                ".zip",
             ),
         }[os.name]
 
@@ -455,34 +485,16 @@ class Boost(Library):
         super().get(force)
         if self._done("boost headers", self.root):
             return
-        # Config
-        url, sha, ext = self.url_data()
-        # Get + checksum
-        print("Downloading boost headers...")
-        hasher = sha256()
-        fd, comp_f = tempfile.mkstemp(prefix=native, suffix="-boost." + ext)
-        with os.fdopen(fd, "wb") as f:
-            with requests.get(url, allow_redirects=True, stream=True) as r:
-                r.raise_for_status()
-                for block in r.iter_content(chunk_size=2 ** 16):
-                    hasher.update(block)
-                    f.write(block)
-        if hasher.hexdigest() != sha:
-            raise RuntimeError("Downloaded boost headers hash failure!")
-        # Extract
-        raw_boost = tempfile.mkdtemp(prefix=native, suffix="-boost.tmp")
-        print("Extracting boost headers to: " + raw_boost)
-        extract(raw_boost, comp_f, ext)
-        os.remove(comp_f)
-        # Move into place
+        raw, uncomp = download_checksum_extract(
+            "boost headers", native, *self.url_data()
+        )
         print("Installing boost headers...")
-        uncomp = glob(os.path.join(raw_boost, "*"))
         if len(uncomp) != 1:
             raise RuntimeError("Boost should decompress into a single directory.")
         os.rename(os.path.join(uncomp[0], "boost"), self.root)
         # Cleanup
         print("Cleaning temporary files...")
-        shutil.rmtree(raw_boost)
+        shutil.rmtree(raw)
 
     def clean(self, level, recursive):
         if recursive:
