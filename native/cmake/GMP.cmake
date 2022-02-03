@@ -7,7 +7,6 @@
 #
 # Once done this will define
 #
-#  GMP_FOUND - system has GMP lib with correct version
 #  GMP_INCLUDES - the GMP include directory
 #  GMP_LIBRARIES - the GMP library
 #  GMP_VERSION - GMP version
@@ -15,7 +14,10 @@
 # Copyright (c) 2016 Jack Poulson, <jack.poulson@gmail.com>
 # Redistribution and use is allowed according to the terms of the BSD license.
 
-find_path(GMP_INCLUDES NAMES gmp.h PATHS $ENV{GMPDIR} ${INCLUDE_INSTALL_DIR})
+# This file has been modified
+
+
+find_path(GMP_INCLUDES NAMES gmp.h PATHS "${GMPDIR}")
 
 # Set GMP_FIND_VERSION to 5.1.0 if no minimum version is specified
 if(NOT GMP_FIND_VERSION)
@@ -51,7 +53,7 @@ if(GMP_INCLUDES)
 				_gmp_patchlevel_version_match "${_gmp_version_header}")
 			set(GMP_PATCHLEVEL_VERSION "${CMAKE_MATCH_1}")
 			set(GMP_VERSION
-				${GMP_MAJOR_VERSION}.${GMP_MINOR_VERSION}.${GMP_PATCHLEVEL_VERSION}
+				"${GMP_MAJOR_VERSION}.${GMP_MINOR_VERSION}.${GMP_PATCHLEVEL_VERSION}"
 			)
 		endif()
 	endforeach()
@@ -60,7 +62,7 @@ if(GMP_INCLUDES)
 	if(NOT GMP_VERSION)
 		set(GMP_VERSION_OK FALSE)
 		message(STATUS "GMP version was not detected")
-	elseif(${GMP_VERSION} VERSION_LESS ${GMP_FIND_VERSION})
+	elseif("${GMP_VERSION}" VERSION_LESS "${GMP_FIND_VERSION}")
 		set(GMP_VERSION_OK FALSE)
 		message(STATUS "GMP version ${GMP_VERSION} found in ${GMP_INCLUDES}, "
 			"but at least version ${GMP_FIND_VERSION} is required")
@@ -69,7 +71,7 @@ if(GMP_INCLUDES)
 	endif()
 endif()
 
-find_library(GMP_LIBRARIES gmp PATHS $ENV{GMPDIR} ${LIB_INSTALL_DIR})
+find_required_library(GMP_LIBRARIES gmp PATHS "${GMPDIR}")
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GMP DEFAULT_MSG

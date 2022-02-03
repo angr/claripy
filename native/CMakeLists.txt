@@ -298,9 +298,6 @@ message(STATUS "Backtrace generators will look for source files in: ${SOURCE_ROO
 # BigInt support
 include(Boost)
 include(GMP) # Boost multiprecision backend
-if(NOT GMP_FOUND) # Check variable set by the included GMP cmake file
-	message(FATAL_ERROR "gmp not found")
-endif()
 
 # Other required
 include(Backward)
