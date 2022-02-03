@@ -15,6 +15,9 @@ import sys
 import os
 import re
 
+# Shared libraries
+import z3
+
 
 if bytes is str:
     raise Exception(
@@ -27,12 +30,12 @@ if bytes is str:
 ######################################################################
 
 
-with open(os.path.join(os.path.dirname(__file__), "VERSION")) as f:
-    version = f.read().strip()
-
-# Paths of claripy and native
-claripy = os.path.dirname(__file__)
+setup_file = os.path.abspath(__file__)
+claripy = os.path.dirname(setup_file)
 native = os.path.join(claripy, "native")
+
+with open(os.path.join(claripy, "VERSION")) as f:
+    version = f.read().strip()
 
 # Claricpp library names
 # If these are changed, MANIFEST.in needs to be updated as well
@@ -72,12 +75,6 @@ def chdir(new):
     finally:
         print("cd " + old)
         os.chdir(old)
-
-
-def z3_dir():
-    import z3
-
-    return os.path.join(os.path.dirname(z3.__file__), "include")
 
 
 def nprocd(delta=1):
@@ -245,8 +242,8 @@ def download_checksum_extract(name, where, url, sha, ext):
     """
     print("Downloading " + name + "...")
     hasher = sha256()
-    prefix = os.path.join(where, re.sub(r"\s+", "_", name)) + "-"
-    fd, comp_f = tempfile.mkstemp(prefix=prefix, suffix=ext)
+    prefix = re.sub(r"\s+", "_", name) + "-"
+    fd, comp_f = tempfile.mkstemp(dir=where, prefix=prefix, suffix=ext)
     with os.fdopen(fd, "wb") as f:
         with requests.get(url, allow_redirects=True, stream=True) as r:
             r.raise_for_status()
@@ -256,7 +253,7 @@ def download_checksum_extract(name, where, url, sha, ext):
     if hasher.hexdigest() != sha:
         raise RuntimeError("Downloaded " + name + " hash failure!")
     # Extract
-    raw = tempfile.mkdtemp(prefix=prefix + "dir-", suffix=".tmp")
+    raw = tempfile.mkdtemp(dir=where, prefix=prefix + "dir-", suffix=".tmp")
     print("Extracting " + name + " to: " + raw)
     extract(raw, comp_f, ext)
     os.remove(comp_f)
@@ -360,10 +357,9 @@ class GMP(Library):
     _root = os.path.join(native, "gmp")
     _source = os.path.join(_root, "src")
     _build = os.path.join(_root, "build")
+    lib_dir = os.path.join(_build, ".libs")
     # We are ok with either static or shared, but we prefer shared
-    _lib_default = BuiltLib(
-        "libgmp", os.path.join(_build, ".libs"), permit_static=True, permit_shared=True
-    )
+    _lib_default = BuiltLib("libgmp", lib_dir, permit_static=True, permit_shared=True)
     _lib = _lib_default
 
     def get(self, force):
@@ -394,7 +390,7 @@ class GMP(Library):
         lines = [i for i in lines if sh_lib_str in i]
         assert len(lines) == 1, "./configure gave weird output"
         is_static = lines[0].replace(sh_lib_str, "").strip() == "no"
-        print("GMP Lib type: " + ("static" if is_static else "shared"))
+        print("GMP lib type: " + ("static" if is_static else "shared"))
         lib_type = StaticLib if is_static else SharedLib
         self._lib = lib_type(self._lib.name, self._lib.build_dir)
 
@@ -405,7 +401,7 @@ class GMP(Library):
         if self._done("GMP build directory", self._build):
             return
         self.get(force)
-        print("Copying source to build...")
+        print("Copying source to build dir: " + self._build)
         shutil.copytree(self._source, self._build)  # Do not pollute source
         with chdir(self._build):
 
@@ -503,6 +499,36 @@ class Boost(Library):
             shutil.rmtree(self.root, ignore_errors=True)
 
 
+class Z3(Library):
+    """
+    A class used to install z3
+    Z3 has no dependencies; it should be pre-installed
+    """
+    _root = os.path.dirname(z3.__file__)
+    include_dir = os.path.join(_root, "include")
+    _lib = SharedLib("libz3", os.path.join(_root, 'lib'))
+
+    def build(self, force):
+        inst = self._lib.find_installed()
+        if force:
+            os.remove(inst)
+
+
+    def install(self, force):
+        inst = self._lib.find_installed()
+        if force:
+            os.remove(inst)
+        self.build(force)
+        print(self._lib._install_dir)
+        self._lib.install()
+
+    def clean(self, level, _):
+        if level.implies(CleanLevel.INSTALL):
+            self._lib.clean_install()
+        if level.implies(CleanLevel.BUILD):
+            self._lib.clean_build()
+
+
 class Claricpp(Library):
     """
     A class to manage Claricpp
@@ -513,7 +539,7 @@ class Claricpp(Library):
     _lib = SharedLib("libclaricpp", build_dir)
 
     def __init__(self):
-        super().__init__(Boost())
+        super().__init__(Boost(), Z3())
 
     @staticmethod
     def _cmake_config_args(out_file, claricpp):
@@ -533,9 +559,10 @@ class Claricpp(Library):
             "LWYU": False,
             "WARN_BACKWARD_LIMITATIONS": True,
             # Library config
+            "GMPDIR": GMP.lib_dir,
             "Boost_INCLUDE_DIRS": Boost.root,
-            "Z3_INCLUDE_PATH": z3_dir(),
-            "Z3_ACQUISITION_MODE": "SYSTEM",
+            "Z3_INCLUDE_DIR": Z3.include_dir,
+            "Z3_ACQUISITION_MODE": "PATH",
             "Z3_FORCE_CLEAN": "ON",
         }
         on_off = lambda x: ("ON" if x else "OFF") if type(x) is bool else x
@@ -693,22 +720,23 @@ class clean(_clean):
         _clean.run(self, *args)
 
 
-setup(
-    name="claripy",
-    version=version,
-    python_requires=">=3.6",
-    packages=find_packages(),
-    install_requires=[
-        "z3-solver>=4.8.5.0",
-        "future",
-        "cachetools",
-        "decorator",
-        "pysmt>=0.9.1.dev119",
-        "six",
-    ],
-    description="An abstraction layer for constraint solvers",
-    url="https://github.com/angr/claripy",
-    cmdclass={"sdist": sdist, "build": build, "clean": clean},
-    include_package_data=True,
-    package_data={"claripy": ["claricpp/*"]},
-)
+if __name__ == '__main__':
+    setup(
+        name="claripy",
+        version=version,
+        python_requires=">=3.6",
+        packages=find_packages(),
+        install_requires=[
+            "z3-solver>=4.8.5.0",
+            "future",
+            "cachetools",
+            "decorator",
+            "pysmt>=0.9.1.dev119",
+            "six",
+        ],
+        description="An abstraction layer for constraint solvers",
+        url="https://github.com/angr/claripy",
+        cmdclass={"sdist": sdist, "build": build, "clean": clean},
+        include_package_data=True,
+        package_data={"claripy": ["claricpp/*"]},
+    )
