@@ -6,10 +6,17 @@ prune native
 include native/README.md native/CMakeLists.txt native/build_ffi.py
 recursive-include native/cmake *
 recursive-include native/src *
-recursive-include native/boost *
-recursive-include native/backward-cpp *
+
+# Docs
 include native/Doxyfile.in native/logo.png
 
+# Dependencies
+recursive-include native/backward-cpp *
+recursive-include native/boost *
+recursive-include native/gmp *
+
+# Avoid including libraries in case someone forgot to clean
 global-exclude *.so
 global-exclude *.dylib
 global-exclude *.dll
+global-exclude *.a
