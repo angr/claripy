@@ -12,7 +12,7 @@ if ((NOT Boost_INCLUDE_DIRS STREQUAL "") AND (NOT BOOST_URL STREQUAL ""))
     message(FATAL_ERROR "Boost_INCLUDE_DIRS and BOOST_URL both are non-empty; these two options conflict.")
 endif()
 
-if (NOT Boost_INCLUDE_DIRS STREQUAL "")
+if (Boost_INCLUDE_DIRS STREQUAL "")
     if (BOOST_URL STREQUAL "")
         find_package(Boost 1.7 REQUIRED)
     elseif (BOOST_FORCE_CLEAN_DOWNLOAD OR NOT EXISTS "${BOOST_DIR}")
