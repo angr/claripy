@@ -109,7 +109,7 @@ function(simple_test FUNC_NAME)
 	# Link the test
 	target_link_libraries("${BINARY}"
 		PRIVATE "${GMP_LIBRARIES}" # Boost multiprecision backend
-		PRIVATE "${Z3_LIB_PRIVATE_TARGET}"
+		PRIVATE "${Z3_LINK_TARGET}"
 		PRIVATE "${CLARICPP}"
 		PRIVATE "${TESTLIB}"
 	)

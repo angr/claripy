@@ -2,21 +2,19 @@
 #
 # The following variables should be defined before including this file:
 #  Z3_ACQUISITION_MODE - The method used to acquire z3. Either SYSTEM, DOWNLOAD, PATH, or BUILD
-#  Z3_LIB_PRIVATE_TARGET - The name of the z3 library internal target
 #  Z3_MAKE_TARGET - The name of the z3 make target that buils the z3 library internal target
 #  Z3_LIB_EXTENSION (Optional) - The extension used by shared libraries on this OS
 # All variables required by the the selected mode, define in the respective cmake/z3/z3_<mode> file
 # Except those that are defined in this file and thus do not need to be defined earlier
 #
-# This file defines the following variables:
+# This file defines the following variables as needed:
 #  Z3_INCLUDE_DIR - The directory containing the headers linked targets may wish to include
+#  Z3_LINK_TARGET - The Z3 target to link to
+#  Z3_LIB         - The shared Z3 libary pointed to by the link target
+
 
 # Wrapping this in a function to create a new scope
-function(_acquire_z3)
-
-	#################################################
-	#               Program Constants               #
-	#################################################
+function(_acquire_z3_helper)
 
 	# Determine the library's name
 	if (NOT DEFINED Z3_LIB_EXTENSION)
@@ -47,28 +45,20 @@ function(_acquire_z3)
 	#################################################
 
 	# Add a z3 library target
-	# This allows us to make using z3 dependent on build later, if needed
-	add_library( "${Z3_LIB_PRIVATE_TARGET}"
+	set(Z3_LINK_TARGET "${Z3_LIB_NAME}")
+	set(Z3_LINK_TARGET "${Z3_LINK_TARGET}" PARENT_SCOPE)
+	add_library( "${Z3_LINK_TARGET}"
 		SHARED
 		IMPORTED
 		GLOBAL # Scopes the library outside of its directory
 	)
 
-	# Add extra cmake files to the include path
-	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/z3")
-
-	# Acquire Z3
-	message(STATUS "z3 acquisition mode set to: ${Z3_ACQUISITION_MODE}")
 	if(EXISTS "${Z3_LIB}" AND NOT "${Z3_FORCE_CLEAN}")
 		message(STATUS "FORCE_CLEAN_Z3 is set to: ${FORCE_CLEAN_Z3}")
 		message("Existing z3 library, prioritizing it over all else.")
 	else()
-		if(Z3_ACQUISITION_MODE STREQUAL SYSTEM)
-			include(z3_system)
-		elseif(Z3_ACQUISITION_MODE STREQUAL DOWNLOAD)
+		if(Z3_ACQUISITION_MODE STREQUAL DOWNLOAD)
 			include(z3_download)
-		elseif(Z3_ACQUISITION_MODE STREQUAL PATH)
-			include(z3_path)
 		elseif(Z3_ACQUISITION_MODE STREQUAL BUILD)
 			include(z3_build)
 		else()
@@ -78,7 +68,7 @@ function(_acquire_z3)
 
 	# Point the target to the shared library file
 	message(STATUS "Configuring top level z3 target")
-	set_property(TARGET "${Z3_LIB_PRIVATE_TARGET}" PROPERTY
+	set_property(TARGET "${Z3_LINK_TARGET}" PROPERTY
 		IMPORTED_LOCATION "${Z3_LIB}"
 	)
 
@@ -86,9 +76,34 @@ function(_acquire_z3)
 	message(STATUS "Generating z3 make target: ${Z3_MAKE_TARGET}")
 	add_custom_target("${Z3_MAKE_TARGET}"
 		COMMENT "Acquiring z3"
-		DEPENDS "${Z3_LIB_PRIVATE_TARGET}"
+		DEPENDS "${Z3_LINK_TARGET}"
 	)
 
 endfunction()
+
+# Wrapping this in a function to create a new scope
+function(_acquire_z3)
+
+	# Get Z3 via system or path if requested
+	message(STATUS "z3 acquisition mode set to: ${Z3_ACQUISITION_MODE}")
+	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/z3")
+	if(Z3_ACQUISITION_MODE STREQUAL SYSTEM)
+		include(z3_system)
+	elseif(Z3_ACQUISITION_MODE STREQUAL PATH)
+		include(z3_path)
+	else()
+		_acquire_z3_helper()
+		return()
+	endif()
+
+	# Add a z3 library target
+	set(Z3_LINK_TARGET "z3")
+	set(Z3_LINK_TARGET "${Z3_LINK_TARGET}" PARENT_SCOPE)
+	message(STATUS "Creating Z3 link target '${Z3_LINK_TARGET}' with lib: ${Z3_LIB}")
+	add_library("${Z3_LINK_TARGET}" SHARED IMPORTED GLOBAL)
+	set_property(TARGET "${Z3_LINK_TARGET}" PROPERTY IMPORTED_LOCATION "${Z3_LIB}")
+
+endfunction()
+
 
 _acquire_z3()

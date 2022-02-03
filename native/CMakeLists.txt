@@ -138,12 +138,6 @@ default(BOOST_FORCE_CLEAN_DOWNLOAD OFF)
 # The name of the z3 make target
 set( Z3_MAKE_TARGET "z3" )
 
-# The name of the z3 library target (this is different from the make target)
-# The make target triggers this target to be built; this is the library claricpp should link to
-# This has to be distinct from the make target because cmake will
-# not export imported shared library targets to the build system
-set( Z3_LIB_PRIVATE_TARGET "lib-z3" )
-
 # Defines how the z3 library is acquired
 # The supported options are:
 #  SYSTEM   - Looks for a z3 library in common library directories
@@ -179,7 +173,26 @@ if (Z3_ACQUISITION_MODE STREQUAL SYSTEM)
 	# The path to the include directory (z3 header files)
 	# This directory will by symlinked into the build directory for read-only usage
 	# Claricpp is coded to use z3 headers as non-system headers, so this is necessary
-	default( Z3_INCLUDE_PATH "/path/to/z3-headers/" )
+	default( Z3_INCLUDE_DIR "/path/to/system/z3-headers/" )
+
+endif()
+
+#####################
+## Z3 Path Options ## (Only relevant if Z3_ACQUISITION_MODE is PATH)
+#####################
+
+if (Z3_ACQUISITION_MODE STREQUAL PATH)
+
+	# The path to the Z3 library
+	# On Mac this will probably be a dynamic library (.dylib)
+	# On Linux this will probably be a shared object (.so)
+	# On Windows this will probably be a dynamic link library (.dll)
+	default( Z3_LIB_PATH "/path/to/z3/library.so" )
+
+	# The path to the include directory (z3 header files)
+	# This directory will by symlinked into the build directory for read-only usage
+	# Claricpp is coded to use z3 headers as non-system headers, so this is necessary
+	default( Z3_INCLUDE_DIR "/path/to/z3-headers/" )
 
 endif()
 
@@ -206,25 +219,6 @@ if (Z3_ACQUISITION_MODE STREQUAL DOWNLOAD)
 	option( Z3_DOWNLOAD_TLS_VERIFY "Specify whether to verify the server certificate for https:// urls" ON )
 	option( Z3_DOWNLOAD_SHOW_PROGRESS "Show download progress while downloading." OFF )
 	set( Z3_DOWNLOAD_TIMEOUT_SECONDS 120 )
-
-endif()
-
-#####################
-## Z3 Path Options ## (Only relevant if Z3_ACQUISITION_MODE is PATH)
-#####################
-
-if (Z3_ACQUISITION_MODE STREQUAL PATH)
-
-	# The path to the Z3 library
-	# On Mac this will probably be a dynamic library (.dylib)
-	# On Linux this will probably be a shared object (.so)
-	# On Windows this will probably be a dynamic link library (.dll)
-	default( Z3_LIB_PATH "/path/to/z3/library.so" )
-
-	# The path to the include directory (z3 header files)
-	# This directory will by symlinked into the build directory for read-only usage
-	# Claricpp is coded to use z3 headers as non-system headers, so this is necessary
-	default( Z3_INCLUDE_PATH "/path/to/z3-headers/" )
 
 endif()
 
@@ -559,9 +553,9 @@ target_include_directories("${CLARICPP}"
 	PRIVATE ${Boost_INCLUDE_DIRS}
 )
 target_link_libraries("${CLARICPP}"
-	PRIVATE "${Z3_LIB_PRIVATE_TARGET}"
+	PRIVATE "${Z3_LINK_TARGET}"
 	PRIVATE "${GMP_LIBRARIES}" # Boost multiprecision backend
-	# PRIVATE dl (only necessary if using native backtraces; not needed for Backward backtraces)
+	# PRIVATE dl (only necessary if using native backtraces; Backward handles it's own dependencies)
 )
 
 # Create a make target for test cases

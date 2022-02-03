@@ -4,6 +4,7 @@
 #  Z3_DOWNLOAD_LINK - The link to download the z3 compressed file from
 #                     The link must be the compressed z3 install directory containing 'bin' and 'include'
 #  Z3_LIB           - The location of the z3 library once installed
+#  Z3_DIR           - The directory containing all made / downloaded z3 artifacts
 #  Z3_LIB_NAME      - The name of the z3 library
 #  Z3_DOWNLOAD_TLS_VERIFY      - Specify whether to verify the server certificate for https:// urls
 #  Z3_DOWNLOAD_TIMEOUT_SECONDS - The download timeout in seconds
@@ -30,7 +31,15 @@ function(_download_z3)
 		endif()
 	endif()
 
-	fetch("${Z3_DIR}/download" "${Z3_DOWNLOAD_LINK}" "include" "${Z3_DOWNLOAD_SHOW_PROGRESS}" "${HASH}")
+	fetch("${Z3_DIR}/download" "${Z3_DOWNLOAD_LINK}" "" "${Z3_DOWNLOAD_SHOW_PROGRESS}" "${HASH}")
+
+	# Setup install tree and cleanup
+	message(STATUS "Installing Z3 with build directory")
+	get_filename_component(D "${Z3_LIB}" DIRECTORY)
+	file(MAKE_DIRECTORY "${D}")
+	file(RENAME "${EXTRACTED_DIR}/bin/${Z3_LIB_NAME}" "${Z3_LIB}")
+	file(RENAME "${EXTRACTED_DIR}/include/" "${Z3_INCLUDE_DIR}")
+	file(REMOVE_RECURSE "${EXTRACTED_DIR}")
 
 endfunction()
 
