@@ -1,7 +1,7 @@
 # This file configures Backward
 #
-# This file defines the following functions:
-#  add_backward - This function can be called on a target and will include headers / links as needed to use backward
+# This file defines BACKWARD_ENABLED
+
 message(STATUS "Configuring Backward...")
 
 # Config
@@ -23,6 +23,7 @@ list(REMOVE_ITEM CMAKE_MODULE_PATH "${BACKWARD_DIR}")
 
 # Info
 if (LIBDW_FOUND OR LIBBFD_FOUND OR LIBDWARF_FOUND)
+	set(BACKWARD_BACKEND_ENABLED TRUE)
 	if (LIBDW_FOUND)
 		message(STATUS "Backward backend library: DW")
 	elseif (LIBBFD_FOUND)
@@ -31,10 +32,15 @@ if (LIBDW_FOUND OR LIBBFD_FOUND OR LIBDWARF_FOUND)
 		message(STATUS "Backward backend library: Dwarf")
 	endif()
 else()
+	set(BACKWARD_BACKEND_ENABLED FALSE)
+	if ("${REQUIRE_BACKWARD_BACKEND}")
+		message(FATAL_ERROR "Backward backend could not be found")
+	endif()
 	if ("${WARN_BACKWARD_LIMITATIONS}")
 		message(WARNING "Backward backend not library found; backtraces will be limited.")
 	else()
 		message("Backward backend not library found; backtraces will be limited.")
 	endif()
 endif()
+
 message(STATUS "Backward config complete")
