@@ -9,6 +9,7 @@ from enum import Enum
 from glob import glob
 import subprocess
 import requests
+import platform
 import tempfile
 import shutil
 import sys
@@ -105,30 +106,46 @@ class BuiltLib:
     ):
         self.name = name
         self.build_dir = build_dir
-        self._install_dir = os.path.join(claripy, "claripy/claricpp")
+        self.install_dir = os.path.join(claripy, "claripy/claricpp")
         # Determine extensions
-        self._extensions = []
-        self._extensions.extend([".so", ".dylib", ".dll"] if permit_shared else [])
-        self._extensions.extend([".a"] if permit_static else [])
+        self._permit_shared = permit_shared
+        self._permit_static = permit_static
 
-    def _find(self, where):
-        """
-        Tries to find a library within the directory where
-        """
-        is_lib = lambda x: any(x.endswith(i) for i in self._extensions)
+    def _find_ext(self, where, ext):
         files = glob(os.path.join(where, self.name) + "*.*")
-        files = [i for i in files if is_lib(i)]
+        files = [i for i in files if i.endswith(ext)]
         if len(files) == 1:
             return files[0]
         if len(files) > 1:
             print("Found: " + str(files))
-            raise RuntimeError("Multiple " + self.name + " libraries in ", where)
+            raise RuntimeError("Multiple " + self.name + " libraries in " + where + " with the same extension: " + ext)
+
+    def _find(self, where):
+        """
+        Tries to find a library within the directory where
+        Will prefer the native file extension type but may permit others
+        Static libraries have the lowest preference
+        """
+        exts = []
+        if self._permit_shared:
+            ops = platform.system()
+            if ops == 'Darwin':
+                exts.extend([".dylib", ".so"])
+            elif ops == 'Windows':
+                exts.extend(['.dll', '.so'])
+            else:
+                exts.extend(['.so', '.dll', '.dylib'])
+        if self._permit_static:
+            exts.append('.a')
+        found = [ self._find_ext(where, i) for i in exts ]
+        found = [ i for i in found if i is not None ] + [None]
+        return found[0]
 
     def find_installed(self):
         """
         Look for the library in the installation directory
         """
-        return self._find(self._install_dir)
+        return self._find(self.install_dir)
 
     def find_built(self):
         """
@@ -142,7 +159,7 @@ class BuiltLib:
         """
         p = self.find_built()
         assert p is not None, "Cannot install a non-built library"
-        shutil.copy2(p, self._install_dir)
+        shutil.copy2(p, self.install_dir)
 
     def _clean(self, x):
         if x:
@@ -357,6 +374,7 @@ class GMP(Library):
     _root = os.path.join(native, "gmp")
     _source = os.path.join(_root, "src")
     _build = os.path.join(_root, "build")
+    include_dir = os.path.join(_root, "include")
     lib_dir = os.path.join(_build, ".libs")
     # We are ok with either static or shared, but we prefer shared
     _lib_default = BuiltLib("libgmp", lib_dir, permit_static=True, permit_shared=True)
@@ -398,7 +416,7 @@ class GMP(Library):
         if force:
             shutil.rmtree(self._build, ignore_errors=True)
         super().build(force)  # Do this before done in case dep's were cleaned
-        if self._done("GMP build directory", self._build):
+        if self._done("GMP build directory", self._build) and self._done("GMP include directory", self.include_dir):
             return
         self.get(force)
         print("Copying source to build dir: " + self._build)
@@ -419,12 +437,15 @@ class GMP(Library):
             # TODO: host=none is slow
             # TODO: enable-shared=mpz ?
             # If GMP's build system refuses to use a shared library, fallback to static
-            config_args = ["--disable-static", "--enable-shared", "--host=none"]
+            config_args = ["--with-pic", "--disable-static", "--enable-shared", "--host=none"]
             self._set_lib_type(run("Configuring", "./configure", *config_args))
             # Building + Checking
             makej = ["make", "-j" + str(nprocd())]
             _ = run("Building GMP", *makej)
             _ = run("Checking GMP build", *makej, "check")
+            # Include dir
+            os.mkdir(self.include_dir)
+            shutil.copy2(os.path.join(self._build, "gmp.h"), self.include_dir)
 
     def install(self, force):
         inst = self._lib.find_installed()
@@ -443,6 +464,7 @@ class GMP(Library):
             self._lib.clean_install()
         if level.implies(CleanLevel.BUILD):
             shutil.rmtree(self._build, ignore_errors=True)
+            shutil.rmtree(self.include_dir, ignore_errors=True)
             self._lib.clean_build()
             self._lib = self._lib_default  # Reset lib type
         if level.implies(CleanLevel.GET):
@@ -487,7 +509,8 @@ class Boost(Library):
         print("Installing boost headers...")
         if len(uncomp) != 1:
             raise RuntimeError("Boost should decompress into a single directory.")
-        os.rename(os.path.join(uncomp[0], "boost"), self.root)
+        os.mkdir(self.root)
+        os.rename(os.path.join(uncomp[0], "boost"), os.path.join(self.root, 'boost'))
         # Cleanup
         print("Cleaning temporary files...")
         shutil.rmtree(raw)
@@ -506,27 +529,23 @@ class Z3(Library):
     """
     _root = os.path.dirname(z3.__file__)
     include_dir = os.path.join(_root, "include")
-    _lib = SharedLib("libz3", os.path.join(_root, 'lib'))
+    lib = SharedLib("libz3", os.path.join(_root, 'lib'))
 
-    def build(self, force):
-        inst = self._lib.find_installed()
-        if force:
-            os.remove(inst)
-
+    def build(self, _):
+        assert self.lib.find_built(), "Z3 is missing"
 
     def install(self, force):
-        inst = self._lib.find_installed()
+        inst = self.lib.find_installed()
         if force:
             os.remove(inst)
         self.build(force)
-        print(self._lib._install_dir)
-        self._lib.install()
+        self.lib.install()
 
     def clean(self, level, _):
         if level.implies(CleanLevel.INSTALL):
-            self._lib.clean_install()
+            self.lib.clean_install()
         if level.implies(CleanLevel.BUILD):
-            self._lib.clean_build()
+            self.lib.clean_build()
 
 
 class Claricpp(Library):
@@ -546,24 +565,30 @@ class Claricpp(Library):
         """
         Create arguments to pass to cmake for configuring claricpp
         """
+        z3_built = Z3.lib.find_built()
+        assert z3_built is not None, "z3 was not built"
         config = {
-            "FOR_SETUP_PY_F": out_file,
             "VERSION": version,
             "CLARICPP": claricpp,
+            "FOR_SETUP_PY_F": out_file,
             # Build options
             "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+            "WARN_BACKWARD_LIMITATIONS": True,
+            "REQUIRE_BACKWARD_BACKEND": False, # TODO: ask fish
+            # Disable build options
             "ENABLE_TESTING": False,
             "CPP_CHECK": False,
             "CLANG_TIDY": False,
             "ENABLE_MEMCHECK": False,
+            "BUILD_DOC": False,
             "LWYU": False,
-            "WARN_BACKWARD_LIMITATIONS": True,
             # Library config
             "GMPDIR": GMP.lib_dir,
+            "GMP_INCLUDE_DIR": GMP.include_dir,
             "Boost_INCLUDE_DIRS": Boost.root,
             "Z3_INCLUDE_DIR": Z3.include_dir,
+            "Z3_LIB": z3_built,
             "Z3_ACQUISITION_MODE": "PATH",
-            "Z3_FORCE_CLEAN": "ON",
         }
         on_off = lambda x: ("ON" if x else "OFF") if type(x) is bool else x
         return ["-D" + i + "=" + on_off(k) for i, k in config.items()]
@@ -591,7 +616,9 @@ class Claricpp(Library):
         makej, is_make = generator(cmake_out.CMAKE_MAKE_PROGRAM)
         print("Building " + claricpp + "...")
         with chdir(self.build_dir):
-            run_cmd_no_fail(*makej, claricpp)
+            e = { i:os.environ.get(i) for i in os.environ }
+            e['VERBOSE'] = '1'
+            run_cmd_no_fail(*makej, claricpp,env=e)
 
     def install(self, force):
         inst = self._lib.find_installed()
