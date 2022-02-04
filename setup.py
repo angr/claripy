@@ -118,7 +118,14 @@ class BuiltLib:
             return files[0]
         if len(files) > 1:
             print("Found: " + str(files))
-            raise RuntimeError("Multiple " + self.name + " libraries in " + where + " with the same extension: " + ext)
+            raise RuntimeError(
+                "Multiple "
+                + self.name
+                + " libraries in "
+                + where
+                + " with the same extension: "
+                + ext
+            )
 
     def _find(self, where):
         """
@@ -129,16 +136,16 @@ class BuiltLib:
         exts = []
         if self._permit_shared:
             ops = platform.system()
-            if ops == 'Darwin':
+            if ops == "Darwin":
                 exts.extend([".dylib", ".so"])
-            elif ops == 'Windows':
-                exts.extend(['.dll', '.so'])
+            elif ops == "Windows":
+                exts.extend([".dll", ".so"])
             else:
-                exts.extend(['.so', '.dll', '.dylib'])
+                exts.extend([".so", ".dll", ".dylib"])
         if self._permit_static:
-            exts.append('.a')
-        found = [ self._find_ext(where, i) for i in exts ]
-        found = [ i for i in found if i is not None ] + [None]
+            exts.append(".a")
+        found = [self._find_ext(where, i) for i in exts]
+        found = [i for i in found if i is not None] + [None]
         return found[0]
 
     def find_installed(self):
@@ -416,7 +423,9 @@ class GMP(Library):
         if force:
             shutil.rmtree(self._build, ignore_errors=True)
         super().build(force)  # Do this before done in case dep's were cleaned
-        if self._done("GMP build directory", self._build) and self._done("GMP include directory", self.include_dir):
+        if self._done("GMP build directory", self._build) and self._done(
+            "GMP include directory", self.include_dir
+        ):
             return
         self.get(force)
         print("Copying source to build dir: " + self._build)
@@ -437,7 +446,12 @@ class GMP(Library):
             # TODO: host=none is slow
             # TODO: enable-shared=mpz ?
             # If GMP's build system refuses to use a shared library, fallback to static
-            config_args = ["--with-pic", "--disable-static", "--enable-shared", "--host=none"]
+            config_args = [
+                "--with-pic",
+                "--disable-static",
+                "--enable-shared",
+                "--host=none",
+            ]
             self._set_lib_type(run("Configuring", "./configure", *config_args))
             # Building + Checking
             makej = ["make", "-j" + str(nprocd())]
@@ -510,7 +524,7 @@ class Boost(Library):
         if len(uncomp) != 1:
             raise RuntimeError("Boost should decompress into a single directory.")
         os.mkdir(self.root)
-        os.rename(os.path.join(uncomp[0], "boost"), os.path.join(self.root, 'boost'))
+        os.rename(os.path.join(uncomp[0], "boost"), os.path.join(self.root, "boost"))
         # Cleanup
         print("Cleaning temporary files...")
         shutil.rmtree(raw)
@@ -527,9 +541,10 @@ class Z3(Library):
     A class used to install z3
     Z3 has no dependencies; it should be pre-installed
     """
+
     _root = os.path.dirname(z3.__file__)
     include_dir = os.path.join(_root, "include")
-    lib = SharedLib("libz3", os.path.join(_root, 'lib'))
+    lib = SharedLib("libz3", os.path.join(_root, "lib"))
 
     def build(self, _):
         assert self.lib.find_built(), "Z3 is missing"
@@ -574,7 +589,7 @@ class Claricpp(Library):
             # Build options
             "CMAKE_BUILD_TYPE": "RelWithDebInfo",
             "WARN_BACKWARD_LIMITATIONS": True,
-            "REQUIRE_BACKWARD_BACKEND": False, # TODO: ask fish
+            "REQUIRE_BACKWARD_BACKEND": False,  # TODO: ask fish
             # Disable build options
             "ENABLE_TESTING": False,
             "CPP_CHECK": False,
@@ -616,9 +631,7 @@ class Claricpp(Library):
         makej, is_make = generator(cmake_out.CMAKE_MAKE_PROGRAM)
         print("Building " + claricpp + "...")
         with chdir(self.build_dir):
-            e = { i:os.environ.get(i) for i in os.environ }
-            e['VERBOSE'] = '1'
-            run_cmd_no_fail(*makej, claricpp,env=e)
+            run_cmd_no_fail(*makej, claricpp)
 
     def install(self, force):
         inst = self._lib.find_installed()
@@ -747,7 +760,7 @@ class clean(_clean):
         _clean.run(self, *args)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     setup(
         name="claripy",
         version=version,
