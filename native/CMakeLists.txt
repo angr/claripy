@@ -102,7 +102,17 @@ option( ENABLE_CET "Builds with CET fcf-protection, requires ENABLE_SECURITY" OF
 # Override what the compiler says about it handling RTTI
 default(RTTI_OVERRIDE FALSE)
 
+### Backward Options
+
+# Require backend to use a backend lib
+# The backend lib provides a lot more information if available
+default(REQUIRE_BACKWARD_BACKEND FALSE)
+
 ### Boost Options
+
+# If the GMP headers boost uses are not installed in the normal path, set this
+# This variable is ignored if it is empty
+default(GMP_INCLUDE_DIR "")
 
 # The default boost include location
 # This variable is ignored if empty and will be populated by find_package
@@ -187,7 +197,7 @@ if (Z3_ACQUISITION_MODE STREQUAL PATH)
 	# On Mac this will probably be a dynamic library (.dylib)
 	# On Linux this will probably be a shared object (.so)
 	# On Windows this will probably be a dynamic link library (.dll)
-	default( Z3_LIB_PATH "/path/to/z3/library.so" )
+	default( Z3_LIB "/path/to/z3/library.so" )
 
 	# The path to the include directory (z3 header files)
 	# This directory will by symlinked into the build directory for read-only usage
@@ -299,7 +309,7 @@ message(STATUS "Backtrace generators will look for source files in: ${SOURCE_ROO
 include(Boost)
 include(GMP) # Boost multiprecision backend
 
-# Other required
+# Other dependencies
 include(Backward)
 include(z3)
 
@@ -549,6 +559,9 @@ target_include_directories("${CLARICPP}"
 	PRIVATE "${Z3_INCLUDE_DIR}"
 	PRIVATE ${Boost_INCLUDE_DIRS}
 )
+if (NOT GMP_INCLUDE_DIR STREQUAL "")
+	target_include_directories("${CLARICPP}" SYSTEM BEFORE PRIVATE "${GMP_INCLUDE_DIR}")
+endif()
 target_link_libraries("${CLARICPP}"
 	PRIVATE "${Z3_LINK_TARGET}"
 	PRIVATE "${GMP_LIBRARIES}" # Boost multiprecision backend
