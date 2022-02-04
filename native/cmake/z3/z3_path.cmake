@@ -7,7 +7,7 @@
 
 message("Forcing z3lib = ${Z3_LIB}")
 if(NOT EXISTS "${Z3_LIB}")
-	message(FATAL_ERROR "Cannot find ${Z3_LIB}")
+	message(FATAL_ERROR "Cannot find: ${Z3_LIB}")
 endif()
 if(NOT EXISTS "${Z3_INCLUDE_DIR}")
 	message(FATAL_ERROR "Cannot find ${Z3_INCLUDE_DIR}")
