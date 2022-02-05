@@ -95,9 +95,7 @@ class BuiltLib:
     A shared or static library
     """
 
-    def __init__(
-        self, name: str, build_dir: str, *, permit_shared: bool, permit_static: bool
-    ):
+    def __init__(self, name, build_dir, *, permit_shared, permit_static):
         self.name = name
         self.build_dir = build_dir
         self.install_dir = os.path.join(claripy, "claripy/claricpp")
@@ -383,7 +381,6 @@ class Library:
             getattr(i, fn)(force)
         getattr(self, "_" + fn)()
 
-
     def get(self, force):
         """
         Acquire source files for this class and dependencies
@@ -436,7 +433,7 @@ class Library:
         """
         pass
 
-    def _clean(self):
+    def _clean(self, level):
         """
         A function subclasses should override to clean up
         No need to handle dependencies in this
@@ -460,7 +457,10 @@ class GMP(Library):
 
     def __init__(self):
         get_chk = {"GMP source": self._source}
-        build_chk = {"GMP library": self._lib, "GMP include directory": self.include_dir}
+        build_chk = {
+            "GMP library": self._lib,
+            "GMP include directory": self.include_dir,
+        }
         install_chk = {"GMP source": self._lib.find_installed}
         super().__init__(get_chk, build_chk, install_chk)
 
@@ -500,7 +500,7 @@ class GMP(Library):
         with open(log_f, "w") as f:
             print(name + "...")
             print("  - Output file: " + log_f)
-            sys.stdout.write('  - ')
+            sys.stdout.write("  - ")
             run_cmd_no_fail(*args, stdout=f, stderr=f)
         return log_f
 
@@ -588,7 +588,7 @@ class Boost(Library):
 
 class Z3(Library):
     """
-    A class used to install z3
+    A class used to manage the z3 dependency
     Z3 has no dependencies; it should be pre-installed
     """
 
@@ -599,6 +599,8 @@ class Z3(Library):
     def __init__(self):
         super().__init__({}, {}, {"Z3 library": self.lib.find_installed}, GMP())
 
+    # _get is simply that _root has been resolved
+
     def _build(self):
         assert self.lib.find_built(), "Z3 is missing"
 
@@ -608,6 +610,19 @@ class Z3(Library):
     def _clean(self, level):
         if level.implies(CleanLevel.INSTALL):
             self.lib.clean_install()
+
+
+class Backward(Library):
+    """
+    A class used to manage the backward dependency
+    """
+
+    def __init__(self):
+        super().__init__({}, {}, {})
+
+    def _get(self):
+        b = os.path.exists(os.path.join(native, "backward"))
+        assert b, "Backward is missing; run: git submodule init --recursive"
 
 
 class Claricpp(Library):
@@ -621,7 +636,7 @@ class Claricpp(Library):
 
     def __init__(self):
         chk = {self._lib.name: self._lib}
-        super().__init__({}, chk, chk, Boost(), Z3())
+        super().__init__({}, chk, chk, Boost(), Z3(), Backward())
 
     @staticmethod
     def _cmake_config_args(out_file, claricpp):
