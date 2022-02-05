@@ -1,6 +1,7 @@
 from distutils.command.build import build as _build
 from distutils.command.clean import clean as _clean
 from distutils.command.sdist import sdist as _sdist
+from native.build_ffi import build_ffi_wrapper
 from setuptools import find_packages, setup
 from multiprocessing import cpu_count
 from contextlib import contextmanager
@@ -20,10 +21,7 @@ import re
 import z3
 
 
-if bytes is str:
-    raise Exception(
-        "This module is designed for python 3 only. Please install an older version to use python 2."
-    )
+# TODO: make install put stuff in claricpp build dir and such before building so that rpath is .
 
 
 ######################################################################
@@ -38,13 +36,9 @@ native = os.path.join(claripy, "native")
 with open(os.path.join(claripy, "VERSION")) as f:
     version = f.read().strip()
 
-# Claricpp library names
-# If these are changed, MANIFEST.in needs to be updated as well
+# Claricpp library names; these should be in MANIFEST.in
 claricpp = "claricpp"
 claricpp_ffi = "claricpp_ffi"
-
-# Python version
-py_version = str(sys.version_info.major) + "." + str(sys.version_info.minor)
 
 
 ######################################################################
@@ -287,6 +281,7 @@ def download_checksum_extract(name, where, url, sha, ext):
 class CleanLevel(Enum):
     """
     Higher clean levels imply lower clean levels
+    Values will be incremented by 1 between levels
     """
 
     INSTALL = 1
@@ -294,8 +289,9 @@ class CleanLevel(Enum):
     GET = 3
 
 
-# Safer version of >= for this enum
+# 'Member functions' of CleanLevel
 setattr(type(CleanLevel.GET), "implies", lambda self, o: self.value >= o.value)
+setattr(type(CleanLevel.GET), "inc", lambda self: CleanLevel(self.value + 1))
 
 
 ######################################################################
@@ -306,18 +302,51 @@ setattr(type(CleanLevel.GET), "implies", lambda self, o: self.value >= o.value)
 class Library:
     """
     Native dependencies should derive from this
+    Subclasses may want to override _get, _build, _install, and _clean
     """
 
-    def __init__(self, *dependencies):
-        self._dependencies = dependencies
+    def __init__(self, get_chk, build_chk, install_chk, *dependencies):
+        """
+        get_chk, build_chk, and install_chk are dicts to given to _body
+        When call .get(), self._done(*i) will be called for i in get_chk
+        If all return true, the get stage will be skipped
+        Likewise this is true for build_chk/install_chk stages build/install
+        Note: If any values in the chk dicts are BuiltLibs, they will be swapped
+        for the the .find_built / .find_installed functions as needed
+        """
         self._done_set = set()
+        self._dependencies = dependencies
+        assert self._dep_check(type(self)), "Cyclical dependency found on: " + str(
+            type(self)
+        )
+        # Done check lists
+        self._get_chk = get_chk
+        self._build_chk = self._fix_chk(build_chk, "find_built")
+        self._install_chk = self._fix_chk(install_chk, "find_installed")
+
+    @staticmethod
+    def _fix_chk(d, name):
+        """
+        Update replace BuiltLib values in d with their name functions
+        """
+        fix = lambda x: getattr(x, name) if isinstance(x, BuiltLib) else x
+        return {i: fix(k) for i, k in d.items()}
+
+    def _dep_check(self, t):
+        """
+        Return true iff t is not a dependency recursively
+        """
+        return all([(type(i) != t and i._dep_check(t)) for i in self._dependencies])
 
     def _done(self, name, path):
         """
+        If path is a function, path = path()
         If path exists, note it will be reused and return True
         This will only warn once per path!
         path may be None
         """
+        if callable(path):
+            path = path()
         ret = False if path is None else os.path.exists(path)
         if path in self._done_set:
             assert ret, path + " used to exist but now does not"
@@ -326,51 +355,93 @@ class Library:
             self._done_set.add(path)
         return ret
 
-    def _log(self, name, val, o):
-        fn = lambda x: x.__class__.__name__ + "." + name + "(" + str(val) + ")"
-        print(fn(self) + " invoking dependency " + fn(o))
+    def _body(self, force, lvl, chk):
+        """
+        A helper function used to automate the logic of invoking dependencies and body
+        @param force: True if old files should be purged instead of possible reused
+        @param lvl: The clean level to be used for this
+        @param chk: A dict where each entry contains the arguments to give to _done
+        If all calls to self._done pass, skip this stage
+        If chk is empty, this stage will not be skipped
+        """
+        # Clean if needed
+        if force:
+            self.clean(lvl)
+        # Skip if everything is done
+        elif len(chk) and all([self._done(*i) for i in chk.items()]):
+            return
+        # Call dependent levels
+        try:
+            getattr(self, lvl.inc().name.lower())(force)
+        except ValueError:
+            pass
+        # Call current level dependencies
+        fn = lvl.name.lower()
+        helper = lambda x, n: x.__class__.__name__ + "." + n + "()"
+        for i in self._dependencies:
+            print(helper(self, fn) + " invoking " + helper(i, fn))
+            getattr(i, fn)(force)
+        getattr(self, "_" + fn)()
+
 
     def get(self, force):
         """
-        Acquire source files for this class
-        If force: ignores existing files, else reuses existing files
-        Calls get(force) for each dependency
+        Acquire source files for this class and dependencies
+        If force: ignores existing files, else may reuse existing files
         """
-        for i in self._dependencies:
-            self._log("get", force, i)
-            i.get(force)
+        self._body(force, CleanLevel.GET, self._get_chk)
 
     def build(self, force):
         """
-        Builds dependency
-        If force: ignores existing files, else reuses existing files
-        Calls build(force) for each dependency
-        Will call get(force) as needed
+        Build libraries for this class and dependencies
+        If force: ignores existing files, else may reuse existing files
         """
-        for i in self._dependencies:
-            self._log("build", force, i)
-            i.build(force)
+        self._body(force, CleanLevel.BUILD, self._build_chk)
 
     def install(self, force):
         """
-        Installs dependency
-        If force: ignores existing files, else reuses existing files
-        Calls install(force) for each dependency
-        Will call build(force) as needed
+        Install libraries and source files for this class and dependencies
+        If force: ignores existing files, else may reuse existing files
         """
-        for i in self._dependencies:
-            self._log("install", force, i)
-            i.install(force)
+        self._body(force, CleanLevel.INSTALL, self._install_chk)
 
-    def clean(self, level: CleanLevel, recursive):
+    def clean(self, level: CleanLevel):
         """
         Cleans up after the library
-        level can be 'get', 'build', or 'install'
-        'get' implies 'build' which implies 'install'
         """
+        p = lambda x: x.__class__.__name__ + ".clean(" + level.name + ")"
         for i in self._dependencies:
-            self._log("clean", recursive, i)
-            i.clean(level, recursive)
+            print(p(self) + " invoking " + p(i))
+            i.clean(level)
+        self._clean(level)
+
+    def _get(self):
+        """
+        A function subclasses should override to get source files
+        No need to handle dependencies in this
+        """
+        pass
+
+    def _build(self):
+        """
+        A function subclasses should override to build libraries
+        No need to handle dependencies in this
+        """
+        pass
+
+    def _install(self):
+        """
+        A function subclasses should override to install libaries
+        No need to handle dependencies in this
+        """
+        pass
+
+    def _clean(self):
+        """
+        A function subclasses should override to clean up
+        No need to handle dependencies in this
+        """
+        pass
 
 
 class GMP(Library):
@@ -380,29 +451,30 @@ class GMP(Library):
 
     _root = os.path.join(native, "gmp")
     _source = os.path.join(_root, "src")
-    _build = os.path.join(_root, "build")
+    _build_dir = os.path.join(_root, "build")
     include_dir = os.path.join(_root, "include")
-    lib_dir = os.path.join(_build, ".libs")
+    lib_dir = os.path.join(_build_dir, ".libs")
     # We are ok with either static or shared, but we prefer shared
     _lib_default = BuiltLib("libgmp", lib_dir, permit_static=True, permit_shared=True)
     _lib = _lib_default
 
-    def get(self, force):
-        if force:
-            shutil.rmtree(self._source, ignore_errors=True)
-        super().get(force)
-        if self._done("GMP source", self._source):
-            return
+    def __init__(self):
+        get_chk = {"GMP source": self._source}
+        build_chk = {"GMP library": self._lib, "GMP include directory": self.include_dir}
+        install_chk = {"GMP source": self._lib.find_installed}
+        super().__init__(get_chk, build_chk, install_chk)
+
+    def _get(self):
         os.makedirs(self._root)
         url = "https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.xz"
         sha = "fd4829912cddd12f84181c3451cc752be224643e87fac497b69edddadc49b4f2"
-        raw, gmp = download_checksum_extract(
+        d, gmp = download_checksum_extract(
             "GMP source", self._root, url, sha, ".tar.xz"
         )
-        print("Installing GMP source")
+        print("Moving GMP source to: " + self._source)
         assert len(gmp) == 1, "gmp's tarball is weird"
         os.rename(gmp[0], self._source)
-        os.rmdir(raw)
+        os.rmdir(d)
 
     def _set_lib_type(self, config_log):
         """
@@ -419,27 +491,23 @@ class GMP(Library):
         lib_type = StaticLib if is_static else SharedLib
         self._lib = lib_type(self._lib.name, self._lib.build_dir)
 
-    def build(self, force):
-        if force:
-            shutil.rmtree(self._build, ignore_errors=True)
-        super().build(force)  # Do this before done in case dep's were cleaned
-        if self._done("GMP build directory", self._build) and self._done(
-            "GMP include directory", self.include_dir
-        ):
-            return
-        self.get(force)
-        print("Copying source to build dir: " + self._build)
-        shutil.copytree(self._source, self._build)  # Do not pollute source
-        with chdir(self._build):
+    def _run(self, name, *args):
+        """
+        A wrapper for run
+        """
+        log_n = "setup-py-" + re.sub(r"\W+", "", args[0]) + ".log"
+        log_f = os.path.join(self._build_dir, log_n)
+        with open(log_f, "w") as f:
+            print(name + "...")
+            print("  - Output file: " + log_f)
+            sys.stdout.write('  - ')
+            run_cmd_no_fail(*args, stdout=f, stderr=f)
+        return log_f
 
-            def run(name, *args):
-                log_n = "setup-py-" + re.sub(r"\W+", "", args[0]) + ".log"
-                log_f = os.path.join(self._build, log_n)
-                with open(log_f, "w") as f:
-                    print(name + " log file: " + log_f)
-                    run_cmd_no_fail(*args, stdout=f, stderr=f)
-                return log_f
-
+    def _build(self):
+        print("Copying source to build dir: " + self._build_dir)
+        shutil.copytree(self._source, self._build_dir)  # Do not pollute source
+        with chdir(self._build_dir):
             # GMP warnings:
             # 1. GMP's online docs are incomplete
             # 2. GMP's detection of ld's shared lib support is broken on at least macOS
@@ -452,32 +520,23 @@ class GMP(Library):
                 "--enable-shared",
                 "--host=none",
             ]
-            self._set_lib_type(run("Configuring", "./configure", *config_args))
+            self._set_lib_type(self._run("Configuring", "./configure", *config_args))
             # Building + Checking
             makej = ["make", "-j" + str(nprocd())]
-            _ = run("Building GMP", *makej)
-            _ = run("Checking GMP build", *makej, "check")
+            _ = self._run("Building GMP", *makej)
+            _ = self._run("Checking GMP build", *makej, "check")
             # Include dir
             os.mkdir(self.include_dir)
-            shutil.copy2(os.path.join(self._build, "gmp.h"), self.include_dir)
+            shutil.copy2(os.path.join(self._build_dir, "gmp.h"), self.include_dir)
 
-    def install(self, force):
-        inst = self._lib.find_installed()
-        if force and inst is not None:
-            os.remove(inst)
-        super().install(force)  # Do this before done in case dep's were cleaned
-        if self._done("GMP", inst):
-            return
-        self.build(force)
+    def _install(self):
         self._lib.install()
 
-    def clean(self, level, recursive):
-        if recursive:
-            super().clean(level, recursive)
+    def _clean(self, level):
         if level.implies(CleanLevel.INSTALL):
             self._lib.clean_install()
         if level.implies(CleanLevel.BUILD):
-            shutil.rmtree(self._build, ignore_errors=True)
+            shutil.rmtree(self._build_dir, ignore_errors=True)
             shutil.rmtree(self.include_dir, ignore_errors=True)
             self._lib.clean_build()
             self._lib = self._lib_default  # Reset lib type
@@ -493,7 +552,8 @@ class Boost(Library):
     root = os.path.join(native, "boost")
 
     def __init__(self):
-        super().__init__(GMP())  # We depend on GMP
+        # Boost depends on GMP
+        super().__init__({"boost headers": self.root}, {}, {}, GMP())
 
     @staticmethod
     def url_data():
@@ -511,27 +571,17 @@ class Boost(Library):
             ),
         }[os.name]
 
-    def get(self, force):
-        if force:
-            shutil.rmtree(self.root, ignore_errors=True)
-        super().get(force)
-        if self._done("boost headers", self.root):
-            return
-        raw, uncomp = download_checksum_extract(
-            "boost headers", native, *self.url_data()
-        )
+    def _get(self):
+        d, fs = download_checksum_extract("boost headers", native, *self.url_data())
         print("Installing boost headers...")
-        if len(uncomp) != 1:
+        if len(fs) != 1:
             raise RuntimeError("Boost should decompress into a single directory.")
         os.mkdir(self.root)
-        os.rename(os.path.join(uncomp[0], "boost"), os.path.join(self.root, "boost"))
-        # Cleanup
+        os.rename(os.path.join(fs[0], "boost"), os.path.join(self.root, "boost"))
         print("Cleaning temporary files...")
-        shutil.rmtree(raw)
+        shutil.rmtree(d)
 
-    def clean(self, level, recursive):
-        if recursive:
-            super().clean(level, recursive)
+    def _clean(self, level):
         if level.implies(CleanLevel.GET):
             shutil.rmtree(self.root, ignore_errors=True)
 
@@ -546,21 +596,18 @@ class Z3(Library):
     include_dir = os.path.join(_root, "include")
     lib = SharedLib("libz3", os.path.join(_root, "lib"))
 
-    def build(self, _):
+    def __init__(self):
+        super().__init__({}, {}, {"Z3 library": self.lib.find_installed}, GMP())
+
+    def _build(self):
         assert self.lib.find_built(), "Z3 is missing"
 
-    def install(self, force):
-        inst = self.lib.find_installed()
-        if force:
-            os.remove(inst)
-        self.build(force)
+    def _install(self):
         self.lib.install()
 
-    def clean(self, level, _):
+    def _clean(self, level):
         if level.implies(CleanLevel.INSTALL):
             self.lib.clean_install()
-        if level.implies(CleanLevel.BUILD):
-            self.lib.clean_build()
 
 
 class Claricpp(Library):
@@ -573,7 +620,8 @@ class Claricpp(Library):
     _lib = SharedLib("libclaricpp", build_dir)
 
     def __init__(self):
-        super().__init__(Boost(), Z3())
+        chk = {self._lib.name: self._lib}
+        super().__init__({}, chk, chk, Boost(), Z3())
 
     @staticmethod
     def _cmake_config_args(out_file, claricpp):
@@ -616,36 +664,18 @@ class Claricpp(Library):
             run_cmd_no_fail(find_exe("cmake"), *cmake_args, native)
         return parse_info_file(info_file)
 
-    def build(self, force):
-        if force:
-            shutil.rmtree(self.build_dir, ignore_errors=True)
-        super().build(force)
-        if self._done(self._lib.name, self._lib.find_built()):
-            return
-        self.get(force)  # Headers
-        # Init
-        if not os.path.exists(self.build_dir):
-            os.mkdir(self.build_dir)
-        # Build
+    def _build(self):
+        os.mkdir(self.build_dir)
         cmake_out = self._cmake(native, self.build_dir, self.info_file)
         makej, is_make = generator(cmake_out.CMAKE_MAKE_PROGRAM)
         print("Building " + claricpp + "...")
         with chdir(self.build_dir):
             run_cmd_no_fail(*makej, claricpp)
 
-    def install(self, force):
-        inst = self._lib.find_installed()
-        if inst is not None and force:
-            os.remove(inst)
-        super().install(force)
-        if self._done(self._lib.name, self._lib.find_installed()):
-            return
-        self.build(force)
+    def _install(self):
         self._lib.install()
 
-    def clean(self, level, recursive):
-        if recursive:
-            super().clean(level, recursive)
+    def _clean(self, level):
         if level.implies(CleanLevel.INSTALL):
             self._lib.clean_install()
         if level.implies(CleanLevel.BUILD):
@@ -658,16 +688,17 @@ class ClaricppFFI(Library):
     A class to manage ClaricppFFI
     """
 
-    _build = os.path.join(Claricpp.build_dir, "ffi")
-    _lib = SharedLib("claricpp", _build)
+    _build_dir = os.path.join(Claricpp.build_dir, "ffi")
+    _lib = SharedLib("claricpp", _build_dir)
 
     def __init__(self):
-        super().__init__(Claricpp())
+        chk = {self._lib.name: self._lib}
+        super().__init__({}, chk, chk, Claricpp())
 
     @staticmethod
     def _verify_generator_supported(makej, is_make):
         if not is_make:  # Make works, not sure about other generators
-            var = "FFI_FORCE_BUILD "
+            var = "FFI_FORCE_BUILD_dir "
             if var in os.eniron:
                 print(var + " is set! Forcing build with non-make generator.")
             else:
@@ -679,17 +710,12 @@ class ClaricppFFI(Library):
                     file=sys.stderr,
                 )
 
-    def build(self, force):
-        if force:
-            shutil.rmtree(self._build, ignore_errors=True)
-        super().build(force)
-        if self._done(self._lib.name, self._lib.find_built()):
-            return
-        # Get data from cmake
+    def _build(self):
         info = parse_info_file(Claricpp.info_file)
         intermediate_f = info.CDEFS_SOURCE_F + ".i"
         include_dirs = info.Python_INCLUDE_DIRS
         makej, is_make = generator(info.CMAKE_MAKE_PROGRAM)
+        py_version = str(sys.version_info.major) + "." + str(sys.version_info.minor)
         print("Building " + claricpp + "FFI API...")
         with chdir(Claricpp.build_dir):
             # We care about the intermediate file and its target
@@ -698,37 +724,24 @@ class ClaricppFFI(Library):
             self._verify_generator_supported(makej, is_make)
             run_cmd_no_fail(*makej, cdefs_target)
             # Run build_ffi
-            sys.path.append(native)
-            from build_ffi import build_ffi_wrapper
-
-            sys.path.pop()
             build_ffi_wrapper(
                 input_lib=claricpp,
                 output_lib=claricpp_ffi,
                 build_dir=Claricpp.build_dir,
-                ffi_dir=self._build,
+                ffi_dir=self._build_dir,
                 intermediate_f=intermediate_f,
                 include_dirs="/include/python" + py_version + ";" + include_dirs,
                 verbose=True,
             )
 
-    def install(self, force):
-        inst = self._lib.find_installed()
-        if inst is not None and force:
-            os.remove(inst)
-        super().install(force)
-        if self._done(self._lib.name, self._lib.find_installed()):
-            return
-        self.build(force)
+    def _install(self):
         self._lib.install()
 
-    def clean(self, level, recursive):
-        if recursive:
-            super().clean(level, recursive)
+    def _clean(self, level):
         if level.implies(CleanLevel.INSTALL):
             self._lib.clean_install()
         if level.implies(CleanLevel.BUILD):
-            shutil.rmtree(self._build, ignore_errors=True)
+            shutil.rmtree(self._build_dir, ignore_errors=True)
             self._lib.clean_build()
 
 
@@ -755,7 +768,7 @@ class clean(_clean):
     def run(self, *args):
         lvl = os.getenv("SETUP_PY_CLEAN_LEVEL", "get").upper()
         print("Clean level set to: " + lvl)
-        f = lambda: ClaricppFFI().clean(getattr(CleanLevel, lvl), True)
+        f = lambda: ClaricppFFI().clean(getattr(CleanLevel, lvl))
         self.execute(f, (), msg="Cleaning claripy/native")
         _clean.run(self, *args)
 
