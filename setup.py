@@ -97,10 +97,11 @@ class BuiltLib:
     A shared or static library
     """
 
+    install_dir = os.path.join(claripy, "claripy/claricpp")
+
     def __init__(self, name, build_dir, *, permit_shared, permit_static):
         self.name = name
         self.build_dir = build_dir
-        self.install_dir = os.path.join(claripy, "claripy/claricpp")
         # Determine extensions
         self._permit_shared = permit_shared
         self._permit_static = permit_static
@@ -471,7 +472,7 @@ class GMP(Library):
         super().__init__(get_chk, build_chk, install_chk)
 
     def _get(self):
-        os.makedirs(self._root)
+        os.makedirs(self._root, exist_ok=True)
         url = "https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.xz"
         sha = "fd4829912cddd12f84181c3451cc752be224643e87fac497b69edddadc49b4f2"
         d, gmp = download_checksum_extract(
@@ -639,9 +640,10 @@ class Claricpp(Library):
     build_dir = os.path.join(native, "build")
     info_file = os.path.join(build_dir, "_for_setup_py.txt")
     _lib = SharedLib("libclaricpp", build_dir)
+    _out_src = os.path.join(BuiltLib.install_dir, "src")
 
     def __init__(self):
-        chk = {self._lib.name: self._lib}
+        chk = {self._lib.name: self._lib, "Claricpp src": self._out_src}
         super().__init__({}, chk, chk, Boost(), Z3(), Backward())
 
     @staticmethod
@@ -658,7 +660,8 @@ class Claricpp(Library):
             # Build options
             "CMAKE_BUILD_TYPE": "RelWithDebInfo",
             "WARN_BACKWARD_LIMITATIONS": True,
-            "REQUIRE_BACKWARD_BACKEND": False,  # TODO: ask fish
+            "REQUIRE_BACKWARD_BACKEND": False,  # TODO:
+            "SOURCE_ROOT_FOR_BACKTRACE": None,  # We will configure this later
             # Disable build options
             "ENABLE_TESTING": False,
             "CPP_CHECK": False,
@@ -675,7 +678,8 @@ class Claricpp(Library):
             "Z3_ACQUISITION_MODE": "PATH",
         }
         on_off = lambda x: ("ON" if x else "OFF") if type(x) is bool else x
-        return ["-D" + i + "=" + on_off(k) for i, k in config.items()]
+        dd = lambda key, val: "-D" + key + "=" + ("" if val is None else on_off(val))
+        return [dd(*i) for i in config.items()]
 
     @classmethod
     def _cmake(cls, native, build, info_file):
@@ -686,7 +690,8 @@ class Claricpp(Library):
         return parse_info_file(info_file)
 
     def _build(self):
-        os.mkdir(self.build_dir)
+        if not os.path.exists(self.build_dir):
+            os.mkdir(self.build_dir)
         cmake_out = self._cmake(native, self.build_dir, self.info_file)
         makej, is_make = generator(cmake_out.CMAKE_MAKE_PROGRAM)
         print("Building " + claricpp + "...")
@@ -695,10 +700,13 @@ class Claricpp(Library):
 
     def _install(self):
         self._lib.install()
+        if not os.path.exists(self._out_src):
+            shutil.copytree(os.path.join(native, "src"), self._out_src)
 
     def _clean(self, level):
         if level.implies(CleanLevel.INSTALL):
             self._lib.clean_install()
+            shutil.rmtree(self._out_src, ignore_errors=True)
         if level.implies(CleanLevel.BUILD):
             shutil.rmtree(self.build_dir, ignore_errors=True)
             self._lib.clean_build()

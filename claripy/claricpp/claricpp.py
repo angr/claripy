@@ -1,12 +1,14 @@
 __all__ = ["ffi", "to_utf8", "claricpp", "ClaricppException"]
 
-import sys
-import functools
-import logging
 from .claricpp_ffi import ffi, lib as raw_lib
 from ..errors import *
+from os import path
+import functools
+import logging
+import sys
 
 # TODO: slots!
+# TODO: finalizers for exceptions etc!
 
 # Init
 logging.basicConfig(
@@ -69,11 +71,11 @@ class ClaricppException(Exception):
 
     def msg_trace(self):
         return (
-            "Type: " + str(self.type) + "\nMsg: " + self.msg + "\nTrace: " + self.trace
+            "Type: " + str(self.type) + "\n\nMsg: " + self.msg + "\n\nTrace: " + self.trace
         )
 
     def __repr__(self):
-        return "Type: " + str(self.type) + "\n" + msg_trace() + "\n\nEND OF TRACE"
+        return self.msg_trace() + "\n\nEND OF TRACE"
 
 
 # 'Crash now' exception handlers
@@ -83,14 +85,14 @@ def alloc_fail(_):
     logging.critical(
         "Memory allocation failure within claricpp; memory may be corrupted"
     )
-    raise OSError("Cannot allocate memory")
+    return OSError("Cannot allocate memory")
 
 
 def fail_critical(ex):
     logging.critical("Critical claricpp error detected. Please report this.")
     logging.critical("Given error: " + ex)
     logging.critical("Terminating program")
-    raise SystemExit(1)
+    return SystemExit(1)
 
 
 # Fallbacks (report these)
@@ -100,29 +102,29 @@ def unknown_exception(ex):
     logging.critical(
         "Unknown exception type raised; claricpp does not recognize the error. Please report this."
     )
-    raise ex
+    return ex
 
 
 def std_exception(ex):
     logging.critical("Uncaught std::exception in claricpp. Please report this.")
-    raise ex
+    return ex
 
 
 def unexpected_exception(ex):
     logging.critical("Intnernal claricpp error. Please report this.")
-    raise ex
+    return ex
 
 
 def unknown_py_exception(ex):
     logging.critical("Unknown python exception raised in claricpp. Please report this.")
-    raise Exception("Given Error: " + repr(ex))
+    return Exception("Given Error: " + repr(ex))
 
 
 def unknown_claripy(ex):
     logging.critical(
         "Unknown claripy exception raised in claricpp. Please report this."
     )
-    raise Exception("Given Error: " + repr(ex))  # @todo: claripy exception
+    return Exception("Given Error: " + repr(ex))  # @todo: claripy exception
 
 
 # Direct mappings
@@ -131,7 +133,7 @@ def _map_ex_to_func(typ):
         out: Exception = typ(ex.msg_trace())
         out.trace: str = ex.trace
         out.msg: str = ex.msg
-        raise out
+        return out
 
     return f
 
@@ -180,7 +182,7 @@ def wrap(func):
         res = func(*args, **kwargs)
         if bool(raw_lib.claricpp_has_exception()):
             ex = ClaricppException(raw_lib.claricpp_get_exception())
-            exception_map[ex.type](ex)
+            raise exception_map[ex.type](ex)
         return res
 
     return internal
@@ -212,7 +214,13 @@ class Claricpp:
 # Claricpp
 claricpp = Claricpp()
 
+# The location of the C++ source root
+# This is used mostly for generating detailed backtraces
+src_root = path.dirname(path.abspath(__file__)).encode()
+if not path.exists(src_root): # In case we are running from a zip or something weird
+    src_root = ffi.NULL
+
 # Configure Claricpp for use with python
 claricpp.claricpp_init_for_python_usage(
-    raw_lib.claripy_log, raw_lib.claripy_level, raw_lib.claripy_simplify
+    src_root, raw_lib.claripy_log, raw_lib.claripy_level, raw_lib.claripy_simplify
 )
