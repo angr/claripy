@@ -12,12 +12,15 @@
 namespace Util {
 
     /** Logs what to stderr, will catch any exception */
-    inline void fallback_error_log(CCSC what) noexcept {
+    inline void fallback_error_log(CCSC what, bool newl = true) noexcept {
         if (what != nullptr) {
             try {
                 // In case flushing causes an error we call it separately
-                std::cerr << what << '\n'; // No direct flush
-                std::cerr.flush();         // Distinct flush call
+                std::cerr << what;
+                if (newl) {
+                    std::cerr << '\n'; // No direct flush
+                }
+                std::cerr.flush(); // Distinct flush call
             }
             catch (...) {
             }
