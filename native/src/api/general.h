@@ -84,7 +84,6 @@ DECLARE_FREE_FUNC(ClaricppPrim, prim);
 DECLARE_FREE_FUNC(ClaricppArg, arg);
 
 // Structs
-DECLARE_FREE_FUNC(ClaricppException, exception);
 DECLARE_FREE_FUNC(ClaricppAnnotation, annotation);
 DECLARE_FREE_FUNC(ClaricppSPAV, spav);
 DECLARE_FREE_FUNC(ClaricppExpr, expr);
@@ -104,5 +103,10 @@ DECLARE_DOUBLE_ARR_FREE_FUNC(ClaricppPrim, prim);
 #undef DECLARE_FREE_FUNC
 #undef DECLARE_ARR_FREE_FUNC
 #undef DECLARE_DOUBLE_ARR_FREE_FUNC
+
+/** Free a claricpp exception
+ *  Tis function will not raise an exception
+ */
+void claricpp_free_exception(ClaricppException e);
 
 #endif

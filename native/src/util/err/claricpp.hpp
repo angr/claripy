@@ -57,7 +57,7 @@ namespace Util::Err {
             if (UNLIKELY((log_me))) {
                 log_atomic_change("Claricpp backtrace functionality", ret, set);
             }
-            if (ret) {
+            if (set) {
                 warn_backtrace_slow();
             }
             return ret;

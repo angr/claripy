@@ -59,7 +59,9 @@ static inline ClaricppException get_py_exception(const Util::Err::Python::Base &
     return { .type = ClaricppExceptionEnumPython, .msg = msg, .trace = trace };
 }
 
-/** A helper function to get a C++ exception */
+/** A helper function to get a C++ exception
+ *  @todo: Populate this function
+ */
 static inline ClaricppException get_cpp_exception(const Util::Err::Unexpected &, CCSC msg,
                                                   CCSC trace) noexcept {
     // Fallback
@@ -122,22 +124,11 @@ static Expr::BasePtr simp_wrapper(const Expr::BasePtr &e) {
 extern "C" {
     void claricpp_init_for_python_usage(PyStr src, ClaricppPyLog py_log, ClaricppPyLevel py_lvl,
                                         ClaricppSimp py_simp) {
+        API_FUNC_START
         // This should only be called once
         static bool first { true };
         UTIL_ASSERT(Util::Err::Usage, first, "This function should only be called once!");
         first = false;
-
-        // Backward init
-        Util::Log::info("Enabling claricpp backtraces");
-        Util::Err::Claricpp::toggle_backtrace(true);
-        if (src == nullptr) {
-            Util::Log::warning(
-                "Backward has not been given source, backtraces will not include source snippits!");
-        }
-        else {
-            Util::Log::info("Adding source root to backward search path");
-            Util::Backtrace::backward_add_source_root(src);
-        }
 
         // Log backend
         Util::Log::info("Installing Python logging backend");
@@ -148,6 +139,18 @@ extern "C" {
             "Configuring Claricpp to send all logs to allow Python to handle log levels.");
         Util::Log::Level::set(Util::Log::Level::Level::Verbose);
 
+        // Backward init
+        Util::Log::info("Enabling claricpp backtraces");
+        Util::Err::Claricpp::toggle_backtrace(true);
+        if (src == nullptr) {
+            Util::Log::warning(
+                "Backward has not been given source, backtraces will not include source snippits!");
+        }
+        else {
+            Util::Log::info("Updating backward search path with source root: ", src);
+            Util::Backtrace::backward_add_source_root(src);
+        }
+
         // Simplifiers
         if (py_simp != nullptr) {
             Util::Log::info("Installing Python simplifier");
@@ -157,6 +160,7 @@ extern "C" {
 
         // Success
         Util::Log::info("Claricpp successfully configured for python usage");
+        API_FUNC_END_NO_RETURN
     }
 
     BOOL claricpp_has_exception() {
@@ -233,7 +237,6 @@ extern "C" {
     DEFINE_FREE_FUNC(ClaricppArg, arg);
 
     // Structs
-    DEFINE_FREE_FUNC(ClaricppException, exception);
     DEFINE_FREE_FUNC(ClaricppAnnotation, annotation);
     DEFINE_FREE_FUNC(ClaricppSPAV, spav);
     DEFINE_FREE_FUNC(ClaricppExpr, expr);
@@ -248,6 +251,12 @@ extern "C" {
 
     // Doubles Arrays
     DEFINE_DOUBLE_ARR_FREE_FUNC(ClaricppPrim, prim);
+
+    /** Free a claricpp exception */
+    void claricpp_free_exception(ClaricppException e) {
+        delete e.msg;
+        delete e.trace;
+    }
 }
 
 // Cleanup
