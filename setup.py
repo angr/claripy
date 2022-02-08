@@ -7,12 +7,14 @@ from multiprocessing import cpu_count
 from contextlib import contextmanager
 from hashlib import sha256
 from enum import Enum
+from tqdm import tqdm
 from glob import glob
 import subprocess
 import requests
 import platform
 import tempfile
 import shutil
+import errno
 import sys
 import os
 import re
@@ -256,16 +258,20 @@ def download_checksum_extract(name, where, url, sha, ext):
     Download a file from url, checksum it, then extract it into a temp dir
     Return the temp dir and the files within it
     """
-    print("Downloading " + name + "...")
+    print("Downloading and hash-verifying " + name + "...")
     hasher = sha256()
     prefix = re.sub(r"\s+", "_", name) + "-"
     fd, comp_f = tempfile.mkstemp(dir=where, prefix=prefix, suffix=ext)
     with os.fdopen(fd, "wb") as f:
         with requests.get(url, allow_redirects=True, stream=True) as r:
             r.raise_for_status()
-            for block in r.iter_content(chunk_size=2 ** 16):
-                hasher.update(block)
-                f.write(block)
+            as_bytes = {"unit": "B", "unit_scale": True, "unit_divisor": 1024}
+            with tqdm(total=int(r.headers["Content-length"]), **as_bytes) as prog:
+                chunk_size = 2 ** 16
+                for block in r.iter_content(chunk_size=chunk_size):
+                    hasher.update(block)
+                    f.write(block)
+                    prog.update(chunk_size)
     if hasher.hexdigest() != sha:
         raise RuntimeError("Downloaded " + name + " hash failure!")
     # Extract
