@@ -625,10 +625,12 @@ class Backward(Library):
     """
 
     def __init__(self):
+        # TODO: https://sourceware.org/elfutils/
+        # TODO: https://sourceware.org/elfutils/ftp/0.186/
         super().__init__({}, {}, {})
 
     def _get(self):
-        b = os.path.exists(os.path.join(native, "backward"))
+        b = os.path.exists(os.path.join(native, "backward-cpp"))
         assert b, "Backward is missing; run: git submodule init --recursive"
 
 
@@ -661,7 +663,7 @@ class Claricpp(Library):
             "CMAKE_BUILD_TYPE": "RelWithDebInfo",
             "WARN_BACKWARD_LIMITATIONS": True,
             "REQUIRE_BACKWARD_BACKEND": False,  # TODO:
-            "SOURCE_ROOT_FOR_BACKTRACE": None,  # We will configure this later
+            "SOURCE_ROOT_FOR_BACKTRACE": None,  # We will configure this on import
             # Disable build options
             "ENABLE_TESTING": False,
             "CPP_CHECK": False,
