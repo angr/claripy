@@ -120,12 +120,24 @@ static Expr::BasePtr simp_wrapper(const Expr::BasePtr &e) {
 
 // @todo: test cases?
 extern "C" {
-    void claricpp_init_for_python_usage(ClaricppPyLog py_log, ClaricppPyLevel py_lvl,
+    void claricpp_init_for_python_usage(PyStr src, ClaricppPyLog py_log, ClaricppPyLevel py_lvl,
                                         ClaricppSimp py_simp) {
         // This should only be called once
         static bool first { true };
         UTIL_ASSERT(Util::Err::Usage, first, "This function should only be called once!");
         first = false;
+
+        // Backward init
+        Util::Log::info("Enabling claricpp backtraces");
+        Util::Err::Claricpp::toggle_backtrace(true);
+        if (src == nullptr) {
+            Util::Log::warning(
+                "Backward has not been given source, backtraces will not include source snippits!");
+        }
+        else {
+            Util::Log::info("Adding source root to backward search path");
+            Util::Backtrace::backward_add_source_root(src);
+        }
 
         // Log backend
         Util::Log::info("Installing Python logging backend");
@@ -214,11 +226,14 @@ extern "C" {
     }
 
 extern "C" {
+    void claricpp_free_str(char *const s) { delete s; }
+
     // Unions
     DEFINE_FREE_FUNC(ClaricppPrim, prim);
     DEFINE_FREE_FUNC(ClaricppArg, arg);
 
     // Structs
+    DEFINE_FREE_FUNC(ClaricppException, exception);
     DEFINE_FREE_FUNC(ClaricppAnnotation, annotation);
     DEFINE_FREE_FUNC(ClaricppSPAV, spav);
     DEFINE_FREE_FUNC(ClaricppExpr, expr);

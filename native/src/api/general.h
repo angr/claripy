@@ -30,12 +30,12 @@ typedef ClaricppExpr (*ClaricppSimp)(const ClaricppExpr);
 
 /** Configures claricpp to be used by python
  *  This does things like change the logging backend
+ *  @param src The src directory of claricpp (used by backward for file info); ignored if null
  *  @param py_log The python logging callback the logging system should use
  *  @param py_lvl The python log level getter callback the logging system should use
  *  @param py_simp The claricpp python simplifier callback (may be null)
  */
-void claricpp_init_for_python_usage(ClaricppPyLog py_log, ClaricppPyLevel py_lvl,
-                                    ClaricppSimp py_simp);
+void claricpp_init_for_python_usage(PyStr src, ClaricppPyLog py_log, ClaricppPyLevel py_lvl, ClaricppSimp py_simp);
 
 /** Returns true if and only if the previous API function failed with an exception
  *  This function will not override the saved exception, on failure the program will crash
@@ -84,6 +84,7 @@ DECLARE_FREE_FUNC(ClaricppPrim, prim);
 DECLARE_FREE_FUNC(ClaricppArg, arg);
 
 // Structs
+DECLARE_FREE_FUNC(ClaricppException, exception);
 DECLARE_FREE_FUNC(ClaricppAnnotation, annotation);
 DECLARE_FREE_FUNC(ClaricppSPAV, spav);
 DECLARE_FREE_FUNC(ClaricppExpr, expr);
