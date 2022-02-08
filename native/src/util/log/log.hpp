@@ -32,14 +32,14 @@
     }                                                                                              \
     /** Log to default log with given log level */                                                 \
     template <typename... Args> [[gnu::always_inline]] inline void NAME(Args &&...args) {          \
-        NAME<Default>(std::forward<Args>(args)...);                                                \
+        NAME<Claricpp>(std::forward<Args>(args)...);                                               \
     }
 
 
 namespace Util::Log {
 
     /** Define the default log class */
-    UTIL_LOG_DEFINE_LOG_CLASS(Default)
+    UTIL_LOG_DEFINE_LOG_CLASS(Claricpp)
 
     // Define all log functions
     DEFINE_LOG_LEVEL(Verbose, verbose)
