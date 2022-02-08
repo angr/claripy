@@ -35,6 +35,12 @@ option( OPTIMIZE_FOR_NATIVE "Build with -march=native etc"   OFF )
 option( ENABLE_ANSI_COLOR_CODES "Enable ansi color codes"    ON )
 
 
+# Where the claricpp source will be installed
+# This source will be parsed by backtraces for code snippits
+# Set this to empty if dynamic configuration is preferred (ex. building with setup.py)
+default(SOURCE_ROOT_FOR_BACKTRACE "${CMAKE_CURRENT_SOURCE_DIR}")
+
+
 #################################################
 #                                               #
 #               Set by Developer                #
@@ -292,11 +298,6 @@ message(STATUS "Version: ${VERSION}")
 # Used for compilation and header lookup for tests
 set(CLARICPP_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
-# Where the claricpp source will be installed
-# This source will be parsed by backtraces for code snippits
-default(SOURCE_ROOT_FOR_BACKTRACE "${CMAKE_CURRENT_SOURCE_DIR}")
-message(STATUS "Backtrace generators will look for source files in: ${SOURCE_ROOT_FOR_BACKTRACE}")
-
 
 #################################################
 #                                               #
@@ -551,7 +552,10 @@ add_subdirectory("${CLARICPP_SRC}")
 
 # Backtrace config
 add_backward("${CLARICPP}" TRUE)
-target_compile_definitions("${CLARICPP}" PRIVATE "SOURCE_ROOT_FOR_BACKTRACE=\"${SOURCE_ROOT_FOR_BACKTRACE}\"")
+if (NOT SOURCE_ROOT_FOR_BACKTRACE STREQUAL "")
+	message(STATUS "Backtrace generators will look for source files in: ${SOURCE_ROOT_FOR_BACKTRACE}")
+	target_compile_definitions("${CLARICPP}" PRIVATE "SOURCE_ROOT_FOR_BACKTRACE=\"${SOURCE_ROOT_FOR_BACKTRACE}\"")
+endif()
 
 # Z3 config
 target_include_directories("${CLARICPP}"
