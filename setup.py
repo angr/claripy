@@ -688,17 +688,17 @@ class Z3(Library):
 
     _root = os.path.dirname(z3.__file__)
     include_dir = os.path.join(_root, "include")
-    _lib = SharedLib("libz3", os.path.join(_root, "lib"))
+    lib = SharedLib("libz3", os.path.join(_root, "lib"))
 
     def __init__(self):
-        super().__init__({}, {}, {"Z3 library": self._lib.find_installed})
+        super().__init__({}, {}, {"Z3 library": self.lib.find_installed})
 
     # _get is simply that _root has been resolved
     # Z3's pip has no license file so nothing for us to copy
     # TODO: do not copy z3?
 
     def _build(self):
-        assert self._lib.find_built(), "Z3 is missing"
+        assert self.lib.find_built(), "Z3 is missing"
 
     def _license(self):
         pass
