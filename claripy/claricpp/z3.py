@@ -5,7 +5,7 @@ import typing
 from .claricpp import *
 from .expr import *
 from .backend import Backend
-from functools import cache, cached_property
+from functools import lru_cache
 from typing import List, Union, Optional
 
 # TODO: deal with destruction / freeing memory
@@ -25,7 +25,8 @@ class Z3(Backend):
         def __init__(self, solver):
             self._solver = solver
 
-        @cached_property
+        @property
+        @lru_cache(maxsize=None)
         def raw(self):
             """
             Get the raw solver self holds
@@ -44,11 +45,11 @@ class Z3(Backend):
         :return:
         """
         if force_new:
-            return Solver(
+            return self.Solver(
                 claricpp.claricpp_backend_z3_new_tls_solver(self._raw, timeout)
             )
         else:
-            return Solver(claricpp.claricpp_backend_z3_tls_solver(self._raw, timeout))
+            return self.Solver(claricpp.claricpp_backend_z3_tls_solver(self._raw, timeout))
 
     def add(
         self, solver: Solver, constraints: Union[Expr, List[Expr]], tracked: bool
@@ -59,7 +60,7 @@ class Z3(Backend):
         :param constraints: A single or list of Expr constraints to add
         :param tracked: Whether these constraints should be tracked in unsat core
         """
-        if type(constraints) is Expr:
+        if type(constraints) is list:
             add = [i.raw for i in constraints]
             if tracked:
                 claricpp.claricpp_backend_z3_add_vec_tracked(
@@ -69,13 +70,14 @@ class Z3(Backend):
                 claricpp.claricpp_backend_z3_add_vec_untracked(
                     self._raw, solver.raw, add, len(add)
                 )
+        # Constraints is an Expr
         elif tracked:
             claricpp.claricpp_backend_z3_add_tracked(
-                self._raw, solver.raw, constraint.raw
+                self._raw, solver.raw, constraints.raw
             )
         else:
             claricpp.claricpp_backend_z3_add_untracked(
-                self._raw, solver.raw, constraint.raw
+                self._raw, solver.raw, constraints.raw
             )
 
     def satisfiable(
@@ -192,7 +194,7 @@ class Z3(Backend):
         Get up to n different possible value of expr given solver and extra_constraints
         """
         if extra_constraints is None:
-            out = claricpp.claricpp_backend_z3_eval(self._raw, expr.raw, solver.raw, n)
+            out = claricpp.claricpp_backend_z3_eval(self._raw, expr.raw, solver.raw, n_sol)
         else:
             ec = [i.raw for i in extra_constraints]
             out = claricpp.claricpp_backend_z3_eval(
@@ -200,7 +202,7 @@ class Z3(Backend):
             )
         arr = out.arr
         # TODO: free array but not contents?
-        return [Prim(arr[i]) for i in range(arr.len)]
+        return [LazyPrim(arr[i]) for i in range(arr.len)]
 
     def batch_eval(
         self,

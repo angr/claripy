@@ -2,7 +2,7 @@ __all__ = ["AnnotationSPAV"]
 
 from .claricpp import *
 from .annotation import *
-from functools import cache, cached_property
+from functools import lru_cache
 
 # TODO: deal with destruction / freeing memory
 # TODO: slots!
@@ -30,22 +30,23 @@ class AnnotationSPAV:
         else:
             self._spav = data
 
-    @cache
+    @lru_cache(maxsize=None)
     def __getitem__(self, index: int) -> Annotation:
         return Annotation(claricpp.claricpp_annotation_spav_get(self._spav, index))
 
-    @cache
+    @lru_cache(maxsize=None)
     def __len__(self) -> int:
-        return claricpp_annotation_spav_len(self._spav)
+        return claricpp.claricpp_annotation_spav_len(self._spav)
 
-    @cached_property
+    @property
+    @lru_cache(maxsize=None)
     def _as_c_arr(self):
         """
         Convert self._spav to an array of annotations
         """
-        return self.claricpp_annotation_spav_to_array(self._spav)
+        return claricpp.claricpp_annotation_spav_to_array(self._spav)
 
-    @cache
+    @lru_cache(maxsize=None)
     def as_list(self) -> list[Annotation]:
         ret = []
         arr = self._as_c_arr
@@ -53,7 +54,8 @@ class AnnotationSPAV:
             ret.append(Annotation(arr.arr[index]))
         return ret
 
-    @cached_property
+    @property
+    @lru_cache(maxsize=None)
     def raw(self):
         """
         Get the raw spav self holds

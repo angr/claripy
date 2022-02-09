@@ -4,7 +4,6 @@ from .claricpp import *
 from .expr import Expr
 from enum import Enum
 from typing import Optional
-from functools import cache, cached_property
 
 # TODO: deal with destruction / freeing memory
 # TODO: slots!

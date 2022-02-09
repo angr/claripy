@@ -2,7 +2,7 @@ __all__ = ["Backend"]
 
 from .claricpp import *
 from .expr import Expr
-from functools import cache, cached_property
+from functools import lru_cache
 
 # TODO: deal with destruction / freeing memory
 # TODO: slots!
@@ -16,7 +16,8 @@ class Backend:
     def __init__(self, raw):
         self._raw = raw
 
-    @cached_property
+    @property
+    @lru_cache(maxsize=None)
     def name(self) -> str:
         return to_utf8(claricpp.claricpp_backend_name(self._raw))
 

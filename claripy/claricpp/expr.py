@@ -2,7 +2,7 @@ __all__ = ["LazyPrim", "LazyArg", "Expr", "Bits"]
 
 from .claricpp import *
 from .annotation_spav import *
-from functools import cache, cached_property
+from functools import lru_cache
 
 # TODO: deal with destruction / freeing memory
 # TODO: slots!
@@ -16,7 +16,8 @@ class LazyPrim:
     def __init__(self, raw):
         self._raw = raw
 
-    @cached_property
+    @property
+    @lru_cache(maxsize=None)
     def value(self):
         """
         Returns the python arg generated from the Claricpp object raw
@@ -54,7 +55,8 @@ class LazyArg:
     def __init__(self, raw):
         self._raw = raw
 
-    @cached_property
+    @property
+    @lru_cache(maxsize=None)
     def value(self):
         """
         Returns the python arg generated from the Claricpp object raw
@@ -65,11 +67,11 @@ class LazyArg:
         elif tp == claricpp.ClaricppTypeEnumExpr:
             return Expr(self._raw.data.expr)
         elif tp == claricpp.ClaricppTypeEnumRM:
-            return RM(self._raw.data.rm)
+            return claricpp.RM(self._raw.data.rm)
         elif tp == claricpp.ClaricppTypeEnumWidth:
-            return Width(self._raw.data.width)
+            return claricpp.Width(self._raw.data.width)
         else:
-            return Prim(self._raw).value
+            return claricpp.Prim(self._raw).value
 
 
 class Expr:
@@ -80,11 +82,13 @@ class Expr:
     def __init__(self, expr):
         self._expr = expr
 
-    @cached_property
+    @property
+    @lru_cache(maxsize=None)
     def symbolic(self) -> bool:
         return bool(claricpp.claricpp_expr_symbolic(self._expr))
 
-    @cached_property
+    @property
+    @lru_cache(maxsize=None)
     def lazy_args(self) -> list[LazyArg]:
         """
         Return the raw LazyArg's contained by self
@@ -93,7 +97,8 @@ class Expr:
         arr = c_arr.arr
         return [LazyArg(arr[i]) for i in range(c_arr.len)]
 
-    @cached_property
+    @property
+    @lru_cache(maxsize=None)
     def args(self):
         """
         Return the args contained by self
@@ -103,19 +108,23 @@ class Expr:
     def __repr__(self) -> str:
         return to_utf8(claricpp.claricpp_expr_repr(self._expr))
 
-    @cached_property
+    @property
+    @lru_cache(maxsize=None)
     def type_name(self) -> str:
         return to_utf8(claricpp.claricpp_expr_type_name(self._expr))
 
-    @cached_property
+    @property
+    @lru_cache(maxsize=None)
     def op_name(self) -> str:
         return to_utf8(claricpp.claricpp_expr_op_name(self._expr))
 
-    @cached_property
-    def annotations() -> AnnotationSPAV:
+    @property
+    @lru_cache(maxsize=None)
+    def annotations(self) -> AnnotationSPAV:
         return AnnotationSPAV(claricpp.claricpp_expr_annotations(self._expr))
 
-    @cached_property
+    @property
+    @lru_cache(maxsize=None)
     def raw(self):
         """
         Get the raw expr self holds
@@ -132,6 +141,6 @@ class Bits(Expr):
     def __init__(self, raw):
         super().__init__(raw)
 
-    @cache
+    @lru_cache(maxsize=None)
     def __len__(self) -> int:
         return claricpp.claricpp_expr_bit_length(self._expr)
