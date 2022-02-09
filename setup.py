@@ -23,6 +23,8 @@ import re
 import z3
 
 
+# TODO: pycache is not excluded?
+# TODO: I think our sdists are GPL3?
 # TODO: make install put stuff in claricpp build dir and such before building so that rpath is .
 
 
@@ -31,8 +33,8 @@ import z3
 ######################################################################
 
 
-setup_file = os.path.abspath(__file__)
-claripy = os.path.dirname(setup_file)
+# Paths
+claripy = os.path.dirname(os.path.abspath(__file__))
 native = os.path.join(claripy, "native")
 
 with open(os.path.join(claripy, "VERSION")) as f:
@@ -92,6 +94,12 @@ def find_exe(name):
     return exe
 
 
+def cname(x):
+    """
+    Return the class name of x
+    """
+    return x.__class__.__name__
+
 class BuiltLib:
     """
     A shared or static library
@@ -101,10 +109,19 @@ class BuiltLib:
 
     def __init__(self, name, build_dir, *, permit_shared, permit_static):
         self.name = name
+        self._lic = os.path.join(self.install_dir, "LICENSE." + name.replace(" ", "_"))
         self.build_dir = build_dir
         # Determine extensions
         self._permit_shared = permit_shared
         self._permit_static = permit_static
+        self._licensed = False
+
+    def init_license(self, installer, cleaner):
+        """
+        Install license handling functions
+        """
+        self._lic_installer = installer
+        self._lic_cleaner = cleaner
 
     def _find_ext(self, where, ext):
         files = glob(os.path.join(where, self.name) + "*.*")
@@ -155,10 +172,14 @@ class BuiltLib:
         """
         return self._find(self.build_dir)
 
+    def licensed(self, b):
+        self._licensed = b
+
     def install(self):
         """
         Copies the library from build dir to install dir
         """
+        assert self._licensed is not None, "Will not install without a license"
         p = self.find_built()
         assert p is not None, "Cannot install a non-built library"
         shutil.copy2(p, self.install_dir)
@@ -290,8 +311,9 @@ class CleanLevel(Enum):
     """
 
     INSTALL = 1
-    BUILD = 2
-    GET = 3
+    LICENSE = 2
+    BUILD = 3
+    GET = 4
 
 
 # 'Member functions' of CleanLevel
@@ -318,6 +340,8 @@ class Library:
         Likewise this is true for build_chk/install_chk stages build/install
         Note: If any values in the chk dicts are BuiltLibs, they will be swapped
         for the the .find_built / .find_installed functions as needed
+        Subclasses must override _license
+        Will only call _get, _build, _license, and _install once
         """
         self._done_set = set()
         self._dependencies = dependencies
@@ -325,7 +349,7 @@ class Library:
             type(self)
         )
         # Done check lists
-        self._get_chk = get_chk
+        self._get_chk = dict(get_chk)
         self._build_chk = self._fix_chk(build_chk, "find_built")
         self._install_chk = self._fix_chk(install_chk, "find_installed")
 
@@ -360,12 +384,26 @@ class Library:
             self._done_set.add(path)
         return ret
 
-    def _body(self, force, lvl, chk):
+    def _call_format(self, x, n):
+        return cname(x) + "." + n + "()"
+
+    def _call(self, origin, obj, fn, force, called):
+        what = self._call_format(obj, fn)
+        if what not in called:
+            called.add(what)
+            me = self._call_format(self, origin)
+            print(me + " invoking " + what)
+            getattr(obj, fn)(force, called)
+            print("Resuming " + me)
+
+    def _body(self, force, lvl, chk, called):
         """
         A helper function used to automate the logic of invoking dependencies and body
+        Note: for lvl = license, license files are force cleaned!
         @param force: True if old files should be purged instead of possible reused
         @param lvl: The clean level to be used for this
         @param chk: A dict where each entry contains the arguments to give to _done
+        @param called: The set of already called methods
         If all calls to self._done pass, skip this stage
         If chk is empty, this stage will not be skipped
         """
@@ -376,38 +414,52 @@ class Library:
         elif len(chk) and all([self._done(*i) for i in chk.items()]):
             return
         # Call dependent levels
+        next = None
+        lvl_name = lvl.name.lower()
         try:
-            getattr(self, lvl.inc().name.lower())(force)
+            next = lvl.inc().name.lower()
         except ValueError:
             pass
+        if next is not None:
+            self._call(lvl_name, self, next, force, called)
         # Call current level dependencies
-        fn = lvl.name.lower()
-        helper = lambda x, n: x.__class__.__name__ + "." + n + "()"
-        for i in self._dependencies:
-            print(helper(self, fn) + " invoking " + helper(i, fn))
-            getattr(i, fn)(force)
-        getattr(self, "_" + fn)()
+        for obj in self._dependencies:
+            self._call(lvl_name, obj, lvl_name, force, called)
+        getattr(self, "_" + lvl_name)()
+        me = self._call_format(self, lvl_name)
+        called.add(me)
 
-    def get(self, force):
+    def get(self, force, called = None):
         """
         Acquire source files for this class and dependencies
         If force: ignores existing files, else may reuse existing files
         """
-        self._body(force, CleanLevel.GET, self._get_chk)
+        called = set() if called is None else called
+        self._body(force, CleanLevel.GET, self._get_chk, called)
 
-    def build(self, force):
+    def build(self, force, called = None):
         """
         Build libraries for this class and dependencies
         If force: ignores existing files, else may reuse existing files
         """
-        self._body(force, CleanLevel.BUILD, self._build_chk)
+        called = set() if called is None else called
+        self._body(force, CleanLevel.BUILD, self._build_chk, called)
 
-    def install(self, force):
+    def license(self, force, called = None):
+        """
+        Install library licenses; will call ._license if it has not been called
+        If force: ignores existing files, else may reuse existing files
+        """
+        called = set() if called is None else called
+        self._body(force, CleanLevel.LICENSE, {}, called)
+
+    def install(self, force, called = None):
         """
         Install libraries and source files for this class and dependencies
         If force: ignores existing files, else may reuse existing files
         """
-        self._body(force, CleanLevel.INSTALL, self._install_chk)
+        called = set() if called is None else called
+        self._body(force, CleanLevel.INSTALL, self._install_chk, called)
 
     def clean(self, level: CleanLevel):
         """
@@ -433,6 +485,13 @@ class Library:
         """
         pass
 
+    def _license(self):
+        """
+        A function subclasses must override to install licenses
+        No need to handle dependencies in this
+        """
+        raise RuntimeError("No licenses installed")
+
     def _install(self):
         """
         A function subclasses should override to install libaries
@@ -453,6 +512,7 @@ class GMP(Library):
     A class to manage GMP
     """
 
+    _url = "https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.xz"
     _root = os.path.join(native, "gmp")
     _source = os.path.join(_root, "src")
     _build_dir = os.path.join(_root, "build")
@@ -460,11 +520,13 @@ class GMP(Library):
     lib_dir = os.path.join(_build_dir, ".libs")
     # We are ok with either static or shared, but we prefer shared
     _lib_default = BuiltLib("libgmp", lib_dir, permit_static=True, permit_shared=True)
+    _lic_d = os.path.join(BuiltLib.install_dir, "LICENSE.GMP")
     _lib = _lib_default
 
     def __init__(self):
         get_chk = {"GMP source": self._source}
         build_chk = {
+            "GMP license": os.path.join(self._source, "COPYINGv3"),
             "GMP library": self._lib,
             "GMP include directory": self.include_dir,
         }
@@ -473,7 +535,7 @@ class GMP(Library):
 
     def _get(self):
         os.makedirs(self._root, exist_ok=True)
-        url = "https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.xz"
+        url = self._url
         sha = "fd4829912cddd12f84181c3451cc752be224643e87fac497b69edddadc49b4f2"
         d, gmp = download_checksum_extract(
             "GMP source", self._root, url, sha, ".tar.xz"
@@ -536,12 +598,29 @@ class GMP(Library):
             os.mkdir(self.include_dir)
             shutil.copy2(os.path.join(self._build_dir, "gmp.h"), self.include_dir)
 
+    def _license(self):
+        if not os.path.exists(self._lic_d):
+            os.mkdir(self._lic_d)
+        def cpy(src, dst):
+            src = os.path.join(self._build_dir, src)
+            dst = os.path.join(self._lic_d, dst)
+            print("Copying " + src + " --> " + dst)
+            shutil.copy2(os.path.join(self._build_dir, src), os.path.join(self._lic_d, dst))
+        cpy("COPYINGv3", "GNU-GPLv3")
+        cpy("AUTHORS", "AUTHORS")
+        cpy("COPYING.LESSERv3", "GNU-LGPLv3")
+        print("Generating README...")
+        with open(os.path.join(self._lic_d, 'README'), 'w') as f:
+            f.write("The compiled GMP library is licensed under the GNU LGPLv3. The library was built from unmodified source code which can be found at: "+ self._url)
+
     def _install(self):
         self._lib.install()
 
     def _clean(self, level):
         if level.implies(CleanLevel.INSTALL):
             self._lib.clean_install()
+        if level.implies(CleanLevel.LICENSE):
+            shutil.rmtree(self._lic_d, ignore_errors=True)
         if level.implies(CleanLevel.BUILD):
             shutil.rmtree(self._build_dir, ignore_errors=True)
             shutil.rmtree(self.include_dir, ignore_errors=True)
@@ -557,10 +636,12 @@ class Boost(Library):
     """
 
     root = os.path.join(native, "boost")
+    _lic = os.path.join(root, "LICENSE")
 
     def __init__(self):
+        chk = {"boost headers": self.root, "boost license" : self._lic}
         # Boost depends on GMP
-        super().__init__({"boost headers": self.root}, {}, {}, GMP())
+        super().__init__(chk, {}, {}, GMP())
 
     @staticmethod
     def url_data():
@@ -580,17 +661,23 @@ class Boost(Library):
 
     def _get(self):
         d, fs = download_checksum_extract("boost headers", native, *self.url_data())
-        print("Installing boost headers...")
+        print("Installing boost license...")
         if len(fs) != 1:
             raise RuntimeError("Boost should decompress into a single directory.")
         os.mkdir(self.root)
+        shutil.copy2(os.path.join(fs[0], "LICENSE_1_0.txt"), self._lic)
+        print("Installing boost headers...")
         os.rename(os.path.join(fs[0], "boost"), os.path.join(self.root, "boost"))
         print("Cleaning temporary files...")
         shutil.rmtree(d)
 
+    def _license(self):
+        pass
+
     def _clean(self, level):
         if level.implies(CleanLevel.GET):
-            shutil.rmtree(self.root, ignore_errors=True)
+            if os.path.exists(self.root):
+                shutil.rmtree(self.root)
 
 
 class Z3(Library):
@@ -601,22 +688,20 @@ class Z3(Library):
 
     _root = os.path.dirname(z3.__file__)
     include_dir = os.path.join(_root, "include")
-    lib = SharedLib("libz3", os.path.join(_root, "lib"))
+    _lib = SharedLib("libz3", os.path.join(_root, "lib"))
 
     def __init__(self):
-        super().__init__({}, {}, {"Z3 library": self.lib.find_installed}, GMP())
+        super().__init__({}, {}, {"Z3 library": self._lib.find_installed})
 
     # _get is simply that _root has been resolved
+    # Z3's pip has no license file so nothing for us to copy
+    # TODO: do not copy z3?
 
     def _build(self):
-        assert self.lib.find_built(), "Z3 is missing"
+        assert self._lib.find_built(), "Z3 is missing"
 
-    def _install(self):
-        self.lib.install()
-
-    def _clean(self, level):
-        if level.implies(CleanLevel.INSTALL):
-            self.lib.clean_install()
+    def _license(self):
+        pass
 
 
 class Backward(Library):
@@ -630,8 +715,14 @@ class Backward(Library):
         super().__init__({}, {}, {})
 
     def _get(self):
-        b = os.path.exists(os.path.join(native, "backward-cpp"))
+        bk = os.path.join(native, "backward-cpp")
+        b = os.path.exists(bk)
         assert b, "Backward is missing; run: git submodule init --recursive"
+        lic = os.path.join(bk, "LICENSE.txt")
+        assert os.path.exists(lic), "Backward missing license"
+
+    def _license(self):
+        pass
 
 
 class Claricpp(Library):
@@ -700,6 +791,9 @@ class Claricpp(Library):
         with chdir(self.build_dir):
             run_cmd_no_fail(*makej, claricpp)
 
+    def _license(self):
+        pass
+
     def _install(self):
         self._lib.install()
         if not os.path.exists(self._out_src):
@@ -765,6 +859,9 @@ class ClaricppFFI(Library):
                 verbose=True,
             )
 
+    def _license(self):
+        pass
+
     def _install(self):
         self._lib.install()
 
@@ -822,5 +919,5 @@ if __name__ == "__main__":
         url="https://github.com/angr/claripy",
         cmdclass={"sdist": sdist, "build": build, "clean": clean},
         include_package_data=True,
-        package_data={"claripy": ["claricpp/*"]},
+        package_data={"claripy": ["claricpp/*", "claricpp/**/*"]},
     )
