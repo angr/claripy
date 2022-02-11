@@ -406,8 +406,8 @@ extern "C" {
 
     ClaricppExpr claricpp_create_fp_to_bv_signed(const ClaricppRM mode, const ClaricppExpr fp,
                                                  const UINT bit_length, ClaricppSPAV spav) {
-        return make(Create::FP::to_bv<Mode::Signed::Unsigned>, spav, API::mode(mode),
-                    API::to_cpp(fp), bit_length);
+        return make(Create::FP::to_bv<Mode::Signed::Signed>, spav, API::mode(mode), API::to_cpp(fp),
+                    bit_length);
     }
 
     ClaricppExpr claricpp_create_fp_to_bv_unsigned(const ClaricppRM mode, const ClaricppExpr fp,
