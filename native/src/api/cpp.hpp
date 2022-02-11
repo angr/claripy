@@ -261,7 +261,7 @@ namespace API {
                 CASE(9, BigInt) {
                     got.convert<BigInt::Mode::Str>();
                     const std::string &gstr { std::get<std::string>(got.value) };
-                    char *const ret { Util::Safe::malloc<char>(gstr.size() + 1) };
+                    char *const ret { new char[gstr.size() + 1] };
                     std::memcpy(ret, gstr.c_str(), gstr.size());
                     return { { .big_int = ret }, ClaricppTypeEnumBigInt };
                 }
@@ -414,6 +414,7 @@ namespace API {
 /** Call at the end of every API function
  *  Ends the exception handling
  *  returns {}
+ *  @todo: maybe no return?
  */
 #define API_FUNC_END                                                                               \
     API_FUNC_END_NO_RETURN;                                                                        \

@@ -123,7 +123,7 @@ static Expr::BasePtr simp_wrapper(const Expr::BasePtr &e) {
 // @todo: test cases?
 extern "C" {
     void claricpp_init_for_python_usage(PyStr src, ClaricppPyLog py_log, ClaricppPyLevel py_lvl,
-                                        ClaricppSimp py_simp) {
+                                        ClaricppSimp py_sim) {
         API_FUNC_START
         // This should only be called once
         static bool first { true };
@@ -152,9 +152,9 @@ extern "C" {
         }
 
         // Simplifiers
-        if (py_simp != nullptr) {
+        if (py_sim != nullptr) {
             Util::Log::info("Installing Python simplifier");
-            global_py_simp = py_simp;
+            global_py_simp = py_sim;
             Simplify::manager.register_(simp_wrapper);
         }
 
