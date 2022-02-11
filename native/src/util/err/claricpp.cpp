@@ -37,10 +37,9 @@ void Util::Err::Claricpp::warn_backtrace_slow() noexcept {
         "slow down the program whenever exceptions are created!"
     };
     try {
-        Util::Log::warning("Util::Err::Claricpp: ", msg);
+        Util::Log::warning(msg);
     }
     catch (std::exception &e) {
-        Util::fallback_error_log("Util::Err::Claricpp: ", false);
         Util::fallback_error_log(msg);
         Util::fallback_error_log("Log failure! Fallback log was used. Log exception: ", false);
         Util::fallback_error_log(e.what());
