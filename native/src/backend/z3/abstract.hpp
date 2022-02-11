@@ -229,15 +229,15 @@ namespace Backend::Z3 {
         static Expr::BasePtr mul(const ArgsVec &args) { FLAT_BINARY(Create::mul); }
 
         /** Abstraction function for z3 BV division */
-        template <bool Signed> static Expr::BasePtr div(const ArgsVec &args) {
-            BINARY(Create::div<Signed>);
+        template <Mode::Signed Sgn> static Expr::BasePtr div(const ArgsVec &args) {
+            BINARY(Create::div<Sgn>);
         }
 
         /** Abstraction function for z3 BV remainder
          *  Note we use mod (because of the difference between C and Python % operators)
          */
-        template <bool Signed> static Expr::BasePtr rem(const ArgsVec &args) {
-            BINARY(Create::mod<Signed>);
+        template <Mode::Signed Sgn> static Expr::BasePtr rem(const ArgsVec &args) {
+            BINARY(Create::mod<Sgn>);
         }
 
         /**********************************************************/
@@ -381,10 +381,10 @@ namespace Backend::Z3 {
             // Conversions
           public:
             /** Abstraction function for Z3_OP_FPA_TO_SBV and Z3_OP_FPA_TO_UBV */
-            template <bool Signed>
+            template <Mode::Signed Sgn>
             static Expr::BasePtr to_bv(const ArgsVec &args, const z3::func_decl &decl) {
                 ASSERT_ARG_LEN(args, 2);
-                return Create::FP::to_bv<Signed>(
+                return Create::FP::to_bv<Sgn>(
                     std::get<Mode::FP::Rounding>(args[0]), GET_EARG(1),
                     static_cast<UInt>(Z3_get_decl_int_parameter(decl.ctx(), decl, 0)));
             }

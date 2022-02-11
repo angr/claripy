@@ -13,11 +13,11 @@ namespace Create::FP {
     /** Create an Expr with an FromFP op
      *  Expr pointers may not be nullptr
      */
-    template <bool Signed>
+    template <Mode::Signed Sgn>
     Expr::BasePtr from_2s_complement_bv(const Mode::FP::Rounding m, const Expr::BasePtr &bv,
                                         const Mode::FP::Width &w, Annotation::SPAV &&sp = nullptr) {
         UTIL_ASSERT(Error::Expr::Usage, bv != nullptr, "bv may not be nullptr");
-        using FromBV = Op::FP::From2sComplementBV<Signed>;
+        using FromBV = Op::FP::From2sComplementBV<Sgn>;
         return Simplify::simplify(Expr::factory<Expr::FP>(
             bv->symbolic, Op::factory<FromBV>(m, bv, w), w.width(), std::move(sp)));
     }

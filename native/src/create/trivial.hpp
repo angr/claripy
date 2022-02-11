@@ -129,21 +129,21 @@ namespace Create {
     /** Create an Expr with an Div op
      *  Expr pointers may not be nullptr
      */
-    template <bool Signed>
+    template <Mode::Signed Sgn>
     inline Expr::BasePtr div(const Expr::BasePtr &left, const Expr::BasePtr &right,
                              Annotation::SPAV &&sp = nullptr) {
-        return Private::binary<Op::Div<Signed>, Private::SizeMode::First, Expr::BV>(left, right,
-                                                                                    std::move(sp));
+        return Private::binary<Op::Div<Sgn>, Private::SizeMode::First, Expr::BV>(left, right,
+                                                                                 std::move(sp));
     }
 
     /** Create an Expr with an Mod op
      *  Expr pointers may not be nullptr
      */
-    template <bool Signed>
+    template <Mode::Signed Sgn>
     inline Expr::BasePtr mod(const Expr::BasePtr &left, const Expr::BasePtr &right,
                              Annotation::SPAV &&sp = nullptr) {
-        return Private::binary<Op::Mod<Signed>, Private::SizeMode::First, Expr::BV>(left, right,
-                                                                                    std::move(sp));
+        return Private::binary<Op::Mod<Sgn>, Private::SizeMode::First, Expr::BV>(left, right,
+                                                                                 std::move(sp));
     }
 
     // Bitwise

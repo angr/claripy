@@ -140,8 +140,8 @@ namespace Backend::Z3 {
         static z3::expr sub(const z3::expr &l, const z3::expr &r) { return l - r; }
 
         /** Division converter */
-        template <bool Signed> static z3::expr div(const z3::expr &l, const z3::expr &r) {
-            if constexpr (Signed) {
+        template <Mode::Signed Sgn> static z3::expr div(const z3::expr &l, const z3::expr &r) {
+            if constexpr (Sgn == Mode::Signed::Signed) {
                 return l / r;
             }
             else {
@@ -152,8 +152,8 @@ namespace Backend::Z3 {
         /** Mod converter
          *  Note we use rem (because of the difference between C and Python % operators)
          */
-        template <bool Signed> static z3::expr mod(const z3::expr &l, const z3::expr &r) {
-            if constexpr (Signed) {
+        template <Mode::Signed Sgn> static z3::expr mod(const z3::expr &l, const z3::expr &r) {
+            if constexpr (Sgn == Mode::Signed::Signed) {
                 return z3::srem(l, r);
             }
             else {
@@ -435,11 +435,11 @@ namespace Backend::Z3 {
             // Other
 
             /** FP::ToBV converter */
-            template <bool Signed>
+            template <Mode::Signed Sgn>
             static z3::expr to_bv(const Mode::FP::Rounding mode, const z3::expr &e,
                                   const UInt bit_length) {
                 e.ctx().set_rounding_mode(to_z3_rm(mode));
-                if constexpr (Signed) {
+                if constexpr (Sgn == Mode::Signed::Signed) {
                     return z3::fpa_to_sbv(e, to_z3u(bit_length));
                 }
                 else {
@@ -456,12 +456,12 @@ namespace Backend::Z3 {
             }
 
             /** FP::From2sComplementBV converter */
-            template <bool Signed>
+            template <Mode::Signed Sgn>
             static z3::expr from_2s_complement_bv(const Mode::FP::Rounding mode, const z3::expr &e,
                                                   const Mode::FP::Width &width) {
                 auto &ctx { e.ctx() };
                 ctx.set_rounding_mode(to_z3_rm(mode));
-                if constexpr (Signed) {
+                if constexpr (Sgn == Mode::Signed::Signed) {
                     return z3::sbv_to_fpa(e, fp_width_to_z3_sort(ctx, width));
                 }
                 else {

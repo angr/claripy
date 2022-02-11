@@ -107,6 +107,7 @@ namespace Backend::Z3 {
             // For brevity
             using Cmp = Mode::Compare;
             using Shift = Mode::Shift;
+            using Sgn = Mode::Signed;
 
             // Switch on expr type
             switch (expr->op->cuid) {
@@ -169,11 +170,11 @@ namespace Backend::Z3 {
 
                     BINARY_CASE(Sub, Conv::sub);
 
-                    BINARY_TEMPLATE_CASE(Div, Conv::template div, true);
-                    BINARY_TEMPLATE_CASE(Div, Conv::template div, false);
+                    BINARY_TEMPLATE_CASE(Div, Conv::template div, Sgn::Signed);
+                    BINARY_TEMPLATE_CASE(Div, Conv::template div, Sgn::Unsigned);
 
-                    BINARY_TEMPLATE_CASE(Mod, Conv::template mod, true);
-                    BINARY_TEMPLATE_CASE(Mod, Conv::template mod, false);
+                    BINARY_TEMPLATE_CASE(Mod, Conv::template mod, Sgn::Signed);
+                    BINARY_TEMPLATE_CASE(Mod, Conv::template mod, Sgn::Unsigned);
 
                     BINARY_TEMPLATE_CASE(Shift, Conv::template shift, Shift::Left);
                     BINARY_TEMPLATE_CASE(Shift, Conv::template shift, Shift::ArithmeticRight);
@@ -254,12 +255,12 @@ namespace Backend::Z3 {
     }
 
                     // ToBV
-                    TO_BV_CASE(true);
-                    TO_BV_CASE(false);
+                    TO_BV_CASE(Sgn::Signed);
+                    TO_BV_CASE(Sgn::Unsigned);
 
                     // From2sComplementBV
-                    FROM_2CBV_CASE(true);
-                    FROM_2CBV_CASE(false);
+                    FROM_2CBV_CASE(Sgn::Signed);
+                    FROM_2CBV_CASE(Sgn::Unsigned);
 
                     // Cleanup
 #undef TO_BV_CASE
@@ -345,6 +346,7 @@ namespace Backend::Z3 {
             using C = Mode::Compare;
             using Shift = Mode::Shift;
             using Sign = Mode::Sign::FP;
+            using Sgnd = Mode::Signed;
 
             // Get switching variables
             const auto decl { b_obj.decl() };
@@ -431,18 +433,18 @@ namespace Backend::Z3 {
                     // BV Arithmetic
                 case Z3_OP_BSDIV: // fallthrough
                 case Z3_OP_BSDIV_I:
-                    return Abs::template div<true>(args);
+                    return Abs::template div<Sgnd::Signed>(args);
                 case Z3_OP_BUDIV: // fallthrough:
                 case Z3_OP_BUDIV_I:
-                    return Abs::template div<false>(args);
+                    return Abs::template div<Sgnd::Unsigned>(args);
                 case Z3_OP_BSMOD:   // fallthrough
                 case Z3_OP_BSREM:   // fallthrough
                 case Z3_OP_BSMOD_I: // fallthrough
                 case Z3_OP_BSREM_I:
-                    return Abs::template rem<true>(args);
+                    return Abs::template rem<Sgnd::Signed>(args);
                 case Z3_OP_BUREM: // fallthrough
                 case Z3_OP_BUREM_I:
-                    return Abs::template rem<false>(args);
+                    return Abs::template rem<Sgnd::Unsigned>(args);
 
                     // BV Logic
                 case Z3_OP_BAND:
@@ -478,9 +480,9 @@ namespace Backend::Z3 {
 
                     // FP Conversions
                 case Z3_OP_FPA_TO_SBV:
-                    return Abs::FP::template to_bv<true>(args, decl);
+                    return Abs::FP::template to_bv<Sgnd::Signed>(args, decl);
                 case Z3_OP_FPA_TO_UBV:
-                    return Abs::FP::template to_bv<false>(args, decl);
+                    return Abs::FP::template to_bv<Sgnd::Unsigned>(args, decl);
                 case Z3_OP_FPA_TO_IEEE_BV:
                     return Abs::FP::to_ieee_bv(args);
                 case Z3_OP_FPA_TO_FP:

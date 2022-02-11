@@ -33,7 +33,7 @@ namespace Mode {
     inline std::ostream &operator<<(std::ostream &os, const Compare &c) {
         namespace B = Util::BitMask;
         using C = Compare;
-        os << "Mode::Compare: ";
+        //        os << "Mode::Compare: ";
         if (LIKELY(compare_is_valid(c))) {
             os << (B::has(c, C::Signed) ? "Signed-" : "Unsigned-");
             os << (B::has(c, C::Less) ? "Less-" : "Greater-");

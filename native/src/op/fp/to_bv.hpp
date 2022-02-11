@@ -12,8 +12,8 @@
 namespace Op::FP {
 
     /** The op class: to_bv */
-    template <bool Signed> class ToBV final : public Base {
-        OP_FINAL_INIT(ToBV, "FP::", Signed);
+    template <Mode::Signed Sgn> class ToBV final : public Base {
+        OP_FINAL_INIT(ToBV, "FP::", Sgn);
 
       public:
         /** The FP mode */
@@ -25,8 +25,8 @@ namespace Op::FP {
 
         /** Python's repr function (outputs json) */
         inline void repr(std::ostream &out) const final {
-            out << R"|({ "name":")|" << op_name() << R"|(", "signed":)|" << std::boolalpha << Signed
-                << R"|(, "mode":)|" << Util::to_underlying(mode) << R"|(, "fp":)|";
+            out << R"|({ "name":")|" << op_name() << R"|(, "mode":)|" << Util::to_underlying(mode)
+                << R"|(, "fp":)|";
             fp->repr(out);
             out << " }";
         }

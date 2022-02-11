@@ -12,8 +12,8 @@
 namespace Op::FP {
 
     /** The op class: Which converts a 2s complement BV into an FP */
-    template <bool Signed> class From2sComplementBV final : public Base {
-        OP_FINAL_INIT(From2sComplementBV, "FP::", Signed);
+    template <Mode::Signed Sgn> class From2sComplementBV final : public Base {
+        OP_FINAL_INIT(From2sComplementBV, "FP::", Sgn);
 
       public:
         /** The FP mode */
@@ -25,8 +25,8 @@ namespace Op::FP {
 
         /** Python's repr function (outputs json) */
         inline void repr(std::ostream &out) const final {
-            out << R"|({ "name":")|" << op_name() << R"|(", "signed":)|" << std::boolalpha << Signed
-                << R"|(, "rounding mode":)|" << Util::to_underlying(mode) << R"|(, "bv":)|";
+            out << R"|({ "name":")|" << op_name() << R"|(, "rounding mode":)|"
+                << Util::to_underlying(mode) << R"|(, "bv":)|";
             bv->repr(out);
             out << R"|(, "width":)|" << width << " }";
         }

@@ -210,22 +210,26 @@ extern "C" {
 
     ClaricppExpr claricpp_create_sdiv(const ClaricppExpr left, const ClaricppExpr right,
                                       ClaricppSPAV spav) {
-        return make(Create::div<true>, spav, API::to_cpp(left), API::to_cpp(right));
+        using Sgn = Mode::Signed;
+        return make(Create::div<Sgn::Signed>, spav, API::to_cpp(left), API::to_cpp(right));
     }
 
     ClaricppExpr claricpp_create_udiv(const ClaricppExpr left, const ClaricppExpr right,
                                       ClaricppSPAV spav) {
-        return make(Create::div<false>, spav, API::to_cpp(left), API::to_cpp(right));
+        using Sgn = Mode::Signed;
+        return make(Create::div<Sgn::Unsigned>, spav, API::to_cpp(left), API::to_cpp(right));
     }
 
     ClaricppExpr claricpp_create_smod(const ClaricppExpr left, const ClaricppExpr right,
                                       ClaricppSPAV spav) {
-        return make(Create::mod<true>, spav, API::to_cpp(left), API::to_cpp(right));
+        using Sgn = Mode::Signed;
+        return make(Create::mod<Sgn::Signed>, spav, API::to_cpp(left), API::to_cpp(right));
     }
 
     ClaricppExpr claricpp_create_umod(const ClaricppExpr left, const ClaricppExpr right,
                                       ClaricppSPAV spav) {
-        return make(Create::mod<false>, spav, API::to_cpp(left), API::to_cpp(right));
+        using Sgn = Mode::Signed;
+        return make(Create::mod<Sgn::Unsigned>, spav, API::to_cpp(left), API::to_cpp(right));
     }
 
     // Bitwise
@@ -372,8 +376,8 @@ extern "C" {
                                                                  const uint32_t exp_width,
                                                                  const uint32_t mantissa_width,
                                                                  ClaricppSPAV spav) {
-        return make(Create::FP::from_2s_complement_bv<true>, spav, API::mode(mode), API::to_cpp(x),
-                    Mode::FP::Width { exp_width, mantissa_width });
+        return make(Create::FP::from_2s_complement_bv<Mode::Signed::Signed>, spav, API::mode(mode),
+                    API::to_cpp(x), Mode::FP::Width { exp_width, mantissa_width });
     }
 
     ClaricppExpr claricpp_create_fp_from_2s_complement_bv_unsigned(const ClaricppRM mode,
@@ -381,8 +385,8 @@ extern "C" {
                                                                    const uint32_t exp_width,
                                                                    const uint32_t mantissa_width,
                                                                    ClaricppSPAV spav) {
-        return make(Create::FP::from_2s_complement_bv<false>, spav, API::mode(mode), API::to_cpp(x),
-                    Mode::FP::Width { exp_width, mantissa_width });
+        return make(Create::FP::from_2s_complement_bv<Mode::Signed::Unsigned>, spav,
+                    API::mode(mode), API::to_cpp(x), Mode::FP::Width { exp_width, mantissa_width });
     }
 
     ClaricppExpr claricpp_create_fp_from_fp(const ClaricppRM mode, const ClaricppExpr fp,
@@ -402,12 +406,14 @@ extern "C" {
 
     ClaricppExpr claricpp_create_fp_to_bv_signed(const ClaricppRM mode, const ClaricppExpr fp,
                                                  const UINT bit_length, ClaricppSPAV spav) {
-        return make(Create::FP::to_bv<true>, spav, API::mode(mode), API::to_cpp(fp), bit_length);
+        return make(Create::FP::to_bv<Mode::Signed::Unsigned>, spav, API::mode(mode),
+                    API::to_cpp(fp), bit_length);
     }
 
     ClaricppExpr claricpp_create_fp_to_bv_unsigned(const ClaricppRM mode, const ClaricppExpr fp,
                                                    const UINT bit_length, ClaricppSPAV spav) {
-        return make(Create::FP::to_bv<false>, spav, API::mode(mode), API::to_cpp(fp), bit_length);
+        return make(Create::FP::to_bv<Mode::Signed::Unsigned>, spav, API::mode(mode),
+                    API::to_cpp(fp), bit_length);
     }
 
     // Trivial

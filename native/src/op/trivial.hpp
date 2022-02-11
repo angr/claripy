@@ -73,12 +73,12 @@ namespace Op {
     /** The mathematical binary op class: Div
      *  Requires equal sized inputs
      */
-    template <bool Signed> OP_BINARY_TRIVIAL_SUBCLASS(Div, true, "", Signed);
+    template <Mode::Signed Sgn> OP_BINARY_TRIVIAL_SUBCLASS(Div, true, "", Sgn);
 
     /** The mathematical binary op class: Mod
      *  Requires equal sized inputs
      */
-    template <bool Signed> OP_BINARY_TRIVIAL_SUBCLASS(Mod, true, "", Signed);
+    template <Mode::Signed Sgn> OP_BINARY_TRIVIAL_SUBCLASS(Mod, true, "", Sgn);
 
     // Bitwise
 
