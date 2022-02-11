@@ -62,6 +62,7 @@ extern "C" {
 #include "util/throw.hpp"
 #include "util/to_hex.hpp"
 #include "util/to_str.hpp"
+#include "util/to_u_ptr.hpp"
 #include "util/to_underlying.hpp"
 #include "util/type.hpp"
 #include "util/variant_verify_index_type_is.hpp"

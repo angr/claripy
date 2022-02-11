@@ -19,6 +19,7 @@ namespace Util::Safe {
      *  Consider using new[N] if possible
      */
     template <typename T> T *malloc(const std::size_t count) {
+        static_assert(!std::is_same_v<T, char>, "Use new[]");
         T *const ret { static_cast<T *const>(std::malloc(count * sizeof(T))) }; // NOLINT
         if (UNLIKELY(!ret)) {
             throw std::bad_alloc();
