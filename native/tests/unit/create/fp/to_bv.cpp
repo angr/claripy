@@ -7,8 +7,8 @@
 #include "../dcast.hpp"
 
 
-/** Verify that the to_bv<Signed> function compiles and can be run without issue */
-template <bool Signed> void to_bv_b() {
+/** Verify that the to_bv<Sgn> function compiles and can be run without issue */
+template <Mode::Signed Sgn> void to_bv_b() {
 
     // Create distinct inputs
     const Mode::FP::Rounding mode { Mode::FP::Rounding::TowardsZero };
@@ -16,14 +16,14 @@ template <bool Signed> void to_bv_b() {
     const UInt bit_length { 16 };
 
     // Test
-    const auto exp { Create::FP::to_bv<Signed>(mode, fp, bit_length) };
+    const auto exp { Create::FP::to_bv<Sgn>(mode, fp, bit_length) };
 
     // Pointer checks
     UNITTEST_ASSERT(fp.use_count() == 2);
     UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check
-    const auto op_down { dcast<Op::FP::ToBV<Signed>>(exp->op) };
+    const auto op_down { dcast<Op::FP::ToBV<Sgn>>(exp->op) };
     const auto exp_down { dcast<Expr::BV>(exp) };
 
     // Contains check
@@ -35,8 +35,8 @@ template <bool Signed> void to_bv_b() {
 
 /** Verify that the to_bv function compiles and can be run without issue */
 void to_bv() {
-    to_bv_b<true>();
-    to_bv_b<false>();
+    to_bv_b<Mode::Signed::Signed>();
+    to_bv_b<Mode::Signed::Unsigned>();
 }
 
 // Define the test

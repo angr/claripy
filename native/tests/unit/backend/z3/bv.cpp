@@ -41,14 +41,15 @@ void bv() {
     BigInt::mode(old);                                  // Reset
 
     // Sizes same
+    using Sgnd = Mode::Signed;
     Util::Log::debug("Testing x/x");
-    const auto one_same { Create::div<false>(l1, l1) };
+    const auto one_same { Create::div<Sgnd::Unsigned>(l1, l1) };
     UNITTEST_ASSERT(l1 == z3.simplify(one_same.get()));
 
     // Sizes differ
     Util::Log::debug("Testing x/x with different sized x's; this *should* fail");
     try {
-        const auto fail { Create::div<false>(l1, l2) };
+        const auto fail { Create::div<Sgnd::Unsigned>(l1, l2) };
         UNITTEST_ERR("It should not be possible to construct this: ", fail);
     }
     catch (Error::Expr::Type &) {

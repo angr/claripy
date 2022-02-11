@@ -112,16 +112,19 @@ void fp() {
     /*                  Non-Trivial                   */
     /**************************************************/
 
+    using Sgnd = Mode::Signed;
     Util::Log::debug("Testing to_bv...");
-    UNITTEST_ASSERT(test_id(C::FP::to_bv<true>(tz, fp_x, Expr::get_bit_length(fp_x))));
-    UNITTEST_ASSERT(test_id(C::FP::to_bv<false>(tz, fp_x, Expr::get_bit_length(fp_x))));
+    UNITTEST_ASSERT(test_id(C::FP::to_bv<Sgnd::Signed>(tz, fp_x, Expr::get_bit_length(fp_x))));
+    UNITTEST_ASSERT(test_id(C::FP::to_bv<Sgnd::Unsigned>(tz, fp_x, Expr::get_bit_length(fp_x))));
 
     Util::Log::debug("Testing from_fp...");
     /* UNITTEST_ASSERT(test_id(C::FP::from_fp(tz, fp_x, Mode::FP::dbl))); */
 
     Util::Log::debug("Testing from_2s_complement_bv...");
-    /* UNITTEST_ASSERT(test_id(C::FP::from_2s_complement_bv<true>(tz, bv_x, Mode::FP::dbl))); */
-    /* UNITTEST_ASSERT(test_id(C::FP::from_2s_complement_bv<false>(tz, bv_x, Mode::FP::dbl))); */
+    /* UNITTEST_ASSERT(test_id(C::FP::from_2s_complement_bv<Sgnd::Signed>(tz, bv_x,
+     * Mode::FP::dbl))); */
+    /* UNITTEST_ASSERT(test_id(C::FP::from_2s_complement_bv<Sgnd::Unsigned>(tz, bv_x,
+     * Mode::FP::dbl))); */
 
     Util::Log::debug("Testing from_not_2s_complement_bv...");
     /* UNITTEST_ASSERT(test_id(C::FP::from_not_2s_complement_bv(bv_x, Mode::FP::dbl))); */

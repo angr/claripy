@@ -84,12 +84,13 @@ void trivial() {
     binary<Expr::BV, Op::Sub, SM::First, Cr::sub>();
 
     Log::debug("Testing div...");
-    binary<Expr::BV, Op::Div<true>, SM::First, Cr::div<true>>();
-    binary<Expr::BV, Op::Div<false>, SM::First, Cr::div<false>>();
+    using Sngd = Mode::Signed;
+    binary<Expr::BV, Op::Div<Sngd::Signed>, SM::First, Cr::div<Sngd::Signed>>();
+    binary<Expr::BV, Op::Div<Sngd::Unsigned>, SM::First, Cr::div<Sngd::Unsigned>>();
 
     Log::debug("Testing mod...");
-    binary<Expr::BV, Op::Mod<true>, SM::First, Cr::mod<true>>();
-    binary<Expr::BV, Op::Mod<false>, SM::First, Cr::mod<false>>();
+    binary<Expr::BV, Op::Mod<Sngd::Signed>, SM::First, Cr::mod<Sngd::Signed>>();
+    binary<Expr::BV, Op::Mod<Sngd::Unsigned>, SM::First, Cr::mod<Sngd::Unsigned>>();
 
     // Bitwise
 

@@ -126,12 +126,13 @@ void normal() {
     UNITTEST_ASSERT(test_id(C::sub(bv_x, bv_y)));
 
     Util::Log::debug("Testing div...");
-    UNITTEST_ASSERT(test_id(C::div<true>(bv_x, bv_y)));
-    UNITTEST_ASSERT(test_id(C::div<false>(bv_x, bv_y)));
+    using Sgnd = Mode::Signed;
+    UNITTEST_ASSERT(test_id(C::div<Sgnd::Signed>(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::div<Sgnd::Unsigned>(bv_x, bv_y)));
 
     Util::Log::debug("Testing mod...");
-    UNITTEST_ASSERT(test_id(C::mod<true>(bv_x, bv_y)));
-    UNITTEST_ASSERT(test_id(C::mod<false>(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::mod<Sgnd::Signed>(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::mod<Sgnd::Unsigned>(bv_x, bv_y)));
 
     using M = Mode::Shift;
     Util::Log::debug("Testing shift...");

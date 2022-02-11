@@ -41,6 +41,7 @@ static void test_op(const Op::BasePtr &op) {
 void args() {
     namespace C = Create;
     using Cmp = Mode::Compare;
+    using Sgnd = Mode::Signed;
 
     // Constants
     const auto ntz { Mode::FP::Rounding::NearestTiesEven };
@@ -60,12 +61,12 @@ void args() {
     test(C::extract(1, 0, bv_sym));
 
     // FP
-    test(C::FP::from_2s_complement_bv<true>(ntz, bv_sym, Mode::FP::dbl));
-    test(C::FP::from_2s_complement_bv<false>(ntz, bv_sym, Mode::FP::dbl));
+    test(C::FP::from_2s_complement_bv<Sgnd::Signed>(ntz, bv_sym, Mode::FP::dbl));
+    test(C::FP::from_2s_complement_bv<Sgnd::Unsigned>(ntz, bv_sym, Mode::FP::dbl));
     test(C::FP::from_not_2s_complement_bv(bv_sym, Mode::FP::dbl));
     test(C::FP::from_fp(ntz, fp_sym, Mode::FP::dbl));
-    test(C::FP::to_bv<true>(ntz, fp_sym, 64));
-    test(C::FP::to_bv<false>(ntz, fp_sym, 64));
+    test(C::FP::to_bv<Sgnd::Signed>(ntz, fp_sym, 64));
+    test(C::FP::to_bv<Sgnd::Unsigned>(ntz, fp_sym, 64));
 
     // String
     test(C::String::from_int(bv_sym));
@@ -104,10 +105,10 @@ void args() {
 
     // Math
     test(C::sub(bv_sym, bv_sym));
-    test(C::div<true>(bv_sym, bv_sym));
-    test(C::div<false>(bv_sym, bv_sym));
-    test(C::mod<true>(bv_sym, bv_sym));
-    test(C::mod<false>(bv_sym, bv_sym));
+    test(C::div<Sgnd::Signed>(bv_sym, bv_sym));
+    test(C::div<Sgnd::Unsigned>(bv_sym, bv_sym));
+    test(C::mod<Sgnd::Signed>(bv_sym, bv_sym));
+    test(C::mod<Sgnd::Unsigned>(bv_sym, bv_sym));
 
     // Bitwise
     test(C::shift<Mode::Shift::Left>(bv_sym, bv_sym));

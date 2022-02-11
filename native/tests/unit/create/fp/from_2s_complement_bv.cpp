@@ -10,7 +10,7 @@
 /** Verify that the from_2s_complement_bv function compiles and can be run without issue
  *  for the given value of Signed
  */
-template <bool Signed> void from_2s_complement_bv_v() {
+template <Mode::Signed Sgn> void from_2s_complement_bv_v() {
 
     // Create distinct inputs
     const auto mode { Mode::FP::Rounding::TowardsZero };
@@ -22,14 +22,14 @@ template <bool Signed> void from_2s_complement_bv_v() {
         "This is not a test failure; but rather the test function itself needs to be fixed");
 
     // Test
-    const auto exp { Create::FP::from_2s_complement_bv<Signed>(mode, bv, Mode::FP::dbl) };
+    const auto exp { Create::FP::from_2s_complement_bv<Sgn>(mode, bv, Mode::FP::dbl) };
 
     // Pointer checks
     UNITTEST_ASSERT(bv.use_count() == 2);
     UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check
-    const auto op_down { dcast<Op::FP::From2sComplementBV<Signed>>(exp->op) };
+    const auto op_down { dcast<Op::FP::From2sComplementBV<Sgn>>(exp->op) };
     const auto exp_down { dcast<Expr::FP>(exp) };
 
     // Contains check
@@ -41,8 +41,8 @@ template <bool Signed> void from_2s_complement_bv_v() {
 
 /** Verify that the from_2s_complement_bv function compiles and can be run without issue */
 void from_2s_complement_bv() {
-    from_2s_complement_bv_v<true>();
-    from_2s_complement_bv_v<false>();
+    from_2s_complement_bv_v<Mode::Signed::Signed>();
+    from_2s_complement_bv_v<Mode::Signed::Unsigned>();
 }
 
 // Define the test

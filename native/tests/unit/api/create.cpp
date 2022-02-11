@@ -196,10 +196,11 @@ void create() {
 
     // Math
     BINARY(sub, sub, bv_64, bv_sym);
-    BINARY(sdiv, div<true>, bv_64, bv_sym);
-    BINARY(udiv, div<false>, bv_64, bv_sym);
-    BINARY(smod, mod<true>, bv_64, bv_sym);
-    BINARY(umod, mod<false>, bv_64, bv_sym);
+    using Sgnd = Mode::Signed;
+    BINARY(sdiv, div<Sgnd::Signed>, bv_64, bv_sym);
+    BINARY(udiv, div<Sgnd::Unsigned>, bv_64, bv_sym);
+    BINARY(smod, mod<Sgnd::Signed>, bv_64, bv_sym);
+    BINARY(umod, mod<Sgnd::Unsigned>, bv_64, bv_sym);
 
     // Bitwise
     BINARY(shift_left, shift<Mode::Shift::Left>, bv_64, bv_sym);
@@ -274,23 +275,23 @@ void create() {
     // FP
 
     // Non-Trivial
-    Util::Log::debug("Testing FP::from_2s_complement_bv<true>...");
-    (void) Create::FP::from_2s_complement_bv<true>(md, bv_sym, wid);
+    Util::Log::debug("Testing FP::from_2s_complement_bv<Sgnd::Signed>...");
+    (void) Create::FP::from_2s_complement_bv<Sgnd::Signed>(md, bv_sym, wid);
     const auto fp2bvs { exc(claricpp_create_fp_from_2s_complement_bv_signed(
         API::mode(md), API::copy_to_c(bv_sym), wid.exp, wid.mantissa, { nullptr })) };
     UNITTEST_ASSERT(API::to_cpp(fp2bvs)->hash ==
-                    Create::FP::from_2s_complement_bv<true>(md, bv_sym, wid)->hash);
+                    Create::FP::from_2s_complement_bv<Sgnd::Signed>(md, bv_sym, wid)->hash);
     UNITTEST_ASSERT(API::to_cpp(fp2bvs)->hash !=
-                    Create::FP::from_2s_complement_bv<true>(md, bv_64, wid)->hash);
+                    Create::FP::from_2s_complement_bv<Sgnd::Signed>(md, bv_64, wid)->hash);
 
-    Util::Log::debug("Testing FP::from_2s_complement_bv<false>...");
-    (void) Create::FP::from_2s_complement_bv<false>(md, bv_sym, wid);
+    Util::Log::debug("Testing FP::from_2s_complement_bv<Sgnd::Unsigned>...");
+    (void) Create::FP::from_2s_complement_bv<Sgnd::Unsigned>(md, bv_sym, wid);
     const auto fpf2bvs { exc(claricpp_create_fp_from_2s_complement_bv_unsigned(
         API::mode(md), API::copy_to_c(bv_sym), wid.exp, wid.mantissa, { nullptr })) };
     UNITTEST_ASSERT(API::to_cpp(fpf2bvs)->hash ==
-                    Create::FP::from_2s_complement_bv<false>(md, bv_sym, wid)->hash);
+                    Create::FP::from_2s_complement_bv<Sgnd::Unsigned>(md, bv_sym, wid)->hash);
     UNITTEST_ASSERT(API::to_cpp(fpf2bvs)->hash !=
-                    Create::FP::from_2s_complement_bv<false>(md, bv_64, wid)->hash);
+                    Create::FP::from_2s_complement_bv<Sgnd::Unsigned>(md, bv_64, wid)->hash);
 
     Util::Log::debug("Testing FP::from_fp...");
     const auto fpffp { exc(claricpp_create_fp_from_fp(API::mode(md), API::copy_to_c(fp_sym),
@@ -306,17 +307,21 @@ void create() {
     UNITTEST_ASSERT(API::to_cpp(fpfn2bv)->hash !=
                     Create::FP::from_not_2s_complement_bv(bv_64, wid)->hash);
 
-    Util::Log::debug("Testing FP::to_bv<true>...");
+    Util::Log::debug("Testing FP::to_bv<Sgnd::Signed>...");
     const auto fpt2bvs { exc(
         claricpp_create_fp_to_bv_signed(API::mode(md), API::copy_to_c(fp_sym), bl, { nullptr })) };
-    UNITTEST_ASSERT(API::to_cpp(fpt2bvs)->hash == Create::FP::to_bv<true>(md, fp_sym, bl)->hash);
-    UNITTEST_ASSERT(API::to_cpp(fpt2bvs)->hash != Create::FP::to_bv<true>(md, fp_64, bl)->hash);
+    UNITTEST_ASSERT(API::to_cpp(fpt2bvs)->hash ==
+                    Create::FP::to_bv<Sgnd::Signed>(md, fp_sym, bl)->hash);
+    UNITTEST_ASSERT(API::to_cpp(fpt2bvs)->hash !=
+                    Create::FP::to_bv<Sgnd::Signed>(md, fp_64, bl)->hash);
 
-    Util::Log::debug("Testing FP::to_bv<false>...");
+    Util::Log::debug("Testing FP::to_bv<Sgnd::Unsigned>...");
     const auto fpt2bvu { exc(claricpp_create_fp_to_bv_unsigned(
         API::mode(md), API::copy_to_c(fp_sym), bl, { nullptr })) };
-    UNITTEST_ASSERT(API::to_cpp(fpt2bvu)->hash == Create::FP::to_bv<false>(md, fp_sym, bl)->hash);
-    UNITTEST_ASSERT(API::to_cpp(fpt2bvu)->hash != Create::FP::to_bv<false>(md, fp_64, bl)->hash);
+    UNITTEST_ASSERT(API::to_cpp(fpt2bvu)->hash ==
+                    Create::FP::to_bv<Sgnd::Unsigned>(md, fp_sym, bl)->hash);
+    UNITTEST_ASSERT(API::to_cpp(fpt2bvu)->hash !=
+                    Create::FP::to_bv<Sgnd::Unsigned>(md, fp_64, bl)->hash);
 
     // Trivial
     UNARY(fp_to_ieee_bv, FP::to_ieee_bv, fp, 64);
