@@ -13,7 +13,7 @@ namespace Op::FP {
 
     /** The op class which converts an FP into another FP (for example, a float into a double) */
     class FromFP final : public Base {
-        OP_FINAL_INIT(FromFP, 0, "FP::");
+        OP_FINAL_INIT(FromFP, "FP::", 0);
 
       public:
         /** The FP mode */

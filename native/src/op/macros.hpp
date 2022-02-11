@@ -25,21 +25,34 @@
   private:                                                                                         \
     ENABLE_UNITTEST_FRIEND_ACCESS;
 
+namespace Op::Private {
+    /** A helper for OP_FINAL_INIT */
+    template <typename T> const char *str(CCSC head, T tail) {
+        if constexpr (std::is_convertible_v<T, UInt>) {
+            if (tail == 0) {
+                return head;
+            }
+        }
+        return Util::to_c_str(head, '-', std::forward<T>(tail));
+    }
+} // namespace Op::Private
+
 /** Initialize a final op class
  *  Leaves the class in a private access context
- *  Optionally pass a second argument to prefix the class name for the debug name
- *  X can be anything, but must be different between different templates of the same class
- *  For example, Foo<int> must give a different X from Foo<bool>
+ *  PREFIX is prepended to the class name
+ *  "-" + TARG's value is appended to the class name if TARG is not 0
+ *  TARG also must be different between templates
+ *  For example, Foo<int> must give a different TARG from Foo<bool>
  */
-#define OP_FINAL_INIT(CLASS, X, ...)                                                               \
+#define OP_FINAL_INIT(CLASS, PREFIX, TARG)                                                         \
   public:                                                                                          \
     /* Delete implicits */                                                                         \
     SET_IMPLICITS_CONST_MEMBERS(CLASS, delete);                                                    \
     /** Default destructor */                                                                      \
     ~CLASS() noexcept final = default;                                                             \
-    FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(::Op::Base, (X));                                        \
+    FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(::Op::Base, TARG);                                       \
     /** The name of the op */                                                                      \
-    static constexpr CCSC static_op_name { __VA_ARGS__ #CLASS };                                   \
+    static inline const CCSC static_op_name { ::Op::Private::str(PREFIX #CLASS, TARG) };           \
     /** The name of the op */                                                                      \
     inline const char *op_name() const noexcept final { return static_op_name; };                  \
                                                                                                    \

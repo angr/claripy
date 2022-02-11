@@ -13,18 +13,11 @@
 
 
 /** A macro used to define a trivial subclass of Binary
- *  Pass template arguments to Binary via variadic macro arguments
- *  Note: You can prepend templates to this if desired meant only to create distinct classes
- *  UNSIGNEDINT can be true or false
- *  For example: template <bool Signed> OP_INTBINARY_TRIVIAL_SUBCLASS(Foo)
- *  An additional argument can be passed as the prefix to the desired debug name of the class
- *  For example, "FP::" may be desired for an FP op
- *  X can be anything, but must be different between different templates of the same class
- *  For example, Foo<int> must give a different X from Foo<bool>
+ *  PREFIX and TARG are passed to OP_FINAL_INIT
  */
-#define OP_UINTBINARY_TRIVIAL_SUBCLASS(CLASS, X, ...)                                              \
+#define OP_UINTBINARY_TRIVIAL_SUBCLASS(CLASS, PREFIX, TARG)                                        \
     class CLASS final : public ::Op::UIntBinary {                                                  \
-        OP_FINAL_INIT(CLASS, (X), "" __VA_ARGS__);                                                 \
+        OP_FINAL_INIT(CLASS, PREFIX, TARG);                                                        \
                                                                                                    \
       private:                                                                                     \
         /** Private constructor */                                                                 \

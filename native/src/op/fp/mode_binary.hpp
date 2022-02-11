@@ -10,14 +10,11 @@
 
 
 /** A macro used to define a trivial subclass of ModeBinary
- *  An additional argument can be passed as the prefix to the desired debug name of the class
- *  For example, "FP::" may be desired for an FP op
- *  X can be anything, but must be different between different templates of the same class
- *  For example, Foo<int> must give a different X from Foo<bool>
+ *  PREFIX and TARG are passed to OP_FINAL_INIT
  */
-#define OP_FP_MODEBINARY_TRIVIAL_SUBCLASS(CLASS, X, ...)                                           \
+#define OP_FP_MODEBINARY_TRIVIAL_SUBCLASS(CLASS, PREFIX, TARG)                                     \
     class CLASS final : public ModeBinary {                                                        \
-        OP_FINAL_INIT(CLASS, (X), "" __VA_ARGS__);                                                 \
+        OP_FINAL_INIT(CLASS, PREFIX, TARG);                                                        \
                                                                                                    \
       private:                                                                                     \
         /** Private constructor */                                                                 \

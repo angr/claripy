@@ -10,16 +10,12 @@
 
 
 /** A macro used to define a trivial subclass of Flat
- *  Pass template arguments to Binary via variadic macro arguments
  *  If ConsiderSize, sizes will be compared as well when type checking if applicable
- *  An additional argument can be passed as the prefix to the desired debug name of the class
- *  For example, "FP::" may be desired for an FP op
- *  X can be anything, but must be different between different templates of the same class
- *  For example, Foo<int> must give a different X from Foo<bool>
+ *  PREFIX and TARG are passed to OP_FINAL_INIT
  */
-#define OP_FLAT_TRIVIAL_SUBCLASS(CLASS, CONSIDERSIZE, X, ...)                                      \
+#define OP_FLAT_TRIVIAL_SUBCLASS(CLASS, CONSIDERSIZE, PREFIX, TARG)                                \
     class CLASS final : public ::Op::Flat<(CONSIDERSIZE)> {                                        \
-        OP_FINAL_INIT(CLASS, (X), "" __VA_ARGS__);                                                 \
+        OP_FINAL_INIT(CLASS, PREFIX, TARG);                                                        \
                                                                                                    \
       private:                                                                                     \
         /** Private constructor */                                                                 \

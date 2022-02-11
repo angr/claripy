@@ -23,7 +23,7 @@
  */
 #define FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(BASE, X)                                             \
     /* The CUID does not need to be used in non-instantiated classes */                            \
-    CUID_DEFINE_MAYBE_UNUSED((X))                                                                  \
+    CUID_DEFINE_MAYBE_UNUSED(X)                                                                    \
   private:                                                                                         \
     /** Allow verification to have friend access */                                                \
     friend struct ::Util::Type::Has::constructor_class;                                            \

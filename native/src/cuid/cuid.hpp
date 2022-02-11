@@ -14,16 +14,14 @@
 /** Used to define a possibly unused static_cuid in a class
  *  Leaves the class in a public state
  *  Will not cause any compiler warnings if this field is not used
- *  X can be any int, but must be different between different templates of the same class
+ *  X should be trivial to convert to a UInt
  *  For example, Foo<int> must give a different X than Foo<bool> gives
  */
 #define CUID_DEFINE_MAYBE_UNUSED(X)                                                                \
   public:                                                                                          \
-    static_assert(std::is_convertible_v<decltype((X)), int>,                                       \
-                  "X should be convertible to an int!");                                           \
     /** Define a static_cuid */                                                                    \
     [[maybe_unused]] static const constexpr ::CUID::CUID static_cuid {                             \
-        UTIL_FILE_LINE_HASH ^ Util::FNV1a<int>::hash(&Util::ref<int, static_cast<int>((X))>, 1)    \
+        UTIL_FILE_LINE_HASH ^ Util::FNV1a<UInt>::hash(Util::to_u_ptr<X>(), 1)                      \
     };
 
 namespace CUID {

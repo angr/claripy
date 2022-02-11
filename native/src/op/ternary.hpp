@@ -9,18 +9,12 @@
 
 
 /** A macro used to define a trivial subclass of Ternary
- *  Pass template arguments to Ternary via variadic macro arguments
  *  If ConsiderSize, sizes will be compared as well when type checking if applicable
- *  Note: You can prepend templates to this if desired meant only to create distinct classes
- *  For example: template <bool Signed> OP_TERNARY_TRIVIAL_SUBCLASS(LT, true)
- *  An additional argument can be passed as the prefix to the desired debug name of the class
- *  For example, "FP::" may be desired for an FP op
- *  X can be anything, but must be different between different templates of the same class
- *  For example, Foo<int> must give a different X from Foo<bool>
+ *  PREFIX and TARG are passed to OP_FINAL_INIT
  */
-#define OP_TERNARY_TRIVIAL_SUBCLASS(CLASS, CONSIDERSIZE, X, ...)                                   \
+#define OP_TERNARY_TRIVIAL_SUBCLASS(CLASS, CONSIDERSIZE, PREFIX, TARG)                             \
     class CLASS final : public ::Op::Ternary<(CONSIDERSIZE)> {                                     \
-        OP_FINAL_INIT(CLASS, (X), "" __VA_ARGS__);                                                 \
+        OP_FINAL_INIT(CLASS, PREFIX, TARG);                                                        \
                                                                                                    \
       private:                                                                                     \
         /** Private constructor */                                                                 \

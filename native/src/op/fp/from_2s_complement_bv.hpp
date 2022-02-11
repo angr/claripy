@@ -13,7 +13,7 @@ namespace Op::FP {
 
     /** The op class: Which converts a 2s complement BV into an FP */
     template <bool Signed> class From2sComplementBV final : public Base {
-        OP_FINAL_INIT(From2sComplementBV, Signed, "FP::");
+        OP_FINAL_INIT(From2sComplementBV, "FP::", Signed);
 
       public:
         /** The FP mode */
