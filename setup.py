@@ -25,7 +25,6 @@ import z3
 
 # TODO: pycache is not excluded?
 # TODO: I think our sdists are GPL3?
-# TODO: make install put stuff in claricpp build dir and such before building so that rpath is .
 
 
 ######################################################################
@@ -695,7 +694,6 @@ class Z3(Library):
 
     # _get is simply that _root has been resolved
     # Z3's pip has no license file so nothing for us to copy
-    # TODO: do not copy z3?
 
     def _build(self):
         assert self.lib.find_built(), "Z3 is missing"
@@ -712,6 +710,7 @@ class Backward(Library):
     def __init__(self):
         # TODO: https://sourceware.org/elfutils/
         # TODO: https://sourceware.org/elfutils/ftp/0.186/
+        # TODO: these depend on libdebuginfod (=dummy is an option?)
         super().__init__({}, {}, {})
 
     def _get(self):
@@ -914,6 +913,7 @@ if __name__ == "__main__":
             "decorator",
             "pysmt>=0.9.1.dev119",
             "six",
+            "bidict",
         ],
         description="An abstraction layer for constraint solvers",
         url="https://github.com/angr/claripy",
