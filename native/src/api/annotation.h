@@ -19,6 +19,19 @@ ClaricppAnnotation claricpp_annotation_new_base();
  */
 ClaricppAnnotation claricpp_annotation_new_simplification_avoidance();
 
+/** Return if the annotation is eliminatable
+ *  @param a The annotation to get the trait of
+ *  @return if the annotation is eliminatable
+ */
+BOOL claricpp_annotation_eliminatable(const ClaricppAnnotation a);
+
+/** Return if the annotation is relocatable
+ *  @param a The annotation to get the trait of
+ *  @return if the annotation is relocatable
+ */
+BOOL claricpp_annotation_reloctable(const ClaricppAnnotation a);
+
+
 /** Create an Annotation::SPAV from an array of annotations
  *  @return An empty ClaricppSPAV
  */

@@ -15,6 +15,12 @@
  */
 ClaricppExpr claricpp_expr_make_like_annotations(const ClaricppExpr old, ClaricppSPAV spav);
 
+/** Return the hash of the expr
+ * @param expr The Expr to get the hash of
+ * @return The hash of the expr
+ */
+HASH_T claricpp_expr_hash(const ClaricppExpr expr);
+
 /** Return true iff expr is symbolic
  * @param expr The Expr to determine if it is symbolic
  * @return True if expr is symbolic

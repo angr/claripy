@@ -12,6 +12,8 @@ extern "C" {
         return ret;
     }
 
+    HASH_T claricpp_expr_hash(const ClaricppExpr expr) { return API::to_cpp_ref(expr).hash; }
+
     SIZE_T claricpp_expr_bit_length(const ClaricppExpr expr) {
         return Expr::get_bit_length(API::to_cpp(expr));
     }

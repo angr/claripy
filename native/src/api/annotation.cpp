@@ -23,6 +23,15 @@ extern "C" {
 
     ClaricppSPAV claricpp_annotation_create_empty_spav() { return { nullptr }; }
 
+    BOOL claricpp_annotation_eliminatable(const ClaricppAnnotation a) {
+        return API::bool_(API::to_cpp_ref(a).eliminatable());
+    }
+
+    BOOL claricpp_annotation_reloctable(const ClaricppAnnotation a) {
+        return API::bool_(API::to_cpp_ref(a).relocatable());
+    }
+
+
     ClaricppSPAV claricpp_annotation_create_spav(ARRAY_IN(ClaricppAnnotation) list,
                                                  const SIZE_T len) {
         if (UNLIKELY(len == 0)) {
