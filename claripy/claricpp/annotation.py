@@ -1,6 +1,7 @@
 __all__ = ["Annotation", "SimplificationAvoidanceAnnotation"]
 
 from .claricpp import *
+from functools import lru_cache
 
 # TODO: deal with destruction / freeing memory
 # TODO: slots!
@@ -16,6 +17,17 @@ class Annotation:
             self._raw = claricpp.claricpp_annotation_new_base()
         else:
             self._raw = raw
+
+    @property
+    @lru_cache(maxsize=None)
+    def eliminatable(self):
+        return claricpp.claricpp_annotation_eliminatable()
+
+    @property
+    @lru_cache(maxsize=None)
+    def relocatable(self):
+        return claricpp.claricpp_annotation_relocatable()
+
 
 
 class SimplificationAvoidanceAnnotation(Annotation):

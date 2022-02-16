@@ -21,7 +21,7 @@ class AnnotationSPAV:
         """
         if data is None:
             self._spav = self._empty_raw
-        elif type(data) is List:
+        elif type(data) is list:
             n = len(data)
             if n == 0:
                 self._spav = self._empty_raw
