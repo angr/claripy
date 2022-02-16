@@ -1,8 +1,13 @@
 __all__ = ["LazyPrim", "LazyArg", "Expr", "Bits"]
 
+import claricpp_ffi.lib
+
 from .claricpp import *
 from .annotation_spav import *
+from .annotation import *
+from .ops import translations
 from functools import lru_cache
+from typing import List
 
 # TODO: deal with destruction / freeing memory
 # TODO: slots!
@@ -23,28 +28,29 @@ class LazyPrim:
         Returns the python arg generated from the Claricpp object raw
         """
         tp = self._raw.type
+        prim = self._raw.data.prim
         # Primitive
         if tp == claricpp.ClaricppTypeEnumBool:
-            return bool(self._raw.data.value.boolean)
+            return bool(prim.boolean)
         elif tp == claricpp.ClaricppTypeEnumStr:
-            return to_utf8(self._raw.data.value.str)
+            return to_utf8(prim.str)
         elif tp == claricpp.ClaricppTypeEnumFloat:
-            return self._raw.data.value.flt
+            return prim.flt
         elif tp == claricpp.ClaricppTypeEnumDouble:
-            return self._raw.data.value.dbl
+            return prim.dbl
         elif tp == claricpp.ClaricppTypeEnumVS:
             raise NotImplementedError()  # TODO: implement
         elif tp == claricpp.ClaricppTypeEnumU8:
-            return self._raw.data.value.u8
+            return prim.u8
         elif tp == claricpp.ClaricppTypeEnumU16:
-            return self._raw.data.value.u16
+            return prim.u16
         elif tp == claricpp.ClaricppTypeEnumU32:
-            return self._raw.data.value.u32
+            return prim.u32
         elif tp == claricpp.ClaricppTypeEnumU64:
-            return self._raw.data.value.u64
+            return prim.u64
         # Invalid
         else:
-            raise NotImplementedError("Unknown Arg type: " + str(self._raw.type))
+            raise NotImplementedError("Unknown Arg type: " + str(tp))
 
 
 class LazyArg:
@@ -71,7 +77,7 @@ class LazyArg:
         elif tp == claricpp.ClaricppTypeEnumWidth:
             return claricpp.Width(self._raw.data.width)
         else:
-            return claricpp.Prim(self._raw).value
+            return LazyPrim(self._raw).value
 
 
 class Expr:
@@ -110,18 +116,39 @@ class Expr:
 
     @property
     @lru_cache(maxsize=None)
-    def type_name(self) -> str:
+    def _type_name(self) -> str:
         return to_utf8(claricpp.claricpp_expr_type_name(self._expr))
 
     @property
     @lru_cache(maxsize=None)
-    def op_name(self) -> str:
+    def _op_name(self) -> str:
         return to_utf8(claricpp.claricpp_expr_op_name(self._expr))
 
     @property
     @lru_cache(maxsize=None)
-    def annotations(self) -> AnnotationSPAV:
+    def hash(self):
+        return claricpp.claricpp_expr_hash(self._expr)
+
+    @property
+    @lru_cache(maxsize=None)
+    def op(self) -> str:
+        on = self._op_name
+        if on == 'Literal' or on == 'Symbol':
+            return translations.inverse[(self._type_name, on)]
+        return translations.inverse[on]
+
+    @property
+    @lru_cache(maxsize=None)
+    def lazy_annotations(self) -> AnnotationSPAV:
         return AnnotationSPAV(claricpp.claricpp_expr_annotations(self._expr))
+
+    @property
+    @lru_cache(maxsize=None)
+    def annotations(self) -> List[Annotation]:
+        raw = claricpp.claricpp_annotation_spav_to_array(self.lazy_annotations.raw)
+        ret = [ Annotation(raw.arr[i]) for i in range(raw.len) ]
+        claricpp_ffi.lib.claricpp_free_array_annotation(ffi.addressof(raw))
+        return tuple(ret)
 
     @property
     @lru_cache(maxsize=None)
