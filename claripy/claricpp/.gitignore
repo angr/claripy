@@ -1,3 +1,4 @@
+LICENSE.GMP/*
 src/*
 *.so
 *.dylib
