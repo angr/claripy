@@ -1,61 +1,81 @@
 __all__ = [
-    "bool_s",
-    "string_s",
-    "bv_s",
-    "fp_s",
-    "vs_s",
-    "bv_v",
-    "bool_v",
-    "fp_v",
-    "string_v",
-    "vs_v",
-    "if_",
-    "extract",
-    "abs_",
-    "neg",
-    "not_",
-    "invert",
-    "reverse",
-    "sign_ext",
-    "zero_ext",
-    "eq",
-    "neq",
-    "slt",
-    "sle",
-    "sgt",
-    "sge",
-    "ult",
-    "ule",
-    "ugt",
-    "uge",
-    "sub",
-    "sdiv",
-    "udiv",
-    "smod",
-    "umod",
-    "shl",
-    "shlr",
-    "shar",
+    "create",
+    "ClaricppRM",
+    "BoolS",
+    "StringS",
+    "BVS",
+    "FPS",
+    "VSS",
+    "BoolV",
+    "StringV",
+    "BVV",
+    "FPV",
+    "VSV",
+    "If",
+    "Extract",
+    "f__abs__",
+    "f__neg__",
+    "Not",
+    "f__invert__",
+    "Reverse",
+    "SignExt",
+    "ZeroExt",
+    "f__eq__",
+    "f__neq__",
+    "SLT",
+    "SLE",
+    "SGT",
+    "SGE",
+    "ULT",
+    "ULE",
+    "UGT",
+    "UGE",
+    "f__lt__",
+    "f__le__",
+    "f__gt__",
+    "f__ge__",
+    "f__sub__",
+    "SDiv",
+    "f__floordiv__",
+    "SMod",
+    "f__mod__",
+    "f__lshift__",
+    "LShR",
+    "f__rshift__",
     "widen",
     "union",
     "intersection",
-    "concat",
-    "add",
-    "mul",
-    "or_",
-    "and_",
-    "xor",
-    "to_ieee_bv",
-    "ClaricppRM",
-    "fp_add",
-    "fp_sub",
-    "fp_mul",
-    "fp_div",
-    "fp",
+    "Concat",
+    "f__add__",
+    "f__mul__",
+    "f__or__",
+    "f__and__",
+    "f__xor__",
+    "IntToStr",
+    "StrIndexOf",
+    "StrReplace",
+    "StrSubStr",
+    "StrIsDigit",
+    "StrToInt",
+    "StrLen",
+    "StrContains",
+    "StrPrefixOf",
+    "StrSuffixOf",
+    "fpToIEEEBV",
+    "fpAdd",
+    "fpSub",
+    "fpMul",
+    "fpDiv",
+    "fpFP"
 ]
+
+
+# TODO: deprecate old operators
+# TODO: reverse ops: __radd__ etc
 
 from .claricpp import *
 from .expr import *
+from .ops import *
 from .annotation_spav import AnnotationSPAV
 from typing import List, Union
 from enum import Enum
@@ -65,7 +85,6 @@ from enum import Enum
 
 # An empty SPAV (used as a default spav)
 _empty = AnnotationSPAV()
-
 
 class ClaricppRM(Enum):
     """
@@ -84,7 +103,7 @@ class ClaricppRM(Enum):
 ######################################################################
 
 
-def bool_s(name: bytes, spav: AnnotationSPAV = None) -> Expr:
+def BoolS(name: bytes, spav: AnnotationSPAV = None) -> Expr:
     """
     :param name: The name of the expr
     :param spav: The annotations to be held by the expr
@@ -94,7 +113,7 @@ def bool_s(name: bytes, spav: AnnotationSPAV = None) -> Expr:
     return Expr(claricpp.claricpp_create_symbol_bool(name, raw))
 
 
-def string_s(name: bytes, bit_length: int, spav: AnnotationSPAV = None) -> Expr:
+def StringS(name: bytes, bit_length: int, spav: AnnotationSPAV = None) -> Expr:
     """
     :param name: The name of the expr
     :param bit_length: The bit_length of the expr
@@ -105,7 +124,7 @@ def string_s(name: bytes, bit_length: int, spav: AnnotationSPAV = None) -> Expr:
     return Expr(claricpp.claricpp_create_symbol_string(name, bit_length, raw))
 
 
-def bv_s(name: bytes, bit_length: int, spav: AnnotationSPAV = None) -> Expr:
+def BVS(name: bytes, bit_length: int, spav: AnnotationSPAV = None) -> Expr:
     """
     :param name: The name of the expr
     :param bit_length: The bit_length of the expr
@@ -116,7 +135,7 @@ def bv_s(name: bytes, bit_length: int, spav: AnnotationSPAV = None) -> Expr:
     return Expr(claricpp.claricpp_create_symbol_bv(name, bit_length, raw))
 
 
-def fp_s(name: bytes, bit_length: int, spav: AnnotationSPAV = None) -> Expr:
+def FPS(name: bytes, bit_length: int, spav: AnnotationSPAV = None) -> Expr:
     """
     :param name: The name of the expr
     :param bit_length: The bit_length of the expr
@@ -127,7 +146,7 @@ def fp_s(name: bytes, bit_length: int, spav: AnnotationSPAV = None) -> Expr:
     return Expr(claricpp.claricpp_create_symbol_fp(name, bit_length, raw))
 
 
-def vs_s(name: bytes, bit_length: int, spav: AnnotationSPAV = None) -> Expr:
+def VSS(name: bytes, bit_length: int, spav: AnnotationSPAV = None) -> Expr:
     """
     :param name: The name of the expr
     :param bit_length: The bit_length of the expr
@@ -143,7 +162,7 @@ def vs_s(name: bytes, bit_length: int, spav: AnnotationSPAV = None) -> Expr:
 ######################################################################
 
 
-def bool_v(value: bool, spav: AnnotationSPAV = None) -> Expr:
+def BoolV(value: bool, spav: AnnotationSPAV = None) -> Expr:
     """
     :param value: The name of the expr
     :param spav: The annotations to be held by the expr
@@ -153,7 +172,7 @@ def bool_v(value: bool, spav: AnnotationSPAV = None) -> Expr:
     return Expr(claricpp.claricpp_create_literal_bool(value, raw))
 
 
-def string_v(value: bytes, spav: AnnotationSPAV = None) -> Expr:
+def StringV(value: bytes, spav: AnnotationSPAV = None) -> Expr:
     """
     :param value: The value of expr
     :param spav: The annotations to be held by the expr
@@ -163,7 +182,7 @@ def string_v(value: bytes, spav: AnnotationSPAV = None) -> Expr:
     return Expr(claricpp.claricpp_create_literal_string(value, raw))
 
 
-def bv_v(
+def BVV(
     value: Union[int, bytes], bit_length: int, spav: AnnotationSPAV = None
 ) -> Expr:
     """
@@ -192,7 +211,7 @@ def bv_v(
     return Expr(expr)
 
 
-def fp_v(value: float, double: bool = True, spav: AnnotationSPAV = None) -> Expr:
+def FPV(value: float, double: bool = True, spav: AnnotationSPAV = None) -> Expr:
     """
     :param value: The name of the expr
     :param double: True if the fp should be a 64-bit float, false implies 32-bit
@@ -205,7 +224,7 @@ def fp_v(value: float, double: bool = True, spav: AnnotationSPAV = None) -> Expr
     return Expr(claricpp.claricpp_create_literal_fp_float(value, raw))
 
 
-def vs_v(hash: int, value: int, bit_length: int, spav: AnnotationSPAV = None) -> Expr:
+def VSV(hash: int, value: int, bit_length: int, spav: AnnotationSPAV = None) -> Expr:
     """
     :param hash: The hash of the VS object
     :param value: A value or reference to the VS object
@@ -222,7 +241,7 @@ def vs_v(hash: int, value: int, bit_length: int, spav: AnnotationSPAV = None) ->
 ######################################################################
 
 
-def if_(cond: Expr, left: Expr, right: Expr, spav: AnnotationSPAV = None) -> Expr:
+def If(cond: Expr, left: Expr, right: Expr, spav: AnnotationSPAV = None) -> Expr:
     """
     :param cond: The condition
     :param left: The if true statement
@@ -234,7 +253,7 @@ def if_(cond: Expr, left: Expr, right: Expr, spav: AnnotationSPAV = None) -> Exp
     return Expr(claricpp.claricpp_create_if(cond.raw, left.raw, right.raw, raw))
 
 
-def extract(high: int, low: int, from_: Expr, spav: AnnotationSPAV = None) -> Expr:
+def Extract(high: int, low: int, from_: Expr, spav: AnnotationSPAV = None) -> Expr:
     """
     :param high:  The high index for the Extract op
     :param low: The low index for the Extract op
@@ -309,48 +328,54 @@ def _ternary(func):
 ######################################################################
 
 
-abs_ = _unary(claricpp.claricpp_create_abs)
-neg = _unary(claricpp.claricpp_create_neg)
-not_ = _unary(claricpp.claricpp_create_not)
-invert = _unary(claricpp.claricpp_create_invert)
-reverse = _unary(claricpp.claricpp_create_reverse)
+# TODO
+f__abs__ = _unary(claricpp.claricpp_create_abs)
+f__neg__ = _unary(claricpp.claricpp_create_neg)
+Not = _unary(claricpp.claricpp_create_not)
+f__invert__ = _unary(claricpp.claricpp_create_invert)
+Reverse = _unary(claricpp.claricpp_create_reverse)
 
-sign_ext = _uint_binary(claricpp.claricpp_create_sign_ext)
-zero_ext = _uint_binary(claricpp.claricpp_create_zero_ext)
+SignExt = _uint_binary(claricpp.claricpp_create_sign_ext)
+ZeroExt = _uint_binary(claricpp.claricpp_create_zero_ext)
 
-eq = _binary(claricpp.claricpp_create_eq)
-neq = _binary(claricpp.claricpp_create_neq)
+f__eq__ = _binary(claricpp.claricpp_create_eq)
+f__neq__ = _binary(claricpp.claricpp_create_neq)
 
-slt = _binary(claricpp.claricpp_create_slt)
-sle = _binary(claricpp.claricpp_create_sle)
-sgt = _binary(claricpp.claricpp_create_sgt)
-sge = _binary(claricpp.claricpp_create_sge)
-ult = _binary(claricpp.claricpp_create_ult)
-ule = _binary(claricpp.claricpp_create_ule)
-ugt = _binary(claricpp.claricpp_create_ugt)
-uge = _binary(claricpp.claricpp_create_uge)
+SLT = _binary(claricpp.claricpp_create_slt)
+SLE = _binary(claricpp.claricpp_create_sle)
+SGT = _binary(claricpp.claricpp_create_sgt)
+SGE = _binary(claricpp.claricpp_create_sge)
+ULT = _binary(claricpp.claricpp_create_ult)
+ULE = _binary(claricpp.claricpp_create_ule)
+UGT = _binary(claricpp.claricpp_create_ugt)
+UGE = _binary(claricpp.claricpp_create_uge)
+f__lt__ = ULT
+f__le__ = ULE
+f__gt__ = UGT
+f__ge__ = UGE
 
-sub = _binary(claricpp.claricpp_create_sub)
-sdiv = _binary(claricpp.claricpp_create_sdiv)
-udiv = _binary(claricpp.claricpp_create_udiv)
-smod = _binary(claricpp.claricpp_create_smod)
-umod = _binary(claricpp.claricpp_create_umod)
+f__sub__ = _binary(claricpp.claricpp_create_sub)
+SDiv = _binary(claricpp.claricpp_create_sdiv)
+f__floordiv__ = _binary(claricpp.claricpp_create_udiv)
+SMod = _binary(claricpp.claricpp_create_smod)
+f__mod__ = _binary(claricpp.claricpp_create_umod)
 
-shl = _binary(claricpp.claricpp_create_shift_left)
-shlr = _binary(claricpp.claricpp_create_shift_logical_right)
-shar = _binary(claricpp.claricpp_create_shift_arithmetic_right)
+f__lshift__ = _binary(claricpp.claricpp_create_shift_left)
+LShR = _binary(claricpp.claricpp_create_shift_logical_right)
+f__rshift__ = _binary(claricpp.claricpp_create_shift_arithmetic_right)
 
 widen = _binary(claricpp.claricpp_create_widen)
 union = _binary(claricpp.claricpp_create_union)
 intersection = _binary(claricpp.claricpp_create_intersection)
-concat = _binary(claricpp.claricpp_create_concat)
+Concat = _binary(claricpp.claricpp_create_concat)
 
-add = _flat(claricpp.claricpp_create_add)
-mul = _flat(claricpp.claricpp_create_mul)
+f__add__ = _flat(claricpp.claricpp_create_add)
+f__mul__ = _flat(claricpp.claricpp_create_mul)
 
-or_ = _flat(claricpp.claricpp_create_or)
-and_ = _flat(claricpp.claricpp_create_and)
-xor = _flat(claricpp.claricpp_create_xor)
+f__or__ = _flat(claricpp.claricpp_create_or)
+f__and__ = _flat(claricpp.claricpp_create_and)
+f__xor__ = _flat(claricpp.claricpp_create_xor)
+
 
 
 ######################################################################
@@ -358,12 +383,12 @@ xor = _flat(claricpp.claricpp_create_xor)
 ######################################################################
 
 
-def int2str(x: Expr, spav: AnnotationSPAV = None) -> Expr:
+def IntToStr(x: Expr, spav: AnnotationSPAV = None) -> Expr:
     raw = (_empty if spav is None else spav).raw
     return Expr(claricpp.claricpp_create_string_from_int(x.raw, raw))
 
 
-def index_of(
+def StrIndexOf(
     str_: Expr,
     pattern: Expr,
     start_index: Expr,
@@ -378,7 +403,7 @@ def index_of(
     )
 
 
-def replace(
+def StrReplace(
     full: Expr, search: Expr, replacement: Expr, spav: AnnotationSPAV = None
 ) -> Expr:
     raw = (_empty if spav is None else spav).raw
@@ -389,7 +414,7 @@ def replace(
     )
 
 
-def substr(
+def StrSubStr(
     start_index: Expr, count: Expr, full_string: Expr, spav: AnnotationSPAV = None
 ) -> Expr:
     raw = (_empty if spav is None else spav).raw
@@ -400,17 +425,18 @@ def substr(
     )
 
 
-is_digit = _unary(claricpp.claricpp_create_string_is_digit)
-to_int = _uint_binary(claricpp.claricpp_create_string_to_int)
-strlen = _uint_binary(claricpp.claricpp_create_string_len)
-contains = _binary(claricpp.claricpp_create_string_contains)
-prefix_of = _binary(claricpp.claricpp_create_string_prefix_of)
-suffix_of = _binary(claricpp.claricpp_create_string_suffix_of)
+StrIsDigit = _unary(claricpp.claricpp_create_string_is_digit)
+StrToInt = _uint_binary(claricpp.claricpp_create_string_to_int)
+StrLen = _uint_binary(claricpp.claricpp_create_string_len)
+StrContains = _binary(claricpp.claricpp_create_string_contains)
+StrPrefixOf = _binary(claricpp.claricpp_create_string_prefix_of)
+StrSuffixOf = _binary(claricpp.claricpp_create_string_suffix_of)
 
 
 ######################################################################
 #                             Claricpp FP                            #
 ######################################################################
+
 
 # todo: ClaricppExpr claricpp_create_fp_from_2s_complement_bv_signed(const ClaricppRM mode, const ClaricppExpr x, const uint32_t exp_width, const uint32_t mantissa_width, ClaricppSPAV spav);
 # todo: ClaricppExpr claricpp_create_fp_from_2s_complement_bv_unsigned(const ClaricppRM mode, const ClaricppExpr x, const uint32_t exp_width, const uint32_t mantissa_width, ClaricppSPAV spav);
@@ -419,11 +445,97 @@ suffix_of = _binary(claricpp.claricpp_create_string_suffix_of)
 # todo: ClaricppExpr claricpp_create_fp_to_bv_signed(const ClaricppRM mode, const ClaricppExpr fp, const UINT bit_length, ClaricppSPAV spav);
 # todo: ClaricppExpr claricpp_create_fp_to_bv_unsigned(const ClaricppRM mode, const ClaricppExpr fp, const UINT bit_length, ClaricppSPAV spav);
 
-to_ieee_bv = _unary(claricpp.claricpp_create_fp_to_ieee_bv)
+fpToIEEEBV = _unary(claricpp.claricpp_create_fp_to_ieee_bv)
 
-fp_add = _mode_binary(claricpp.claricpp_create_fp_add)
-fp_sub = _mode_binary(claricpp.claricpp_create_fp_sub)
-fp_mul = _mode_binary(claricpp.claricpp_create_fp_mul)
-fp_div = _mode_binary(claricpp.claricpp_create_fp_div)
+fpAdd = _mode_binary(claricpp.claricpp_create_fp_add)
+fpSub = _mode_binary(claricpp.claricpp_create_fp_sub)
+fpMul = _mode_binary(claricpp.claricpp_create_fp_mul)
+fpDiv = _mode_binary(claricpp.claricpp_create_fp_div)
 
-fp = _ternary(claricpp.claricpp_create_fp_fp)
+fpFP = _ternary(claricpp.claricpp_create_fp_fp)
+
+
+######################################################################
+#                               Create                               #
+######################################################################
+
+
+op_to_create_func = {
+    "BoolS" : BoolS,
+    "StringS" : StringS,
+    "BVS" : BVS,
+    "FPS" : FPS,
+    "VSS" : VSS,
+    "BoolV" : BoolV,
+    "StringV" : StringV,
+    "BVV" : BVV,
+    "FPV" : FPV,
+    "VSV" : VSV,
+    "If" : If,
+    "Extract" : Extract,
+    "__abs__" : f__abs__,
+    "__neg__" : f__neg__,
+    "Not" : Not,
+    "__invert__" : f__invert__,
+    "Reverse" : Reverse,
+    "SignExt" : SignExt,
+    "ZeroExt" : ZeroExt,
+    "__eq__" : f__eq__,
+    "__neq__" : f__neq__,
+    "SLT" : SLT,
+    "SLE" : SLE,
+    "SGT" : SGT,
+    "SGE" : SGE,
+    "ULT" : ULT,
+    "ULE" : ULE,
+    "UGT" : UGT,
+    "UGE" : UGE,
+    "__lt__" : f__lt__,
+    "__le__" : f__le__,
+    "__gt__" : f__gt__,
+    "__ge__" : f__ge__,
+    "__sub__" : f__sub__,
+    "SDiv" : SDiv,
+    "__floordiv__" : f__floordiv__,
+    "SMod" : SMod,
+    "__mod__" : f__mod__,
+    "__lshift__" : f__lshift__,
+    "LShR" : LShR,
+    "__rshift__" : f__rshift__,
+    "widen" : widen,
+    "union" : union,
+    "intersection" : intersection,
+    "Concat" : Concat,
+    "__add__" : f__add__,
+    "__mul__" : f__mul__,
+    "__or__" : f__or__,
+    "__and__" : f__and__,
+    "__xor__" : f__xor__,
+    "IntToStr" : IntToStr,
+    "StrIndexOf" : StrIndexOf,
+    "StrReplace" : StrReplace,
+    "StrSubStr" : StrSubStr,
+    "StrIsDigit" : StrIsDigit,
+    "StrToInt" : StrToInt,
+    "StrLen" : StrLen,
+    "StrContains" : StrContains,
+    "StrPrefixOf" : StrPrefixOf,
+    "StrSuffixOf" : StrSuffixOf,
+    "fpToIEEEBV" : fpToIEEEBV,
+    "fpAdd" : fpAdd,
+    "fpSub" : fpSub,
+    "fpMul" : fpMul,
+    "fpDiv" : fpDiv,
+    "fpFP" : fpFP
+}
+
+def py_create(op, args, annotations = None):
+    """
+    Create a new Expr from the python op type op
+    """
+    if annotations is None:
+        spav = None
+    else:
+        ans = annotations if type(annotations) is list else list(annotations)
+        spav = claricpp.claricpp_annotation_create_spav(ans, len(ans))
+    return op_to_create_func[op](*args, spav=spav)
