@@ -29,7 +29,6 @@ class Annotation:
         return claricpp.claricpp_annotation_relocatable()
 
 
-
 class SimplificationAvoidanceAnnotation(Annotation):
     """
     Wraps a Claricpp Simplification Avoidance Annotation

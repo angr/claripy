@@ -71,7 +71,12 @@ class ClaricppException(Exception):
 
     def msg_trace(self):
         return (
-            "Type: " + str(self.type) + "\n\nMsg: " + self.msg + "\n\nTrace: " + self.trace
+            "Type: "
+            + str(self.type)
+            + "\n\nMsg: "
+            + self.msg
+            + "\n\nTrace: "
+            + self.trace
         )
 
     def __repr__(self):
@@ -217,7 +222,7 @@ claricpp = Claricpp()
 # The location of the C++ source root
 # This is used mostly for generating detailed backtraces
 src_root = path.dirname(path.abspath(__file__)).encode()
-if not path.exists(src_root): # In case we are running from a zip or something weird
+if not path.exists(src_root):  # In case we are running from a zip or something weird
     src_root = ffi.NULL
 
 # Configure Claricpp for use with python

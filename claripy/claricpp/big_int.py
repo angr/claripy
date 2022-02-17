@@ -13,14 +13,16 @@ class BigInt:
     """
     Wrap claricpp BigInt methods
     """
+
     class Mode(Enum):
         """
         An enum which notes how python ints should be / are stored in C
         """
+
         Str: int = claricpp.ClaricppBimStr
         Int: int = claricpp.ClaricppBimInt
 
-    def mode(self, mode_: Optional[Mode]=None):
+    def mode(self, mode_: Optional[Mode] = None):
         """
         If mode_ is None, returns the current mode
         If mode_ is a Mode, sets the mode then returns the old mode
@@ -30,6 +32,7 @@ class BigInt:
         else:
             return claricpp.big_int_mode_set(mode_.value)
 
+
 class Backend:
     """
     The public claripy Backend base class
@@ -37,4 +40,3 @@ class Backend:
 
     def __init__(self, raw):
         self._raw = raw
-

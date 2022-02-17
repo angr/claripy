@@ -49,7 +49,9 @@ class Z3(Backend):
                 claricpp.claricpp_backend_z3_new_tls_solver(self._raw, timeout)
             )
         else:
-            return self.Solver(claricpp.claricpp_backend_z3_tls_solver(self._raw, timeout))
+            return self.Solver(
+                claricpp.claricpp_backend_z3_tls_solver(self._raw, timeout)
+            )
 
     def add(
         self, solver: Solver, constraints: Union[Expr, List[Expr]], tracked: bool
@@ -194,7 +196,9 @@ class Z3(Backend):
         Get up to n different possible value of expr given solver and extra_constraints
         """
         if extra_constraints is None:
-            out = claricpp.claricpp_backend_z3_eval(self._raw, expr.raw, solver.raw, n_sol)
+            out = claricpp.claricpp_backend_z3_eval(
+                self._raw, expr.raw, solver.raw, n_sol
+            )
         else:
             ec = [i.raw for i in extra_constraints]
             out = claricpp.claricpp_backend_z3_eval(

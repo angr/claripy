@@ -11,4 +11,4 @@ from .backend import *
 
 from .create import py_create
 from . import create
-from . import ops
+from . import op_names
