@@ -188,6 +188,15 @@ class Bits(Expr):
     def __init__(self, raw):
         super().__init__(raw)
 
+    @property
+    @lru_cache(maxsize=None)
+    def length(self):
+        return claricpp.claricpp_expr_bit_length(self._expr)
+
+    @lru_cache(maxsize=None)
+    def size(self):
+        return self.length
+
     @lru_cache(maxsize=None)
     def __len__(self) -> int:
-        return claricpp.claricpp_expr_bit_length(self._expr)
+        return self.length
