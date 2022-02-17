@@ -5,7 +5,7 @@ import claricpp_ffi.lib
 from .claricpp import *
 from .annotation_spav import *
 from .annotation import *
-from .ops import translations
+from .op_names import cpp_to_py
 from functools import lru_cache
 from typing import List
 
@@ -133,9 +133,9 @@ class Expr:
     @lru_cache(maxsize=None)
     def op(self) -> str:
         on = self._op_name
-        if on == 'Literal' or on == 'Symbol':
-            return translations.inverse[(self._type_name, on)]
-        return translations.inverse[on]
+        if on == "Literal" or on == "Symbol":
+            return cpp_to_py[(self._type_name, on)]
+        return cpp_to_py[on]
 
     @property
     @lru_cache(maxsize=None)
@@ -146,7 +146,7 @@ class Expr:
     @lru_cache(maxsize=None)
     def annotations(self) -> List[Annotation]:
         raw = claricpp.claricpp_annotation_spav_to_array(self.lazy_annotations.raw)
-        ret = [ Annotation(raw.arr[i]) for i in range(raw.len) ]
+        ret = [Annotation(raw.arr[i]) for i in range(raw.len)]
         claricpp_ffi.lib.claricpp_free_array_annotation(ffi.addressof(raw))
         return tuple(ret)
 
@@ -158,6 +158,14 @@ class Expr:
         Warning: Do not call this function unless you know what you are doing!
         """
         return self._expr
+
+    def move_from(self, other):
+        """
+        Moves ownership of other._expr to self
+        """
+        if self is not other:
+            self._expr = other._expr
+            other._expr = None
 
 
 class Bits(Expr):
