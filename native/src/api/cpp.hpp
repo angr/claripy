@@ -162,18 +162,19 @@ namespace API {
     /** Return a dynamically allocated string containing s */
     inline const char *c_str(const std::string &s) { return c_str(s.data(), s.size()); }
 
+    /** Return a corresponding array-type of CTypes of size len */
+    template <typename CType> auto new_arr(const SIZE_T len) {
+        Util::Log::verbose("Allocating an array of C types of length: ", len);
+        using Wrapper = typename Private::ArrMap::template GetValue<CType>;
+        return Wrapper { .arr = new CType[len], .len = len };
+    }
+
     namespace Private {
-        /** Return a corresponding array-type of CTypes of size len */
-        template <typename CType> auto new_arr(const SIZE_T len) {
-            Util::Log::verbose("Allocating an array of C types of length: ", len);
-            using Wrapper = typename Private::ArrMap::template GetValue<CType>;
-            return Wrapper { .arr = new CType[len], .len = len };
-        }
 
         /** Convert a C++ vector to a C array */
         template <typename InCpp, typename CType, typename ToC>
         inline auto to_arr(std::vector<InCpp> &&arr, const ToC &to_c) {
-            auto ret { Private::new_arr<CType>(arr.size()) };
+            auto ret { new_arr<CType>(arr.size()) };
             for (SIZE_T i { 0 }; i < ret.len; ++i) {
                 ret.arr[i] = to_c(std::move(arr[i]));
             }
