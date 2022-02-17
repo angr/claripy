@@ -80,6 +80,15 @@ class LazyArg:
             return LazyPrim(self._raw).value
 
 
+class ID:
+    """
+    Wrap an object
+    """
+
+    def __init__(self, o):
+        self.value = o
+
+
 class Expr:
     """
     The claripy API for a claricpp Expr Base
@@ -101,7 +110,10 @@ class Expr:
         """
         c_arr = claricpp.claricpp_expr_args(self._expr)
         arr = c_arr.arr
-        return [LazyArg(arr[i]) for i in range(c_arr.len)]
+        cpp = [LazyArg(arr[i]) for i in range(c_arr.len)]
+        if claricpp.claricpp_expr_is_bits(self._expr):
+            cpp.append(ID(claricpp_ffi.lib.claricpp_expr_bit_length(self._expr)))
+        return cpp
 
     @property
     @lru_cache(maxsize=None)
