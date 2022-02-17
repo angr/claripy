@@ -103,8 +103,7 @@ class Expr:
         return bool(claricpp.claricpp_expr_symbolic(self._expr))
 
     @property
-    @lru_cache(maxsize=None)
-    def lazy_args(self) -> list[LazyArg]:
+    def lazy_args(self) -> list[LazyArg]: # TODO: cache
         """
         Return the raw LazyArg's contained by self
         """
@@ -116,8 +115,7 @@ class Expr:
         return cpp
 
     @property
-    @lru_cache(maxsize=None)
-    def args(self):
+    def args(self): # TODO: cache
         """
         Return the args contained by self
         """

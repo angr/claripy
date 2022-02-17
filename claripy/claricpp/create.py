@@ -110,7 +110,7 @@ def BoolS(name: bytes, spav: AnnotationSPAV = None) -> Expr:
     :param spav: The annotations to be held by the expr
     :return: A symbolic Bool expr
     """
-    raw = (_empty if spav is None else spav).raw
+    raw = (_empty if not spav else spav).raw
     return Expr(claricpp.claricpp_create_symbol_bool(name, raw))
 
 
@@ -121,7 +121,7 @@ def StringS(name: bytes, bit_length: int, spav: AnnotationSPAV = None) -> Expr:
     :param spav: The annotations to be held by the expr
     :return: A symbolic String expr
     """
-    raw = (_empty if spav is None else spav).raw
+    raw = (_empty if not spav else spav).raw
     return Expr(claricpp.claricpp_create_symbol_string(name, bit_length, raw))
 
 
@@ -132,7 +132,7 @@ def BVS(name: bytes, bit_length: int, spav: AnnotationSPAV = None) -> Expr:
     :param spav: The annotations to be held by the expr
     :return: A symbolic BV expr
     """
-    raw = (_empty if spav is None else spav).raw
+    raw = (_empty if not spav else spav).raw
     return Expr(claricpp.claricpp_create_symbol_bv(name, bit_length, raw))
 
 
@@ -143,7 +143,7 @@ def FPS(name: bytes, bit_length: int, spav: AnnotationSPAV = None) -> Expr:
     :param spav: The annotations to be held by the expr
     :return: A symbolic FP expr
     """
-    raw = (_empty if spav is None else spav).raw
+    raw = (_empty if not spav else spav).raw
     return Expr(claricpp.claricpp_create_symbol_fp(name, bit_length, raw))
 
 
@@ -154,7 +154,7 @@ def VSS(name: bytes, bit_length: int, spav: AnnotationSPAV = None) -> Expr:
     :param spav: The annotations to be held by the expr
     :return: A symbolic VS expr
     """
-    raw = (_empty if spav is None else spav).raw
+    raw = (_empty if not spav else spav).raw
     return Expr(claricpp.claricpp_create_symbol_fp(name, bit_length, raw))
 
 
@@ -169,7 +169,7 @@ def BoolV(value: bool, spav: AnnotationSPAV = None) -> Expr:
     :param spav: The annotations to be held by the expr
     :return: A Bool expr with the given value
     """
-    raw = (_empty if spav is None else spav).raw
+    raw = (_empty if not spav else spav).raw
     return Expr(claricpp.claricpp_create_literal_bool(value, raw))
 
 
@@ -179,7 +179,7 @@ def StringV(value: bytes, spav: AnnotationSPAV = None) -> Expr:
     :param spav: The annotations to be held by the expr
     :return: A String expr with the given value
     """
-    raw = (_empty if spav is None else spav).raw
+    raw = (_empty if not spav else spav).raw
     return Expr(claricpp.claricpp_create_literal_string(value, raw))
 
 
@@ -190,7 +190,7 @@ def BVV(value: Union[int, bytes], bit_length: int, spav: AnnotationSPAV = None) 
     :param spav: The annotations to be held by the expr
     :return: A BV expr with the given value
     """
-    raw = (_empty if spav is None else spav).raw
+    raw = (_empty if not spav else spav).raw
     if type(value) == bytes:
         # We prefer the default mode rather than forcing one
         expr = claricpp.claricpp_create_literal_bv_big_int(value, bit_length, raw)
@@ -217,7 +217,7 @@ def FPV(value: float, double: bool = True, spav: AnnotationSPAV = None) -> Expr:
     :param spav: The annotations to be held by the expr
     :return: A FP expr with the given value
     """
-    raw = (_empty if spav is None else spav).raw
+    raw = (_empty if not spav else spav).raw
     if double:
         return Expr(claricpp.claricpp_create_literal_fp_double(value, raw))
     return Expr(claricpp.claricpp_create_literal_fp_float(value, raw))
@@ -231,7 +231,7 @@ def VSV(hash: int, value: int, bit_length: int, spav: AnnotationSPAV = None) -> 
     :param spav: The annotations to be held by the expr
     :return: A VS expr with the given value
     """
-    raw = (_empty if spav is None else spav).raw
+    raw = (_empty if not spav else spav).raw
     return Expr(claricpp.claricpp_create_literal_vs(hash, value, bit_length, raw))
 
 
@@ -248,7 +248,7 @@ def If(cond: Expr, left: Expr, right: Expr, spav: AnnotationSPAV = None) -> Expr
     :param spav: The annotations to be held by the expr
     :return: An if_ expr with the given arguments
     """
-    raw = (_empty if spav is None else spav).raw
+    raw = (_empty if not spav else spav).raw
     return Expr(claricpp.claricpp_create_if(cond.raw, left.raw, right.raw, raw))
 
 
@@ -260,7 +260,7 @@ def Extract(high: int, low: int, from_: Expr, spav: AnnotationSPAV = None) -> Ex
     :param spav: The annotations to be held by the expr
     :return: An extract expr with the given arguments
     """
-    raw = (_empty if spav is None else spav).raw
+    raw = (_empty if not spav else spav).raw
     return Expr(claricpp.claricpp_create_if(high, low, from_.raw, raw))
 
 
@@ -271,7 +271,7 @@ def Extract(high: int, low: int, from_: Expr, spav: AnnotationSPAV = None) -> Ex
 
 def _flat(func):
     def ret(*args: Expr, spav: AnnotationSPAV = None) -> Expr:
-        raw = (_empty if spav is None else spav).raw
+        raw = (_empty if not spav else spav).raw
         exprs = [i.raw for i in args]
         return Expr(func(exprs, len(exprs), raw))
 
@@ -282,7 +282,7 @@ def _mode_binary(func):
     def ret(
         left: Expr, right: Expr, mode: ClaricppRM, spav: AnnotationSPAV = None
     ) -> Expr:
-        raw = (_empty if spav is None else spav).raw
+        raw = (_empty if not spav else spav).raw
         return Expr(func(left.raw, right.raw, mode.value, raw))
 
     return ret
@@ -290,7 +290,7 @@ def _mode_binary(func):
 
 def _unary(func):
     def ret(x: Expr, spav: AnnotationSPAV = None) -> Expr:
-        raw = (_empty if spav is None else spav).raw
+        raw = (_empty if not spav else spav).raw
         return Expr(func(x.raw, raw))
 
     return ret
@@ -298,7 +298,7 @@ def _unary(func):
 
 def _uint_binary(func):
     def ret(x: Expr, n: int, spav: AnnotationSPAV = None) -> Expr:
-        raw = (_empty if spav is None else spav).raw
+        raw = (_empty if not spav else spav).raw
         return Expr(func(x.raw, n, raw))
 
     return ret
@@ -306,7 +306,7 @@ def _uint_binary(func):
 
 def _binary(func):
     def ret(left: Expr, right: Expr, spav: AnnotationSPAV = None) -> Expr:
-        raw = (_empty if spav is None else spav).raw
+        raw = (_empty if not spav else spav).raw
         return Expr(func(left.raw, right.raw, raw))
 
     return ret
@@ -316,7 +316,7 @@ def _ternary(func):
     def ret(
         first: Expr, second: Expr, third: Expr, spav: AnnotationSPAV = None
     ) -> Expr:
-        raw = (_empty if spav is None else spav).raw
+        raw = (_empty if not spav else spav).raw
         return Expr(func(first.raw, second.raw, third.raw, raw))
 
     return ret
@@ -382,7 +382,7 @@ f__xor__ = _flat(claricpp.claricpp_create_xor)
 
 
 def IntToStr(x: Expr, spav: AnnotationSPAV = None) -> Expr:
-    raw = (_empty if spav is None else spav).raw
+    raw = (_empty if not spav else spav).raw
     return Expr(claricpp.claricpp_create_string_from_int(x.raw, raw))
 
 
@@ -393,7 +393,7 @@ def StrIndexOf(
     bit_length: int,
     spav: AnnotationSPAV = None,
 ) -> Expr:
-    raw = (_empty if spav is None else spav).raw
+    raw = (_empty if not spav else spav).raw
     return Expr(
         claricpp.claricpp_create_string_index_of(
             str_.raw, pattern.raw, start_index.raw, bit_length, raw
@@ -404,7 +404,7 @@ def StrIndexOf(
 def StrReplace(
     full: Expr, search: Expr, replacement: Expr, spav: AnnotationSPAV = None
 ) -> Expr:
-    raw = (_empty if spav is None else spav).raw
+    raw = (_empty if not spav else spav).raw
     return Expr(
         claricpp.claricpp_create_string_index_of(
             full.raw, search.raw, replacement.raw, raw
@@ -415,7 +415,7 @@ def StrReplace(
 def StrSubStr(
     start_index: Expr, count: Expr, full_string: Expr, spav: AnnotationSPAV = None
 ) -> Expr:
-    raw = (_empty if spav is None else spav).raw
+    raw = (_empty if not spav else spav).raw
     return Expr(
         claricpp.claricpp_create_string_index_of(
             start_index.raw, count.raw, full_string.raw, raw
@@ -532,7 +532,7 @@ def py_create(op, args, annotations=None):
     """
     Create a new Expr from the python op type op
     """
-    if annotations is None:
+    if not annotations:
         spav = None
     else:
         ans = annotations if type(annotations) is list else list(annotations)
