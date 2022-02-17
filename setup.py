@@ -913,7 +913,6 @@ if __name__ == "__main__":
             "decorator",
             "pysmt>=0.9.1.dev119",
             "six",
-            "bidict",
         ],
         description="An abstraction layer for constraint solvers",
         url="https://github.com/angr/claripy",
