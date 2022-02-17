@@ -108,11 +108,7 @@ class Expr:
         Return the raw LazyArg's contained by self
         """
         c_arr = claricpp.claricpp_expr_args(self._expr)
-        arr = c_arr.arr
-        cpp = [LazyArg(arr[i]) for i in range(c_arr.len)]
-        if claricpp.claricpp_expr_is_bits(self._expr):
-            cpp.append(ID(claricpp_ffi.lib.claricpp_expr_bit_length(self._expr)))
-        return cpp
+        return [LazyArg(c_arr.arr[i]) for i in range(c_arr.len)]
 
     @property
     def args(self): # TODO: cache
