@@ -33,6 +33,12 @@ BOOL claricpp_expr_symbolic(const ClaricppExpr expr);
  */
 ClaricppSPAV claricpp_expr_annotations(const ClaricppExpr expr);
 
+/** Return true iff expr is a Bits
+ *  @param expr The Expr to check
+ *  @return True iff expr is a Bits
+ */
+BOOL claricpp_expr_is_bits(const ClaricppExpr expr);
+
 /** Gets the bit length of expr
  *  @param expr The Expr to check the length of
  *  @return The bit length of expr

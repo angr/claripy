@@ -14,6 +14,10 @@ extern "C" {
 
     HASH_T claricpp_expr_hash(const ClaricppExpr expr) { return API::to_cpp_ref(expr).hash; }
 
+    BOOL claricpp_expr_is_bits(const ClaricppExpr expr) {
+        return API::bool_(dynamic_cast<CTSC<Expr::Bits>>(API::to_cpp(expr).get()) != nullptr);
+    }
+
     SIZE_T claricpp_expr_bit_length(const ClaricppExpr expr) {
         return Expr::get_bit_length(API::to_cpp(expr));
     }
