@@ -66,7 +66,7 @@ __all__ = [
     "fpSub",
     "fpMul",
     "fpDiv",
-    "fpFP"
+    "fpFP",
 ]
 
 
@@ -75,7 +75,7 @@ __all__ = [
 
 from .claricpp import *
 from .expr import *
-from .ops import *
+from .op_names import *
 from .annotation_spav import AnnotationSPAV
 from typing import List, Union
 from enum import Enum
@@ -85,6 +85,7 @@ from enum import Enum
 
 # An empty SPAV (used as a default spav)
 _empty = AnnotationSPAV()
+
 
 class ClaricppRM(Enum):
     """
@@ -182,9 +183,7 @@ def StringV(value: bytes, spav: AnnotationSPAV = None) -> Expr:
     return Expr(claricpp.claricpp_create_literal_string(value, raw))
 
 
-def BVV(
-    value: Union[int, bytes], bit_length: int, spav: AnnotationSPAV = None
-) -> Expr:
+def BVV(value: Union[int, bytes], bit_length: int, spav: AnnotationSPAV = None) -> Expr:
     """
     :param value: The name of the expr, can be an int or in decimal representation in bytes (e.x. b"1.23")
     :param bit_length: The bit length of the BV
@@ -377,7 +376,6 @@ f__and__ = _flat(claricpp.claricpp_create_and)
 f__xor__ = _flat(claricpp.claricpp_create_xor)
 
 
-
 ######################################################################
 #                           Claricpp String                          #
 ######################################################################
@@ -461,75 +459,76 @@ fpFP = _ternary(claricpp.claricpp_create_fp_fp)
 
 
 op_to_create_func = {
-    "BoolS" : BoolS,
-    "StringS" : StringS,
-    "BVS" : BVS,
-    "FPS" : FPS,
-    "VSS" : VSS,
-    "BoolV" : BoolV,
-    "StringV" : StringV,
-    "BVV" : BVV,
-    "FPV" : FPV,
-    "VSV" : VSV,
-    "If" : If,
-    "Extract" : Extract,
-    "__abs__" : f__abs__,
-    "__neg__" : f__neg__,
-    "Not" : Not,
-    "__invert__" : f__invert__,
-    "Reverse" : Reverse,
-    "SignExt" : SignExt,
-    "ZeroExt" : ZeroExt,
-    "__eq__" : f__eq__,
-    "__neq__" : f__neq__,
-    "SLT" : SLT,
-    "SLE" : SLE,
-    "SGT" : SGT,
-    "SGE" : SGE,
-    "ULT" : ULT,
-    "ULE" : ULE,
-    "UGT" : UGT,
-    "UGE" : UGE,
-    "__lt__" : f__lt__,
-    "__le__" : f__le__,
-    "__gt__" : f__gt__,
-    "__ge__" : f__ge__,
-    "__sub__" : f__sub__,
-    "SDiv" : SDiv,
-    "__floordiv__" : f__floordiv__,
-    "SMod" : SMod,
-    "__mod__" : f__mod__,
-    "__lshift__" : f__lshift__,
-    "LShR" : LShR,
-    "__rshift__" : f__rshift__,
-    "widen" : widen,
-    "union" : union,
-    "intersection" : intersection,
-    "Concat" : Concat,
-    "__add__" : f__add__,
-    "__mul__" : f__mul__,
-    "__or__" : f__or__,
-    "__and__" : f__and__,
-    "__xor__" : f__xor__,
-    "IntToStr" : IntToStr,
-    "StrIndexOf" : StrIndexOf,
-    "StrReplace" : StrReplace,
-    "StrSubStr" : StrSubStr,
-    "StrIsDigit" : StrIsDigit,
-    "StrToInt" : StrToInt,
-    "StrLen" : StrLen,
-    "StrContains" : StrContains,
-    "StrPrefixOf" : StrPrefixOf,
-    "StrSuffixOf" : StrSuffixOf,
-    "fpToIEEEBV" : fpToIEEEBV,
-    "fpAdd" : fpAdd,
-    "fpSub" : fpSub,
-    "fpMul" : fpMul,
-    "fpDiv" : fpDiv,
-    "fpFP" : fpFP
+    "BoolS": BoolS,
+    "StringS": StringS,
+    "BVS": BVS,
+    "FPS": FPS,
+    "VSS": VSS,
+    "BoolV": BoolV,
+    "StringV": StringV,
+    "BVV": BVV,
+    "FPV": FPV,
+    "VSV": VSV,
+    "If": If,
+    "Extract": Extract,
+    "__abs__": f__abs__,
+    "__neg__": f__neg__,
+    "Not": Not,
+    "__invert__": f__invert__,
+    "Reverse": Reverse,
+    "SignExt": SignExt,
+    "ZeroExt": ZeroExt,
+    "__eq__": f__eq__,
+    "__neq__": f__neq__,
+    "SLT": SLT,
+    "SLE": SLE,
+    "SGT": SGT,
+    "SGE": SGE,
+    "ULT": ULT,
+    "ULE": ULE,
+    "UGT": UGT,
+    "UGE": UGE,
+    "__lt__": f__lt__,
+    "__le__": f__le__,
+    "__gt__": f__gt__,
+    "__ge__": f__ge__,
+    "__sub__": f__sub__,
+    "SDiv": SDiv,
+    "__floordiv__": f__floordiv__,
+    "SMod": SMod,
+    "__mod__": f__mod__,
+    "__lshift__": f__lshift__,
+    "LShR": LShR,
+    "__rshift__": f__rshift__,
+    "widen": widen,
+    "union": union,
+    "intersection": intersection,
+    "Concat": Concat,
+    "__add__": f__add__,
+    "__mul__": f__mul__,
+    "__or__": f__or__,
+    "__and__": f__and__,
+    "__xor__": f__xor__,
+    "IntToStr": IntToStr,
+    "StrIndexOf": StrIndexOf,
+    "StrReplace": StrReplace,
+    "StrSubStr": StrSubStr,
+    "StrIsDigit": StrIsDigit,
+    "StrToInt": StrToInt,
+    "StrLen": StrLen,
+    "StrContains": StrContains,
+    "StrPrefixOf": StrPrefixOf,
+    "StrSuffixOf": StrSuffixOf,
+    "fpToIEEEBV": fpToIEEEBV,
+    "fpAdd": fpAdd,
+    "fpSub": fpSub,
+    "fpMul": fpMul,
+    "fpDiv": fpDiv,
+    "fpFP": fpFP,
 }
 
-def py_create(op, args, annotations = None):
+
+def py_create(op, args, annotations=None):
     """
     Create a new Expr from the python op type op
     """
