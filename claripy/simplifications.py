@@ -406,11 +406,20 @@ class SimplificationManager:
         if len(new_args) < len(args):
             return ast.all_operations.And(*new_args)
 
-        flattened = SimplificationManager._flatten_simplifier("And", SimplificationManager._deduplicate_filter, *args)
+        # a >= c && a != c    ->   a>c
+        if len(args) == 2:
+            a = args[0]
+            b = args[1]
+            if len(a.args) >= 2 and len(b.args) >= 2:
+                if (a.args[0] == b.args[0]).is_true() and (a.args[1] == b.args[1]).is_true():
+                    if a.op == "__ge__" and b.op == "__ne__":
+                        return ast.all_operations.UGT(a.args[0], a.args[1])
+
+        flattened = SimplificationManager._flatten_simplifier('And', SimplificationManager._deduplicate_filter, *args)
         if flattened is None:
             return None
 
-        if flattened.op != "And":
+        if flattened.op != 'And':
             return flattened
 
         fargs = flattened.args
@@ -718,10 +727,14 @@ class SimplificationManager:
                 if (b == 2 ** (a.size() - a.args[0].size()) - 1).is_true():
                     # yes!
                     return ast.all_operations.ZeroExt(a.args[0].size(), a.args[1])
-            # if(cond0, 1, 0) & if(cond1, 1, 0)    ->    if(cond0 & cond1, 1, 0)
-            # if a.op == "If" and b.op == "If":
-            #     cond
 
+            # if(cond0, 1, 0) & if(cond1, 1, 0)  ->  if(cond0 & cond1, 1, 0)
+            if a.op == "If" and b.op == "If":
+                if (a.args[1] == ast.all_operations.BVV(1,1)).is_true() and (a.args[2] == ast.all_operations.BVV(0, 1)).is_true() \
+                        and (b.args[1] == ast.all_operations.BVV(1,1)).is_true() and (b.args[2] == ast.all_operations.BVV(0, 1)).is_true():
+                    cond0 = a.args[0]
+                    cond1 = b.args[0]
+                    return ast.all_operations.If(cond0 & cond1, ast.all_operations.BVV(1,1), ast.all_operations.BVV(0, 1))
 
         return SimplificationManager._flatten_simplifier(
             "__and__", SimplificationManager._deduplicate_filter, a, b, *args
@@ -890,18 +903,7 @@ class SimplificationManager:
 
         # invert(expr)[0:0]   ->   invert(expr[0:0])
         if val.op == "__invert__":
-            # import ipdb; ipdb.set_trace()
             return ast.BV.__invert__(val.args[0][high: low])
-
-        # # ~(0#31 .. (if cond then 1 else 0))[0:0]  ->  if cond then 0 else 1
-        # if val.op == "__invert__" and val.args[0].op == "ZeroExt":
-        #     if high == 0 and low == 0 and val.args[0].length - val.args[0].args[0] == 1 and val.args[0].args[1].op == "If":
-        #         ifcond = val.args[0].args[1]
-        #         # print("simplify")
-        #         #
-        #         return ast.bool.If(ifcond.args[0], ifcond.args[2], ifcond.args[1])
-
-
 
     # oh gods
     @staticmethod
@@ -980,8 +982,8 @@ class SimplificationManager:
 
     @staticmethod
     def invert_simplifier(expr):
-        # ~ if(cond then a else b)    ->    if(!cond, a,b)
-        if expr.op == "If":
+        # ~ if(cond then 1 else 0)  ->  if(cond, ~1, ~0)  ->    if(!cond, 1,0)
+        if expr.op == "If" and expr.args[1].op == "BVV" and expr.args[1].args[0] == 1 and expr.args[2].args[0] == 0:
             return ast.bool.If(ast.all_operations.Not(expr.args[0]), expr.args[1], expr.args[2])
 
     @staticmethod
