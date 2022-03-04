@@ -1,6 +1,7 @@
-import claripy
 import unittest
 import nose
+
+import claripy
 
 class TestMerging(unittest.TestCase):
     def test_simple_merging_solver(self):

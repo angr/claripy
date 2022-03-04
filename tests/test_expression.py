@@ -1,6 +1,7 @@
-import claripy
 import unittest
 import nose
+
+import claripy
 
 class TestExpression(unittest.TestCase):
     def test_smudging(self):
@@ -268,7 +269,8 @@ class TestExpression(unittest.TestCase):
         nose.tools.assert_equal(sorted(ss.eval(x, 100)), [ 3, 9 ] )
         nose.tools.assert_equal(sorted(ss.eval(y, 100)), [ 123 ] )
 
-        itz = claripy.ite_cases([ (claripy.And(x == 10, y == 20), 33), (claripy.And(x==1, y==2), 3), (claripy.And(x==100, y==200), 333) ], claripy.BVV(0, 32))
+        itz = claripy.ite_cases([ (claripy.And(x == 10, y == 20), 33), (claripy.And(x==1, y==2), 3),
+            (claripy.And(x==100, y==200), 333) ], claripy.BVV(0, 32))
         ss = s.branch()
         ss.add(z == itz)
         ss.add(itz != 0)
