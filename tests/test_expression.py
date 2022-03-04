@@ -269,8 +269,7 @@ class TestExpression(unittest.TestCase):
         nose.tools.assert_equal(sorted(ss.eval(x, 100)), [ 3, 9 ] )
         nose.tools.assert_equal(sorted(ss.eval(y, 100)), [ 123 ] )
 
-        itz = claripy.ite_cases([ (claripy.And(x == 10, y == 20), 33), (claripy.And(x==1, y==2), 3),
-            (claripy.And(x==100, y==200), 333) ], claripy.BVV(0, 32))
+        itz = claripy.ite_cases([ (claripy.And(x == 10, y == 20), 33), (claripy.And(x==1, y==2), 3), (claripy.And(x==100, y==200), 333) ], claripy.BVV(0, 32))
         ss = s.branch()
         ss.add(z == itz)
         ss.add(itz != 0)
@@ -357,7 +356,8 @@ class TestExpression(unittest.TestCase):
         y = claripy.LShR(y, 10)
         y = claripy.LShR(y, 10)
         print(y.shallow_repr(max_depth=5))
-        nose.tools.assert_equal(y.shallow_repr(max_depth=5), "<BV32 LShR(LShR(LShR(LShR(LShR(<...>, <...>), 0xa), 0xa), 0xa), 0xa)>")
+        nose.tools.assert_equal(y.shallow_repr(max_depth=5),
+            "<BV32 LShR(LShR(LShR(LShR(LShR(<...>, <...>), 0xa), 0xa), 0xa), 0xa)>")
 
     def test_rename(self):
         x1 = claripy.BVS('x', 32)
