@@ -356,8 +356,10 @@ class TestExpression(unittest.TestCase):
         y = claripy.LShR(y, 10)
         y = claripy.LShR(y, 10)
         print(y.shallow_repr(max_depth=5))
-        nose.tools.assert_equal(y.shallow_repr(max_depth=5),
-            "<BV32 LShR(LShR(LShR(LShR(LShR(<...>, <...>), 0xa), 0xa), 0xa), 0xa)>")
+        nose.tools.assert_equal(
+            y.shallow_repr(max_depth=5),
+            "<BV32 LShR(LShR(LShR(LShR(LShR(<...>, <...>), 0xa), 0xa), 0xa), 0xa)>",
+            )
 
     def test_rename(self):
         x1 = claripy.BVS('x', 32)
