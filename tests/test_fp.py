@@ -34,7 +34,7 @@ class TestFp(unittest.TestCase):
         # no exception should be raising
         s = {v0}
         s |= {v1}
-        assert len(s) == 2
+        assert len(s) == 1
 
     def test_negative_zero(self):
         """
