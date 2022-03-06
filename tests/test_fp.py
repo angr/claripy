@@ -1,4 +1,4 @@
-# pylint:disable=missing-class-docstring
+# pylint:disable=missing-class-docstring,no-self-use
 import math
 import unittest
 
@@ -38,8 +38,8 @@ class TestFp(unittest.TestCase):
 
     def test_negative_zero(self):
         """
-        Python does not distinguish between +0.0 and -0.0 and thus, claripy returns same AST for both. However, they have
-        different bit representations and hence are different.
+        Python does not distinguish between +0.0 and -0.0 and thus, claripy returns same AST for both. However, they
+        have different bit representations and hence are different.
         """
 
         zd = claripy.FPV(0.0, claripy.FSORT_DOUBLE)  # pylint: disable=unused-variable
@@ -67,4 +67,4 @@ class TestFp(unittest.TestCase):
 
 
 if __name__ == '__main__':
-   unittest.main()
+    unittest.main()
