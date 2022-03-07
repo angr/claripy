@@ -120,7 +120,6 @@ class Expr:
     def __repr__(self) -> str:
         return to_utf8(claricpp.claricpp_expr_repr(self._expr))
 
-    @property
     @lru_cache(maxsize=None)
     def _type_name(self) -> str:
         return to_utf8(claricpp.claricpp_expr_type_name(self._expr))
@@ -140,7 +139,8 @@ class Expr:
     def op(self) -> str:
         on = self._op_name
         if on == "Literal" or on == "Symbol":
-            return cpp_to_py[(self._type_name, on)]
+            import logging
+            return cpp_to_py[(self._type_name(), on)]
         return cpp_to_py[on]
 
     @property
