@@ -21,35 +21,35 @@ namespace Create {
     /** Create an Expr with an Abs op
      *  Expr pointers may not be nullptr
      */
-    inline Expr::BasePtr abs(const Expr::BasePtr &x, Annotation::SPAV &&sp = nullptr) {
+    inline Expr::BasePtr abs(const Expr::BasePtr &x, Annotation::SPAV sp = empty_spav) {
         return Private::unary<Op::Abs, Expr::FP>(x, std::move(sp));
     }
 
     /** Create an Expr with an Neg op
      *  Expr pointers may not be nullptr
      */
-    inline Expr::BasePtr neg(const Expr::BasePtr &x, Annotation::SPAV &&sp = nullptr) {
+    inline Expr::BasePtr neg(const Expr::BasePtr &x, Annotation::SPAV sp = empty_spav) {
         return Private::unary<Op::Neg, Expr::BV, Expr::FP>(x, std::move(sp));
     }
 
     /** Create an Expr with an Not op
      *  Expr pointers may not be nullptr
      */
-    inline Expr::BasePtr not_(const Expr::BasePtr &x, Annotation::SPAV &&sp = nullptr) {
+    inline Expr::BasePtr not_(const Expr::BasePtr &x, Annotation::SPAV sp = empty_spav) {
         return Private::unary<Op::Not, Expr::Bool>(x, std::move(sp));
     }
 
     /** Create an Expr with an Invert op
      *  Expr pointers may not be nullptr
      */
-    inline Expr::BasePtr invert(const Expr::BasePtr &x, Annotation::SPAV &&sp = nullptr) {
+    inline Expr::BasePtr invert(const Expr::BasePtr &x, Annotation::SPAV sp = empty_spav) {
         return Private::unary<Op::Invert, Expr::BV>(x, std::move(sp));
     }
 
     /** Create an Expr with an Reverse op
      *  Expr pointers may not be nullptr
      */
-    inline Expr::BasePtr reverse(const Expr::BasePtr &x, Annotation::SPAV &&sp = nullptr) {
+    inline Expr::BasePtr reverse(const Expr::BasePtr &x, Annotation::SPAV sp = empty_spav) {
         return Private::unary<Op::Reverse, Expr::BV>(x, std::move(sp));
     }
 
@@ -61,7 +61,7 @@ namespace Create {
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr sign_ext(const Expr::BasePtr &expr, const UInt integer,
-                                  Annotation::SPAV &&sp = nullptr) {
+                                  Annotation::SPAV sp = empty_spav) {
         return Private::uint_binary<UInt, Op::SignExt, Private::SizeMode::Add, Expr::BV>(
             expr, integer, std::move(sp));
     }
@@ -70,7 +70,7 @@ namespace Create {
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr zero_ext(const Expr::BasePtr &expr, const UInt integer,
-                                  Annotation::SPAV &&sp = nullptr) {
+                                  Annotation::SPAV sp = empty_spav) {
         return Private::uint_binary<UInt, Op::ZeroExt, Private::SizeMode::Add, Expr::BV>(
             expr, integer, std::move(sp));
     }
@@ -85,7 +85,7 @@ namespace Create {
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr eq(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                            Annotation::SPAV &&sp = nullptr) {
+                            Annotation::SPAV sp = empty_spav) {
         return Private::binary_explicit<Expr::Bool, Op::Eq, Private::SizeMode::NA, Expr::FP,
                                         Expr::Bool, Expr::BV, Expr::String>(left, right,
                                                                             std::move(sp));
@@ -95,7 +95,7 @@ namespace Create {
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr neq(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                             Annotation::SPAV &&sp = nullptr) {
+                             Annotation::SPAV sp = empty_spav) {
         return Private::binary_explicit<Expr::Bool, Op::Neq, Private::SizeMode::NA, Expr::FP,
                                         Expr::Bool, Expr::BV, Expr::String>(left, right,
                                                                             std::move(sp));
@@ -106,7 +106,7 @@ namespace Create {
      */
     template <Mode::Compare Mask>
     inline Expr::BasePtr compare(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                                 Annotation::SPAV &&sp = nullptr) {
+                                 Annotation::SPAV sp = empty_spav) {
         static_assert(Mode::compare_is_valid(Mask), "Invalid Compare Mode");
         UTIL_ASSERT(Util::Err::Usage,
                     Util::BitMask::has(Mask, Mode::Compare::Signed) || !CUID::is_t<Expr::FP>(left),
@@ -121,7 +121,7 @@ namespace Create {
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr sub(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                             Annotation::SPAV &&sp = nullptr) {
+                             Annotation::SPAV sp = empty_spav) {
         return Private::binary<Op::Sub, Private::SizeMode::First, Expr::BV>(left, right,
                                                                             std::move(sp));
     }
@@ -131,7 +131,7 @@ namespace Create {
      */
     template <Mode::Signed Sgn>
     inline Expr::BasePtr div(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                             Annotation::SPAV &&sp = nullptr) {
+                             Annotation::SPAV sp = empty_spav) {
         return Private::binary<Op::Div<Sgn>, Private::SizeMode::First, Expr::BV>(left, right,
                                                                                  std::move(sp));
     }
@@ -141,7 +141,7 @@ namespace Create {
      */
     template <Mode::Signed Sgn>
     inline Expr::BasePtr mod(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                             Annotation::SPAV &&sp = nullptr) {
+                             Annotation::SPAV sp = empty_spav) {
         return Private::binary<Op::Mod<Sgn>, Private::SizeMode::First, Expr::BV>(left, right,
                                                                                  std::move(sp));
     }
@@ -153,7 +153,7 @@ namespace Create {
      */
     template <Mode::Shift Mask>
     inline Expr::BasePtr shift(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                               Annotation::SPAV &&sp = nullptr) {
+                               Annotation::SPAV sp = empty_spav) {
         return Private::binary<Op::Shift<Mask>, Private::SizeMode::First, Expr::BV>(left, right,
                                                                                     std::move(sp));
     }
@@ -163,7 +163,7 @@ namespace Create {
      */
     template <Mode::LR LR>
     inline Expr::BasePtr rotate(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                                Annotation::SPAV &&sp = nullptr) {
+                                Annotation::SPAV sp = empty_spav) {
         return Private::binary<Op::Rotate<LR>, Private::SizeMode::First, Expr::BV>(left, right,
                                                                                    std::move(sp));
     }
@@ -174,7 +174,7 @@ namespace Create {
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr widen(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                               Annotation::SPAV &&sp = nullptr) {
+                               Annotation::SPAV sp = empty_spav) {
         return Private::binary<Op::Widen, Private::SizeMode::First, Expr::BV>(left, right,
                                                                               std::move(sp));
     }
@@ -183,7 +183,7 @@ namespace Create {
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr union_(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                                Annotation::SPAV &&sp = nullptr) {
+                                Annotation::SPAV sp = empty_spav) {
         return Private::binary<Op::Union, Private::SizeMode::First, Expr::BV>(left, right,
                                                                               std::move(sp));
     }
@@ -192,7 +192,7 @@ namespace Create {
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr intersection_(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                                       Annotation::SPAV &&sp = nullptr) {
+                                       Annotation::SPAV sp = empty_spav) {
         return Private::binary<Op::Intersection, Private::SizeMode::First, Expr::BV, Expr::Bool>(
             left, right, std::move(sp));
     }
@@ -201,7 +201,7 @@ namespace Create {
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr concat(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                                Annotation::SPAV &&sp = nullptr) {
+                                Annotation::SPAV sp = empty_spav) {
         return Private::binary<Op::Concat, Private::SizeMode::Add, Expr::BV, Expr::String>(
             left, right, std::move(sp));
     }
@@ -215,7 +215,7 @@ namespace Create {
     /** Create an Expr with an Add op
      *  Expr pointers may not be nullptr
      */
-    inline Expr::BasePtr add(Op::FlatArgs &&operands, Annotation::SPAV &&sp = nullptr) {
+    inline Expr::BasePtr add(Op::FlatArgs operands, Annotation::SPAV sp = empty_spav) {
         return Private::flat_explicit<Expr::BV, Op::Add, Expr::BV>(std::move(operands),
                                                                    std::move(sp));
     }
@@ -223,7 +223,7 @@ namespace Create {
     /** Create an Expr with an Mul op
      *  Expr pointers may not be nullptr
      */
-    inline Expr::BasePtr mul(Op::FlatArgs &&operands, Annotation::SPAV &&sp = nullptr) {
+    inline Expr::BasePtr mul(Op::FlatArgs operands, Annotation::SPAV sp = empty_spav) {
         return Private::flat_explicit<Expr::BV, Op::Mul, Expr::BV>(std::move(operands),
                                                                    std::move(sp));
     }
@@ -233,21 +233,21 @@ namespace Create {
     /** Create an Expr with an Or op
      *  Expr pointers may not be nullptr
      */
-    inline Expr::BasePtr or_(Op::FlatArgs &&operands, Annotation::SPAV &&sp = nullptr) {
+    inline Expr::BasePtr or_(Op::FlatArgs operands, Annotation::SPAV sp = empty_spav) {
         return Private::flat<Op::Or, Expr::BV, Expr::Bool>(std::move(operands), std::move(sp));
     }
 
     /** Create an Expr with an And op
      *  Expr pointers may not be nullptr
      */
-    inline Expr::BasePtr and_(Op::FlatArgs &&operands, Annotation::SPAV &&sp = nullptr) {
+    inline Expr::BasePtr and_(Op::FlatArgs operands, Annotation::SPAV sp = empty_spav) {
         return Private::flat<Op::And, Expr::BV, Expr::Bool>(std::move(operands), std::move(sp));
     }
 
     /** Create an Expr with an Xor op
      *  Expr pointers may not be nullptr
      */
-    inline Expr::BasePtr xor_(Op::FlatArgs &&operands, Annotation::SPAV &&sp = nullptr) {
+    inline Expr::BasePtr xor_(Op::FlatArgs operands, Annotation::SPAV sp = empty_spav) {
         return Private::flat_explicit<Expr::BV, Op::Xor, Expr::BV>(std::move(operands),
                                                                    std::move(sp));
     }

@@ -15,7 +15,7 @@ namespace Create::FP {
      */
     inline Expr::BasePtr from_not_2s_complement_bv(const Expr::BasePtr &bv,
                                                    const Mode::FP::Width &w,
-                                                   Annotation::SPAV &&sp = nullptr) {
+                                                   Annotation::SPAV sp = empty_spav) {
         UTIL_ASSERT(Error::Expr::Usage, bv != nullptr, "bv may not be nullptr");
         using Not2s = Op::FP::FromNot2sComplementBV;
         return Simplify::simplify(Expr::factory<Expr::FP>(bv->symbolic, Op::factory<Not2s>(bv, w),

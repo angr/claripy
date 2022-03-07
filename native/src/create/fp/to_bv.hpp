@@ -15,7 +15,7 @@ namespace Create::FP {
      */
     template <Mode::Signed Sgn>
     Expr::BasePtr to_bv(const Mode::FP::Rounding mode, const Expr::BasePtr &fp,
-                        const UInt bit_length, Annotation::SPAV &&sp = nullptr) {
+                        const UInt bit_length, Annotation::SPAV sp = empty_spav) {
         UTIL_ASSERT(Error::Expr::Usage, fp != nullptr, "fp may not be nullptr");
         return Simplify::simplify(Expr::factory<Expr::BV>(
             fp->symbolic, Op::factory<Op::FP::ToBV<Sgn>>(mode, fp), bit_length, std::move(sp)));

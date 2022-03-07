@@ -11,4 +11,9 @@
 #include "../op.hpp"
 #include "../simplify.hpp"
 
+namespace Create {
+    /** An empty spav */
+    extern const Annotation::SPAV empty_spav;
+} // namespace Create
+
 #endif

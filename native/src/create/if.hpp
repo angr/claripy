@@ -14,7 +14,7 @@ namespace Create {
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr if_(const Expr::BasePtr &cond, const Expr::BasePtr &left,
-                             const Expr::BasePtr &right, Annotation::SPAV &&sp = nullptr) {
+                             const Expr::BasePtr &right, Annotation::SPAV sp = empty_spav) {
         using namespace Simplify;
         UTIL_ASSERT(Error::Expr::Usage, cond != nullptr && left != nullptr && right != nullptr,
                     "arguments may not be nullptr");

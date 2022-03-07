@@ -42,7 +42,7 @@ namespace Create::String {
      */
     inline Expr::BasePtr sub_string(const Expr::BasePtr &start_index, const Expr::BasePtr &count,
                                     const Expr::BasePtr &full_string,
-                                    Annotation::SPAV &&sp = nullptr) {
+                                    Annotation::SPAV sp = empty_spav) {
         UTIL_ASSERT(Error::Expr::Usage,
                     start_index != nullptr && count != nullptr && full_string != nullptr,
                     "Expr pointers cannot be nullptr");

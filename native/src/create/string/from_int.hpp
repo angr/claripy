@@ -17,7 +17,7 @@ namespace Create::String {
      *  Expr pointers may not be nullptr
      *  Note: This is not trivial due to its length calculation
      */
-    inline Expr::BasePtr from_int(const Expr::BasePtr &x, Annotation::SPAV &&sp = nullptr) {
+    inline Expr::BasePtr from_int(const Expr::BasePtr &x, Annotation::SPAV sp = empty_spav) {
         namespace Err = Error::Expr;
         UTIL_ASSERT(Err::Usage, x != nullptr, "Expr pointers cannot be nullptr");
         UTIL_ASSERT(Err::Type, CUID::is_t<Expr::BV>(x), "operand must be each be of type Expr::BV");

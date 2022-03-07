@@ -15,7 +15,8 @@ namespace Create::FP {
      */
     template <Mode::Signed Sgn>
     Expr::BasePtr from_2s_complement_bv(const Mode::FP::Rounding m, const Expr::BasePtr &bv,
-                                        const Mode::FP::Width &w, Annotation::SPAV &&sp = nullptr) {
+                                        const Mode::FP::Width &w,
+                                        Annotation::SPAV sp = empty_spav) {
         UTIL_ASSERT(Error::Expr::Usage, bv != nullptr, "bv may not be nullptr");
         using FromBV = Op::FP::From2sComplementBV<Sgn>;
         return Simplify::simplify(Expr::factory<Expr::FP>(
