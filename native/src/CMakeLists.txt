@@ -1,6 +1,5 @@
 # Add current directory's source files
 target_sources("${CLARICPP}" PRIVATE
-    ffi.cpp # Enable use of gcc -E api.h
     big_int.cpp
 )
 
@@ -9,7 +8,6 @@ add_subdirectory(util)
 add_subdirectory(expr)
 add_subdirectory(simplify)
 add_subdirectory(backend)
-add_subdirectory(api)
 
 # FFI API source file
 # FFI cdefs should be all contained within the intermediate file generated from this

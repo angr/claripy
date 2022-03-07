@@ -5,11 +5,6 @@
 #ifndef R_UTIL_LOG_LEVEL_LEVEL_HPP_
 #define R_UTIL_LOG_LEVEL_LEVEL_HPP_
 
-extern "C" {
-#include "level.h"
-};
-
-
 #ifdef CONSTANT_LOG_LEVEL
     /** Constexpr if and only if the log level is immutable */
     #define UTIL_LOG_LEVELCONSTEXPR constexpr
@@ -22,7 +17,15 @@ extern "C" {
 namespace Util::Log::Level {
 
     /** A mask used to define the type of comparison to be used */
-    enum class Level { UTIL_LOG_LEVEL_VALS() };
+    enum class Level {
+        Verbose = 0,
+        Debug = 10,
+        Info = 20,
+        Warning = 30,
+        Error = 40,
+        Critical = 50,
+        Disabled
+    };
 
 } // namespace Util::Log::Level
 

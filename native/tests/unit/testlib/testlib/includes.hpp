@@ -6,7 +6,6 @@
 #ifndef R_UNIT_TESTLIB_TESTLIB_INCLUDES_HPP_
 #define R_UNIT_TESTLIB_TESTLIB_INCLUDES_HPP_
 
-#include "api.hpp"
 #include "backend.hpp"
 #include "create.hpp"
 #include "cuid.hpp"

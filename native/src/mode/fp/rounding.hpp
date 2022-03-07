@@ -5,13 +5,15 @@
 #ifndef R_MODE_FP_ROUNDING_HPP_
 #define R_MODE_FP_ROUNDING_HPP_
 
-extern "C" {
-#include "rounding.h"
-};
-
 namespace Mode::FP {
     /** FP modes supported by claripy */
-    enum class Rounding { MODE_FP_ROUNDING_VALS() };
+    enum class Rounding {
+        NearestTiesEven,
+        NearestTiesAwayFromZero,
+        TowardsZero,
+        TowardsPositiveInf,
+        TowardsNegativeInf
+    };
 } // namespace Mode::FP
 
 #endif
