@@ -3,6 +3,7 @@
 /.idea/*
 
 # Dependencies
+/pybind11/*
 /boost/*
 /gmp/*
 
