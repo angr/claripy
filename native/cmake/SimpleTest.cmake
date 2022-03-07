@@ -83,7 +83,6 @@ function(simple_test FUNC_NAME)
 		target_link_options("${BINARY}" PUBLIC
 			"-rdynamic"
 		)
-		target_link_libraries("${CLARICPP}" PRIVATE dl)
 	endif()
 
 	# Add memcheck test

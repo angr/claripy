@@ -574,6 +574,7 @@ target_link_libraries("${CLARICPP}"
 
 # Create a make target for test cases
 if(ENABLE_TESTING)
+	target_link_libraries("${CLARICPP}" PRIVATE dl)
 	add_subdirectory(tests)
 endif()
 
