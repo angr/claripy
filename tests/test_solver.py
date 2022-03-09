@@ -1,3 +1,4 @@
+#pylint: disable=no-self-use
 import unittest
 import claripy
 import nose
