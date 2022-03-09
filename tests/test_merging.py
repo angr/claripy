@@ -1,3 +1,5 @@
+#pylint: disable=no-self-use
+#pylint: disable=missing-class-docstring
 import unittest
 import nose
 
