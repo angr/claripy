@@ -692,27 +692,3 @@ class TestSolver(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-    # for fparams in test_unsat_core():
-    #     fparams[0](*fparams[1:])
-
-    # for fparams in test_ancestor_merge():
-    #     fparams[0](*fparams[1:])
-    # test_simplification_annotations()
-    # test_model()
-    # for fparams in test_composite_discrepancy():
-    #     fparams[0](*fparams[1:])
-    # for fparams in test_solver():
-    #     fparams[0](*fparams[1:])
-    # for fparams in test_hybrid_solver():
-    #     fparams[0](*fparams[1:])
-    # test_replacement_solver()
-    # test_minmax()
-    # test_solver_branching()
-    # for fparams in test_solver_branching():
-    #     fparams[0](*fparams[1:])
-    # for fparams in test_combine():
-    #     fparams[0](*fparams[1:])
-    # for fparams in test_composite_solver():
-    #     fparams[0](*fparams[1:])
-    # test_zero_division_in_cache_mixin()
-    # test_composite_solver_branching_optimizations()
