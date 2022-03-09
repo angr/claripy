@@ -1,10 +1,13 @@
 #pylint: disable=no-self-use
-import unittest
-import claripy
-import nose
-import math
+#pylint: disable=line-too-long
+#pylint: disable=missing-class-docstring
+#pylint: disable=raise-missing-from
 
+import unittest
 import logging
+import nose
+import claripy
+
 l = logging.getLogger('claripy.test.solver')
 
 solver_list = (claripy.Solver, claripy.SolverReplacement, claripy.SolverHybrid, claripy.SolverComposite, claripy.SolverCacheless)
