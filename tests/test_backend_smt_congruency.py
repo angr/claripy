@@ -1,6 +1,5 @@
 import unittest
 from abc import abstractmethod
-import nose
 
 import claripy
 from collections import defaultdict
@@ -9,10 +8,12 @@ import time
 
 NUMBER_SOLUTIONS_TO_COMPARE = 5
 
+
 def solution_ast(var, val):
     if type(var) == claripy.ast.strings.String:
         return claripy.StringV(val)
     return (var == val).args[1]
+
 
 def all_equal(vals):
     vals = tuple(vals)
@@ -21,11 +22,11 @@ def all_equal(vals):
     v0 = vals[0]
     return all(v == v0 for v in vals)
 
+
 class SmtLibSolverTestCongruency(unittest.TestCase):
+    @unittest.skip("Skip these test for now because of a problem with pysmt")
     def get_solvers(self):
-        # Skip these test for now because of a problem with pysmt
-        raise nose.SkipTest()
-        solvers=[
+        solvers = [
             claripy.SolverStrings(backend=claripy.backend_manager.backends.smtlib_cvc4),
             claripy.SolverStrings(backend=claripy.backend_manager.backends.smtlib_z3),
             # claripy.SolverStrings(backend=claripy.backend_manager.backends.smtlib_z3str),
@@ -46,7 +47,8 @@ class SmtLibSolverTestCongruency(unittest.TestCase):
             new = c
             for var, val in model:
                 new = new.replace(var, val)
-            self.assertTrue(new.is_true(), "Either model is incomplete or wrong! Constraint: {}, Model: {}".format(c, model))
+            self.assertTrue(new.is_true(),
+                            "Either model is incomplete or wrong! Constraint: {}, Model: {}".format(c, model))
 
     def is_model_correct(self, csts, model):
         for c in csts:
@@ -74,7 +76,8 @@ class SmtLibSolverTestCongruency(unittest.TestCase):
             if results[s]['claimed_sat']:
                 before_eval = time.time()
 
-                solutions = tuple(self._get_models_it(s, variables, constraints=constraints, n=NUMBER_SOLUTIONS_TO_COMPARE))
+                solutions = tuple(
+                    self._get_models_it(s, variables, constraints=constraints, n=NUMBER_SOLUTIONS_TO_COMPARE))
 
                 results[s]['eval_time'] = time.time() - before_eval
 
@@ -95,10 +98,10 @@ class SmtLibSolverTestCongruency(unittest.TestCase):
             for r in solver_results['claimed_solutions']:
                 self.doublecheck_model_is_correct(cs, r)
 
-
     def _generic_congruency_check(self, solvers, results):
         self.assertTrue(all_equal(results[s]['claimed_sat'] for s in solvers), "Solvers disagree on satisfiability")
-        self.assertTrue(all_equal(len(results[s]['claimed_solutions']) for s in solvers), "Solvers disagree on number of solutions!")
+        self.assertTrue(all_equal(len(results[s]['claimed_solutions']) for s in solvers),
+                        "Solvers disagree on number of solutions!")
 
     def test_congruency_1(self):
         recv_input = claripy.StringS('recv_input', 1024)
@@ -137,20 +140,22 @@ class SmtLibSolverTestCongruency(unittest.TestCase):
 
         recv_input = claripy.StringS('recv_input', 1024)
         constraints = []
+
         def field_sep_idx(s, start_idx=0):
             return claripy.StrIndexOf(s, claripy.StringV(' \r\n'), start_idx, 32)
+
         constraints.append(claripy.StrIndexOf(recv_input, claripy.StringV('\r\n\r\n'), 0, 32) < 0)
         sep_idx_1 = field_sep_idx(recv_input)
-        sep_idx_2 = field_sep_idx(recv_input, start_idx=sep_idx_1+1)
-        sep_idx_3 = field_sep_idx(recv_input, start_idx=sep_idx_2+1)
-        sep_idx_4 = field_sep_idx(recv_input, start_idx=sep_idx_3+1)
+        sep_idx_2 = field_sep_idx(recv_input, start_idx=sep_idx_1 + 1)
+        sep_idx_3 = field_sep_idx(recv_input, start_idx=sep_idx_2 + 1)
+        sep_idx_4 = field_sep_idx(recv_input, start_idx=sep_idx_3 + 1)
 
         constraints.append(sep_idx_1 >= 0)
         constraints.append(sep_idx_2 >= 0)
         constraints.append(sep_idx_3 >= 0)
 
         sub_start = sep_idx_2 + 1
-        sub_end = sep_idx_3 
+        sub_end = sep_idx_3
 
         sub_str = claripy.StrSubstr(recv_input, sub_start, sub_end)
 
@@ -159,7 +164,8 @@ class SmtLibSolverTestCongruency(unittest.TestCase):
         results = self._collect_generic_solver_test_data((recv_input,), constraints)
         self._generic_consistency_check(results)
         self._generic_congruency_check(results['solvers'], results)
-        
+
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(SmtLibSolverTestCongruency)
     unittest.TextTestRunner(verbosity=2).run(suite)
