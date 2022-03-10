@@ -1,3 +1,4 @@
+# pylint: disable=missing-class-docstring,disable=no-self-use
 import unittest
 
 import claripy
@@ -86,7 +87,6 @@ class TestBv(unittest.TestCase):
         a = BVV(1, 8)
         b = BVV(0, 0)
         assert Concat(a, b) == 1
-        assert b == b
 
         self.assertRaises(ClaripyTypeError, lambda: a + b)
         self.assertRaises(ClaripyTypeError, lambda: a - b)
