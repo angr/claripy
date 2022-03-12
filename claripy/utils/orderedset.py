@@ -63,3 +63,9 @@ class OrderedSet(collections.abc.MutableSet):
         if isinstance(other, OrderedSet):
             return len(self) == len(other) and list(self) == list(other)
         return set(self) == set(other)
+
+    def __getstate__(self):
+        return list(self)
+
+    def __setstate__(self, state):
+        self.__init__(state)
