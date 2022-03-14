@@ -1,7 +1,6 @@
 # Add tests
 simple_test(avg)
 simple_test(to_hex)
-simple_test(bit_mask)
 simple_test(stack_limit)
 simple_test(fnv1a)
 simple_test(strlen)

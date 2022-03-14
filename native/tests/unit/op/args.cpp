@@ -94,14 +94,14 @@ void args() {
     // Compare
     test(C::eq(bv_sym, bv_sym));
     test(C::neq(bv_sym, bv_sym));
-    test(C::compare<Cmp::Unsigned | Cmp::Greater | Cmp::Neq>(bv_sym, bv_sym));
-    test(C::compare<Cmp::Unsigned | Cmp::Greater | Cmp::Eq>(bv_sym, bv_sym));
-    test(C::compare<Cmp::Unsigned | Cmp::Less | Cmp::Neq>(bv_sym, bv_sym));
-    test(C::compare<Cmp::Unsigned | Cmp::Less | Cmp::Eq>(bv_sym, bv_sym));
-    test(C::compare<Cmp::Signed | Cmp::Greater | Cmp::Neq>(bv_sym, bv_sym));
-    test(C::compare<Cmp::Signed | Cmp::Greater | Cmp::Eq>(bv_sym, bv_sym));
-    test(C::compare<Cmp::Signed | Cmp::Less | Cmp::Neq>(bv_sym, bv_sym));
-    test(C::compare<Cmp::Signed | Cmp::Less | Cmp::Eq>(bv_sym, bv_sym));
+    test(C::compare<Cmp::UGT>(bv_sym, bv_sym));
+    test(C::compare<Cmp::UGE>(bv_sym, bv_sym));
+    test(C::compare<Cmp::ULT>(bv_sym, bv_sym));
+    test(C::compare<Cmp::ULE>(bv_sym, bv_sym));
+    test(C::compare<Cmp::SGT>(bv_sym, bv_sym));
+    test(C::compare<Cmp::SGE>(bv_sym, bv_sym));
+    test(C::compare<Cmp::SLT>(bv_sym, bv_sym));
+    test(C::compare<Cmp::SLE>(bv_sym, bv_sym));
 
     // Math
     test(C::sub(bv_sym, bv_sym));

@@ -59,20 +59,20 @@ void trivial() {
 #define TEST_COMPARE(T_, MASK)                                                                     \
     binary<Expr::Bool, T_, Op::Compare<MASK>, SM::First, Cr::compare<MASK>>();
 
-/** A local macro used to test a comparison function for all values of Less and Equals */
-#define TEST_COMPARE_MULTI(T_, S_)                                                                 \
-    TEST_COMPARE(T_, S_ | C::Less | C::Eq);                                                        \
-    TEST_COMPARE(T_, S_ | C::Less | C::Neq);                                                       \
-    TEST_COMPARE(T_, S_ | C::Greater | C::Eq);                                                     \
-    TEST_COMPARE(T_, S_ | C::Greater | C::Neq);
+/** A local macro used for brevity */
+#define TEST_COMPARE_DUO(MASK)                                                                     \
+    TEST_COMPARE(Expr::FP, Mode::Compare::MASK);                                                   \
+    TEST_COMPARE(Expr::BV, Mode::Compare::MASK);
 
     Log::debug("Testing compare...");
-    {
-        using C = Mode::Compare;
-        TEST_COMPARE_MULTI(Expr::FP, C::Signed)   // FP comparisons must be signed
-        TEST_COMPARE_MULTI(Expr::BV, C::Unsigned) // BV can be either
-        TEST_COMPARE_MULTI(Expr::BV, C::Unsigned)
-    }
+    TEST_COMPARE(Expr::BV, Mode::Compare::UGE); // BV can be either
+    TEST_COMPARE(Expr::BV, Mode::Compare::UGT);
+    TEST_COMPARE(Expr::BV, Mode::Compare::ULE);
+    TEST_COMPARE(Expr::BV, Mode::Compare::ULT);
+    TEST_COMPARE_DUO(SGE); // FP comparisons must be signed
+    TEST_COMPARE_DUO(SGT);
+    TEST_COMPARE_DUO(SLE);
+    TEST_COMPARE_DUO(SLT);
 
 // Cleanup
 #undef TEST_COMPARE

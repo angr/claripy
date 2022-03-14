@@ -83,11 +83,9 @@ namespace Backend::Z3 {
         static z3::expr neq(const z3::expr &l, const z3::expr &r) { return l != r; }
 
         /** Compare converter */
-        template <Mode::Compare Mask>
-        static z3::expr compare(const z3::expr &l, const z3::expr &r) {
+        template <Mode::Compare M> static z3::expr compare(const z3::expr &l, const z3::expr &r) {
             using C = Mode::Compare;
-            static_assert(Mode::compare_is_valid(Mask), "Invalid mask mode");
-            if constexpr (Util::BitMask::has(Mask, C::Signed | C::Less | C::Eq)) {
+            if constexpr (M == C::SLE) {
                 if (l.is_fpa()) {
                     return l <= r;
                 }
@@ -95,7 +93,7 @@ namespace Backend::Z3 {
                     return z3::sle(l, r);
                 }
             }
-            else if constexpr (Util::BitMask::has(Mask, C::Signed | C::Less | C::Neq)) {
+            else if constexpr (M == C::SLT) {
                 if (l.is_fpa()) {
                     return l < r;
                 }
@@ -103,7 +101,7 @@ namespace Backend::Z3 {
                     return z3::slt(l, r);
                 }
             }
-            else if constexpr (Util::BitMask::has(Mask, C::Signed | C::Greater | C::Eq)) {
+            else if constexpr (M == C::SGE) {
                 if (l.is_fpa()) {
                     return l >= r;
                 }
@@ -111,7 +109,7 @@ namespace Backend::Z3 {
                     return z3::sge(l, r);
                 }
             }
-            else if constexpr (Util::BitMask::has(Mask, C::Signed | C::Greater | C::Neq)) {
+            else if constexpr (M == C::SGT) {
                 if (l.is_fpa()) {
                     return l > r;
                 }
@@ -119,20 +117,20 @@ namespace Backend::Z3 {
                     return z3::sgt(l, r);
                 }
             }
-            else if constexpr (Util::BitMask::has(Mask, C::Unsigned | C::Less | C::Eq)) {
+            else if constexpr (M == C::ULE) {
                 return z3::ule(l, r);
             }
-            else if constexpr (Util::BitMask::has(Mask, C::Unsigned | C::Less | C::Neq)) {
+            else if constexpr (M == C::ULT) {
                 return z3::ult(l, r);
             }
-            else if constexpr (Util::BitMask::has(Mask, C::Unsigned | C::Greater | C::Eq)) {
+            else if constexpr (M == C::UGE) {
                 return z3::uge(l, r);
             }
-            else if constexpr (Util::BitMask::has(Mask, C::Unsigned | C::Greater | C::Neq)) {
+            else if constexpr (M == C::UGT) {
                 return z3::ugt(l, r);
             }
             else {
-                static_assert(Util::CD::false_<Mask>, "Unsupported mask mode");
+                static_assert(Util::CD::false_<M>, "Invalid mode");
             }
         }
 

@@ -151,22 +151,14 @@ namespace Backend::Z3 {
 
                     BINARY_CASE(Neq, Conv::neq);
 
-                    BINARY_TEMPLATE_CASE(Compare, Conv::template compare,
-                                         Cmp::Signed | Cmp::Greater | Cmp::Eq);
-                    BINARY_TEMPLATE_CASE(Compare, Conv::template compare,
-                                         Cmp::Signed | Cmp::Greater | Cmp::Neq);
-                    BINARY_TEMPLATE_CASE(Compare, Conv::template compare,
-                                         Cmp::Signed | Cmp::Less | Cmp::Eq);
-                    BINARY_TEMPLATE_CASE(Compare, Conv::template compare,
-                                         Cmp::Signed | Cmp::Less | Cmp::Neq);
-                    BINARY_TEMPLATE_CASE(Compare, Conv::template compare,
-                                         Cmp::Unsigned | Cmp::Greater | Cmp::Eq);
-                    BINARY_TEMPLATE_CASE(Compare, Conv::template compare,
-                                         Cmp::Unsigned | Cmp::Greater | Cmp::Neq);
-                    BINARY_TEMPLATE_CASE(Compare, Conv::template compare,
-                                         Cmp::Unsigned | Cmp::Less | Cmp::Eq);
-                    BINARY_TEMPLATE_CASE(Compare, Conv::template compare,
-                                         Cmp::Unsigned | Cmp::Less | Cmp::Neq);
+                    BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::SGE);
+                    BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::SGT);
+                    BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::SLE);
+                    BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::SLT);
+                    BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::UGE);
+                    BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::UGT);
+                    BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::ULE);
+                    BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::ULT);
 
                     BINARY_CASE(Sub, Conv::sub);
 
@@ -401,21 +393,21 @@ namespace Backend::Z3 {
 
                     // Comparisons
                 case Z3_OP_ULEQ:
-                    return Abs::template compare<C::Unsigned | C::Less | C::Eq>(args);
+                    return Abs::template compare<C::ULE>(args);
                 case Z3_OP_SLEQ:
-                    return Abs::template compare<C::Signed | C::Less | C::Eq>(args);
+                    return Abs::template compare<C::SLE>(args);
                 case Z3_OP_UGEQ:
-                    return Abs::template compare<C::Unsigned | C::Greater | C::Eq>(args);
+                    return Abs::template compare<C::UGE>(args);
                 case Z3_OP_SGEQ:
-                    return Abs::template compare<C::Signed | C::Greater | C::Eq>(args);
+                    return Abs::template compare<C::SGE>(args);
                 case Z3_OP_ULT:
-                    return Abs::template compare<C::Unsigned | C::Less | C::Neq>(args);
+                    return Abs::template compare<C::ULT>(args);
                 case Z3_OP_SLT:
-                    return Abs::template compare<C::Signed | C::Less | C::Neq>(args);
+                    return Abs::template compare<C::SLT>(args);
                 case Z3_OP_UGT:
-                    return Abs::template compare<C::Unsigned | C::Greater | C::Neq>(args);
+                    return Abs::template compare<C::UGT>(args);
                 case Z3_OP_SGT:
-                    return Abs::template compare<C::Signed | C::Greater | C::Neq>(args);
+                    return Abs::template compare<C::SGT>(args);
 
                     // Bit-vectors
                 case Z3_OP_BNUM:
@@ -511,13 +503,13 @@ namespace Backend::Z3 {
                 case Z3_OP_FPA_EQ:
                     return Abs::eq(args);
                 case Z3_OP_FPA_GT:
-                    return Abs::template compare<C::Signed | C::Greater | C::Neq>(args);
+                    return Abs::template compare<C::SGT>(args);
                 case Z3_OP_FPA_GE:
-                    return Abs::template compare<C::Signed | C::Greater | C::Eq>(args);
+                    return Abs::template compare<C::SGE>(args);
                 case Z3_OP_FPA_LT:
-                    return Abs::template compare<C::Signed | C::Less | C::Neq>(args);
+                    return Abs::template compare<C::SLT>(args);
                 case Z3_OP_FPA_LE:
-                    return Abs::template compare<C::Signed | C::Less | C::Eq>(args);
+                    return Abs::template compare<C::SLE>(args);
 
                     // FP Arithmetic
                 case Z3_OP_FPA_ABS:

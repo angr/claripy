@@ -41,7 +41,6 @@ static void min_max_test(UnitTest::Friend::ShimZ3 &z3) {
     const auto unsign { Util::unsign<T, true> };
     const auto int_max { std::numeric_limits<T>::max() };
     const auto int_min { std::numeric_limits<T>::min() };
-    const constexpr M neq_mask { M::Neq | (Signed ? M::Signed : M::Unsigned) };
 
     // x and expr generators
     const auto x { C::symbol<E::BV>("x", C_CHAR_BIT * sizeof(T)) };
@@ -49,9 +48,9 @@ static void min_max_test(UnitTest::Friend::ShimZ3 &z3) {
     const auto neq { [&x, &unsign](const T y) { return C::neq(x, C::literal(unsign(y))); } };
 
     // Exprs
-    const auto xleq10 { C::compare<M::Less | neq_mask>(x, num(10)) };
-    const auto xleq5 { C::compare<M::Less | neq_mask>(x, num(5)) };
-    const auto xgeq5 { C::compare<M::Greater | neq_mask>(x, num(5)) };
+    const auto xleq10 { C::compare < Signed ? M::SLT : M::ULT > (x, num(10)) };
+    const auto xleq5 { C::compare < Signed ? M::SLT : M::ULT > (x, num(5)) };
+    const auto xgeq5 { C::compare < Signed ? M::SGT : M::UGT > (x, num(5)) };
 
     const auto plus1 { C::and_({ xleq5, neq(int_min) }) };
     const auto plus2 { C::and_({ xleq5, neq(int_min), neq(int_min + 1) }) };
