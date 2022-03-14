@@ -104,15 +104,61 @@ namespace Create {
     /** Create an Expr with a Compare op
      *  Expr pointers may not be nullptr
      */
-    template <Mode::Compare Mask>
+    template <Mode::Compare M>
     inline Expr::BasePtr compare(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                                 Annotation::SPAV sp = empty_spav) {
-        static_assert(Mode::compare_is_valid(Mask), "Invalid Compare Mode");
-        UTIL_ASSERT(Util::Err::Usage,
-                    Util::BitMask::has(Mask, Mode::Compare::Signed) || !CUID::is_t<Expr::FP>(left),
+                                 Annotation::SPAV &&sp) {
+        UTIL_ASSERT(Util::Err::Usage, Mode::is_signed(M) || !CUID::is_t<Expr::FP>(left),
                     "FP comparisons must be signed");
-        return Private::binary_explicit<Expr::Bool, Op::Compare<Mask>, Private::SizeMode::NA,
-                                        Expr::FP, Expr::BV>(left, right, std::move(sp));
+        return Private::binary_explicit<Expr::Bool, Op::Compare<M>, Private::SizeMode::NA, Expr::FP,
+                                        Expr::BV>(left, right, std::move(sp));
+    }
+
+    /** A shortcut for compare<UGE>; exists for the API */
+    inline Expr::BasePtr uge(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                             Annotation::SPAV sp = empty_spav) {
+        return compare<Mode::Compare::UGE>(left, right, std::move(sp));
+    }
+
+    /** A shortcut for compare<UGT>; exists for the API */
+    inline Expr::BasePtr ugt(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                             Annotation::SPAV sp = empty_spav) {
+        return compare<Mode::Compare::UGT>(left, right, std::move(sp));
+    }
+
+    /** A shortcut for compare<ULE>; exists for the API */
+    inline Expr::BasePtr ule(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                             Annotation::SPAV sp = empty_spav) {
+        return compare<Mode::Compare::ULE>(left, right, std::move(sp));
+    }
+
+    /** A shortcut for compare<ULT>; exists for the API */
+    inline Expr::BasePtr ult(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                             Annotation::SPAV sp = empty_spav) {
+        return compare<Mode::Compare::ULT>(left, right, std::move(sp));
+    }
+
+    /** A shortcut for compare<SGE>; exists for the API */
+    inline Expr::BasePtr sge(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                             Annotation::SPAV sp = empty_spav) {
+        return compare<Mode::Compare::SGE>(left, right, std::move(sp));
+    }
+
+    /** A shortcut for compare<SGT>; exists for the API */
+    inline Expr::BasePtr sgt(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                             Annotation::SPAV sp = empty_spav) {
+        return compare<Mode::Compare::SGT>(left, right, std::move(sp));
+    }
+
+    /** A shortcut for compare<SLE>; exists for the API */
+    inline Expr::BasePtr sle(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                             Annotation::SPAV sp = empty_spav) {
+        return compare<Mode::Compare::SLE>(left, right, std::move(sp));
+    }
+
+    /** A shortcut for compare<SLT>; exists for the API */
+    inline Expr::BasePtr slt(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                             Annotation::SPAV sp = empty_spav) {
+        return compare<Mode::Compare::SLT>(left, right, std::move(sp));
     }
 
     // Math
@@ -131,9 +177,21 @@ namespace Create {
      */
     template <Mode::Signed Sgn>
     inline Expr::BasePtr div(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                             Annotation::SPAV sp = empty_spav) {
+                             Annotation::SPAV &&sp) {
         return Private::binary<Op::Div<Sgn>, Private::SizeMode::First, Expr::BV>(left, right,
                                                                                  std::move(sp));
+    }
+
+    /** A shortcut for div<Signed>; exists for the API */
+    inline Expr::BasePtr div_signed(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                                    Annotation::SPAV sp = empty_spav) {
+        return div<Mode::Signed::Signed>(left, right, std::move(sp));
+    }
+
+    /** A shortcut for div<Unsigned>; exists for the API */
+    inline Expr::BasePtr div_unsigned(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                                      Annotation::SPAV sp = empty_spav) {
+        return div<Mode::Signed::Unsigned>(left, right, std::move(sp));
     }
 
     /** Create an Expr with an Mod op
@@ -141,9 +199,21 @@ namespace Create {
      */
     template <Mode::Signed Sgn>
     inline Expr::BasePtr mod(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                             Annotation::SPAV sp = empty_spav) {
+                             Annotation::SPAV &&sp) {
         return Private::binary<Op::Mod<Sgn>, Private::SizeMode::First, Expr::BV>(left, right,
                                                                                  std::move(sp));
+    }
+
+    /** A shortcut for mod<Signed>; exists for the API */
+    inline Expr::BasePtr mod_signed(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                                    Annotation::SPAV sp = empty_spav) {
+        return mod<Mode::Signed::Signed>(left, right, std::move(sp));
+    }
+
+    /** A shortcut for mod<Unsigned>; exists for the API */
+    inline Expr::BasePtr mod_unsigned(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                                      Annotation::SPAV sp = empty_spav) {
+        return mod<Mode::Signed::Unsigned>(left, right, std::move(sp));
     }
 
     // Bitwise
@@ -153,9 +223,28 @@ namespace Create {
      */
     template <Mode::Shift Mask>
     inline Expr::BasePtr shift(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                               Annotation::SPAV sp = empty_spav) {
+                               Annotation::SPAV &&sp) {
         return Private::binary<Op::Shift<Mask>, Private::SizeMode::First, Expr::BV>(left, right,
                                                                                     std::move(sp));
+    }
+
+    /** A shortcut for shift<Left>; exists for the API */
+    inline Expr::BasePtr shift_l(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                                 Annotation::SPAV sp = empty_spav) {
+        return shift<Mode::Shift::Left>(left, right, std::move(sp));
+    }
+
+    /** A shortcut for shift<ArithmeticRight>; exists for the API */
+    inline Expr::BasePtr shift_arithmetic_right(const Expr::BasePtr &left,
+                                                const Expr::BasePtr &right,
+                                                Annotation::SPAV sp = empty_spav) {
+        return shift<Mode::Shift::ArithmeticRight>(left, right, std::move(sp));
+    }
+
+    /** A shortcut for shift<LogicalRight>; exists for the API */
+    inline Expr::BasePtr shift_logical_right(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                                             Annotation::SPAV sp = empty_spav) {
+        return shift<Mode::Shift::LogicalRight>(left, right, std::move(sp));
     }
 
     /** Create an Expr with a Rotate op
@@ -163,10 +252,23 @@ namespace Create {
      */
     template <Mode::LR LR>
     inline Expr::BasePtr rotate(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                                Annotation::SPAV sp = empty_spav) {
+                                Annotation::SPAV &&sp) {
         return Private::binary<Op::Rotate<LR>, Private::SizeMode::First, Expr::BV>(left, right,
                                                                                    std::move(sp));
     }
+
+    /** A shortcut for rotate<Left>; exists for the API */
+    inline Expr::BasePtr rotate_left(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                                     Annotation::SPAV sp = empty_spav) {
+        return rotate<Mode::LR::Left>(left, right, std::move(sp));
+    }
+
+    /** A shortcut for rotate<Right>; exists for the API */
+    inline Expr::BasePtr rotate_right(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                                      Annotation::SPAV sp = empty_spav) {
+        return rotate<Mode::LR::Right>(left, right, std::move(sp));
+    }
+
 
     // Misc
 

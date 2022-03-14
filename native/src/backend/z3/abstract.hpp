@@ -51,7 +51,7 @@
  */
 #define BINARY(FUNC)                                                                               \
     ASSERT_ARG_LEN(args, 2);                                                                       \
-    return FUNC(GET_EARG(0), GET_EARG(1));
+    return FUNC(GET_EARG(0), GET_EARG(1), { nullptr });
 
 /** A local macro used for calling a basic mode binary expr
  *  Assumes the arguments array is called args
@@ -120,17 +120,17 @@ namespace Backend::Z3 {
                             return Create::symbol<Expr::BV>(std::move(name), bl,
                                                             Annotation::SPAV { lookup->second });
                         }
-                        return Create::symbol<Expr::BV>(std::move(name), bl);
+                        return Create::symbol_bv(std::move(name), bl);
                     }
                     case Z3_BOOL_SORT:
-                        return Create::symbol(std::move(name));
+                        return Create::symbol_bool(std::move(name));
                     case Z3_FLOATING_POINT_SORT: {
                         const auto width { z3_sort_to_fp_width(sort) };
                         if (LIKELY(width == Mode::FP::dbl)) {
-                            return Create::symbol<Expr::FP>(std::move(name), Mode::FP::dbl.width());
+                            return Create::symbol_fp(std::move(name), Mode::FP::dbl.width());
                         }
                         if (LIKELY(width == Mode::FP::flt)) {
-                            return Create::symbol<Expr::FP>(std::move(name), Mode::FP::flt.width());
+                            return Create::symbol_fp(std::move(name), Mode::FP::flt.width());
                         }
                         UTIL_THROW(Error::Backend::Unsupported,
                                    REFUSE_FP_STANDARD "\nWidth: ", width);
@@ -163,7 +163,7 @@ namespace Backend::Z3 {
         /** Abstraction function ofr various Z3 comparison ops */
         template <Mode::Compare Mask> static Expr::BasePtr compare(const ArgsVec &args) {
             ASSERT_ARG_LEN(args, 2);
-            return Create::compare<Mask>(GET_EARG(0), GET_EARG(1));
+            return Create::compare<Mask>(GET_EARG(0), GET_EARG(1), { nullptr });
         }
 
         /**********************************************************/
@@ -386,7 +386,7 @@ namespace Backend::Z3 {
                 ASSERT_ARG_LEN(args, 2);
                 return Create::FP::to_bv<Sgn>(
                     std::get<Mode::FP::Rounding>(args[0]), GET_EARG(1),
-                    static_cast<UInt>(Z3_get_decl_int_parameter(decl.ctx(), decl, 0)));
+                    static_cast<UInt>(Z3_get_decl_int_parameter(decl.ctx(), decl, 0)), {});
             }
 
             /** Abstraction function for Z3_OP_FPA_TO_IEEE_BV */
