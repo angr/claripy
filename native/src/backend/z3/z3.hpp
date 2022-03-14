@@ -7,6 +7,7 @@
 
 #include "bool_tactic.hpp"
 #include "dispatch.hpp"
+#include "solver.hpp"
 
 #include "../../error.hpp"
 #include "../generic.hpp"
@@ -89,7 +90,7 @@ namespace Backend::Z3 {
          *  Warning: solver is not saved locally if force_new is false
          */
         template <bool ForceNew = false>
-        [[nodiscard]] inline std::shared_ptr<z3::solver> tls_solver(const unsigned timeout = 0) {
+        [[nodiscard]] inline std::shared_ptr<Solver> tls_solver(const unsigned timeout = 0) {
             auto ret { get_tls_solver<ForceNew>() };
             if (timeout != 0) {
                 if (ret->get_param_descrs().to_string().find("soft_timeout") != std::string::npos) {
@@ -104,80 +105,80 @@ namespace Backend::Z3 {
         }
 
         /** Add constraint to the solver, track if Track */
-        template <bool Track = false> void add(z3::solver &solver, const Expr::RawPtr constraint) {
+        template <bool Track = false> void add(Solver &solver, const Expr::RawPtr constraint) {
             add_helper<Track>(solver, &constraint, 1);
         }
 
         /** Add constraints to the solver, track if Track */
         template <bool Track = false>
-        void add(z3::solver &solver, const std::vector<Expr::RawPtr> &constraints) {
+        void add(Solver &solver, const std::vector<Expr::RawPtr> &constraints) {
             add_helper<Track>(solver, constraints.data(), constraints.size());
         }
 
         /** Check to see if the solver is in a satisfiable state */
-        inline bool satisfiable(z3::solver &solver) const {
-            return solver.check() == z3::check_result::sat;
+        inline bool satisfiable(Solver &solver) const {
+            return solver->check() == z3::check_result::sat;
         }
 
         /** Check to see if the solver is in a satisfiable state */
-        inline bool satisfiable(z3::solver &solver,
+        inline bool satisfiable(Solver &solver,
                                 const std::vector<Expr::RawPtr> &extra_constraints) {
             const ECHelper ec { *this, solver, extra_constraints };
             return satisfiable(solver);
         }
 
         /** Check if expr = sol is a solution to the given solver; none may be nullptr */
-        inline bool solution(const Expr::RawPtr expr, const Expr::RawPtr sol, z3::solver &solver,
+        inline bool solution(const Expr::RawPtr expr, const Expr::RawPtr sol, Solver &solver,
                              const std::vector<Expr::RawPtr> &extra_constraints) {
             ECHelper ec { *this, solver, extra_constraints, true };
             const auto eq { to_eq(expr, sol) }; // Debug verifies expr is not null
-            solver.add(convert(eq.get()));
+            solver->add(convert(eq.get()));
             return satisfiable(solver); // Debug verifies non-null
         }
 
         /** Check to see if sol is a solution to expr w.r.t the solver; neither may be nullptr */
-        inline bool solution(const Expr::RawPtr expr, const Expr::RawPtr sol, z3::solver &solver) {
+        inline bool solution(const Expr::RawPtr expr, const Expr::RawPtr sol, Solver &solver) {
             const static thread_local std::vector<Expr::RawPtr> s {};
             return solution(expr, sol, solver, s);
         }
 
         /** Find the min value of expr that satisfies solver; returns an int64_t or uint64_t */
-        template <bool Signed> inline auto min(const Expr::RawPtr expr, z3::solver &solver) {
+        template <bool Signed> inline auto min(const Expr::RawPtr expr, Solver &solver) {
             return extrema<Signed, true>(expr, solver);
         }
 
         /** Find the min value of expr that satisfies solver; returns an int64_t or uint64_t */
         template <bool Signed>
-        inline auto min(const Expr::RawPtr expr, z3::solver &solver,
+        inline auto min(const Expr::RawPtr expr, Solver &solver,
                         const std::vector<Expr::RawPtr> &extra_constraints) {
             const ECHelper ec { *this, solver, extra_constraints };
             return min<Signed>(expr, solver);
         }
 
         /** Find the max value of expr that satisfies solver; returns an int64_t or uint64_t */
-        template <bool Signed> inline auto max(const Expr::RawPtr expr, z3::solver &solver) {
+        template <bool Signed> inline auto max(const Expr::RawPtr expr, Solver &solver) {
             return extrema<Signed, false>(expr, solver);
         }
 
         /** Find the max value of expr that satisfies solver; returns an int64_t or uint64_t */
         template <bool Signed>
-        inline auto max(const Expr::RawPtr expr, z3::solver &solver,
+        inline auto max(const Expr::RawPtr expr, Solver &solver,
                         const std::vector<Expr::RawPtr> &extra_constraints) {
             const ECHelper ec { *this, solver, extra_constraints };
             return max<Signed>(expr, solver);
         }
 
         /** Return the unsat core from the solver
-         *  Warning: This assumes all of solver's assertions were added by add<true>
+         *  Warning: This assumes all of solver->assertions were added by add<true>
          */
-        inline std::vector<Expr::BasePtr> unsat_core(const z3::solver &solver) {
-            const auto cores { get_tracked<false>(solver.unsat_core()) };
+        inline std::vector<Expr::BasePtr> unsat_core(const Solver &solver) {
+            const auto cores { get_tracked<false>(solver->unsat_core()) };
             // Create ret, reserve tracked.size() (probably larger than needed)
             std::vector<Expr::BasePtr> ret;
             const auto len { cores.size() };
             ret.reserve(len);
             // For each assertion
-            const auto assertions { solver.assertions() };
+            const auto assertions { solver->assertions() };
             const auto a_len { assertions.size() };
             for (int i { 0 }; i < Util::sign(a_len); ++i) {
                 // Extract the hash of the next assertion
@@ -210,13 +211,13 @@ namespace Backend::Z3 {
         /** Evaluate expr, return up to n different solutions
          *  No pointers may be nullptr
          */
-        inline std::vector<Op::PrimVar> eval(const Expr::RawPtr expr, z3::solver &solver,
+        inline std::vector<Op::PrimVar> eval(const Expr::RawPtr expr, Solver &solver,
                                              const UInt n_sol) {
             std::vector<Op::PrimVar> ret;
             ret.reserve(n_sol); // We do not resize as we may return < n_sol
             const z3::expr conv { convert(expr) };
             if (n_sol > 1) {
-                solver.push();
+                solver->push();
             }
             // Repeat for each new solution
             for (UInt iter { 0 }; iter < n_sol; ++iter) {
@@ -225,16 +226,16 @@ namespace Backend::Z3 {
                     break;
                 }
                 // Extract solutions
-                const z3::model model { solver.get_model() };
+                const z3::model model { solver->get_model() };
                 const auto evaled { model.eval(conv, true) };
                 ret.emplace_back(abstract_to_prim(evaled));
                 // Construct extra constraints to prevent solution duplication
                 if (iter + 1 != n_sol) {
-                    solver.add(conv != evaled);
+                    solver->add(conv != evaled);
                 }
             }
             if (n_sol > 1) {
-                solver.pop();
+                solver->pop();
             }
             return ret;
         }
@@ -242,7 +243,7 @@ namespace Backend::Z3 {
         /** Evaluate expr, return up to n different solutions
          *  No pointers may be nullptr
          */
-        inline std::vector<Op::PrimVar> eval(const Expr::RawPtr expr, z3::solver &s, const UInt n,
+        inline std::vector<Op::PrimVar> eval(const Expr::RawPtr expr, Solver &s, const UInt n,
                                              const std::vector<Expr::RawPtr> &extra_constraints) {
             const ECHelper ech { *this, s, extra_constraints };
             return eval(expr, s, n);
@@ -252,7 +253,7 @@ namespace Backend::Z3 {
          *  No pointers may be nullptr
          */
         inline std::vector<std::vector<Op::PrimVar>>
-        batch_eval(const std::vector<Expr::RawPtr> &exprs, z3::solver &s, const UInt n) {
+        batch_eval(const std::vector<Expr::RawPtr> &exprs, Solver &s, const UInt n) {
             if (UNLIKELY(exprs.size() == 0)) {
                 return {};
             }
@@ -279,7 +280,7 @@ namespace Backend::Z3 {
          *  No pointers may be nullptr
          */
         inline std::vector<std::vector<Op::PrimVar>>
-        batch_eval(const std::vector<Expr::RawPtr> &exprs, z3::solver &s, const UInt n,
+        batch_eval(const std::vector<Expr::RawPtr> &exprs, Solver &s, const UInt n,
                    const std::vector<Expr::RawPtr> &extra_constraints) {
             const ECHelper ech { *this, s, extra_constraints };
             return batch_eval(exprs, s, n);
@@ -314,12 +315,12 @@ namespace Backend::Z3 {
         /** Return a tls solver
          *  Warning: solver is not saved locally if force_new is false
          */
-        template <bool ForceNew> [[nodiscard]] inline std::shared_ptr<z3::solver> get_tls_solver() {
+        template <bool ForceNew> [[nodiscard]] inline std::shared_ptr<Solver> get_tls_solver() {
             if constexpr (ForceNew) {
-                return std::make_shared<z3::solver>(tls.ctx);
+                return std::make_shared<Solver>(z3::solver { tls.ctx });
             }
             else if (UNLIKELY(tls.solver == nullptr)) {
-                tls.solver = std::make_shared<z3::solver>(tls.ctx);
+                tls.solver = std::make_shared<Solver>(z3::solver { tls.ctx });
             }
             return tls.solver;
         }
@@ -377,14 +378,14 @@ namespace Backend::Z3 {
          *  Note: This function must be updated in tandem with extract_hash
          */
         template <bool Track>
-        void add_helper(z3::solver &solver, CTSC<Expr::RawPtr> constraints, const UInt c_len) {
+        void add_helper(Solver &solver, CTSC<Expr::RawPtr> constraints, const UInt c_len) {
             if constexpr (!Track) {
                 for (UInt i { 0 }; i < c_len; ++i) {
-                    solver.add(convert(constraints[i]));
+                    solver->add(convert(constraints[i]));
                 }
             }
             else {
-                const std::set<Hash::Hash> tracked { get_tracked<true>(solver.assertions()) };
+                const std::set<Hash::Hash> tracked { get_tracked<true>(solver->assertions()) };
                 char buf[1 + Util::to_hex_max_len<Hash::Hash>];
                 for (UInt i { 0 }; i < c_len; ++i) {
                     // If the new constraint is not track, track it
@@ -394,7 +395,7 @@ namespace Backend::Z3 {
                         // This also leads to avoiding much the same when converting back
                         buf[0] = 'H';
                         (void) Util::to_hex(c_hash, &buf[1]); // Populates buf
-                        solver.add(convert(constraints[i]), solver.ctx().bool_const(buf));
+                        solver->add(convert(constraints[i]), solver->ctx().bool_const(buf));
                     }
                 }
             }
@@ -404,11 +405,11 @@ namespace Backend::Z3 {
          *  No pointers may be nullptr
          */
         inline std::vector<std::vector<Op::PrimVar>>
-        batch_eval(const std::vector<z3::expr> exprs, z3::solver &solver, const UInt n_sol) const {
+        batch_eval(const std::vector<z3::expr> exprs, Solver &solver, const UInt n_sol) const {
             UTIL_ASSERT(Util::Err::Usage, exprs.size() > 1,
                         "should only be called when exprs.size() > 1");
             // Prep
-            solver.push();
+            solver->push();
             std::vector<std::vector<Op::PrimVar>> ret;
             ret.reserve(n_sol); // We do not resize as we may return < n_sol
             // Repeat for each new solution
@@ -427,7 +428,7 @@ namespace Backend::Z3 {
                 ret.emplace_back(); // Create a new vector
 
                 // Extract solutions
-                const z3::model model { solver.get_model() };
+                const z3::model model { solver->get_model() };
                 for (const auto &expr : exprs) {
                     z3_sol.emplace_back(model.eval(expr, true));
                     ret[iter].emplace_back(abstract_to_prim(z3_sol.back()));
@@ -439,11 +440,11 @@ namespace Backend::Z3 {
                     for (UInt i { 1 }; i < exprs.size(); ++i) {
                         current_sol = current_sol && (exprs[i] == z3_sol[i]);
                     }
-                    solver.add(!current_sol);
+                    solver->add(!current_sol);
                 }
             }
             // Cleanup
-            solver.pop();
+            solver->pop();
             return ret;
         }
 
@@ -507,7 +508,7 @@ namespace Backend::Z3 {
 
         /** Find the min/max value of expr that satisfies solver; returns an int64_t or uint64_t */
         template <bool Signed, bool Minimize>
-        inline auto extrema(const Expr::RawPtr raw_expr, z3::solver &solver) {
+        inline auto extrema(const Expr::RawPtr raw_expr, Solver &solver) {
             // Check input
             using Usage = Util::Err::Usage;
             UTIL_ASSERT_NOT_NULL_DEBUG(raw_expr);
@@ -540,32 +541,32 @@ namespace Backend::Z3 {
             // Binary search
             bool pushed { false };
             while (hi > lo + 1) { // Difference of 1 instead of 0 to prevent infinite loop
-                // Protect the current solver state
+                // Protect the current solver->ate
                 if (!pushed) {
-                    solver.push();
+                    solver->push();
                     pushed = true;
                 }
                 // Add new bounding constraints
                 const Integer middle { Util::avg(hi, lo) };
-                solver.add(ge(expr, to_z3(Minimize ? lo : middle)));
-                solver.add(le(expr, to_z3(Minimize ? middle : hi)));
+                solver->add(ge(expr, to_z3(Minimize ? lo : middle)));
+                solver->add(le(expr, to_z3(Minimize ? middle : hi)));
                 // Binary search
                 const bool sat { satisfiable(solver) };
                 (sat == Minimize ? hi : lo) = middle;
                 // If the constraints need to be removed for the next step do so
                 if (!sat) {
-                    solver.pop();
+                    solver->pop();
                     pushed = false;
                 }
             }
 
             // Last step of binary search
             if (!pushed) {
-                solver.push();
+                solver->push();
             }
-            solver.add(expr == to_z3(Minimize ? lo : hi));
+            solver->add(expr == to_z3(Minimize ? lo : hi));
             const Integer ret { Minimize == satisfiable(solver) ? lo : hi };
-            solver.pop();
+            solver->pop();
             return ret;
         }
 
@@ -579,21 +580,20 @@ namespace Backend::Z3 {
             /** Constructor
              *  solver may not be nullptr
              */
-            inline ECHelper(Z3 &bk, z3::solver &s,
-                            const std::vector<Expr::RawPtr> &extra_constraints,
+            inline ECHelper(Z3 &bk, Solver &s, const std::vector<Expr::RawPtr> &extra_constraints,
                             const bool force_push = false)
                 : z3 { bk }, solver { s }, act { force_push || extra_constraints.size() > 0 } {
                 if (act) {
-                    solver.push();
+                    solver->push();
                     for (auto &i : extra_constraints) {
-                        solver.add(z3.convert(i));
+                        solver->add(z3.convert(i));
                     }
                 }
             }
             /** Destructor */
             inline ~ECHelper() {
                 if (act) {
-                    solver.pop();
+                    solver->pop();
                 }
             }
             /** Setter */
@@ -605,7 +605,7 @@ namespace Backend::Z3 {
             /** The z3 instance to use */
             Z3 &z3;
             /** The solver */
-            z3::solver &solver;
+            Solver &solver;
             /** True if extra_constraints is non-empty */
             bool act;
         };
@@ -618,7 +618,7 @@ namespace Backend::Z3 {
             /** The BoolTactic the z3 backend will use */
             BoolTactic bt { ctx };
             /** The z3 solver to be used by this backend */
-            std::shared_ptr<z3::solver> solver { nullptr };
+            std::shared_ptr<Solver> solver { nullptr };
 
             /** Stores a symbol's annotations to be translocated from the pre-conversion expr
              *  to the post-abstraction expr symbol of the same name.
