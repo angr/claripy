@@ -332,6 +332,10 @@ if(ENABLE_ANSI_COLOR_CODES)
 	add_definitions("-DENABLE_ANSI_COLOR_CODES")
 endif()
 
+# API
+# Currently we add a subdir to ensure a desired version (could be a fork as needed)
+add_subdirectory(pybind11) # TODO: replace with find_package
+
 # Remap file prefixes to make source location irrelevant to __FILE__, etc.
 # This is *required* as we calculate class unique IDs based off the normalized
 # path acquired by processing the __FILE__ macro. Anything that uses any headers
