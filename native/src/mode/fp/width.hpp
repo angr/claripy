@@ -16,9 +16,9 @@ namespace Mode::FP {
     /** A floating point width struct */
     struct Width final {
         /** The width of the exponent */
-        const uint32_t exp;
+        uint32_t exp;
         /** The width of the mantissa, including the implicit 1 bit */
-        const uint32_t mantissa;
+        uint32_t mantissa;
         /** The width of the mantissa, excluding the implicit 1 bit */
         constexpr uint32_t mantissa_raw() const noexcept { return mantissa - 1; }
         /** The full width of the fp */
