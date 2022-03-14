@@ -559,7 +559,7 @@ add_subdirectory("${CLARICPP_SRC}")
 add_backward("${CLARICPP}" TRUE)
 if (NOT SOURCE_ROOT_FOR_BACKTRACE STREQUAL "")
 	message(STATUS "Backtrace generators will look for source files in: ${SOURCE_ROOT_FOR_BACKTRACE}")
-	target_compile_definitions("${CLARICPP}" PRIVATE "SOURCE_ROOT_FOR_BACKTRACE=\"${SOURCE_ROOT_FOR_BACKTRACE}\"")
+	target_compile_definitions("${CLARICPP}" PUBLIC "SOURCE_ROOT_FOR_BACKTRACE=\"${SOURCE_ROOT_FOR_BACKTRACE}\"")
 endif()
 
 # Z3 config
@@ -569,17 +569,17 @@ target_include_directories("${CLARICPP}"
 	PRIVATE ${Boost_INCLUDE_DIRS}
 )
 if (NOT GMP_INCLUDE_DIR STREQUAL "")
-	target_include_directories("${CLARICPP}" SYSTEM BEFORE PRIVATE "${GMP_INCLUDE_DIR}")
+	target_include_directories("${CLARICPP}" SYSTEM BEFORE PUBLIC "${GMP_INCLUDE_DIR}")
 endif()
 target_link_libraries("${CLARICPP}"
-	PRIVATE "${Z3_LINK_TARGET}"
-	PRIVATE "${GMP_LIBRARIES}" # Boost multiprecision backend
-	# PRIVATE dl (only necessary if using native backtraces; Backward handles it's own dependencies)
+	PUBLIC "${Z3_LINK_TARGET}"
+	PUBLIC "${GMP_LIBRARIES}" # Boost multiprecision backend
+	# PUBLIC dl (only necessary if using native backtraces; Backward handles it's own dependencies)
 )
 
 # Create a make target for test cases
 if(ENABLE_TESTING)
-	target_link_libraries("${CLARICPP}" PRIVATE dl)
+	target_link_libraries("${CLARICPP}" PUBLIC dl)
 	add_subdirectory(tests)
 endif()
 
