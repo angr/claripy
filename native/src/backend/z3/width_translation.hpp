@@ -27,7 +27,7 @@ namespace Backend::Z3 {
     }
 
     /** Returns a Mode::FP::Width constructed from the given z3 sort */
-    static inline const Mode::FP::Width z3_sort_to_fp_width(const z3::sort &s) {
+    static inline Mode::FP::Width z3_sort_to_fp_width(const z3::sort &s) {
         UTIL_ASSERT(Util::Err::Usage, s.is_fpa(),
                     "called on z3::sort that is not of a floating point type");
         return { s.fpa_ebits(), s.fpa_sbits() };
