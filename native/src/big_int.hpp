@@ -115,6 +115,9 @@ struct BigInt {
     static std::atomic<Mode> mode_;
 };
 
+// Checks
+static_assert(std::is_copy_constructible_v<BigInt>, "Fix me");
+
 /** Ostream overload for BigInt */
 inline std::ostream &operator<<(std::ostream &os, const BigInt &b) {
     os << "BigInt{";
