@@ -306,6 +306,11 @@ set(CLARICPP_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 #################################################
 
 
+if (APPLE AND NOT "/opt/homebrew" IN_LIST CMAKE_SYSTEM_PREFIX_PATH)
+	# Earlier versions of cmake might not do this; homebrew's default M1 root
+	list(APPEND CMAKE_SYSTEM_PREFIX_PATH "/opt/homebrew")
+endif()
+
 # BigInt support
 include(Boost)
 include(GMP) # Boost multiprecision backend
