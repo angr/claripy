@@ -11,6 +11,7 @@
 #include "macros.hpp"
 
 #include "../../constants.hpp"
+#include "../fallback_error_log.hpp"
 #include "../to_str.hpp"
 
 #include <atomic>
@@ -94,16 +95,21 @@ namespace Util::Err {
             if (enable_backtraces && append_backtrace) {
                 try {
                     auto out { backtrace() };
-                    out + "\n\n" + msg;
+                    const static std::string mid { "\n\n" };
                     // Since we cannot use Safe::malloc as it uses this, use malloc
-                    char *const ret { static_cast<char *>(std::malloc(out.size() + 1)) };
+                    const UInt len { out.size() + mid.size() + msg.size() };
+                    char *const ret { static_cast<char *>(std::malloc(len + 1)) };
                     if (ret != nullptr) {
                         std::memcpy(ret, out.c_str(), out.size());
-                        ret[out.size()] = 0;
+                        std::memcpy(ret + out.size(), mid.c_str(), mid.size()); // NOLINT
+                        std::memcpy(ret + out.size() + mid.size(), msg.c_str(), msg.size());
+                        ret[len] = 0;
                         return ret;
                     }
                 }
-                catch (std::exception &) {
+                catch (std::exception &e) {
+                    fallback_error_log("Claricpp.what() failed internally with error: ", false);
+                    fallback_error_log(e.what());
                 }
             }
             return raw_what();
