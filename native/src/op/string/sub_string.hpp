@@ -51,10 +51,8 @@ namespace Op::String {
         /** Appends the expr children of the expr to the given vector
          *  Note: This should only be used when returning children to python
          */
-        inline void python_children(std::vector<ArgVar> &v) const final {
-            v.emplace_back(start_index);
-            v.emplace_back(count);
-            v.emplace_back(full_string);
+        inline std::vector<ArgVar> python_children() const final {
+            return { start_index, count, full_string };
         }
 
       private:

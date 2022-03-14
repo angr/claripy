@@ -47,10 +47,8 @@ namespace Op {
         /** Appends the expr children of the expr to the given vector
          *  Note: This should only be used when returning children to python
          */
-        inline void python_children(std::vector<ArgVar> &v) const final {
-            v.emplace_back(cond);
-            v.emplace_back(if_true);
-            v.emplace_back(if_false);
+        inline std::vector<ArgVar> python_children() const final {
+            return { cond, if_true, if_false };
         }
 
       private:

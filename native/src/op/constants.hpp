@@ -41,6 +41,10 @@ namespace Op {
     /** A variant of the every type a claricpp data member may be */
     using ArgVar = ArgTL::Apply<std::variant>;
 
+    // Checks
+    static_assert(std::is_copy_constructible_v<ArgVar>, "Fix me");
+    static_assert(std::is_copy_assignable_v<ArgVar>, "Fix me");
+
 } // namespace Op
 
 #endif

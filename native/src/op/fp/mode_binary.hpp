@@ -61,11 +61,7 @@ namespace Op::FP {
         /** Appends the expr children of the expr to the given vector
          *  Note: This should only be used when returning children to python
          */
-        inline void python_children(std::vector<ArgVar> &v) const final {
-            v.emplace_back(mode);
-            v.emplace_back(left);
-            v.emplace_back(right);
-        }
+        inline std::vector<ArgVar> python_children() const final { return { mode, left, right }; }
 
       protected:
         /** Protected constructor */

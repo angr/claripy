@@ -99,11 +99,11 @@ namespace Op {
         /** Appends the expr children of the expr to the given vector
          *  Note: This should only be used when returning children to python
          */
-        inline void python_children(std::vector<ArgVar> &v) const final {
+        inline std::vector<ArgVar> python_children() const final {
 /** A local macro used for consistency */
 #define CASE(INDEX)                                                                                \
     case (INDEX):                                                                                  \
-        v.emplace_back(std::get<INDEX>(value));                                                    \
+        return { std::get<INDEX>(value) };                                                         \
         break
             static_assert(std::variant_size_v<decltype(value)> == 10);
             switch (value.index()) {

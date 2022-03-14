@@ -32,7 +32,7 @@ namespace Op {
         /** Appends the expr children of the expr to the given vector
          *  Note: This should only be used when returning children to python
          */
-        virtual inline void python_children(std::vector<ArgVar> &) const = 0;
+        virtual inline std::vector<ArgVar> python_children() const = 0;
 
       protected:
         /** Protected constructor */

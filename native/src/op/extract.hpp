@@ -38,11 +38,7 @@ namespace Op {
         /** Appends the expr children of the expr to the given vector
          *  Note: This should only be used when returning children to python
          */
-        inline void python_children(std::vector<ArgVar> &v) const final {
-            v.emplace_back(high);
-            v.emplace_back(low);
-            v.emplace_back(from);
-        }
+        inline std::vector<ArgVar> python_children() const final { return { high, low, from }; }
 
       private:
         /** Protected constructor */

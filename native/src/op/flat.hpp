@@ -56,12 +56,14 @@ namespace Op {
         /** Appends the expr children of the expr to the given vector
          *  Note: This should only be used when returning children to python
          */
-        inline void python_children(std::vector<ArgVar> &v) const final {
+        inline std::vector<ArgVar> python_children() const final {
+            std::vector<ArgVar> v;
             v.reserve(v.size() + operands.size());
             for (const auto &i : operands) {
                 UTIL_ASSERT_NOT_NULL_DEBUG(i);
                 v.emplace_back(i);
             }
+            return v;
         }
 
       protected:
