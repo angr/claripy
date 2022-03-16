@@ -9,7 +9,7 @@ setup(
     name='claripy',
     version=version,
     python_requires='>=3.6',
-    packages=packages,
+    packages=find_packages(),
     install_requires=[
         'z3-solver>=4.8.5.0',
         'future',
