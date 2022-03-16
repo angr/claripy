@@ -10,10 +10,6 @@
 #ifndef R_UTIL_HPP_
 #define R_UTIL_HPP_
 
-extern "C" {
-#include "util.h"
-}
-
 #include "util/ansi_color_codes.hpp"
 #include "util/assert.hpp"
 #include "util/assert_not_null_debug.hpp"
