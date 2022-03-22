@@ -113,10 +113,13 @@ function(gen_api_file API_SOURCE BINDER_DIR) # Append 'must include' files
         string(APPEND MERGED "\n\n\n//\n// File: ${FNAME}\n//\n\n\n${BODY}\n} // namespace API::Binder")
     endforeach()
 
+    # Consolidate headers
+    list(REMOVE_DUPLICATES HEADERS)
+    list(FILTER HEADERS EXCLUDE REGEX "__") # We do not want internal headers (this is probably safe?)
+
     # Create code
     message(STATUS "Generating final API code...")
     set(WRITE_OUT "// Claricpp API\n\n")
-    list(REMOVE_DUPLICATES HEADERS)
     foreach(INC IN LISTS HEADERS)
         string(APPEND WRITE_OUT "${INC}\n")
     endforeach()
