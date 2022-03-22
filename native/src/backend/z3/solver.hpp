@@ -14,11 +14,17 @@ namespace Backend::Z3 {
         inline z3::solver *operator->() { return &s; }
         /** Allow const access to the z3::solver */
         inline const z3::solver *operator->() const { return &s; }
+        // Friend operators
+        friend inline std::ostream &operator<<(std::ostream &, const Solver &);
 
       private:
         /** The z3::solver */
         z3::solver s;
     };
+
+    /** Stream operator */
+    inline std::ostream &operator<<(std::ostream &os, const Solver &s) { return os << s.s; }
+
 } // namespace Backend::Z3
 
 
