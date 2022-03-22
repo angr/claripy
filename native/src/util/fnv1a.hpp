@@ -28,21 +28,21 @@ namespace Util {
 
       private:
         /** FNV-1a hash body */
-        template <typename HashSize, HashSize Prime, HashSize Offset>
-        static constexpr HashSize internal_hash(CInput s, const HashSize len,
-                                                const HashSize pre_hash = Offset) noexcept {
+        template <typename UInt, UInt Prime, UInt Offset>
+        static constexpr UInt internal_hash(CInput s, const UInt len,
+                                            const UInt pre_hash = Offset) noexcept {
             if (len == 0) { // It is unsafe to dereference s here
                 return pre_hash;
             }
             else {
-                return internal_hash<HashSize, Prime, Offset>(
+                return internal_hash<UInt, Prime, Offset>(
                     // When len == 1, passes an invalid pointer.
                     // This is ok because the next step will not dereference it
                     s + 1,
                     // len >= 1, so this is safe
                     len - 1,
                     // s[0] is safe since len != 0
-                    Prime * (pre_hash ^ static_cast<HashSize>(s[0])));
+                    Prime * (pre_hash ^ static_cast<UInt>(s[0])));
             }
         }
 
@@ -62,16 +62,15 @@ namespace Util {
         }
 
         /** Any HashSize version
-         *  Default: U64
+         *  Default: 64
          */
-        template <typename HashSize = U64>
-        static constexpr U64 hash(CInput s, const U64 len) noexcept {
-            static_assert(sizeof(HashSize) >= sizeof(TypeToHash),
+        template <U64 HashSize = 64> static constexpr auto hash(CInput s, const U64 len) noexcept {
+            static_assert(HashSize >= CHAR_BIT * sizeof(TypeToHash),
                           "FNV1a::hash given a size too small for the given TypeToHash");
-            if constexpr (Type::Is::same_ignore_cv<HashSize, U64>) {
+            if constexpr (HashSize == 64) {
                 return u64(s, len);
             }
-            else if constexpr (Type::Is::same_ignore_cv<HashSize, U32>) {
+            else if constexpr (HashSize == 32) {
                 return u32(s, len);
             }
             else {
@@ -80,6 +79,12 @@ namespace Util {
                 static_assert(TD::false_<TypeToHash>,
                               "Hash::FNV1a::hash not implemented for choice of HashSize");
             }
+        }
+
+        /** Any HashUIntT version */
+        template <typename HashUIntT>
+        static constexpr HashUIntT hash(CInput s, const U64 len) noexcept {
+            return hash<sizeof(HashUIntT) * CHAR_BIT>(s, len);
         }
     };
 
