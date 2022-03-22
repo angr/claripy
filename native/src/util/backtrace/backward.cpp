@@ -15,7 +15,7 @@ void Util::Backtrace::backward_add_source_root(CCSC native) {
     backward::SourceFile::add_paths_to_env_variable_impl(native);
 }
 
-void Util::Backtrace::backward(std::ostream &o, const UInt ignore_frames,
+void Util::Backtrace::backward(std::ostream &o, const U64 ignore_frames,
                                const int16_t max_frames) noexcept {
 #ifdef SOURCE_ROOT_FOR_BACKTRACE
     UTIL_DOONCE(backward_add_source_root(SOURCE_ROOT_FOR_BACKTRACE));
@@ -39,3 +39,6 @@ void Util::Backtrace::backward(std::ostream &o, const UInt ignore_frames,
     // Output
     p.print(st, o);
 }
+
+// Backtraces for segfaults
+backward::SignalHandling sh;
