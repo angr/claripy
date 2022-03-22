@@ -24,7 +24,7 @@ namespace Util {
      *  Will Util::terminate if s goes outside of '/' or './' (depending on the prefix)
      *  For example /../foo is not ok; likewise ./../foo is not ok. But /bar/../foo is fine
      */
-    template <UInt Len> constexpr uint64_t norm_path_hash(const char *s) noexcept {
+    template <U64 Len> constexpr U64 norm_path_hash(const char *s) noexcept {
 
         // Trivial case
         auto len { Len };
@@ -49,12 +49,12 @@ namespace Util {
 
         // Store path segments
         std::array<const char *, Len> segments {};
-        std::array<UInt, Len> segment_lengths {};
-        UInt n_seg { 0 };
+        std::array<U64, Len> segment_lengths {};
+        U64 n_seg { 0 };
 
         // Current segment info
-        UInt offset { 0 };
-        UInt current_seg_length { 0 };
+        U64 offset { 0 };
+        U64 current_seg_length { 0 };
 
         // Repeat for all of s
         while (len) {
@@ -103,13 +103,13 @@ namespace Util {
 
         // Construct norm path
         std::array<char, Len + 3> norm {};
-        UInt n_len { 0 };
+        U64 n_len { 0 };
         if (!absolute) {
             norm[n_len++] = '.';
         }
         norm[n_len++] = '/';
-        for (UInt i { 0 }; i < n_seg; ++i) {
-            for (UInt k { 0 }; k < segment_lengths[i]; ++k) {
+        for (U64 i { 0 }; i < n_seg; ++i) {
+            for (U64 k { 0 }; k < segment_lengths[i]; ++k) {
                 norm[n_len++] = segments[i][k];
             }
             norm[n_len++] = '/';

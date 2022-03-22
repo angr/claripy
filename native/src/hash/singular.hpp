@@ -38,7 +38,7 @@ namespace Hash {
     /*           Primitive Specializations            */
     /**************************************************/
 
-    static_assert(sizeof(Hash) >= sizeof(int64_t), "Hash of unexpected size");
+    static_assert(sizeof(Hash) >= sizeof(I64), "Hash of unexpected size");
 
     /** A specialization for T = int8_t */
     template <> constexpr Hash singular(const int8_t &c) noexcept {
@@ -55,8 +55,8 @@ namespace Hash {
         return UTIL_FILE_LINE_HASH ^ static_cast<Hash>(c);
     }
 
-    /** A specialization for T = int64_t */
-    template <> constexpr Hash singular(const int64_t &c) noexcept {
+    /** A specialization for T = I64 */
+    template <> constexpr Hash singular(const I64 &c) noexcept {
         return UTIL_FILE_LINE_HASH ^ static_cast<Hash>(c);
     }
 
@@ -75,8 +75,8 @@ namespace Hash {
         return UTIL_FILE_LINE_HASH ^ static_cast<Hash>(c);
     }
 
-    /** A specialization for T = uint64_t */
-    template <> constexpr Hash singular(const uint64_t &c) noexcept {
+    /** A specialization for T = U64 */
+    template <> constexpr Hash singular(const U64 &c) noexcept {
         return UTIL_FILE_LINE_HASH ^ static_cast<Hash>(c);
     }
 
@@ -202,8 +202,8 @@ namespace Hash {
     /** A specialization for T = std::vector<Internal> */
     template <typename Internal>
     inline Hash singular(const std::vector<Internal> &v) NOEXCEPT_UNLESS_DEBUG {
-        UInt hashes[v.size()]; // NOLINT
-        UInt i { -1_ui };
+        U64 hashes[v.size()]; // NOLINT
+        U64 i { -1_ui };
         for (const auto &p : v) {
             hashes[++i] = singular(p);
         }
@@ -213,7 +213,7 @@ namespace Hash {
                     "Incorrect value of i within Hash::hash");
 #endif
         // Return hash
-        return fnv1a<UInt>(hashes, v.size());
+        return fnv1a<U64>(hashes, v.size());
     }
 
 } // namespace Hash

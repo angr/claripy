@@ -1,7 +1,7 @@
 /**
  * @file
  * \ingroup util
- * @brief This file defines to_u_ref which tries to coerce objects into a UInt reference
+ * @brief This file defines to_u_ref which tries to coerce objects into a U64 reference
  */
 #ifndef R_UTIL_TOUPTR_HPP_
 #define R_UTIL_TOUPTR_HPP_
@@ -14,17 +14,17 @@
 #include "../constants.hpp"
 
 namespace Util {
-    /** Try to coerce x to a UInt */
-    template <auto In> constexpr const UInt *to_u_ptr() {
+    /** Try to coerce x to a U64 */
+    template <auto In> constexpr const U64 *to_u_ptr() {
         using T = decltype(In);
         if constexpr (Util::Type::Is::strong_enum<T>) {
-            return &ref<UInt, Util::to_underlying(In)>;
+            return &ref<U64, Util::to_underlying(In)>;
         }
-        else if constexpr (std::is_convertible_v<T, UInt>) {
-            return &ref<UInt, static_cast<UInt>(In)>;
+        else if constexpr (std::is_convertible_v<T, U64>) {
+            return &ref<U64, static_cast<U64>(In)>;
         }
         else {
-            static_assert(Util::TD::false_<T>, "Cannot convert T to UInt");
+            static_assert(Util::TD::false_<T>, "Cannot convert T to U64");
         }
     }
 } // namespace Util

@@ -26,38 +26,38 @@ struct BigInt {
     // Constructors
 
     /** Convert the input to a BigInt using the mode Mod */
-    template <Mode Mod> static inline BigInt from_c_str(CCSC s, const UInt bit_length) {
+    template <Mode Mod> static inline BigInt from_c_str(CCSC s, const U64 bit_length) {
         assert_valid<Mod>();
         return (Mod == Mode::Str) ? BigInt { Str { s }, bit_length }
                                   : BigInt { Int { s }, bit_length };
     }
 
     /** Convert the input to a BigInt using the default mode */
-    static inline BigInt from_c_str(CCSC s, const UInt bit_length) {
+    static inline BigInt from_c_str(CCSC s, const U64 bit_length) {
         return (mode_ == Mode::Str) ? from_c_str<Mode::Str>(s, bit_length)
                                     : from_c_str<Mode::Int>(s, bit_length);
     }
 
     /** Convert the input to a BigInt using the default Mod */
-    template <Mode Mod> static inline BigInt from_str(Str &&s, const UInt bit_length) {
+    template <Mode Mod> static inline BigInt from_str(Str &&s, const U64 bit_length) {
         return (Mod == Mode::Str) ? BigInt { std::move(s), bit_length }
                                   : BigInt { Int { std::move(s) }, bit_length };
     }
 
     /** Convert the input to a BigInt using the default mode */
-    static inline BigInt from_str(Str &&s, const UInt bit_length) {
+    static inline BigInt from_str(Str &&s, const U64 bit_length) {
         return (mode_ == Mode::Str) ? from_str<Mode::Str>(std::move(s), bit_length)
                                     : from_str<Mode::Int>(std::move(s), bit_length);
     }
 
     /** Convert the input to a BigInt using the default Mod */
-    template <Mode Mod> static inline BigInt from_int(Int &&i, const UInt bit_length) {
+    template <Mode Mod> static inline BigInt from_int(Int &&i, const U64 bit_length) {
         return (Mod == Mode::Str) ? BigInt { i.str(), bit_length }
                                   : BigInt { std::move(i), bit_length };
     }
 
     /** Convert the input to a BigInt using the default mode */
-    static inline BigInt from_int(Int &&i, const UInt bit_length) {
+    static inline BigInt from_int(Int &&i, const U64 bit_length) {
         return (mode_ == Mode::Str) ? from_int<Mode::Str>(std::move(i), bit_length)
                                     : from_int<Mode::Int>(std::move(i), bit_length);
     }
@@ -103,7 +103,7 @@ struct BigInt {
     /** The value */
     Value value;
     /** The bit length */
-    UInt bit_length;
+    U64 bit_length;
 
   private:
     /** Assert that Mod is a valide Mode */

@@ -35,7 +35,7 @@ namespace Util {
          *  Takes in optional recurrence limit argument
          *  Default argument value: 1000
          */
-        explicit inline RecurrenceGuard(CCSC f, const UInt lim = 1000) : func(f) {
+        explicit inline RecurrenceGuard(CCSC f, const U64 lim = 1000) : func(f) {
             const auto num { ++count[func] };
             UTIL_ASSERT(Err::RecurrenceLimit, num <= lim, func,
                         " has reached its recurrence limit of: ", lim);
@@ -62,7 +62,7 @@ namespace Util {
         const std::string func;
 
         /** Static map to keep track of recurrences */
-        static thread_local std::map<std::string, UInt> count;
+        static thread_local std::map<std::string, U64> count;
 
         // Disable other creation methods
         SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(RecurrenceGuard, delete)

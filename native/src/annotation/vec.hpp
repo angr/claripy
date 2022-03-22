@@ -32,7 +32,7 @@ namespace Annotation {
         /** repr */
         inline void repr(std::ostream &o) const {
             o << R"|({"size":)|" << vec.size() << R"|(, "values": [)|";
-            for (UInt i { 0 }; i < vec.size(); ++i) {
+            for (U64 i { 0 }; i < vec.size(); ++i) {
                 o << (i == 0 ? " \"" : ", \"") << vec[i]->name() << '"';
             }
             o << " ] }";

@@ -12,7 +12,7 @@
 namespace Util {
 
     /** constexpr strlen */
-    constexpr UInt strlen(CCSC s) noexcept {
+    constexpr U64 strlen(CCSC s) noexcept {
         if (s[0] == 0) {
             return 0;
         }

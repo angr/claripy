@@ -26,8 +26,8 @@ namespace Backend::Z3 {
         /** The size of a float */
         static constexpr inline const auto flt_size { 4_ui * BitLength::char_bit };
 
-        /** A function that narrows a UInt to Z3's unsigned type */
-        static constexpr auto to_z3u(const UInt x) { return Util::narrow<unsigned>(x); }
+        /** A function that narrows a U64 to Z3's unsigned type */
+        static constexpr auto to_z3u(const U64 x) { return Util::narrow<unsigned>(x); }
 
       public:
         // Unary
@@ -59,7 +59,7 @@ namespace Backend::Z3 {
 
             // Reverse byte by byte
             auto ret { extract(C_CHAR_BIT - 1u, 0u, e) };
-            for (UInt i = C_CHAR_BIT; i < size; i += C_CHAR_BIT) {
+            for (U64 i = C_CHAR_BIT; i < size; i += C_CHAR_BIT) {
                 const auto tmp { extract(to_z3u(i + C_CHAR_BIT - 1), to_z3u(i), e) };
                 ret = concat(ret, tmp);
             }
@@ -69,10 +69,10 @@ namespace Backend::Z3 {
         // UIntBinary
 
         /** Sign Extension converter */
-        static z3::expr signext(const z3::expr &e, const UInt i) { return z3::sext(e, to_z3u(i)); }
+        static z3::expr signext(const z3::expr &e, const U64 i) { return z3::sext(e, to_z3u(i)); }
 
         /** Zero Extension converter */
-        static z3::expr zeroext(const z3::expr &e, const UInt i) { return z3::zext(e, to_z3u(i)); }
+        static z3::expr zeroext(const z3::expr &e, const U64 i) { return z3::zext(e, to_z3u(i)); }
 
         // Binary
 
@@ -198,7 +198,7 @@ namespace Backend::Z3 {
       private:
         /** Like C++20's version of std::accumulate, except it works with pointers */
         template <typename FunctorType>
-        static z3::expr ptr_accumulate(FlatArr arr, const UInt size) {
+        static z3::expr ptr_accumulate(FlatArr arr, const U64 size) {
 #ifdef DEBUG
             UTIL_ASSERT(Util::Err::Size, size >= 2,
                         "size < 2; this probably resulted from an invalid claricpp expr.");
@@ -207,7 +207,7 @@ namespace Backend::Z3 {
 #endif
             const FunctorType fn {};
             z3::expr ret { fn(*arr[0], *arr[1]) };
-            for (UInt i { 2 }; i < size; ++i) {
+            for (U64 i { 2 }; i < size; ++i) {
                 UTIL_ASSERT_NOT_NULL_DEBUG(arr[i]);
                 ret = std::move(fn(std::move(ret), *arr[i]));
             }
@@ -216,36 +216,36 @@ namespace Backend::Z3 {
 
       public:
         /** Add converter */
-        static z3::expr add(FlatArr arr, const UInt size) {
+        static z3::expr add(FlatArr arr, const U64 size) {
             return ptr_accumulate<std::plus<z3::expr>>(arr, size);
         }
 
         /** Mul converter */
-        static z3::expr mul(FlatArr arr, const UInt size) {
+        static z3::expr mul(FlatArr arr, const U64 size) {
             return ptr_accumulate<std::multiplies<z3::expr>>(arr, size);
         }
 
         /** Or converter */
-        static z3::expr or_(FlatArr arr, const UInt size) {
+        static z3::expr or_(FlatArr arr, const U64 size) {
             // Note that Z3's bit or auto switched to logical or for booleans
             return ptr_accumulate<std::bit_or<z3::expr>>(arr, size);
         }
 
         /** And converter */
-        static z3::expr and_(FlatArr arr, const UInt size) {
+        static z3::expr and_(FlatArr arr, const U64 size) {
             // Note that Z3's bit and auto switched to logical and for booleans
             return ptr_accumulate<std::bit_and<z3::expr>>(arr, size);
         }
 
         /** Xor converter */
-        static z3::expr xor_(FlatArr arr, const UInt size) {
+        static z3::expr xor_(FlatArr arr, const U64 size) {
             return ptr_accumulate<std::bit_xor<z3::expr>>(arr, size);
         }
 
         // Other
 
         /** Extract converter */
-        static z3::expr extract(const UInt high, const UInt low, const z3::expr &e) {
+        static z3::expr extract(const U64 high, const U64 low, const z3::expr &e) {
             return e.extract(to_z3u(high), to_z3u(low));
         }
 
@@ -289,7 +289,9 @@ namespace Backend::Z3 {
                         STD_INT(5, uint8_t, 8);
                         STD_INT(6, uint16_t, 16);
                         STD_INT(7, uint32_t, 32);
-                        STD_INT(8, uint64_t, 64);
+                    case 8:
+                        UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 8, U64);
+                        return ctx.bv_val(static_cast<uint64_t>(std::get<U64>(data)), 64); // cast
 // Cleanup
 #undef STD_INT
                     case 9: {
@@ -346,7 +348,7 @@ namespace Backend::Z3 {
                                 "cache lookup failed for existing object");
 #endif
                     // Update annotations for translocation
-                    const uint64_t name_hash { Util::FNV1a<char>::hash(name.c_str(), name.size()) };
+                    const U64 name_hash { Util::FNV1a<char>::hash(name.c_str(), name.size()) };
                     if (expr->annotations != nullptr) {
                         Util::map_emplace(satd, name_hash, expr->annotations);
                     }
@@ -354,7 +356,7 @@ namespace Backend::Z3 {
                         satd.erase(name_hash);
                     }
                     // Return the converted constant
-                    const UInt bit_length { Util::checked_static_cast<BVP>(expr)->bit_length };
+                    const U64 bit_length { Util::checked_static_cast<BVP>(expr)->bit_length };
                     return ctx.bv_const(name.c_str(), to_z3u(bit_length));
                 }
                 // Error handling
@@ -435,7 +437,7 @@ namespace Backend::Z3 {
             /** FP::ToBV converter */
             template <Mode::Signed Sgn>
             static z3::expr to_bv(const Mode::FP::Rounding mode, const z3::expr &e,
-                                  const UInt bit_length) {
+                                  const U64 bit_length) {
                 e.ctx().set_rounding_mode(to_z3_rm(mode));
                 if constexpr (Sgn == Mode::Signed::Signed) {
                     return z3::fpa_to_sbv(e, to_z3u(bit_length));
@@ -485,13 +487,13 @@ namespace Backend::Z3 {
             // Int Binary
 
             /** ToInt converter */
-            static z3::expr to_int(const z3::expr &e, const UInt len) {
+            static z3::expr to_int(const z3::expr &e, const U64 len) {
                 const auto a { e.stoi() };
                 return z3::int2bv(to_z3u(len), a);
             }
 
             /** Len converter */
-            static z3::expr len(const z3::expr &e, const UInt len) {
+            static z3::expr len(const z3::expr &e, const U64 len) {
                 const auto a { e.length() };
                 return z3::int2bv(to_z3u(len), a);
             }
@@ -533,7 +535,7 @@ namespace Backend::Z3 {
 
             /** IndexOf converter */
             static z3::expr index_of(const z3::expr &str, const z3::expr &pattern,
-                                     const z3::expr &start_index, const UInt bit_length) {
+                                     const z3::expr &start_index, const U64 bit_length) {
                 const auto a { z3::indexof(str, pattern, start_index) };
                 return z3::int2bv(to_z3u(bit_length), a);
             }

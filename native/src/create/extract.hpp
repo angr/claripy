@@ -13,7 +13,7 @@ namespace Create {
     /** Create an Expr with an Extract op
      *  Expr pointers may not be nullptr
      */
-    inline Expr::BasePtr extract(const UInt high, const UInt low, const Expr::BasePtr &from,
+    inline Expr::BasePtr extract(const U64 high, const U64 low, const Expr::BasePtr &from,
                                  Annotation::SPAV sp = empty_spav) {
         namespace E = Error::Expr;
         using namespace Simplify;

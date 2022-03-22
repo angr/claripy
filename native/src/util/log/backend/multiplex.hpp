@@ -34,8 +34,8 @@ namespace Util::Log::Backend {
         /** Log the given string message */
         inline void log_str(CCSC id, const Level::Level &lvl, std::string &&msg) const final {
             if (LIKELY(!backends.empty())) {
-                const UInt loop_size { backends.size() - 1 };
-                for (UInt i { 0 }; i < loop_size; ++i) {
+                const U64 loop_size { backends.size() - 1 };
+                for (U64 i { 0 }; i < loop_size; ++i) {
                     const auto &bk { backends[i] };
                     UTIL_ASSERT_NOT_NULL_DEBUG(bk)
                     bk->log_str(id, lvl, std::string { msg });

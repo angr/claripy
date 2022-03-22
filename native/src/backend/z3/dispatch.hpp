@@ -622,7 +622,7 @@ namespace Backend::Z3 {
                     UTIL_ASSERT(Error::Backend::Abstraction, !Z3::rhfpu,
                             "rewriter.hi_fp_unspecified is set to false, this should not be triggered");
                         const auto n { b_obj.num_args() };
-                        uint64_t res = 0; // @todo wrong
+                        U64 res = 0; // @todo wrong
                         for (unsigned i { 0 }; i < n; ++i) {
                             auto arg { b_obj.arg(i) };
                             auto arg_decl { arg.decl() };
@@ -701,14 +701,14 @@ namespace Backend::Z3 {
         /** Verify the container contains at least n elements
          *  In debug mode verifies that the last n elements are not nullptr
          */
-        template <typename T> static void check_vec_usage(const T &c, const UInt n) {
+        template <typename T> static void check_vec_usage(const T &c, const U64 n) {
             namespace Err = Util::Err; // NOLINT (false positive)
             UTIL_ASSERT(Err::Size, c.size() >= n, "container is too small to access ", n,
                         " elements");
 #ifdef DEBUG
             if (n > 0) {
                 const auto last { c.size() - 1 };
-                for (UInt i { 0 }; i < n; ++i) {
+                for (U64 i { 0 }; i < n; ++i) {
                     UTIL_ASSERT(Err::Null, c[last - i] != nullptr,
                                 "container element cannot be nullptr");
                 }

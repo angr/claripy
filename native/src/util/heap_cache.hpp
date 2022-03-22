@@ -73,7 +73,7 @@ namespace Util {
             }
             data.reserve(dsize); // Can throw if max_length is exceeded
             const auto diff { dsize - data.size() };
-            for (UInt i { 0 }; i < diff; ++i) {
+            for (U64 i { 0 }; i < diff; ++i) {
                 data.emplace_back(alloc());
             }
         }
@@ -92,13 +92,13 @@ namespace Util {
         // Representation
 
         /** The size reserve will use */
-        static const constexpr UInt dsize { 0x1000 };
+        static const constexpr U64 dsize { 0x1000 };
 
         /** Internal data storage */
         std::vector<T *> data {};
 
         /** Error checking */
-        static_assert(sizeof(UInt) == sizeof(typename decltype(data)::size_type),
+        static_assert(sizeof(U64) == sizeof(typename decltype(data)::size_type),
                       "CHeapCache size type assumptions are invalid.");
     };
 

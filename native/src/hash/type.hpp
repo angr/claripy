@@ -13,7 +13,7 @@ namespace Hash {
     /** The Hash type
      *  Guaranteed to be never throw
      */
-    using Hash = UInt;
+    using Hash = U64;
 
 } // namespace Hash
 

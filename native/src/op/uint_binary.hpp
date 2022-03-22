@@ -21,7 +21,7 @@
                                                                                                    \
       private:                                                                                     \
         /** Private constructor */                                                                 \
-        explicit inline CLASS(const ::Hash::Hash &h, const ::Expr::BasePtr &e, const UInt i)       \
+        explicit inline CLASS(const ::Hash::Hash &h, const ::Expr::BasePtr &e, const U64 i)        \
             : UIntBinary { h, static_cuid, e, i } {}                                               \
     };
 
@@ -36,7 +36,7 @@ namespace Op {
         /** Expr operand */
         const Expr::BasePtr expr;
         /* Integer operand */
-        const UInt integer;
+        const U64 integer;
 
         /** Python's repr function (outputs json) */
         inline void repr(std::ostream &out) const final {
@@ -58,7 +58,7 @@ namespace Op {
       protected:
         /** Protected constructor */
         explicit inline UIntBinary(const Hash::Hash &h, const CUID::CUID &cuid_,
-                                   const Expr::BasePtr &e, const UInt i)
+                                   const Expr::BasePtr &e, const U64 i)
             : Base { h, cuid_ }, expr { e }, integer { i } {}
     };
 

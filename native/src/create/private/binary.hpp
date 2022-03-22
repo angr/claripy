@@ -16,8 +16,7 @@ namespace Create::Private {
      *  Assumes left and right are not null
      *  Assumes left is of type Bits, as is right
      */
-    template <SizeMode Mode>
-    UInt binary_len(const Expr::BasePtr &left, const Expr::BasePtr &right) {
+    template <SizeMode Mode> U64 binary_len(const Expr::BasePtr &left, const Expr::BasePtr &right) {
         if constexpr (Mode == SizeMode::First) {
             return Expr::get_bit_length(left);
         }

@@ -29,7 +29,7 @@ namespace Create::String {
                     "operands must be each be of type Expr::String");
 
         // Construct size
-        UInt new_bit_length { Expr::get_bit_length(full) };
+        U64 new_bit_length { Expr::get_bit_length(full) };
         const auto s2 { Expr::get_bit_length(search) };
         UTIL_ASSERT(Err::Size, new_bit_length >= s2,
                     "The pattern that has to be replaced is longer than the string itself");

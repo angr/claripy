@@ -26,8 +26,8 @@ namespace Util::Backtrace {
     namespace Private {
 
         /** A private helper function used to print a backtrace line */
-        inline void print_bt_line(std::ostream &o, const int lg_i, const UInt line_num,
-                                  const UInt addr, CCSC mangled, const std::uintptr_t offset) {
+        inline void print_bt_line(std::ostream &o, const int lg_i, const U64 line_num,
+                                  const U64 addr, CCSC mangled, const std::uintptr_t offset) {
             const constexpr unsigned ptr_width { 2 + 2 * sizeof(void *) };
             o << std::setw(lg_i) << std::left << line_num << " : " << std::setw(ptr_width)
               << std::left << to_hex(addr) << " : " << try_demangle(mangled) << " + " << offset
@@ -35,7 +35,7 @@ namespace Util::Backtrace {
         }
 
         /** A private helper function used to print a backtrace line */
-        inline void print_raw_bt_line(std::ostream &o, const int lg_i, const UInt line_num,
+        inline void print_raw_bt_line(std::ostream &o, const int lg_i, const U64 line_num,
                                       CCSC line) {
             o << std::setw(lg_i) << std::left << line_num << " : " << line << '\n';
         }
@@ -43,7 +43,7 @@ namespace Util::Backtrace {
     } // namespace Private
 
     /** Save a backtrace to o */
-    inline void native(std::ostream &o, const UInt ignore_frames = 0,
+    inline void native(std::ostream &o, const U64 ignore_frames = 0,
                        const int16_t max_frames = 0x1000) noexcept {
 #ifdef DEBUG
         // Prevent infinite recursion if something goes wrong
@@ -69,13 +69,13 @@ namespace Util::Backtrace {
             UTIL_ASSERT(Err::Unknown, n_frames <= max_frames, "backtrace overflow failure");
             CCSC *const symbols { ::backtrace_symbols(callstack, n_frames) };
             // Used for formatting
-            const auto n_to_print { Util::widen<UInt, true>(
+            const auto n_to_print { Util::widen<U64, true>(
                 Util::Min::value(n_frames, 1 + static_cast<int>(max_frames))) };
             const auto lg_i { static_cast<int>(std::ceil(std::log10(n_to_print))) };
             // Print stack
             Dl_info data { nullptr, nullptr, nullptr, nullptr };
 
-            for (UInt i { ignore_frames + 1 }; i < n_to_print; ++i) {
+            for (U64 i { ignore_frames + 1 }; i < n_to_print; ++i) {
                 const bool matched { ::dladdr(callstack[i], &data) != 0 }; // NOLINT
                 // Check to see if we can resolve the symbol name
                 if (matched && data.dli_sname != nullptr) {
@@ -86,7 +86,7 @@ namespace Util::Backtrace {
                 }
                 // Name not found
                 else {
-                    UInt addr;             // NOLINT
+                    U64 addr;              // NOLINT
                     std::uintptr_t offset; // NOLINT
                     // Try to parse the line
                     std::istringstream line { symbols[i] }; // NOLINT

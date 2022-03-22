@@ -46,7 +46,7 @@ namespace Create::Private {
                 Expr::factory<Out>(sym, Op::factory<OpT>(std::move(operands)), std::move(sp)));
         }
         else {
-            const UInt len { Expr::get_bit_length(operands[0]) }; // Before move
+            const U64 len { Expr::get_bit_length(operands[0]) }; // Before move
             return simplify(
                 Expr::factory<Out>(sym, Op::factory<OpT>(std::move(operands)), len, std::move(sp)));
         }
@@ -81,7 +81,7 @@ namespace Create::Private {
                     sym, Op::factory<OpT>(std::move(operands)), std::move(sp)));
             }
         }
-        const UInt len { Expr::get_bit_length(operands[0]) }; // Before move
+        const U64 len { Expr::get_bit_length(operands[0]) }; // Before move
         return simplify(Expr::factory_cuid(
             operands[0]->cuid, sym, Op::factory<OpT>(std::move(operands)), len, std::move(sp)));
     }

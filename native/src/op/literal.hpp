@@ -23,7 +23,7 @@ namespace Op {
          *  If Data contains a type that doesn't correspond to an Expr that is a subclass
          *  of BitLength then an Usage exception is thrown
          */
-        constexpr UInt bit_length() const {
+        constexpr U64 bit_length() const {
             if (std::holds_alternative<BigInt>(value)) {
                 return std::get<BigInt>(value).bit_length;
             }
@@ -74,7 +74,7 @@ namespace Op {
                 VCASE_POST;
                 VCASE(6, uint16_t);
                 VCASE(7, uint32_t);
-                VCASE(8, uint64_t);
+                VCASE(8, U64);
                 VCASE_PRE(9, BigInt);
                 got.write_value(out);
                 out << R"|(, "Bit length":)|" << got.bit_length;
@@ -144,7 +144,7 @@ namespace Op {
         P_CTOR(uint8_t) {};
         P_CTOR(uint16_t) {};
         P_CTOR(uint32_t) {};
-        P_CTOR(uint64_t) {};
+        P_CTOR(U64) {};
         P_CTOR(BigInt) {};
 
 // Cleanup
@@ -156,7 +156,7 @@ namespace Op {
          *  This function requires that if value is a shared_ptr is be non-null
          *  This function may not be called on a BigInt
          */
-        constexpr UInt byte_length() const {
+        constexpr U64 byte_length() const {
 
 /** A local macro used for consistency */
 #define VCASE_PRE(INDEX, TYPE)                                                                     \
@@ -194,7 +194,7 @@ namespace Op {
                 VCASE(5, uint8_t);
                 VCASE(6, uint16_t);
                 VCASE(7, uint32_t);
-                VCASE(8, uint64_t);
+                VCASE(8, U64);
                 // Bool
                 default: {
                     UTIL_THROW(Util::Err::Usage,

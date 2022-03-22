@@ -14,20 +14,20 @@
 /** Used to define a possibly unused static_cuid in a class
  *  Leaves the class in a public state
  *  Will not cause any compiler warnings if this field is not used
- *  X should be trivial to convert to a UInt
+ *  X should be trivial to convert to a U64
  *  For example, Foo<int> must give a different X than Foo<bool> gives
  */
 #define CUID_DEFINE_MAYBE_UNUSED(X)                                                                \
   public:                                                                                          \
     /** Define a static_cuid */                                                                    \
     [[maybe_unused]] static const constexpr ::CUID::CUID static_cuid {                             \
-        UTIL_FILE_LINE_HASH ^ Util::FNV1a<UInt>::hash(Util::to_u_ptr<X>(), 1)                      \
+        UTIL_FILE_LINE_HASH ^ Util::FNV1a<U64>::hash(Util::to_u_ptr<X>(), 1)                       \
     };
 
 namespace CUID {
 
     /** The CUID type */
-    using CUID = UInt;
+    using CUID = U64;
 
     /** A type that has a class unique id
      *  This has the benefits of a virtual function as inherited classes

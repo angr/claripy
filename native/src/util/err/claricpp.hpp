@@ -97,7 +97,7 @@ namespace Util::Err {
                     auto out { backtrace() };
                     const static std::string mid { "\n\n" };
                     // Since we cannot use Safe::malloc as it uses this, use malloc
-                    const UInt len { out.size() + mid.size() + msg.size() };
+                    const U64 len { out.size() + mid.size() + msg.size() };
                     char *const ret { static_cast<char *>(std::malloc(len + 1)) };
                     if (ret != nullptr) {
                         std::memcpy(ret, out.c_str(), out.size());
@@ -137,7 +137,7 @@ namespace Util::Err {
          *  This is found expirimentally; there is no issue if it is too small
          *  Being too small simply makes the backtraces messier as they contain this constructor
          */
-        static const constexpr UInt frame_offset {
+        static const constexpr U64 frame_offset {
 #ifdef __linux__
     #ifdef DEBUG
             5

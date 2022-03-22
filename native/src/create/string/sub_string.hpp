@@ -15,8 +15,8 @@ namespace Create::String {
          *  Expr pointers may not be nullptr
          *  @todo Adjust as we edit concrete
          */
-        static inline UInt sub_string_length(const Expr::BasePtr &count,
-                                             const Expr::BasePtr &full_string) {
+        static inline U64 sub_string_length(const Expr::BasePtr &count,
+                                            const Expr::BasePtr &full_string) {
             using E = Error::Expr::Type;
             // If symbolic, use full_string's length
             if (count->symbolic) {
@@ -46,7 +46,7 @@ namespace Create::String {
         UTIL_ASSERT(Error::Expr::Usage,
                     start_index != nullptr && count != nullptr && full_string != nullptr,
                     "Expr pointers cannot be nullptr");
-        const UInt bit_length { Private::sub_string_length(count, full_string) };
+        const U64 bit_length { Private::sub_string_length(count, full_string) };
         return Simplify::simplify(Expr::factory<Expr::String>(
             start_index->symbolic || count->symbolic || full_string->symbolic,
             Op::factory<Op::String::SubString>(start_index, count, full_string), bit_length,

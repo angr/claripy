@@ -43,7 +43,7 @@
  */
 #define UINT_BINARY(FUNC)                                                                          \
     ASSERT_ARG_LEN(args, 1);                                                                       \
-    return FUNC(GET_EARG(0), Util::widen<UInt, true>(Z3_get_decl_int_parameter(ctx, decl, 0)));
+    return FUNC(GET_EARG(0), Util::widen<U64, true>(Z3_get_decl_int_parameter(ctx, decl, 0)));
 
 /** A local macro used for calling a basic binary expr
  *  Assumes the arguments array is called args
@@ -114,8 +114,7 @@ namespace Backend::Z3 {
                 switch (sort.sort_kind()) {
                     case Z3_BV_SORT: {
                         const auto bl { sort.bv_size() };
-                        const uint64_t name_hash { Util::FNV1a<char>::hash(name.c_str(),
-                                                                           name.size()) };
+                        const U64 name_hash { Util::FNV1a<char>::hash(name.c_str(), name.size()) };
                         if (const auto lookup { satd.find(name_hash) }; lookup != satd.end()) {
                             return Create::symbol<Expr::BV>(std::move(name), bl,
                                                             Annotation::SPAV { lookup->second });
@@ -257,7 +256,7 @@ namespace Backend::Z3 {
 
                 // Standard sizes
                 if (bl <= 64) {
-                    uint64_t u64;
+                    uint64_t u64; // Not U64 b/c z3
                     UTIL_ASSERT(E, b_obj.is_numeral_u64(u64), "given z3 object is not a numeral");
                     switch (bl) {
                         case 8:
@@ -267,7 +266,7 @@ namespace Backend::Z3 {
                         case 32:
                             return Util::narrow<uint32_t>(u64);
                         case 64:
-                            return u64;
+                            return static_cast<U64>(u64);
                         default:
                             break;
                     };
@@ -386,7 +385,7 @@ namespace Backend::Z3 {
                 ASSERT_ARG_LEN(args, 2);
                 return Create::FP::to_bv<Sgn>(
                     std::get<Mode::FP::Rounding>(args[0]), GET_EARG(1),
-                    static_cast<UInt>(Z3_get_decl_int_parameter(decl.ctx(), decl, 0)), {});
+                    static_cast<U64>(Z3_get_decl_int_parameter(decl.ctx(), decl, 0)), {});
             }
 
             /** Abstraction function for Z3_OP_FPA_TO_IEEE_BV */
@@ -410,7 +409,7 @@ namespace Backend::Z3 {
                 //   z3.Z3_fpa_get_numeral_significand_string (has the leading 1. or 0.)
                 //   z3.Z3_fpa_get_numeral_exponent_string
 
-                // Fp components
+                // Fp components (z3 needs unit64_t and int64_t)
                 int sign;          // NOLINT
                 uint64_t mantissa; // NOLINT
                 int64_t exp;       // NOLINT
@@ -429,10 +428,10 @@ namespace Backend::Z3 {
                 const auto width { z3_sort_to_fp_width(sort) };
                 namespace FP = Mode::FP;
                 if (LIKELY(width == FP::dbl)) {
-                    const uint64_t to_val {
-                        (Util::widen<uint64_t, true>(sign) << FP::dbl.no_sign_width()) | mantissa |
-                        (Util::unsign(exp) << FP::dbl.mantissa_raw())
-                    };
+                    const U64 to_val { (Util::widen<U64, true>(sign) << FP::dbl.no_sign_width()) |
+                                       static_cast<U64>(mantissa) |
+                                       (Util::unsign(static_cast<I64>(exp))
+                                        << FP::dbl.mantissa_raw()) };
                     // If nothing went wrong, this reinterpret_cast should be safe
                     double ret; // NOLINT
                     UTIL_TYPE_PUN_ONTO(&ret, &to_val);

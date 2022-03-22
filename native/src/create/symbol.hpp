@@ -20,7 +20,7 @@ namespace Create {
      *  This override is for sized Expr types
      */
     template <typename T>
-    Expr::BasePtr symbol(std::string name, const UInt bit_length, Annotation::SPAV &&sp) {
+    Expr::BasePtr symbol(std::string name, const U64 bit_length, Annotation::SPAV &&sp) {
         // Type checks
         static_assert(Util::Type::Is::ancestor<Expr::Bits, T>,
                       "Create::symbol argument types must be a subclass of Bits");
@@ -37,25 +37,25 @@ namespace Create {
     }
 
     /* A shortcut for symbol<BV>; exists for the API */
-    inline Expr::BasePtr symbol_bv(std::string name, const UInt bit_length,
+    inline Expr::BasePtr symbol_bv(std::string name, const U64 bit_length,
                                    Annotation::SPAV sp = empty_spav) {
         return symbol<Expr::BV>(std::move(name), bit_length, std::move(sp));
     }
 
     /* A shortcut for symbol<FP>; exists for the API */
-    inline Expr::BasePtr symbol_fp(std::string name, const UInt bit_length,
+    inline Expr::BasePtr symbol_fp(std::string name, const U64 bit_length,
                                    Annotation::SPAV sp = empty_spav) {
         return symbol<Expr::FP>(std::move(name), bit_length, std::move(sp));
     }
 
     /* A shortcut for symbol<String>; exists for the API */
-    inline Expr::BasePtr symbol_string(std::string name, const UInt bit_length,
+    inline Expr::BasePtr symbol_string(std::string name, const U64 bit_length,
                                        Annotation::SPAV sp = empty_spav) {
         return symbol<Expr::String>(std::move(name), bit_length, std::move(sp));
     }
 
     /* A shortcut for symbol<FP>; exists for the API */
-    inline Expr::BasePtr symbol_vs(std::string name, const UInt bit_length,
+    inline Expr::BasePtr symbol_vs(std::string name, const U64 bit_length,
                                    Annotation::SPAV sp = empty_spav) {
         return symbol<Expr::VS>(std::move(name), bit_length, std::move(sp));
     }

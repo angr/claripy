@@ -15,7 +15,7 @@ namespace PyObj {
     /** A Value Set PyObj */
     struct VS final : public Base, public BitLength {
         /** Constructor */
-        explicit inline VS(const Hash::Hash &h, const Ref r, const UInt bl) noexcept
+        explicit inline VS(const Hash::Hash &h, const Ref r, const U64 bl) noexcept
             : Base { h, r }, BitLength { bl } {}
     };
 

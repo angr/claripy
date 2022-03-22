@@ -28,7 +28,7 @@
 namespace Op::Private {
     /** A helper for OP_FINAL_INIT */
     template <typename T> const char *str(CCSC head, T tail) {
-        if constexpr (std::is_convertible_v<T, UInt>) {
+        if constexpr (std::is_convertible_v<T, U64>) {
             if (tail == 0) {
                 return head;
             }

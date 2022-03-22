@@ -38,10 +38,10 @@ namespace Util::Type {
         // Getters
 
         /** Returns the length of the typelist */
-        static inline constexpr const UInt len { sizeof...(Args) };
+        static inline constexpr const U64 len { sizeof...(Args) };
 
         /** Returns a pointer to the type to get */
-        template <UInt I, typename Head, typename... Tail> static constexpr auto get_helper() {
+        template <U64 I, typename Head, typename... Tail> static constexpr auto get_helper() {
             static_assert(I < len, "Get index out of bounds");
             if constexpr (I == 0) {
                 return (Head *) { nullptr }; // Can't use declval here :(
@@ -52,13 +52,13 @@ namespace Util::Type {
         }
 
         /** Returns the i'th element of the typelist */
-        template <UInt i> using Get = std::remove_pointer_t<decltype(get_helper<i, Args...>())>;
+        template <U64 i> using Get = std::remove_pointer_t<decltype(get_helper<i, Args...>())>;
 
         /** Returns the index of T in Args...
          *  Requires T in Args...
          */
         template <typename T>
-        static inline constexpr const UInt find { Private::template find<T>() };
+        static inline constexpr const U64 find { Private::template find<T>() };
 
         // List generators
 
@@ -72,7 +72,7 @@ namespace Util::Type {
         using PopFront = typename Private::PopFront;
 
         /** Pop front n items */
-        template <UInt N> using Pop = typename Private::template Pop<N>;
+        template <U64 N> using Pop = typename Private::template Pop<N>;
 
         /** Return true if T in Args */
         template <typename T> static UTIL_ICCBOOL contains { (std::is_same_v<T, Args> || ...) };
@@ -98,7 +98,7 @@ namespace Util::Type {
              *  not at namespace scope and thus cannot do specializations
              *  Note: we use List<> *'s here since List<> hasn't been fully defined yet
              */
-            template <UInt N> static constexpr auto pop_front_helper() {
+            template <U64 N> static constexpr auto pop_front_helper() {
                 if constexpr (N == 0) {
                     return (List<> *) { nullptr };
                 }
@@ -116,7 +116,7 @@ namespace Util::Type {
              *  not at namespace scope and thus cannot do specializations
              *  Note: we use List<> *'s here since List<> hasn't been fully defined yet
              * */
-            template <UInt N> static constexpr auto pop() {
+            template <U64 N> static constexpr auto pop() {
                 if constexpr (N == 0) {
                     return (This *) { nullptr };
                 }
@@ -129,12 +129,12 @@ namespace Util::Type {
             }
 
             /** PopFront */
-            template <UInt N> using Pop = std::remove_pointer_t<decltype(pop<N>())>;
+            template <U64 N> using Pop = std::remove_pointer_t<decltype(pop<N>())>;
 
             /** Return the index of T in Args...
              *  Requires T in Args...
              */
-            template <typename T> static constexpr UInt find() {
+            template <typename T> static constexpr U64 find() {
                 static_assert(contains<T>, "T is not in X");
                 if constexpr (std::is_same_v<Get<0>, T>) {
                     return 0;

@@ -22,10 +22,7 @@ namespace Util {
     template <typename TypeToHash> struct FNV1a final : public Type::Unconstructable {
 
         /** 32-bit type */
-        using u32T = uint32_t;
-        /** 64-bit type */
-        using u64T = uint64_t;
-
+        using U32 = uint32_t;
         /** const Input type */
         using CInput = CTSC<TypeToHash>;
 
@@ -51,30 +48,30 @@ namespace Util {
 
       public:
         /** 32 bit hash */
-        static constexpr u32T u32(CInput s, const u32T len) noexcept {
-            const constexpr u32T prime { pow<u32T>(2, 24) + pow<u32T>(2, 8) + 0x93U };
-            const constexpr u32T offset { 2166136261UL };
-            return internal_hash<u32T, prime, offset>(s, len);
+        static constexpr U32 u32(CInput s, const U32 len) noexcept {
+            const constexpr U32 prime { pow<U32>(2, 24) + pow<U32>(2, 8) + 0x93U };
+            const constexpr U32 offset { 2166136261UL };
+            return internal_hash<U32, prime, offset>(s, len);
         }
 
         /** 64-bit hash */
-        static constexpr u64T u64(CInput s, const u64T len) noexcept {
-            const constexpr u64T prime { pow<u64T>(2, 40) + pow<u64T>(2, 8) + 0xb3U };
-            const constexpr u64T offset { 14695981039346656037ULL };
-            return internal_hash<u64T, prime, offset>(s, len);
+        static constexpr U64 u64(CInput s, const U64 len) noexcept {
+            const constexpr U64 prime { pow<U64>(2, 40) + pow<U64>(2, 8) + 0xb3U };
+            const constexpr U64 offset { 14695981039346656037ULL };
+            return internal_hash<U64, prime, offset>(s, len);
         }
 
         /** Any HashSize version
-         *  Default: UInt
+         *  Default: U64
          */
-        template <typename HashSize = UInt>
-        static constexpr UInt hash(CInput s, const UInt len) noexcept {
+        template <typename HashSize = U64>
+        static constexpr U64 hash(CInput s, const U64 len) noexcept {
             static_assert(sizeof(HashSize) >= sizeof(TypeToHash),
                           "FNV1a::hash given a size too small for the given TypeToHash");
-            if constexpr (Type::Is::same_ignore_cv<HashSize, u64T>) {
+            if constexpr (Type::Is::same_ignore_cv<HashSize, U64>) {
                 return u64(s, len);
             }
-            else if constexpr (Type::Is::same_ignore_cv<HashSize, u32T>) {
+            else if constexpr (Type::Is::same_ignore_cv<HashSize, U32>) {
                 return u32(s, len);
             }
             else {

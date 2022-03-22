@@ -33,14 +33,18 @@
 /** A signed integer type that is consistent across all of claricpp
  *  Note that python does not have an integer maximum, C++ is bounded by this restriction
  *  Guaranteed to be a primitive (noexcept construction, for example, can be assumed)
+ *  We prefer 'long long' over int64_t if same size (makes cross platform API easier)
  */
-using Int = int_fast64_t;
+using I64 = long long;
+static_assert(sizeof(I64) == 8, "Refusing to compile; long long of wrong size");
 
 /** An unsigned integer type that is consistent across all of claricpp
  *  Note that python does not have an integer maximum, C++ is bounded by this restriction
  *  Guaranteed to be a primitive (noexcept construction, for example, can be assumed)
+ *  We prefer 'unsigned long long' over uint64_t if same size (makes cross platform API easier)
  */
-using UInt = uint_fast64_t;
+using U64 = unsigned long long;
+static_assert(sizeof(U64) == 8, "Refusing to compile; long long of wrong size");
 
 /** A shortcut for a const Type * const */
 template <typename T> using CTSC = const T *const;
@@ -48,21 +52,21 @@ template <typename T> using CTSC = const T *const;
 /** An abbreviation for const char * const */
 using CCSC = CTSC<char>;
 
-/** Verify Int is a primitive */
-static_assert(std::is_arithmetic_v<Int>, "Int must be an arithmetic primitive");
-/** Verify UInt is a primitive */
-static_assert(std::is_arithmetic_v<UInt>, "UInt must be an arithmetic primitive");
+/** Verify I64 is a primitive */
+static_assert(std::is_arithmetic_v<I64>, "I64 must be an arithmetic primitive");
+/** Verify U64 is a primitive */
+static_assert(std::is_arithmetic_v<U64>, "U64 must be an arithmetic primitive");
 
 
-/** Create a literal prefix for Int
+/** Create a literal prefix for I64
  *  This assumes the max of
  */
-constexpr Int operator"" _i(const unsigned long long i) {
+constexpr I64 operator"" _i(const unsigned long long i) {
     // If it is safe, cast
-    const constexpr auto max { std::numeric_limits<Int>::max() };
+    const constexpr auto max { std::numeric_limits<I64>::max() };
     const constexpr auto lim { static_cast<unsigned long long>(max) };
-    if ((i <= lim) && (static_cast<Int>(i) <= max)) {
-        return static_cast<Int>(i);
+    if ((i <= lim) && (static_cast<I64>(i) <= max)) {
+        return static_cast<I64>(i);
     }
     // Otherwise we would have to narrow
     else {
@@ -72,8 +76,8 @@ constexpr Int operator"" _i(const unsigned long long i) {
 }
 
 
-/** Create a literal prefix for UInt */
-constexpr UInt operator"" _ui(const unsigned long long u) noexcept {
+/** Create a literal prefix for U64 */
+constexpr U64 operator"" _ui(const unsigned long long u) noexcept {
     return u; // The compiler will error if this is narrowing
 }
 

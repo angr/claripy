@@ -19,7 +19,7 @@ namespace Util::Backtrace {
     void backward_add_source_root(CCSC native);
 
     /** Save a backtrace to o using Backward */
-    void backward(std::ostream &o, const UInt ignore_frames = 0,
+    void backward(std::ostream &o, const U64 ignore_frames = 0,
                   const int16_t max_frames = 0x1000) noexcept;
 } // namespace Util::Backtrace
 

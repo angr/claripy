@@ -14,7 +14,7 @@
 
 
 /** A local macro to enforce consistency */
-#define ATOM_T std::atomic<UInt>
+#define ATOM_T std::atomic<U64>
 
 
 namespace Util {
@@ -24,7 +24,7 @@ namespace Util {
      *  This function is primarily meant to run before main to help configure things
      */
     template <typename... Args, std::enable_if_t<Type::Has::pre_inc_op<ATOM_T>, int> = 0>
-    inline UInt inc() noexcept {
+    inline U64 inc() noexcept {
         // If an exception is thrown, we *should* crash
         static ATOM_T ret(0);
         return ++ret;

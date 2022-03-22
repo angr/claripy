@@ -60,18 +60,18 @@ namespace Create {
     /** Create an Expr with an SignExt op
      *  Expr pointers may not be nullptr
      */
-    inline Expr::BasePtr sign_ext(const Expr::BasePtr &expr, const UInt integer,
+    inline Expr::BasePtr sign_ext(const Expr::BasePtr &expr, const U64 integer,
                                   Annotation::SPAV sp = empty_spav) {
-        return Private::uint_binary<UInt, Op::SignExt, Private::SizeMode::Add, Expr::BV>(
+        return Private::uint_binary<U64, Op::SignExt, Private::SizeMode::Add, Expr::BV>(
             expr, integer, std::move(sp));
     }
 
     /** Create an Expr with an ZeroExt op
      *  Expr pointers may not be nullptr
      */
-    inline Expr::BasePtr zero_ext(const Expr::BasePtr &expr, const UInt integer,
+    inline Expr::BasePtr zero_ext(const Expr::BasePtr &expr, const U64 integer,
                                   Annotation::SPAV sp = empty_spav) {
-        return Private::uint_binary<UInt, Op::ZeroExt, Private::SizeMode::Add, Expr::BV>(
+        return Private::uint_binary<U64, Op::ZeroExt, Private::SizeMode::Add, Expr::BV>(
             expr, integer, std::move(sp));
     }
 

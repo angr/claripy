@@ -13,7 +13,7 @@
 namespace Create::Private {
 
     /** Calculates the length a uint binary expression should have */
-    template <SizeMode Mode, typename IntT> UInt uint_len(const IntT i, const Expr::BasePtr &e) {
+    template <SizeMode Mode, typename IntT> U64 uint_len(const IntT i, const Expr::BasePtr &e) {
         if constexpr (Mode == SizeMode::Second) {
             return i;
         }
@@ -37,8 +37,8 @@ namespace Create::Private {
         namespace Err = Error::Expr;
 
         // Static checks
-        static_assert(Util::Type::Is::in<IntT, UInt, Int>,
-                      "Create::Private::uint_binary requires IntT be either UInt or Int");
+        static_assert(Util::Type::Is::in<IntT, U64, I64>,
+                      "Create::Private::uint_binary requires IntT be either U64 or I64");
         static_assert(Op::is_uint_binary<OpT>,
                       "Create::Private::uint_binary requires a int binary OpT");
 

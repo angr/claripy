@@ -54,7 +54,7 @@ namespace Create {
     /** Create a BV Expr with a Literal op containing an 32-bit unsigned int */
     TRIVIAL_BUILTIN_TYPE(BV, uint32_t);
     /** Create a BV Expr with a Literal op containing an 64-bit unsigned int */
-    TRIVIAL_BUILTIN_TYPE(BV, uint64_t);
+    TRIVIAL_BUILTIN_TYPE(BV, U64);
 
     /** Create a BV Expr with a Literal op containing an arbitrary length int */
     TRIVIAL_TYPE(BV, BigInt);
