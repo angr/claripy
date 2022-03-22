@@ -93,12 +93,13 @@ namespace Backend::Z3 {
         [[nodiscard]] inline std::shared_ptr<Solver> tls_solver(const unsigned timeout = 0) {
             auto ret { get_tls_solver<ForceNew>() };
             if (timeout != 0) {
-                if (ret->get_param_descrs().to_string().find("soft_timeout") != std::string::npos) {
-                    ret->set("soft_timeout", timeout);
-                    ret->set("solver2_timeout", timeout);
+                auto slv { *ret };
+                if (slv->get_param_descrs().to_string().find("soft_timeout") != std::string::npos) {
+                    slv->set("soft_timeout", timeout);
+                    slv->set("solver2_timeout", timeout);
                 }
                 else {
-                    ret->set("timeout", timeout);
+                    slv->set("timeout", timeout);
                 }
             }
             return ret;
@@ -142,12 +143,12 @@ namespace Backend::Z3 {
             return solution(expr, sol, solver, s);
         }
 
-        /** Find the min value of expr that satisfies solver; returns an int64_t or uint64_t */
+        /** Find the min value of expr that satisfies solver; returns an I64 or U64 */
         template <bool Signed> inline auto min(const Expr::RawPtr expr, Solver &solver) {
             return extrema<Signed, true>(expr, solver);
         }
 
-        /** Find the min value of expr that satisfies solver; returns an int64_t or uint64_t */
+        /** Find the min value of expr that satisfies solver; returns an I64 or U64 */
         template <bool Signed>
         inline auto min(const Expr::RawPtr expr, Solver &solver,
                         const std::vector<Expr::RawPtr> &extra_constraints) {
@@ -155,12 +156,12 @@ namespace Backend::Z3 {
             return min<Signed>(expr, solver);
         }
 
-        /** Find the max value of expr that satisfies solver; returns an int64_t or uint64_t */
+        /** Find the max value of expr that satisfies solver; returns an I64 or U64 */
         template <bool Signed> inline auto max(const Expr::RawPtr expr, Solver &solver) {
             return extrema<Signed, false>(expr, solver);
         }
 
-        /** Find the max value of expr that satisfies solver; returns an int64_t or uint64_t */
+        /** Find the max value of expr that satisfies solver; returns an I64 or U64 */
         template <bool Signed>
         inline auto max(const Expr::RawPtr expr, Solver &solver,
                         const std::vector<Expr::RawPtr> &extra_constraints) {
@@ -212,7 +213,7 @@ namespace Backend::Z3 {
          *  No pointers may be nullptr
          */
         inline std::vector<Op::PrimVar> eval(const Expr::RawPtr expr, Solver &solver,
-                                             const UInt n_sol) {
+                                             const U64 n_sol) {
             std::vector<Op::PrimVar> ret;
             ret.reserve(n_sol); // We do not resize as we may return < n_sol
             const z3::expr conv { convert(expr) };
@@ -220,7 +221,7 @@ namespace Backend::Z3 {
                 solver->push();
             }
             // Repeat for each new solution
-            for (UInt iter { 0 }; iter < n_sol; ++iter) {
+            for (U64 iter { 0 }; iter < n_sol; ++iter) {
                 if (!satisfiable(solver)) {
                     // No point in search further, return what we have
                     break;
@@ -243,7 +244,7 @@ namespace Backend::Z3 {
         /** Evaluate expr, return up to n different solutions
          *  No pointers may be nullptr
          */
-        inline std::vector<Op::PrimVar> eval(const Expr::RawPtr expr, Solver &s, const UInt n,
+        inline std::vector<Op::PrimVar> eval(const Expr::RawPtr expr, Solver &s, const U64 n,
                                              const std::vector<Expr::RawPtr> &extra_constraints) {
             const ECHelper ech { *this, s, extra_constraints };
             return eval(expr, s, n);
@@ -253,7 +254,7 @@ namespace Backend::Z3 {
          *  No pointers may be nullptr
          */
         inline std::vector<std::vector<Op::PrimVar>>
-        batch_eval(const std::vector<Expr::RawPtr> &exprs, Solver &s, const UInt n) {
+        batch_eval(const std::vector<Expr::RawPtr> &exprs, Solver &s, const U64 n) {
             if (UNLIKELY(exprs.size() == 0)) {
                 return {};
             }
@@ -280,7 +281,7 @@ namespace Backend::Z3 {
          *  No pointers may be nullptr
          */
         inline std::vector<std::vector<Op::PrimVar>>
-        batch_eval(const std::vector<Expr::RawPtr> &exprs, Solver &s, const UInt n,
+        batch_eval(const std::vector<Expr::RawPtr> &exprs, Solver &s, const U64 n,
                    const std::vector<Expr::RawPtr> &extra_constraints) {
             const ECHelper ech { *this, s, extra_constraints };
             return batch_eval(exprs, s, n);
@@ -378,16 +379,16 @@ namespace Backend::Z3 {
          *  Note: This function must be updated in tandem with extract_hash
          */
         template <bool Track>
-        void add_helper(Solver &solver, CTSC<Expr::RawPtr> constraints, const UInt c_len) {
+        void add_helper(Solver &solver, CTSC<Expr::RawPtr> constraints, const U64 c_len) {
             if constexpr (!Track) {
-                for (UInt i { 0 }; i < c_len; ++i) {
+                for (U64 i { 0 }; i < c_len; ++i) {
                     solver->add(convert(constraints[i]));
                 }
             }
             else {
                 const std::set<Hash::Hash> tracked { get_tracked<true>(solver->assertions()) };
                 char buf[1 + Util::to_hex_max_len<Hash::Hash>];
-                for (UInt i { 0 }; i < c_len; ++i) {
+                for (U64 i { 0 }; i < c_len; ++i) {
                     // If the new constraint is not track, track it
                     const Hash::Hash c_hash { constraints[i]->hash };
                     if (const auto lookup { tracked.find(c_hash) }; lookup == tracked.end()) {
@@ -405,7 +406,7 @@ namespace Backend::Z3 {
          *  No pointers may be nullptr
          */
         inline std::vector<std::vector<Op::PrimVar>>
-        batch_eval(const std::vector<z3::expr> exprs, Solver &solver, const UInt n_sol) const {
+        batch_eval(const std::vector<z3::expr> exprs, Solver &solver, const U64 n_sol) const {
             UTIL_ASSERT(Util::Err::Usage, exprs.size() > 1,
                         "should only be called when exprs.size() > 1");
             // Prep
@@ -414,7 +415,7 @@ namespace Backend::Z3 {
             ret.reserve(n_sol); // We do not resize as we may return < n_sol
             // Repeat for each new solution
             std::vector<z3::expr> z3_sol;
-            for (UInt iter { 0 }; iter < n_sol; ++iter) {
+            for (U64 iter { 0 }; iter < n_sol; ++iter) {
                 if (!satisfiable(solver)) {
                     // No point in search further, return what we have
                     break;
@@ -437,7 +438,7 @@ namespace Backend::Z3 {
                 // Construct extra constraints to prevent solution duplication
                 if (iter + 1 != n_sol) {
                     z3::expr current_sol { exprs[0] == z3_sol[0] };
-                    for (UInt i { 1 }; i < exprs.size(); ++i) {
+                    for (U64 i { 1 }; i < exprs.size(); ++i) {
                         current_sol = current_sol && (exprs[i] == z3_sol[i]);
                     }
                     solver->add(!current_sol);
@@ -485,7 +486,7 @@ namespace Backend::Z3 {
                 CASE_B(5, uint8_t)
                 CASE_B(6, uint16_t)
                 CASE_B(7, uint32_t)
-                CASE_B(8, uint64_t)
+                CASE_B(8, U64)
 #undef CASE_B
                 case 9: {
                     UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(p, 9, BigInt);
@@ -506,7 +507,7 @@ namespace Backend::Z3 {
             return Create::eq(Expr::find(a_raw->hash), Expr::find(b_raw->hash));
         }
 
-        /** Find the min/max value of expr that satisfies solver; returns an int64_t or uint64_t */
+        /** Find the min/max value of expr that satisfies solver; returns an I64 or U64 */
         template <bool Signed, bool Minimize>
         inline auto extrema(const Expr::RawPtr raw_expr, Solver &solver) {
             // Check input
@@ -520,7 +521,8 @@ namespace Backend::Z3 {
             z3::expr expr { convert(raw_expr) };
 
             // Starting interval and comparators
-            using Integer = std::conditional_t<Signed, int64_t, uint64_t>;
+            using Integer = std::conditional_t<Signed, I64, U64>;
+            using Z3Integer = std::conditional_t<Signed, int64_t, uint64_t>;
 /** A local macro for brevity */
 #define MAX_S(S) ((Integer { 1 } << (len - S)) - 1 + (Integer { 1 } << (len - S)))
             Integer hi { Signed ? MAX_S(2) : MAX_S(1) };
@@ -529,7 +531,7 @@ namespace Backend::Z3 {
 
             // Inline-able lambdas to for clarity
             const auto to_z3 { [&len](const Integer i) {
-                return tls.ctx.bv_val(i, Util::narrow<unsigned>(len));
+                return tls.ctx.bv_val(static_cast<Z3Integer>(i), Util::narrow<unsigned>(len));
             } };
             const auto ge { [](const z3::expr &a, const z3::expr &b) {
                 return (Signed ? z3::sge(a, b) : z3::uge(a, b));
