@@ -15,12 +15,27 @@ namespace Create::FP {
      */
     template <Mode::Signed Sgn>
     Expr::BasePtr from_2s_complement_bv(const Mode::FP::Rounding m, const Expr::BasePtr &bv,
-                                        const Mode::FP::Width &w,
-                                        Annotation::SPAV sp = empty_spav) {
+                                        const Mode::FP::Width &w, Annotation::SPAV &&sp) {
         UTIL_ASSERT(Error::Expr::Usage, bv != nullptr, "bv may not be nullptr");
         using FromBV = Op::FP::From2sComplementBV<Sgn>;
         return Simplify::simplify(Expr::factory<Expr::FP>(
             bv->symbolic, Op::factory<FromBV>(m, bv, w), w.width(), std::move(sp)));
+    }
+
+    /* A shortcut for from_2s_complement_bv; exists for the API */
+    inline Expr::BasePtr from_2s_complement_bv_signed(const Mode::FP::Rounding m,
+                                                      const Expr::BasePtr &bv,
+                                                      const Mode::FP::Width &w,
+                                                      Annotation::SPAV sp = empty_spav) {
+        return from_2s_complement_bv<Mode::Signed::Signed>(m, bv, w, std::move(sp));
+    }
+
+    /* A shortcut for from_2s_complement_bv; exists for the API */
+    inline Expr::BasePtr from_2s_complement_bv_unsigned(const Mode::FP::Rounding m,
+                                                        const Expr::BasePtr &bv,
+                                                        const Mode::FP::Width &w,
+                                                        Annotation::SPAV sp = empty_spav) {
+        return from_2s_complement_bv<Mode::Signed::Unsigned>(m, bv, w, std::move(sp));
     }
 
 } // namespace Create::FP
