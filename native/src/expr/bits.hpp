@@ -37,7 +37,7 @@ namespace Expr {
      *  p may not be nullptr
      *  Warning: This static casts, the user must ensure that p is a Bits
      */
-    constexpr UInt get_bit_length(const Expr::RawPtr &p) {
+    constexpr UInt get_bit_length(const Expr::RawPtr p) {
         UTIL_ASSERT_NOT_NULL_DEBUG(p);
         using To = const Expr::Bits *;
         return Util::checked_static_cast<To>(p)->bit_length;
