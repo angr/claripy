@@ -1,5 +1,4 @@
 # This file defines functions used for hashing a directory and detecting changes within it
-cmake_minimum_required(VERSION 3.17) # ZIP_LISTS
 
 # Config
 set(HASHES_FNAME "_hashes.txt")
@@ -19,7 +18,7 @@ function(hash_dir_get ROOT IGNORE FILES_NAME HASHES_NAME)
     string(APPEND ROOT "/")
     file(GLOB_RECURSE FILES
         FOLLOW_SYMLINKS
-        LIST_DIRECTORIES true
+        LIST_DIRECTORIES false # Dir hash behavior differs between systems
         RELATIVE "${ROOT}"
         "${ROOT}*"
     )
@@ -30,7 +29,7 @@ function(hash_dir_get ROOT IGNORE FILES_NAME HASHES_NAME)
     endforeach()
     # Calculate hashes
     set(HASHES "")
-    foreach(FS IN LISTS FILES) # Note: directory hash to md5("")
+    foreach(FS IN LISTS FILES)
         file(MD5 "${ROOT}${FS}" NEXT_HASH)
         list(APPEND HASHES "${NEXT_HASH}")
     endforeach()
@@ -59,7 +58,7 @@ function(hash_dir_check ROOT ERR_MSG) # Error if different
     list(LENGTH OLD_FILES OLD_LEN)
     list(LENGTH NEW_FILES NEW_LEN)
     if (NOT OLD_LEN EQUAL NEW_LEN)
-        message(FATAL_ERROR "File lists differ in length.\n${ERR_MSG}")
+        message(FATAL_ERROR "Different number of files to hash detected.\n${ERR_MSG}")
     elseif(NOT OLD_FILES STREQUAL NEW_FILES)
         message(FATAL_ERROR "File lists differ but same length.\n${ERR_MSG}")
     endif()
