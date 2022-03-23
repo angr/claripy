@@ -9,7 +9,7 @@
 struct TestFactory : public Factory::FactoryMade {
     FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(TestFactory, 0);
     /** Constructor */
-    TestFactory(const Hash::Hash &h, const UInt) : FactoryMade { h, 0_ui } {}
+    TestFactory(const Hash::Hash &h, const U64) : FactoryMade { h, 0_ui } {}
 };
 
 /** Verify that two identical TestFactory objects are the same */

@@ -22,9 +22,9 @@ void fp() {
     using NLF = std::numeric_limits<float>;
     using NLD = std::numeric_limits<double>;
 
-    const auto bv_x { C::symbol<Expr::BV>("bv_x", Mode::FP::dbl.width()) };
-    const auto fp_x { C::symbol<Expr::FP>("fp_x", Mode::FP::dbl.width()) };
-    const auto fp_y { C::symbol<Expr::FP>("fp_y", Mode::FP::dbl.width()) };
+    const auto bv_x { C::symbol_bv("bv_x", Mode::FP::dbl.width()) };
+    const auto fp_x { C::symbol_fp("fp_x", Mode::FP::dbl.width()) };
+    const auto fp_y { C::symbol_fp("fp_y", Mode::FP::dbl.width()) };
     const auto nan { C::literal(std::numeric_limits<double>::quiet_NaN()) };
 
     // Verify the round trip changes nothing
@@ -112,10 +112,9 @@ void fp() {
     /*                  Non-Trivial                   */
     /**************************************************/
 
-    using Sgnd = Mode::Signed;
     Util::Log::debug("Testing to_bv...");
-    UNITTEST_ASSERT(test_id(C::FP::to_bv<Sgnd::Signed>(tz, fp_x, Expr::get_bit_length(fp_x))));
-    UNITTEST_ASSERT(test_id(C::FP::to_bv<Sgnd::Unsigned>(tz, fp_x, Expr::get_bit_length(fp_x))));
+    UNITTEST_ASSERT(test_id(C::FP::to_bv_signed(tz, fp_x, Expr::get_bit_length(fp_x))));
+    UNITTEST_ASSERT(test_id(C::FP::to_bv_unsigned(tz, fp_x, Expr::get_bit_length(fp_x))));
 
     Util::Log::debug("Testing from_fp...");
     /* UNITTEST_ASSERT(test_id(C::FP::from_fp(tz, fp_x, Mode::FP::dbl))); */

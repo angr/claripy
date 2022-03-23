@@ -26,8 +26,8 @@ void hash() {
     const CCSC hi_c { "hi" };
     const std::vector<PT> vec1 { PT { a0 }, PT { a1 } };
     const std::vector<PT> vec2 { PT { a1 }, PT { a0 } };
-    const UInt uz { 0_ui };
-    const Int z { 0_i };
+    const U64 uz { 0_ui };
+    const I64 z { 0_i };
 
     // Hash multiple things
 

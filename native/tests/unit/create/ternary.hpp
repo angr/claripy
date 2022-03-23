@@ -55,7 +55,7 @@ template <typename Out, typename In, typename OpT, SM Mode, auto CreateF> inline
     // Size test
     if constexpr (Util::Type::Is::ancestor<Expr::Bits, Out>) {
         // Because of previous static asserts we know In must also be sized
-        UInt new_bit_length { a_down->bit_length };
+        U64 new_bit_length { a_down->bit_length };
         if constexpr (Mode == SM::Add) {
             new_bit_length += b_down->bit_length + c_down->bit_length;
         }

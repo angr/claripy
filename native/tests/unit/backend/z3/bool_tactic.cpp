@@ -10,7 +10,7 @@ void bool_tactic() {
     auto z3 { Backend::Z3::Z3 {} };
 
     // Leaves
-    const auto x { Create::symbol("x") };
+    const auto x { Create::symbol_bool("x") };
     const auto y { Create::literal(true) };
 
     // Negations

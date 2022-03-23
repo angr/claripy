@@ -13,7 +13,7 @@ void satisfiable() {
     auto &solver { *solver_ref };
 
     // Leaves
-    const auto x { Create::symbol("x") };
+    const auto x { Create::symbol_bool("x") };
     const auto t { Create::literal(true) };
     const auto f { Create::literal(false) };
 
@@ -26,7 +26,7 @@ void satisfiable() {
     // Create a solver
     auto is_sat = [&x, &z3, &solver](const Expr::BasePtr &e,
                                      const Expr::BasePtr ec = nullptr) { // NOLINT
-        solver.push();
+        solver->push();
         bool ret; // NOLINT
         if (ec != nullptr) {
             std::vector<Expr::RawPtr> ecs;
@@ -39,7 +39,7 @@ void satisfiable() {
             z3.add(solver, e.get());
             ret = z3.satisfiable(solver);
         }
-        solver.pop();
+        solver->pop();
         return ret;
     };
 

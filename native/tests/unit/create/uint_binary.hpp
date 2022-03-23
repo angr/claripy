@@ -16,7 +16,7 @@ using SM = Create::Private::SizeMode;
 
 
 /** Test an int uint_binary op */
-template <typename Out, typename In, typename OpT, SM Mode, auto CreateF, typename IntT = UInt>
+template <typename Out, typename In, typename OpT, SM Mode, auto CreateF, typename IntT = U64>
 inline void uint_binary() {
     static_assert(Util::Type::Is::ancestor<Expr::Base, Out>, "uint_binary requires Out be an Expr");
     static_assert(Util::Type::Is::ancestor<Expr::Base, In>, "uint_binary requires In be an Expr");
@@ -49,7 +49,7 @@ inline void uint_binary() {
 
     // Size test
     if constexpr (Util::Type::Is::ancestor<Expr::Bits, Out>) {
-        UInt new_bit_length { uint_binary->integer };
+        U64 new_bit_length { uint_binary->integer };
         if constexpr (Mode == SM::Add) {
             new_bit_length += a_down->bit_length;
         }
@@ -63,7 +63,7 @@ inline void uint_binary() {
 /** Test an int uint_binary op
  *  A specialization where In = Out
  */
-template <typename InOut, typename OpT, SM Mode, auto CreateF, typename IntT = UInt>
+template <typename InOut, typename OpT, SM Mode, auto CreateF, typename IntT = U64>
 inline void uint_binary() {
     uint_binary<InOut, InOut, OpT, Mode, CreateF, IntT>();
 }

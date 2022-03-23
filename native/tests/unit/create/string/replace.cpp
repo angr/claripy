@@ -41,7 +41,7 @@ void replace() {
     UNITTEST_ASSERT(ternary->third == c);
 
     // Size check
-    UInt new_bit_length { a_down->bit_length };
+    U64 new_bit_length { a_down->bit_length };
     if (b_down->bit_length < c_down->bit_length) {
         new_bit_length = new_bit_length - b_down->bit_length + c_down->bit_length;
     }

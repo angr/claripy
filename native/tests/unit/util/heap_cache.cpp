@@ -34,7 +34,7 @@ struct UnitTest::Friend {
     /** Extract data */
     const decltype(c.data) &data; // NOLINT (false positive)
     /** Extract dsize */
-    const UInt &dsize; // NOLINT (false positive)
+    const U64 &dsize; // NOLINT (false positive)
 };
 
 /** Verify the to_heap_cache members work */
@@ -49,14 +49,14 @@ void to_heap_cache() {
     UNITTEST_ASSERT(cache.dsize > 4);
 
     // Verify cache is used
-    for (UInt i = 0; i < cache.dsize / 2; ++i) {
+    for (U64 i = 0; i < cache.dsize / 2; ++i) {
         heap.push_back(cache.c.move_to_heap(NEW_MOVE));
     }
     auto dsize { cache.dsize - cache.dsize / 2 }; // If dsize is odd this isn't simply /2
     UNITTEST_ASSERT(cache.data.size() == dsize);
 
     // Verify free returns to cache
-    for (UInt i = 0; i < cache.dsize / 4; ++i) {
+    for (U64 i = 0; i < cache.dsize / 4; ++i) {
         cache.c.free(heap.back());
         heap.pop_back();
     }
@@ -64,7 +64,7 @@ void to_heap_cache() {
     UNITTEST_ASSERT(cache.data.size() == dsize);
 
     // Empty cache
-    for (UInt i = 0; i < dsize; ++i) {
+    for (U64 i = 0; i < dsize; ++i) {
         heap.push_back(cache.c.move_to_heap(NEW_MOVE));
     }
     UNITTEST_ASSERT(cache.data.empty());

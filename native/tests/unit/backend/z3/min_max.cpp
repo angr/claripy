@@ -43,14 +43,14 @@ static void min_max_test(UnitTest::Friend::ShimZ3 &z3) {
     const auto int_min { std::numeric_limits<T>::min() };
 
     // x and expr generators
-    const auto x { C::symbol<E::BV>("x", C_CHAR_BIT * sizeof(T)) };
+    const auto x { C::symbol_bv("x", CHAR_BIT * sizeof(T)) };
     const auto num { [&unsign](const T v) { return C::literal(unsign(T { v })); } };
     const auto neq { [&x, &unsign](const T y) { return C::neq(x, C::literal(unsign(y))); } };
 
     // Exprs
-    const auto xleq10 { C::compare < Signed ? M::SLT : M::ULT > (x, num(10)) };
-    const auto xleq5 { C::compare < Signed ? M::SLT : M::ULT > (x, num(5)) };
-    const auto xgeq5 { C::compare < Signed ? M::SGT : M::UGT > (x, num(5)) };
+    const auto xleq10 { C::compare < Signed ? M::SLT : M::ULT > (x, num(10), {}) };
+    const auto xleq5 { C::compare < Signed ? M::SLT : M::ULT > (x, num(5), {}) };
+    const auto xgeq5 { C::compare < Signed ? M::SGT : M::UGT > (x, num(5), {}) };
 
     const auto plus1 { C::and_({ xleq5, neq(int_min) }) };
     const auto plus2 { C::and_({ xleq5, neq(int_min), neq(int_min + 1) }) };
@@ -126,7 +126,7 @@ using Wrap = std::conditional_t<Signed, std::make_signed_t<T>, std::make_unsigne
 
 /** Tests min and max for the chosen sign */
 template <bool Signed> static void min_max_t(UnitTest::Friend::ShimZ3 &z3) {
-    min_max_test<Wrap<Signed, int64_t>>(z3);
+    min_max_test<Wrap<Signed, I64>>(z3);
     min_max_test<Wrap<Signed, int32_t>>(z3);
     min_max_test<Wrap<Signed, int16_t>>(z3);
     min_max_test<Wrap<Signed, int8_t>>(z3);

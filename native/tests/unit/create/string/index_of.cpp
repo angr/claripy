@@ -18,7 +18,7 @@ void index_of() {
     const auto a { Create::literal("0"s) };
     const auto b { Create::literal("1"s) };
     const auto c { Create::literal(2_ui) };
-    const UInt bit_length { 16 };
+    const U64 bit_length { 16 };
 
     // Test
     const auto exp { CS::index_of(a, b, c, bit_length) };

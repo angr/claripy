@@ -10,12 +10,12 @@ void unsat_core() {
     auto z3 { Backend::Z3::Z3 {} };
 
     // Prep
-    auto lt { [](const uint64_t c) { return Create::literal(c); } };
+    auto lt { [](const U64 c) { return Create::literal(c); } };
     const auto solver_ref { z3.tls_solver() };
     auto &solver { *solver_ref };
 
     // Two contradictory exprs and one other
-    const auto x { Create::symbol<Expr::BV>("x", 64) };
+    const auto x { Create::symbol_bv("x", 64) };
     const auto xneq0 { Create::neq(x, lt(0)) };
     const auto xeq1 { Create::eq(x, lt(1)) };
     const auto make_xeq2 { [&x, &lt]() { return Create::eq(x, lt(2)); } };
@@ -41,7 +41,7 @@ void unsat_core() {
     UNITTEST_ASSERT(vec[0] == xeq1 && vec[1] == tmp_xeq2); // Verify reconstruction + unsat core
 
     // Verify that untracked constraints don't end up in unsat_core
-    solver.reset();
+    solver->reset();
     z3.add<true>(solver, xeq1.get());
     z3.add<false>(solver, tmp_xeq2.get()); // xgeq2
     UNITTEST_ASSERT(!z3.satisfiable(solver));

@@ -13,15 +13,15 @@ template <typename T> void symbol_t() {
     // Create name
     std::string name { std::to_string(++n_runs) };
     const std::string name_copy { name };
-    const UInt size { 0x10 };
+    const U64 size { 0x10 };
 
     // Test
     Expr::BasePtr sym;
     if constexpr (Util::Type::Is::ancestor<Expr::Bits, T>) {
-        sym = Create::symbol<T>(std::move(name), size);
+        sym = Create::symbol<T>(std::move(name), size, { nullptr });
     }
     else {
-        sym = Create::symbol(std::move(name));
+        sym = Create::symbol_bool(std::move(name));
     }
 
     // Pointer checks

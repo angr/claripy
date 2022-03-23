@@ -8,13 +8,13 @@
 
 
 /** Create a BV using either name or val depending on Literal */
-template <bool Literal> Expr::BasePtr create_bv(std::string name, const Int val) {
+template <bool Literal> Expr::BasePtr create_bv(std::string name, const I64 val) {
     if constexpr (Literal) {
         return Create::literal(Util::unsign(val));
     }
     else {
         (void) val;
-        return Create::symbol<Expr::BV>(std::move(name), name.size() * BitLength::char_bit);
+        return Create::symbol_bv(std::move(name), name.size() * BitLength::char_bit);
     }
 }
 

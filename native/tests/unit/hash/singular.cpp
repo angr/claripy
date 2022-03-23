@@ -32,7 +32,7 @@ void singular() {
     Util::sink(c, cui, ci);
 
     // Non-constexpr compilation tests
-    (void) Hash::singular(std::vector<Int> { 0_i, 1_i });
+    (void) Hash::singular(std::vector<I64> { 0_i, 1_i });
     const std::string sref { "Hello" };
     (void) Hash::singular(sref);
 }

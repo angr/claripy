@@ -11,9 +11,9 @@ struct TestFactory : public Factory::FactoryMade {
     /** Constructor 0 */
     TestFactory(const Hash::Hash &h) : FactoryMade { h, 0_ui } {}
     /** Constructor 1 */
-    TestFactory(const Hash::Hash &h, const UInt) : FactoryMade { h, 0_ui } {}
+    TestFactory(const Hash::Hash &h, const U64) : FactoryMade { h, 0_ui } {}
     /** Constructor 2 */
-    TestFactory(const Hash::Hash &h, const UInt, const UInt) : FactoryMade { h, 0_ui } {}
+    TestFactory(const Hash::Hash &h, const U64, const U64) : FactoryMade { h, 0_ui } {}
 };
 
 /** Verify that two identical A objects are the same */

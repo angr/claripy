@@ -16,12 +16,12 @@ void normal() {
 
     /* const auto string_x { C::symbol<Expr::String>("string_x", 64_ui) }; */
     /* const auto string_y { C::symbol<Expr::String>("string_y", 64_ui) }; */
-    const auto fp_x { C::symbol<Expr::FP>("fp_x", Mode::FP::dbl.width()) };
-    const auto fp_y { C::symbol<Expr::FP>("fp_y", Mode::FP::dbl.width()) };
-    const auto bv_x { C::symbol<Expr::BV>("bv_x", 64_ui) };
-    const auto bv_y { C::symbol<Expr::BV>("bv_y", 64_ui) };
-    const auto bool_x { C::symbol("bool_x") };
-    const auto bool_y { C::symbol("bool_y") };
+    const auto fp_x { C::symbol_fp("fp_x", Mode::FP::dbl.width()) };
+    const auto fp_y { C::symbol_fp("fp_y", Mode::FP::dbl.width()) };
+    const auto bv_x { C::symbol_bv("bv_x", 64_ui) };
+    const auto bv_y { C::symbol_bv("bv_y", 64_ui) };
+    const auto bool_x { C::symbol_bool("bool_x") };
+    const auto bool_y { C::symbol_bool("bool_y") };
 
     // Verify the round trip changes nothing
     const auto test_id = [&z3](const Expr::BasePtr &&x) {
@@ -50,7 +50,7 @@ void normal() {
     UNITTEST_ASSERT(test_id(C::literal(uint8_t { 2 })));
     UNITTEST_ASSERT(test_id(C::literal(uint16_t { 2 })));
     UNITTEST_ASSERT(test_id(C::literal(uint32_t { 2 })));
-    UNITTEST_ASSERT(test_id(C::literal(uint64_t { 2 })));
+    UNITTEST_ASSERT(test_id(C::literal(U64 { 2 })));
 
     Util::Log::debug("Testing symbol...");
     UNITTEST_ASSERT(bool_x);
@@ -81,7 +81,7 @@ void normal() {
     const auto also_x { C::reverse(C::reverse(bv_x)) };
     UNITTEST_ASSERT(z3.bk.simplify(also_x.get()) == bv_x);
 
-    // UInt Binary
+    // U64 Binary
 
     Util::Log::debug("Testing signext...");
     UNITTEST_ASSERT(test_id(C::sign_ext(bv_x, 1)));
@@ -102,48 +102,40 @@ void normal() {
     UNITTEST_ASSERT(test_id(C::neq(bool_x, bool_y)));
     /* UNITTEST_ASSERT(test_id(C::neq<Expr::String>(string_x, string_y))); */
 
-    using Cmp = Mode::Compare;
     Util::Log::debug("Testing compare...");
-    const auto sl { Cmp::Signed | Cmp::Less };
-    const auto sg { Cmp::Signed | Cmp::Less };
-    UNITTEST_ASSERT(test_id(C::compare<sl | Cmp::Eq>(fp_x, fp_y)));
-    UNITTEST_ASSERT(test_id(C::compare<sl | Cmp::Neq>(fp_x, fp_y)));
-    UNITTEST_ASSERT(test_id(C::compare<sg | Cmp::Eq>(fp_x, fp_y)));
-    UNITTEST_ASSERT(test_id(C::compare<sg | Cmp::Neq>(fp_x, fp_y)));
+    UNITTEST_ASSERT(test_id(C::sle(fp_x, fp_y)));
+    UNITTEST_ASSERT(test_id(C::slt(fp_x, fp_y)));
+    UNITTEST_ASSERT(test_id(C::sge(fp_x, fp_y)));
+    UNITTEST_ASSERT(test_id(C::sgt(fp_x, fp_y)));
 
-    UNITTEST_ASSERT(test_id(C::compare<sl | Cmp::Eq>(bv_x, bv_y)));
-    UNITTEST_ASSERT(test_id(C::compare<sl | Cmp::Neq>(bv_x, bv_y)));
-    UNITTEST_ASSERT(test_id(C::compare<sg | Cmp::Eq>(bv_x, bv_y)));
-    UNITTEST_ASSERT(test_id(C::compare<sg | Cmp::Neq>(bv_x, bv_y)));
-    const auto ul { Cmp::Unsigned | Cmp::Less };
-    const auto ug { Cmp::Unsigned | Cmp::Less };
-    UNITTEST_ASSERT(test_id(C::compare<ul | Cmp::Eq>(bv_x, bv_y)));
-    UNITTEST_ASSERT(test_id(C::compare<ul | Cmp::Neq>(bv_x, bv_y)));
-    UNITTEST_ASSERT(test_id(C::compare<ug | Cmp::Eq>(bv_x, bv_y)));
-    UNITTEST_ASSERT(test_id(C::compare<ug | Cmp::Neq>(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::sle(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::slt(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::sge(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::sgt(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::ule(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::ult(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::uge(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::ugt(bv_x, bv_y)));
 
     Util::Log::debug("Testing sub...");
     UNITTEST_ASSERT(test_id(C::sub(bv_x, bv_y)));
 
     Util::Log::debug("Testing div...");
-    using Sgnd = Mode::Signed;
-    UNITTEST_ASSERT(test_id(C::div<Sgnd::Signed>(bv_x, bv_y)));
-    UNITTEST_ASSERT(test_id(C::div<Sgnd::Unsigned>(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::div_signed(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::div_unsigned(bv_x, bv_y)));
 
     Util::Log::debug("Testing mod...");
-    UNITTEST_ASSERT(test_id(C::mod<Sgnd::Signed>(bv_x, bv_y)));
-    UNITTEST_ASSERT(test_id(C::mod<Sgnd::Unsigned>(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::mod_signed(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::mod_unsigned(bv_x, bv_y)));
 
-    using M = Mode::Shift;
     Util::Log::debug("Testing shift...");
-    UNITTEST_ASSERT(test_id(C::shift<M::Left>(bv_x, bv_y)));
-    UNITTEST_ASSERT(test_id(C::shift<M::LogicalRight>(bv_x, bv_y)));
-    UNITTEST_ASSERT(test_id(C::shift<M::ArithmeticRight>(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::shift_l(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::shift_logical_right(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::shift_arithmetic_right(bv_x, bv_y)));
 
-    using LR = Mode::LR;
     Util::Log::debug("Testing rotate...");
-    UNITTEST_ASSERT(test_id(C::rotate<LR::Left>(bv_x, bv_y)));
-    UNITTEST_ASSERT(test_id(C::rotate<LR::Right>(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::rotate_left(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::rotate_right(bv_x, bv_y)));
 
     Util::Log::debug("Testing concat...");
     UNITTEST_ASSERT(test_id(C::concat(bv_x, bv_y)));

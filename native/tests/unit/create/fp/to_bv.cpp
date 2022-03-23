@@ -13,10 +13,10 @@ template <Mode::Signed Sgn> void to_bv_b() {
     // Create distinct inputs
     const Mode::FP::Rounding mode { Mode::FP::Rounding::TowardsZero };
     const auto fp { Create::literal(0.) };
-    const UInt bit_length { 16 };
+    const U64 bit_length { 16 };
 
     // Test
-    const auto exp { Create::FP::to_bv<Sgn>(mode, fp, bit_length) };
+    const auto exp { Create::FP::to_bv<Sgn>(mode, fp, bit_length, { nullptr }) };
 
     // Pointer checks
     UNITTEST_ASSERT(fp.use_count() == 2);

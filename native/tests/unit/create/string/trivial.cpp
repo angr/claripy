@@ -20,7 +20,7 @@ void trivial() {
     unary<Expr::Bool, Expr::String, Op::String::IsDigit, Cr::String::is_digit>();
 
     /********************************************************************/
-    /*                            Int Binary                            */
+    /*                            I64 Binary                            */
     /********************************************************************/
 
     Log::debug("Testing to_int...");

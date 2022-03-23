@@ -10,12 +10,11 @@
 /** Verify the two arg getter functions of o do not contradict */
 static void test_op(const Op::BasePtr &op) {
     Op::Stack stack;
-    std::vector<Op::ArgVar> args;
     Util::Log::debug("Testing op: ", op->op_name());
 
     // Call functions
     op->unsafe_add_reversed_children(stack);
-    op->python_children(args);
+    const std::vector<Op::ArgVar> args { op->python_children() };
 
     // Filter args
     std::vector<Expr::RawPtr> filtered {};
@@ -40,18 +39,16 @@ static void test_op(const Op::BasePtr &op) {
 /** Verify that the two arg getter functions do not contradict each other */
 void args() {
     namespace C = Create;
-    using Cmp = Mode::Compare;
-    using Sgnd = Mode::Signed;
 
     // Constants
     const auto ntz { Mode::FP::Rounding::NearestTiesEven };
     const auto true_ { C::literal(true) };
-    const auto str_sym { C::symbol<Expr::String>("str_sym", 64) };
-    const auto bv_sym { C::symbol<Expr::BV>("bv_sym", 64) };
-    const auto fp_sym { C::symbol<Expr::FP>("fp_sym", 64) };
+    const auto str_sym { C::symbol_string("str_sym", 64) };
+    const auto bv_sym { C::symbol_bv("bv_sym", 64) };
+    const auto fp_sym { C::symbol_fp("fp_sym", 64) };
 
     // Functions
-    const auto u64 { [](const UInt i) { return C::literal(i); } };
+    const auto u64 { [](const U64 i) { return C::literal(i); } };
     const auto test { [](Expr::BasePtr e) { return test_op(e->op); } }; // NOLINT (copy is ok)
 
     // Non-trivial
@@ -61,12 +58,12 @@ void args() {
     test(C::extract(1, 0, bv_sym));
 
     // FP
-    test(C::FP::from_2s_complement_bv<Sgnd::Signed>(ntz, bv_sym, Mode::FP::dbl));
-    test(C::FP::from_2s_complement_bv<Sgnd::Unsigned>(ntz, bv_sym, Mode::FP::dbl));
+    test(C::FP::from_2s_complement_bv_signed(ntz, bv_sym, Mode::FP::dbl));
+    test(C::FP::from_2s_complement_bv_unsigned(ntz, bv_sym, Mode::FP::dbl));
     test(C::FP::from_not_2s_complement_bv(bv_sym, Mode::FP::dbl));
     test(C::FP::from_fp(ntz, fp_sym, Mode::FP::dbl));
-    test(C::FP::to_bv<Sgnd::Signed>(ntz, fp_sym, 64));
-    test(C::FP::to_bv<Sgnd::Unsigned>(ntz, fp_sym, 64));
+    test(C::FP::to_bv_signed(ntz, fp_sym, 64));
+    test(C::FP::to_bv_unsigned(ntz, fp_sym, 64));
 
     // String
     test(C::String::from_int(bv_sym));
@@ -85,7 +82,7 @@ void args() {
     test(C::invert(bv_sym));
     test(C::reverse(bv_sym));
 
-    // UInt Binary
+    // U64 Binary
     test(C::sign_ext(bv_sym, 1));
     test(C::zero_ext(bv_sym, 1));
 
@@ -94,28 +91,28 @@ void args() {
     // Compare
     test(C::eq(bv_sym, bv_sym));
     test(C::neq(bv_sym, bv_sym));
-    test(C::compare<Cmp::UGT>(bv_sym, bv_sym));
-    test(C::compare<Cmp::UGE>(bv_sym, bv_sym));
-    test(C::compare<Cmp::ULT>(bv_sym, bv_sym));
-    test(C::compare<Cmp::ULE>(bv_sym, bv_sym));
-    test(C::compare<Cmp::SGT>(bv_sym, bv_sym));
-    test(C::compare<Cmp::SGE>(bv_sym, bv_sym));
-    test(C::compare<Cmp::SLT>(bv_sym, bv_sym));
-    test(C::compare<Cmp::SLE>(bv_sym, bv_sym));
+    test(C::ugt(bv_sym, bv_sym));
+    test(C::uge(bv_sym, bv_sym));
+    test(C::ult(bv_sym, bv_sym));
+    test(C::ule(bv_sym, bv_sym));
+    test(C::sgt(bv_sym, bv_sym));
+    test(C::sge(bv_sym, bv_sym));
+    test(C::slt(bv_sym, bv_sym));
+    test(C::sle(bv_sym, bv_sym));
 
     // Math
     test(C::sub(bv_sym, bv_sym));
-    test(C::div<Sgnd::Signed>(bv_sym, bv_sym));
-    test(C::div<Sgnd::Unsigned>(bv_sym, bv_sym));
-    test(C::mod<Sgnd::Signed>(bv_sym, bv_sym));
-    test(C::mod<Sgnd::Unsigned>(bv_sym, bv_sym));
+    test(C::div_signed(bv_sym, bv_sym));
+    test(C::div_unsigned(bv_sym, bv_sym));
+    test(C::mod_signed(bv_sym, bv_sym));
+    test(C::mod_unsigned(bv_sym, bv_sym));
 
     // Bitwise
-    test(C::shift<Mode::Shift::Left>(bv_sym, bv_sym));
-    test(C::shift<Mode::Shift::LogicalRight>(bv_sym, bv_sym));
-    test(C::shift<Mode::Shift::ArithmeticRight>(bv_sym, bv_sym));
-    test(C::rotate<Mode::LR::Right>(bv_sym, bv_sym));
-    test(C::rotate<Mode::LR::Left>(bv_sym, bv_sym));
+    test(C::shift_l(bv_sym, bv_sym));
+    test(C::shift_logical_right(bv_sym, bv_sym));
+    test(C::shift_arithmetic_right(bv_sym, bv_sym));
+    test(C::rotate_right(bv_sym, bv_sym));
+    test(C::rotate_left(bv_sym, bv_sym));
 
     // Misc
     test(C::widen(bv_sym, bv_sym));

@@ -10,7 +10,7 @@
 
 
 /** Print the desired repr of the expr: if (4 == (x * 3)) then "Hello" else y */
-static std::string make_solution(const std::string &str, const UInt len) {
+static std::string make_solution(const std::string &str, const U64 len) {
     using namespace std::string_literals;
     const auto bl { std::to_string(8_ui * len) };
 

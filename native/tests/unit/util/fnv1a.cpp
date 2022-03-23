@@ -10,12 +10,10 @@ void fnv1a() {
 
     // The message
     const constexpr CCSC msg { "The quick brown fox jumps over the lazy dog" };
-    const constexpr UInt len { Util::strlen(msg) };
+    const constexpr U64 len { Util::strlen(msg) };
 
     // Verify here: https://asecuritysite.com/encryption/murmur
-    static_assert(sizeof(UInt) == sizeof(uint64_t),
-                  "fnv1a test case correct message needs to be updated to new size of UInt");
-    UInt correct { 0xF3F9B7F5E7E47110 };
+    U64 correct { 0xF3F9B7F5E7E47110 };
 
     // Hash
     const constexpr auto hash { Util::FNV1a<char>::hash(msg, len) };

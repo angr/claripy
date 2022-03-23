@@ -18,8 +18,8 @@ inline Expr::BasePtr make_ite(std::string str) {
     const auto flt_size { 64_ui };
 
     // Symbols
-    const auto x { C::symbol<Expr::FP>("x", flt_size) };
-    const auto y { C::symbol<Expr::String>("y", C_CHAR_BIT * len) };
+    const auto x { C::symbol_fp("x", flt_size) };
+    const auto y { C::symbol_string("y", CHAR_BIT * len) };
 
     // Literals
     const auto fp3 { C::literal(3.) };

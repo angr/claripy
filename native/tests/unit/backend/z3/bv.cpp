@@ -30,8 +30,8 @@ void bv() {
     Util::Log::debug("Testing BV constructor via uint32");
     test_bv_ctor(z3, uint32_t { 3 });
     Util::Log::debug("Testing BV constructor via uint64");
-    test_bv_ctor(z3, uint64_t { 3 });
-    Util::Log::debug("Testing BV constructor via BigInt with mode Int");
+    test_bv_ctor(z3, U64 { 3 });
+    Util::Log::debug("Testing BV constructor via BigInt with mode I64");
     test_bv_ctor(z3, BigInt { big_one, 300_ui }); // NOLINT
 
     // BigInt abstraction mode
@@ -41,15 +41,14 @@ void bv() {
     BigInt::mode(old);                                  // Reset
 
     // Sizes same
-    using Sgnd = Mode::Signed;
     Util::Log::debug("Testing x/x");
-    const auto one_same { Create::div<Sgnd::Unsigned>(l1, l1) };
+    const auto one_same { Create::div_unsigned(l1, l1) };
     UNITTEST_ASSERT(l1 == z3.simplify(one_same.get()));
 
     // Sizes differ
     Util::Log::debug("Testing x/x with different sized x's; this *should* fail");
     try {
-        const auto fail { Create::div<Sgnd::Unsigned>(l1, l2) };
+        const auto fail { Create::div_signed(l1, l2) };
         UNITTEST_ERR("It should not be possible to construct this: ", fail);
     }
     catch (Error::Expr::Type &) {

@@ -13,7 +13,7 @@ void solution() {
     auto &solver { *solver_ref };
 
     // Leaves
-    const auto x { Create::symbol("x") };
+    const auto x { Create::symbol_bool("x") };
     const auto t { Create::literal(true) };
     const auto f { Create::literal(false) };
 
@@ -23,10 +23,10 @@ void solution() {
 
     // Create a solver
     auto is_sol = [&x, &z3, &solver](const Expr::BasePtr &start, const Expr::BasePtr &x_s) {
-        solver.push();
+        solver->push();
         z3.add(solver, start.get());
         const bool ret = z3.solution(x.get(), x_s.get(), solver);
-        solver.pop();
+        solver->pop();
         return ret;
     };
 

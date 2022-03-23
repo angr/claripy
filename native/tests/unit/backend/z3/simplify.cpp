@@ -20,9 +20,9 @@ void simplify() {
     UNITTEST_ASSERT(test(fp_statement, fp_statement)); // FP does not simplify
 
     // BV
-    const auto bv_x { Create::literal(uint64_t { 3 }) };
+    const auto bv_x { Create::literal(U64 { 3 }) };
     const auto bv_statement { Create::add({ bv_x, bv_x }) };
-    const auto bv_sol { Create::literal(uint64_t { 6 }) };
+    const auto bv_sol { Create::literal(U64 { 6 }) };
     UNITTEST_ASSERT(test(bv_statement, bv_sol));
 }
 

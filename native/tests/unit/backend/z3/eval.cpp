@@ -8,17 +8,17 @@
 /** Convert x to a set; if each element is itself a vector, convert it into a vector */
 template <typename T> static auto to_set(const std::vector<T> &inp) {
     const bool is_prim { std::is_same_v<std::remove_cv_t<T>, Op::PrimVar> };
-    std::set<std::conditional_t<is_prim, uint64_t, std::vector<uint64_t>>> ret;
+    std::set<std::conditional_t<is_prim, U64, std::vector<U64>>> ret;
     try {
         for (const T &i : inp) {
             if constexpr (is_prim) {
-                ret.emplace(std::get<uint64_t>(i));
+                ret.emplace(std::get<U64>(i));
             }
             else {
-                std::vector<uint64_t> temp;
+                std::vector<U64> temp;
                 temp.reserve(i.size());
                 for (const auto &k : i) {
-                    temp.emplace_back(std::get<uint64_t>(k));
+                    temp.emplace_back(std::get<U64>(k));
                 }
                 ret.emplace(std::move(temp));
             }
@@ -36,22 +36,19 @@ void eval() {
 
     // Create the solver
     auto solver_ref { z3.tls_solver() };
-    z3::solver solver { *solver_ref };
+    auto solver { *solver_ref };
 
     // Exprs
-    const auto x { Create::symbol<Expr::BV>("x", 64) };
-    const auto y { Create::symbol<Expr::BV>("y", 64) };
-    const auto neq { [&x](const uint64_t z) { return Create::neq(x, Create::literal(z)); } };
+    const auto x { Create::symbol_bv("x", 64) };
+    const auto y { Create::symbol_bv("y", 64) };
+    const auto neq { [&x](const U64 z) { return Create::neq(x, Create::literal(z)); } };
     const auto n0 { neq(0) };
     const auto n2 { neq(2) };
     const auto n3 { neq(3) };
 
     // Bound to make testing more precise
-    using M = Mode::Compare;
-    const auto xleq5 { Create::compare<M::Unsigned | M::Less | M::Eq>(
-        x, Create::literal(uint64_t { 5 })) };
-    const auto yleq2 { Create::compare<M::Unsigned | M::Less | M::Eq>(
-        y, Create::literal(uint64_t { 2 })) };
+    const auto xleq5 { Create::ule(x, Create::literal(U64 { 5 })) };
+    const auto yleq2 { Create::ule(y, Create::literal(U64 { 2 })) };
     z3.add(solver, xleq5.get());
     z3.add(solver, yleq2.get());
 
@@ -60,9 +57,9 @@ void eval() {
     z3.add(solver, n0.get());
     z3.add(solver, n2.get());
     const std::vector<Expr::RawPtr> ec { n3.get() };
-    const std::set<uint64_t> xs { 1, 4, 5 };
+    const std::set<U64> xs { 1, 4, 5 };
     // Test function
-    const auto test_eval { [&](const UInt n) {
+    const auto test_eval { [&](const U64 n) {
         const auto e_results { z3.eval(x.get(), solver, n, ec) }; // only 3 should work
         UNITTEST_ASSERT(e_results.size() == xs.size());
         return to_set(e_results) == xs;
@@ -78,17 +75,17 @@ void eval() {
     // Ask for solutions to y <= 2 and x <= 5 but x != 0, 2; extra constraints x != 3
     const std::vector<Expr::RawPtr> inp { x.get(), y.get() };
     const auto dot { [&xs]() {
-        const std::set<uint64_t> ys { 0, 1, 2 };
-        std::set<std::vector<uint64_t>> ret;
+        const std::set<U64> ys { 0, 1, 2 };
+        std::set<std::vector<U64>> ret;
         for (const auto &i : xs) {
             for (const auto &k : ys) {
-                ret.emplace(std::vector<uint64_t> { i, k });
+                ret.emplace(std::vector<U64> { i, k });
             }
         }
         return ret;
     }() };
     // Test function
-    const auto test_batch { [&](const UInt n) {
+    const auto test_batch { [&](const U64 n) {
         const auto b_results { z3.batch_eval(inp, solver, n, ec) };
         UNITTEST_ASSERT(b_results.size() == dot.size());
         return to_set(b_results) == dot;

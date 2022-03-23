@@ -24,7 +24,7 @@ void avg() {
 
     UNITTEST_ASSERT(test(0U, maxu, maxu / 2));
 
-    // Int
+    // I64
     UNITTEST_ASSERT(test(1, 3, 2));
     UNITTEST_ASSERT(test(1, 4, 2)); // Round down
     UNITTEST_ASSERT(test(1, 5, 3));

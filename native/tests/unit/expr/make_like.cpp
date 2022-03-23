@@ -11,7 +11,7 @@ void make_like() {
     using SA = A::SimplificationAvoidance;
 
     // Create an expr
-    const auto e { Create::sub(Create::symbol<Expr::BV>("bv", 64), Create::literal(64_ui)) };
+    const auto e { Create::sub(Create::symbol_bv("bv", 64_ui), Create::literal(64_ui)) };
 
     // Create a few annotations
     auto ans { std::make_shared<A::Vec>(std::vector<A::BasePtr> {

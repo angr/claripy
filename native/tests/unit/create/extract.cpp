@@ -10,8 +10,8 @@
 void extract() {
 
     // Create distinct inputs
-    const UInt high { 2 };
-    const UInt low { 2 };
+    const U64 high { 2 };
+    const U64 low { 2 };
     const auto a { Create::literal(0_ui) };
 
     // Test

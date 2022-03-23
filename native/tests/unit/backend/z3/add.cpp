@@ -12,8 +12,8 @@ void add() {
     auto &solver { *solver_ref };
 
     // Constraints
-    const auto x { Create::symbol<Expr::BV>("x", 64) };
-    const uint64_t umax { std::numeric_limits<uint64_t>::max() };
+    const auto x { Create::symbol_bv("x", 64) };
+    const U64 umax { std::numeric_limits<U64>::max() };
     auto x_not_max { Create::neq(x, Create::literal(umax)) };
 
     // Desired output string components
@@ -31,7 +31,7 @@ void add() {
     UNITTEST_ASSERT(is.str() == prefix + assert_distinct + assert_distinct)
 
     // Add tracked constraints twice
-    solver.reset();
+    solver->reset();
     z3.add<true>(solver, x_not_max.get());
     z3.add<true>(solver, x_not_max.get());
 

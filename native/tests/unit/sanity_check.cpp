@@ -7,7 +7,7 @@
 
 
 /** Returns the passed argument by reference */
-static UInt id_ref(const UInt &id) {
+static U64 id_ref(const U64 &id) {
     return id;
 }
 

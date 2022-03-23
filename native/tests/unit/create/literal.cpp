@@ -7,7 +7,7 @@
 
 
 /** Test the literal create function with type T */
-template <typename T, typename Data> void literal_t(const Data data, const UInt size = 0) {
+template <typename T, typename Data> void literal_t(const Data data, const U64 size = 0) {
 
     // Test
     const auto lit { Create::literal(Data { data }) };
@@ -44,14 +44,14 @@ void literal() {
 
     // String
     std::string data_s { "This is a test" };
-    literal_t<Expr::String>(data_s, C_CHAR_BIT * data_s.size());
+    literal_t<Expr::String>(data_s, CHAR_BIT * data_s.size());
 
     // FP
     literal_t<Expr::FP>(3.4, 64_ui);  // NOLINT
     literal_t<Expr::FP>(3.4f, 32_ui); // NOLINT
 
     // VS
-    auto ptr { std::make_shared<const PyObj::VS>(1, 1, C_CHAR_BIT) };
+    auto ptr { std::make_shared<const PyObj::VS>(1, 1, CHAR_BIT) };
     const auto bl { ptr->bit_length };
     literal_t<Expr::VS>(std::move(ptr), bl);
 
@@ -59,7 +59,7 @@ void literal() {
     Create::literal(uint8_t { 3 });
     Create::literal(uint16_t { 3 });
     Create::literal(uint32_t { 3 });
-    Create::literal(uint64_t { 3 });
+    Create::literal(U64 { 3 });
     const boost::multiprecision::mpz_int big { 4 }; // NOLINT
     Create::literal(BigInt { big, 200_ui });        // NOLINT
 }

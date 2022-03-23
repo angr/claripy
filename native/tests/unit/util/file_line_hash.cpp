@@ -7,14 +7,14 @@
 
 // Whitespace padding
 // The file line hash *must* be on lines 10 and 11 for test purposes
-static const constexpr UInt my_FLH_10 { UTIL_FILE_LINE_HASH };
-static const constexpr UInt my_FLH_11 { UTIL_FILE_LINE_HASH };
-static const constexpr UInt my_FH { UTIL_FILE_HASH };
+static const constexpr U64 my_FLH_10 { UTIL_FILE_LINE_HASH };
+static const constexpr U64 my_FLH_11 { UTIL_FILE_LINE_HASH };
+static const constexpr U64 my_FH { UTIL_FILE_HASH };
 
 // Acquire from linking
-extern const UInt helper_FLH_10;
-extern const UInt helper_FLH_11;
-extern const UInt helper_FH;
+extern const U64 helper_FLH_10;
+extern const U64 helper_FLH_11;
+extern const U64 helper_FH;
 
 
 /** Verify the file line hash macros work */
