@@ -1,5 +1,10 @@
 cmake_minimum_required( VERSION 3.18 )
-cmake_policy(VERSION 3.18) # For consistency
+cmake_policy(VERSION 3.18) # Just in case (should be set anyway)
+
+# Manually set newer policies to old to silence dependent project warnings
+# This override nothing; we are only explicitly disabling new policies implicitly disabled
+# We do this as otherwise dependent projects may produce 'policy not set' warnings
+set(CMAKE_POLICY_DEFAULT_CMP0127 OLD) # Silence pybind11 warnings (3.22 policy, OLD to match 3.18)
 
 # Append to the cmake search path
 # This allows for simple invoking of cmake files in this path
