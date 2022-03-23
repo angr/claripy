@@ -6,9 +6,6 @@
 #define R_MACROS_HPP_
 
 
-/** The CHAR_BIT claricpp will use */
-#define C_CHAR_BIT 8
-
 /** A macro that contains the information about the current line
  *  Useful for debugging
  */

@@ -28,7 +28,7 @@ namespace Op {
                 return std::get<BigInt>(value).bit_length;
             }
             else {
-                return C_CHAR_BIT * byte_length();
+                return CHAR_BIT * byte_length();
             }
         }
 
@@ -186,10 +186,10 @@ namespace Op {
 #ifdef DEBUG
                 UTIL_ASSERT_NOT_NULL_DEBUG(std::get<PyObj::VSPtr>(value));
                 const auto bl { std::get<PyObj::VSPtr>(value)->bit_length };
-                UTIL_ASSERT(Util::Err::Size, bl % C_CHAR_BIT == 0, "VS of bit length ", bl,
-                            " which is not divisible by ", C_CHAR_BIT, " aka C_CHAR_BIT");
+                UTIL_ASSERT(Util::Err::Size, bl % CHAR_BIT == 0, "VS of bit length ", bl,
+                            " which is not divisible by ", CHAR_BIT, " aka CHAR_BIT");
 #endif
-                RET(got->bit_length / C_CHAR_BIT);
+                RET(got->bit_length / CHAR_BIT);
                 // BV
                 VCASE(5, uint8_t);
                 VCASE(6, uint16_t);

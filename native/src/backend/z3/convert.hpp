@@ -49,18 +49,18 @@ namespace Backend::Z3 {
             const auto size { e.get_sort().bv_size() };
 
             // Trivial case
-            if (size == C_CHAR_BIT) {
+            if (size == CHAR_BIT) {
                 return e;
             }
 
             // Error checking
             using E = Error::Expr::Operation;
-            UTIL_ASSERT(E, size % C_CHAR_BIT == 0, "Can't reverse non-byte sized bitvectors");
+            UTIL_ASSERT(E, size % CHAR_BIT == 0, "Can't reverse non-byte sized bitvectors");
 
             // Reverse byte by byte
-            auto ret { extract(C_CHAR_BIT - 1u, 0u, e) };
-            for (U64 i = C_CHAR_BIT; i < size; i += C_CHAR_BIT) {
-                const auto tmp { extract(to_z3u(i + C_CHAR_BIT - 1), to_z3u(i), e) };
+            auto ret { extract(CHAR_BIT - 1u, 0u, e) };
+            for (U64 i = CHAR_BIT; i < size; i += CHAR_BIT) {
+                const auto tmp { extract(to_z3u(i + CHAR_BIT - 1), to_z3u(i), e) };
                 ret = concat(ret, tmp);
             }
             return ret;

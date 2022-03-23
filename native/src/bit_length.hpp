@@ -16,7 +16,7 @@ struct BitLength {
     const U64 bit_length;
 
     /** The number of bits in a byte */
-    static inline const constexpr U64 char_bit { C_CHAR_BIT };
+    static inline const constexpr U64 char_bit { CHAR_BIT };
 
   protected:
     /** Protected constructor */
