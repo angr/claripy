@@ -4,7 +4,7 @@
 #  Z3_INCLUDE_DIR - The path to the include directory (z3 header files) that will be sym-linked in
 
 
-find_required_library(Z3_LIB z3)
+find_library(Z3_LIB z3 REQUIRED)
 message("Found Z3 library: ${Z3_LIB}")
 if(NOT EXISTS "${Z3_INCLUDE_DIR}")
 	message(FATAL_ERROR "Cannot find: ${Z3_INCLUDE_DIR}")

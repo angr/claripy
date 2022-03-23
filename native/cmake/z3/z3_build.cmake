@@ -12,9 +12,6 @@
 #  Z3_LINK_TARGET   - The name of the z3 library target
 #  Z3_BUILD_RELEASE_MODE       - On to build in release mode; off for debug mode
 
-# We may rely on 3.18 features here
-cmake_minimum_required( VERSION 3.18 )
-
 # Wrapping this in a function to create a new scope
 function(_build_z3)
 

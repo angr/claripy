@@ -5,9 +5,6 @@
 #   - BOOST_DIR: The directory to create and store boost in; ignored if BOOST_URL is empty
 #   - BOOST_FORCE_CLEAN_DOWNLOAD: Force a clean download of boost; ignored if BOOST_URL is empty
 
-# We rely on 3.18 features here
-cmake_minimum_required( VERSION 3.18 )
-
 if ((NOT Boost_INCLUDE_DIRS STREQUAL "") AND (NOT BOOST_URL STREQUAL ""))
     message(FATAL_ERROR "Boost_INCLUDE_DIRS and BOOST_URL both are non-empty; these two options conflict.")
 endif()

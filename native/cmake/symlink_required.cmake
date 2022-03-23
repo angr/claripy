@@ -1,4 +1,4 @@
-include_guard(GLOBAL)
+# Functions which are basically ln -sf
 
 # Define a symlink function that FATAL_ERROR's on failure
 function(symlink_required SRC DST)
@@ -14,7 +14,6 @@ function(symlink_required SRC DST)
 		)
 	endif()
 endfunction()
-
 
 function(symlink_required_rm_old SRC DST)
 	file(REMOVE_RECURSE "${DST}")

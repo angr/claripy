@@ -1,5 +1,4 @@
 # This file defines a function called fetch
-cmake_minimum_required( VERSION 3.18 )
 
 # Download F_URL and extract it
 # If DATA is not empty then mv "${EXTRACTED_DIR}/${DATA}" "${BASE_DIR}/${DATA}"

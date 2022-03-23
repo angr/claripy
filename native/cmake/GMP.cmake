@@ -71,7 +71,7 @@ if(GMP_INCLUDES)
 	endif()
 endif()
 
-find_required_library(GMP_LIBRARIES gmp PATHS "${GMPDIR}")
+find_library(GMP_LIBRARIES gmp PATHS "${GMPDIR}" REQUIRED)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GMP DEFAULT_MSG

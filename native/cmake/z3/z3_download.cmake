@@ -13,9 +13,6 @@
 #  Z3_DOWNLOAD_HASH_TYPE (Optional) - Specifies the type of the hash Z3_DOWNLOAD_HASH is
 #                                     Must be defiend with Z3_DOWNLAD_HASH
 
-# We rely on 3.18 features here
-cmake_minimum_required( VERSION 3.18 )
-
 # Wrapping this in a function to create a new scope
 function(_download_z3)
 

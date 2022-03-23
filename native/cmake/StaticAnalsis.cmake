@@ -2,7 +2,7 @@
 if(CPP_CHECK)
 	message(WARNING "cppcheck's internal AST can break because of control block initalizers."
 			" Until this bug is fixed cppcheck cannot be used.")
-	find_required_program(CPP_CHECK_PATH "cppcheck")
+	find_program(CPP_CHECK_PATH "cppcheck" REQUIRED)
 	set(CPPCHECK_CMD "${CPP_CHECK_PATH}"
 		"--enable=all"
 		"--std=c++17"
@@ -28,9 +28,9 @@ endif()
 # Include What You Use
 if(IWYU)
 	if(APPLE)
-		find_required_program(IWYU_PATH "include-what-you-use" "iwyu")
+		find_program(IWYU_PATH "include-what-you-use" "iwyu" REQUIRED)
 	else()
-		find_required_program(IWYU_PATH "iwyu" "include-what-you-use")
+		find_program(IWYU_PATH "iwyu" "include-what-you-use" REQUIRED)
 		set(IWYU_PATH "${IWYU_PATH}" "--cxx17ns")
 	endif()
 	set(CMAKE_C_INCLUDE_WHAT_YOU_USE "${IWYU_PATH}")
@@ -52,11 +52,12 @@ if(CLANG_TIDY)
 	set(CLANG_TIDY_NAMES "clang-tidy-11" "clang-tidy")
 	message(WARNING "Clang Tidy might not behave well with boost headers")
 	if(APPLE)
-		find_required_program(CLANG_TIDY_PATH ${CLANG_TIDY_NAMES}
+		find_program(CLANG_TIDY_PATH ${CLANG_TIDY_NAMES}
 			HINTS "/usr/local/opt/llvm/bin/"
+			REQUIRED
 		)
 	else()
-		find_required_program(CLANG_TIDY_PATH ${CLANG_TIDY_NAMES})
+		find_program(CLANG_TIDY_PATH ${CLANG_TIDY_NAMES} REQUIRED)
 	endif()
 	set(CMAKE_C_CLANG_TIDY "${CLANG_TIDY_PATH}")
 	set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_PATH}")
