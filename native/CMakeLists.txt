@@ -1,7 +1,5 @@
-cmake_minimum_required( VERSION 3.16 )
-
-# Allow an earlier set to override a later option default
-set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+cmake_minimum_required( VERSION 3.18 )
+cmake_policy(VERSION 3.18) # For consistency
 
 # Append to the cmake search path
 # This allows for simple invoking of cmake files in this path
