@@ -598,12 +598,3 @@ endif()
 # Save generator
 default(FOR_SETUP_PY_F "${CMAKE_CURRENT_BINARY_DIR}/setup.txt")
 file(WRITE "${FOR_SETUP_PY_F}" "CMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}\n")
-
-# The cdefs source file
-file(APPEND "${FOR_SETUP_PY_F}" "\nCDEFS_SOURCE_F=${CDEFS_SOURCE_F}\n")
-
-# FindPackage python works, no need for find_program
-# This is more powerful and lets us find specific components
-# Important output variable: Python3_EXECUTABLE
-find_package(Python3 REQUIRED COMPONENTS Interpreter)
-file(APPEND "${FOR_SETUP_PY_F}" "\nPython_INCLUDE_DIRS=${Python_INCLUDE_DIRS}\n")
