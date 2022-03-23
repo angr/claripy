@@ -6,7 +6,6 @@ cmake_policy(VERSION 3.18) # For consistency
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Functions to be used later
-include(find_required)
 include(default)
 include(fetch)
 
