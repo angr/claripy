@@ -1,9 +1,14 @@
 # This file defines gen_api_file
 include(read_lines)
+include (hash_dir)
 
 # Generates API_SOURCE
 function(gen_api_file API_SOURCE BINDER_DIR) # Append 'must include' files
     set(MUST_INCLUDE "${ARGN}")
+
+    # Hash check BINDER_DIR in case clang-format or something broke it
+    # This is useful for developers; ex. detecting if clang-format edited autogen'd code
+    hash_dir_store_check("${BINDER_DIR}" "Binder directory is polluted; refusing to proceed.")
 
     # Determine if cache can be used
     if (EXISTS "${API_SOURCE}")
@@ -12,7 +17,7 @@ function(gen_api_file API_SOURCE BINDER_DIR) # Append 'must include' files
         foreach(INC IN LISTS MUST_INCLUDE)
             if ("${INC}" IS_NEWER_THAN "${API_SOURCE}")
                 set(RET FALSE)
-                break()
+                break() # No point in looking more
             endif()
         endforeach()
         #  Bail if cache is fine
@@ -67,14 +72,17 @@ function(gen_api_file API_SOURCE BINDER_DIR) # Append 'must include' files
     read_lines("${IN_FILE}" RAW_LINES)
     split_code("${RAW_LINES}" HEADERS BODY_LINES)
 
-    # Namespace forward decls
+    # Extract forward decls
     string(FIND "${BODY_LINES}" "PYBIND11_MODULE(" INDEX)
-    string(SUBSTRING "${BODY_LINES}" 0 "${INDEX}" MERGED_LINES)
+    string(SUBSTRING "${BODY_LINES}" 0 "${INDEX}" DECL_LINES) # Decl
     string(SUBSTRING "${BODY_LINES}" "${INDEX}" -1 BODY_LINES) # Remove decls from BODY_LINES
-    list(JOIN MERGED_LINES "\n" MERGED)
-    string(PREPEND MERGED "namespace API::Binder {\n\n")
-    string(STRIP "${MERGED}" MERGED)
-    string(APPEND MERGED "\n\n} // namespace API::Binder\n\n\n")
+    set(DECLS "")
+    foreach(DECL IN LISTS DECL_LINES) # list(FILTER) cannot handle ';'s
+        if (NOT "${DECL}" MATCHES "bind_std") # strip out std stuff
+            string(APPEND DECLS "${DECL}\n")
+        endif()
+    endforeach()
+    string(STRIP "${DECLS}" DECLS)
 
     # Remove closing }
     string(FIND "${BODY_LINES}" "}" INDEX REVERSE)
@@ -84,9 +92,10 @@ function(gen_api_file API_SOURCE BINDER_DIR) # Append 'must include' files
     endif()
     string(SUBSTRING "${BODY_LINES}" 0 "${INDEX}" BODY_LINES)
 
-    # Generate output string + strip out std stuff
+    # Generate output string
+    set(MERGED "namespace API::Binder {\n\n${DECLS}\n\n} // namespace API::Binder\n\n\n")
     foreach(LINE IN LISTS BODY_LINES)
-        if (NOT "${LINE}" MATCHES "bind_std")
+        if (NOT "${LINE}" MATCHES "bind_std") # strip out std stuff; list(FILTER) cannot handle ';'s
             string(REPLACE "ModuleGetter" "API::Binder::ModuleGetter" LINE "${LINE}") # namespace
             string(REPLACE "bind_" "API::Binder::bind_" LINE "${LINE}") # namespace
             string(APPEND MERGED "${LINE}\n")
@@ -104,11 +113,10 @@ function(gen_api_file API_SOURCE BINDER_DIR) # Append 'must include' files
     foreach(NEXT IN LISTS SOURCES)
         read_lines("${NEXT}" DATA)
         split_code("${DATA}" HEADERS BODY_LINES) # Store headers and body
-        # Body (namespace + strip out remaining std stuff)
+        # Body
         list(JOIN BODY_LINES "\n" BODY)
         string(STRIP "${BODY}" BODY)
-        string(REPLACE "void bind_" "namespace API::Binder {\nvoid bind_" BODY "${BODY}")
-        string(REPLACE "PyCallBack_Util_Err_Claricpp, std::exception>"  "PyCallBack_Util_Err_Claricpp>" BODY "${BODY}")
+        string(REPLACE "void bind_" "namespace API::Binder {\nvoid bind_" BODY "${BODY}") # namespace
         # Add to merged
         file(RELATIVE_PATH FNAME "${API_SOURCE_DIR}" "${NEXT}")
         string(APPEND MERGED "\n\n\n//\n// File: ${FNAME}\n//\n\n\n${BODY}\n} // namespace API::Binder")
