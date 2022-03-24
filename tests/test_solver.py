@@ -1,4 +1,4 @@
-# pylint: disable=no-self-use, disable=missing-class-docstring
+# pylint: disable=no-self-use, missing-class-docstring
 
 import unittest
 import logging
@@ -10,23 +10,23 @@ l = logging.getLogger('claripy.test.solver')
 solver_list = (claripy.Solver, claripy.SolverReplacement, claripy.SolverHybrid, claripy.SolverComposite, claripy.SolverCacheless)
 
 class TestSolver(unittest.TestCase):
-    def test_solver_solver(self):
+    def test_solver(self):
         self.raw_solver(solver_list[0], True)
         self.raw_solver(solver_list[0], False)
 
-    def test_solver_SolverReplacement(self):
+    def test_solver_Replacement(self):
         self.raw_solver(solver_list[1], True)
         self.raw_solver(solver_list[1], False)
 
-    def test_solver_solver_SolverHybrid(self):
+    def test_solver_Hybrid(self):
         self.raw_solver(solver_list[2], True)
         self.raw_solver(solver_list[2], False)
 
-    def test_solver_SolverComposite(self):
+    def test_solver_Composite(self):
         self.raw_solver(solver_list[3], True)
         self.raw_solver(solver_list[3], False)
 
-    def test_solver_SolverCacheless(self):
+    def test_solver_Cacheless(self):
         self.raw_solver(solver_list[4], True)
         self.raw_solver(solver_list[4], False)
 
