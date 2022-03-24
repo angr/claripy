@@ -1,7 +1,4 @@
-#pylint: disable=no-self-use
-#pylint: disable=line-too-long
-#pylint: disable=missing-class-docstring
-#pylint: disable=raise-missing-from
+# pylint: disable=no-self-use, disable=missing-class-docstring
 
 import unittest
 import logging
