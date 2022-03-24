@@ -1,6 +1,5 @@
-#pylint: disable=no-self-use
-#pylint: disable=comparison-with-itself
-#pylint: disable=missing-class-docstring
+# pylint: disable=no-self-use, missing-class-docstring
+
 import unittest
 import nose
 
