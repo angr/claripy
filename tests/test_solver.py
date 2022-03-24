@@ -11,24 +11,24 @@ solver_list = (claripy.Solver, claripy.SolverReplacement, claripy.SolverHybrid, 
 
 class TestSolver(unittest.TestCase):
     def test_solver(self):
-        self.raw_solver(solver_list[0], True)
-        self.raw_solver(solver_list[0], False)
+        self.raw_solver(claripy.Solver, True)
+        self.raw_solver(claripy.Solver, False)
 
     def test_solver_Replacement(self):
-        self.raw_solver(solver_list[1], True)
-        self.raw_solver(solver_list[1], False)
+        self.raw_solver(claripy.SolverReplacement, True)
+        self.raw_solver(claripy.SolverReplacement, False)
 
     def test_solver_Hybrid(self):
-        self.raw_solver(solver_list[2], True)
-        self.raw_solver(solver_list[2], False)
+        self.raw_solver(claripy.SolverHybrid, True)
+        self.raw_solver(claripy.SolverHybrid, False)
 
     def test_solver_Composite(self):
-        self.raw_solver(solver_list[3], True)
-        self.raw_solver(solver_list[3], False)
+        self.raw_solver(claripy.SolverComposite, True)
+        self.raw_solver(claripy.SolverComposite, False)
 
     def test_solver_Cacheless(self):
-        self.raw_solver(solver_list[4], True)
-        self.raw_solver(solver_list[4], False)
+        self.raw_solver(claripy.SolverCacheless, True)
+        self.raw_solver(claripy.SolverCacheless, False)
 
     def test_hybrid_solver(self):
         self.raw_hybrid_solver(True)
@@ -285,24 +285,24 @@ class TestSolver(unittest.TestCase):
             assert claripy._backends_module.backend_z3.solve_count == count
 
     def test_solver_branching_Solver(self):
-        self.raw_solver_branching(solver_list[0], True)
-        self.raw_solver_branching(solver_list[0], False)
+        self.raw_solver_branching(claripy.Solver, True)
+        self.raw_solver_branching(claripy.Solver, False)
 
     def test_solver_branching_SolverReplacement(self):
-        self.raw_solver_branching(solver_list[1], True)
-        self.raw_solver_branching(solver_list[1], False)
+        self.raw_solver_branching(claripy.SolverReplacement, True)
+        self.raw_solver_branching(claripy.SolverReplacement, False)
 
     def test_solver_branching_SolverHybrid(self):
-        self.raw_solver_branching(solver_list[2], True)
-        self.raw_solver_branching(solver_list[2], False)
+        self.raw_solver_branching(claripy.SolverHybrid, True)
+        self.raw_solver_branching(claripy.SolverHybrid, False)
 
     def test_solver_branching_SolverComposite(self):
-        self.raw_solver_branching(solver_list[3], True)
-        self.raw_solver_branching(solver_list[3], False)
+        self.raw_solver_branching(claripy.SolverComposite, True)
+        self.raw_solver_branching(claripy.SolverComposite, False)
 
     def test_solver_branching_SolverCacheless(self):
-        self.raw_solver_branching(solver_list[4], True)
-        self.raw_solver_branching(solver_list[4], False)
+        self.raw_solver_branching(claripy.SolverCacheless, True)
+        self.raw_solver_branching(claripy.SolverCacheless, False)
 
 
     def raw_solver_branching(self, solver_type, reuse_z3_solver):
@@ -337,24 +337,24 @@ class TestSolver(unittest.TestCase):
         nose.tools.assert_false(t.satisfiable())
 
     def test_combine_Solver(self):
-        self.raw_combine(solver_list[0],True)
-        self.raw_combine(solver_list[0],False)
+        self.raw_combine(claripy.Solver,True)
+        self.raw_combine(claripy.Solver,False)
 
     def test_combine_SolverReplacement(self):
-        self.raw_combine(solver_list[1],True)
-        self.raw_combine(solver_list[1],False)
+        self.raw_combine(claripy.SolverReplacement,True)
+        self.raw_combine(claripy.SolverReplacement,False)
 
     def test_combine_SolverHybrid(self):
-        self.raw_combine(solver_list[2],True)
-        self.raw_combine(solver_list[2],False)
+        self.raw_combine(claripy.SolverHybrid,True)
+        self.raw_combine(claripy.SolverHybrid,False)
 
     def test_combine_SolverComposite(self):
-        self.raw_combine(solver_list[3],True)
-        self.raw_combine(solver_list[3],False)
+        self.raw_combine(claripy.SolverComposite,True)
+        self.raw_combine(claripy.SolverComposite,False)
 
     def test_combine_SolverCacheless(self):
-        self.raw_combine(solver_list[4],True)
-        self.raw_combine(solver_list[4],False)
+        self.raw_combine(claripy.SolverCacheless,True)
+        self.raw_combine(claripy.SolverCacheless,False)
 
     def raw_combine(self, solver_type, reuse_z3_solver):
         claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
@@ -567,24 +567,24 @@ class TestSolver(unittest.TestCase):
         assert len(t.constraints[-1].args) == 2
 
     def test_ancestor_merge_Solver(self):
-        self.raw_ancestor_merge(solver_list[0],True)
-        self.raw_ancestor_merge(solver_list[0],False)
+        self.raw_ancestor_merge(claripy.Solver,True)
+        self.raw_ancestor_merge(claripy.Solver,False)
 
     def test_ancestor_merge_SolverReplacement(self):
-        self.raw_ancestor_merge(solver_list[1],True)
-        self.raw_ancestor_merge(solver_list[1],False)
+        self.raw_ancestor_merge(claripy.SolverReplacement,True)
+        self.raw_ancestor_merge(claripy.SolverReplacement,False)
 
     def test_ancestor_merge_SolverHybrid(self):
-        self.raw_ancestor_merge(solver_list[2],True)
-        self.raw_ancestor_merge(solver_list[2],False)
+        self.raw_ancestor_merge(claripy.SolverHybrid,True)
+        self.raw_ancestor_merge(claripy.SolverHybrid,False)
 
     def test_ancestor_merge_SolverComposite(self):
-        self.raw_ancestor_merge(solver_list[3],True)
-        self.raw_ancestor_merge(solver_list[3],False)
+        self.raw_ancestor_merge(claripy.SolverComposite,True)
+        self.raw_ancestor_merge(claripy.SolverComposite,False)
 
     def test_ancestor_merge_SolverCacheless(self):
-        self.raw_ancestor_merge(solver_list[4],True)
-        self.raw_ancestor_merge(solver_list[4],False)
+        self.raw_ancestor_merge(claripy.SolverCacheless,True)
+        self.raw_ancestor_merge(claripy.SolverCacheless,False)
 
 
     def raw_unsat_core(self,solver, reuse_z3_solver):
@@ -610,20 +610,20 @@ class TestSolver(unittest.TestCase):
         assert unsat_core[2] is not None
 
     def test_unsat_core_Solver(self):
-        self.raw_unsat_core(solver_list[0], True)
-        self.raw_unsat_core(solver_list[0], False)
+        self.raw_unsat_core(claripy.Solver, True)
+        self.raw_unsat_core(claripy.Solver, False)
 
     def test_unsat_core_SolverHybrid(self):
-        self.raw_unsat_core(solver_list[2], True)
-        self.raw_unsat_core(solver_list[2], False)
+        self.raw_unsat_core(claripy.SolverHybrid, True)
+        self.raw_unsat_core(claripy.SolverHybrid, False)
 
     def test_unsat_core_SolverComposite(self):
-        self.raw_unsat_core(solver_list[3], True)
-        self.raw_unsat_core(solver_list[3], False)
+        self.raw_unsat_core(claripy.SolverComposite, True)
+        self.raw_unsat_core(claripy.SolverComposite, False)
 
     def test_unsat_core_SolverCacheless(self):
-        self.raw_unsat_core(solver_list[4], True)
-        self.raw_unsat_core(solver_list[4], False)
+        self.raw_unsat_core(claripy.SolverCacheless, True)
+        self.raw_unsat_core(claripy.SolverCacheless, False)
 
 
     def test_zero_division_in_cache_mixin(self):
@@ -678,13 +678,11 @@ class TestSolver(unittest.TestCase):
         s = claripy.Solver()
         x = claripy.BVS('x', 32)
         s.add(x >= 19)
-        print(s.min(x, extra_constraints=[x >= 20]))
         assert s.min(x) == 19
 
         s = claripy.Solver()
         x = claripy.BVS('x', 32)
         s.add(x <= 19)
-        print(s.max(x, extra_constraints=[x <= 18]))
         assert s.max(x) == 19
 
 if __name__ == '__main__':
