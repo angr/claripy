@@ -7,8 +7,6 @@ import claripy
 
 l = logging.getLogger('claripy.test.solver')
 
-solver_list = (claripy.Solver, claripy.SolverReplacement, claripy.SolverHybrid, claripy.SolverComposite, claripy.SolverCacheless)
-
 class TestSolver(unittest.TestCase):
     def test_solver(self):
         self.raw_solver(claripy.Solver, True)
