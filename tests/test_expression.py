@@ -1,4 +1,4 @@
-# pylint: disable=no-self-use, missing-class-docstring
+# pylint: disable= [no-self-use, missing-class-docstring]
 
 import unittest
 import nose
