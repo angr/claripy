@@ -112,6 +112,9 @@ class BuiltLib:
         self._lic_cleaner = cleaner
 
     def _find_ext(self, where, ext):
+        exact = os.path.realpath(os.path.join(where, self.name + ext))
+        if os.path.exists(exact):
+            return exact
         files = glob(os.path.join(where, self.name) + ".*")
         files = [i for i in files if i.endswith(ext)] # Check ext here b/c .'s can overlap
         if len(files) == 1:
@@ -125,6 +128,8 @@ class BuiltLib:
                 + where
                 + " with the same extension: "
                 + ext
+                + ": "
+                + str(files)
             )
 
     def _find(self, where):
