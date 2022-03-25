@@ -1,24 +1,18 @@
 # IDE
-/.build*
-/.idea/*
+.idea/*
 
 # Dependencies
-/pybind11/*
-/boost/*
-/gmp/*
+boost/*
+gmp/*
 
 # Explicit
-/Ignore/*
-/ignore/*
-/old/*
+ignore/*
 
 # Build artifacts
-/.cache/*
-/Doxyfile
-/compile_commands.json
-/Build/*
-/build/*
-/z3/*
+Doxyfile
+.cache/*
+.build.*
+build/*
 
 # For vim
 **/.ycm_extra_conf.py
