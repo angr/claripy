@@ -181,7 +181,7 @@ namespace Backend::Z3 {
             // For each assertion
             const auto assertions { solver->assertions() };
             const auto a_len { assertions.size() };
-            for (int i { 0 }; i < Util::sign(a_len); ++i) {
+            for (unsigned int i { 0 }; i < a_len; ++i) {
                 // Extract the hash of the next assertion
                 const auto a_i { assertions[i] };
 #ifdef DEBUG
@@ -356,7 +356,7 @@ namespace Backend::Z3 {
             std::set<Hash::Hash> ret;
             // For each assertion, extract the name (the first child as a string)
             // Convert the name to a hash with stoi-like functions, and save the hash
-            for (int i { 0 }; i < Util::sign(input.size()); ++i) {
+            for (unsigned int i { 0 }; i < input.size(); ++i) {
                 const auto bool_name { Arg0 ? input[i].arg(0) : input[i] };
                 const auto [hash, tracked] { extract_hash(bool_name) };
                 if (tracked) {
