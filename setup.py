@@ -87,6 +87,7 @@ def cname(x):
     """
     return x.__class__.__name__
 
+
 class BuiltLib:
     """
     A shared or static library
@@ -115,7 +116,8 @@ class BuiltLib:
         if os.path.exists(exact):
             return exact
         files = glob(os.path.join(where, self.name) + ".*")
-        files = [i for i in files if i.endswith(ext)] # Check ext here b/c .'s can overlap
+        # Check ext after glob b/c .'s can overlap
+        files = [i for i in files if i.endswith(ext)]
         if len(files) == 1:
             return files[0]
         if len(files) > 1:
@@ -238,7 +240,7 @@ def parse_cmake_cache(build_dir):
     cmd = [find_exe("cmake"), "-LA", "-N", "."]
     with chdir(build_dir):
         cache = run_cmd_no_fail(*cmd, stdout=subprocess.PIPE).stdout.decode()
-    variables = [extract(i) for i in cache.split("\n")] # Extract cache vars
+    variables = [extract(i) for i in cache.split("\n")]  # Extract cache vars
     return JDict({i[0]: i[1] for i in variables if i is not None})
 
 
@@ -285,7 +287,7 @@ def download_checksum_extract(name, where, url, sha, ext):
             r.raise_for_status()
             as_bytes = {"unit": "B", "unit_scale": True, "unit_divisor": 1024}
             with tqdm(total=int(r.headers["Content-length"]), **as_bytes) as prog:
-                chunk_size = 2 ** 16
+                chunk_size = 2**16
                 for block in r.iter_content(chunk_size=chunk_size):
                     hasher.update(block)
                     f.write(block)
@@ -425,7 +427,7 @@ class Library:
         me = self._call_format(self, lvl_name)
         called.add(me)
 
-    def get(self, force, called = None):
+    def get(self, force, called=None):
         """
         Acquire source files for this class and dependencies
         If force: ignores existing files, else may reuse existing files
@@ -433,7 +435,7 @@ class Library:
         called = set() if called is None else called
         self._body(force, CleanLevel.GET, self._get_chk, called)
 
-    def build(self, force, called = None):
+    def build(self, force, called=None):
         """
         Build libraries for this class and dependencies
         If force: ignores existing files, else may reuse existing files
@@ -441,7 +443,7 @@ class Library:
         called = set() if called is None else called
         self._body(force, CleanLevel.BUILD, self._build_chk, called)
 
-    def license(self, force, called = None):
+    def license(self, force, called=None):
         """
         Install library licenses; will call ._license if it has not been called
         If force: ignores existing files, else may reuse existing files
@@ -449,7 +451,7 @@ class Library:
         called = set() if called is None else called
         self._body(force, CleanLevel.LICENSE, {}, called)
 
-    def install(self, force, called = None):
+    def install(self, force, called=None):
         """
         Install libraries and source files for this class and dependencies
         If force: ignores existing files, else may reuse existing files
@@ -597,17 +599,22 @@ class GMP(Library):
     def _license(self):
         if not os.path.exists(self._lic_d):
             os.mkdir(self._lic_d)
+
         def cpy(src, dst):
             src = os.path.join(self._build_dir, src)
             dst = os.path.join(self._lic_d, dst)
             print("Copying " + src + " --> " + dst)
-            shutil.copy2(os.path.join(self._build_dir, src), os.path.join(self._lic_d, dst))
+            shutil.copy2(src, dst)
+
         cpy("COPYINGv3", "GNU-GPLv3")
         cpy("AUTHORS", "AUTHORS")
         cpy("COPYING.LESSERv3", "GNU-LGPLv3")
         print("Generating README...")
-        with open(os.path.join(self._lic_d, 'README'), 'w') as f:
-            f.write("The compiled GMP library is licensed under the GNU LGPLv3. The library was built from unmodified source code which can be found at: "+ self._url)
+        with open(os.path.join(self._lic_d, "README"), "w") as f:
+            f.write(
+                "The compiled GMP library is licensed under the GNU LGPLv3. The library was built from unmodified source code which can be found at: "
+                + self._url
+            )
 
     def _install(self):
         self._lib.install()
@@ -635,7 +642,7 @@ class Boost(Library):
     _lic = os.path.join(root, "LICENSE")
 
     def __init__(self):
-        chk = {"boost headers": self.root, "boost license" : self._lic}
+        chk = {"boost headers": self.root, "boost license": self._lic}
         # Boost depends on GMP
         super().__init__(chk, {}, {}, GMP())
 
@@ -720,6 +727,7 @@ class Backward(Library):
     def _license(self):
         pass
 
+
 class Pybind11(Library):
     """
     A class used to manage the backward dependency
@@ -748,14 +756,15 @@ class Claricpp(Library):
     Warning: if enable_tests, .build() will not be skipped if just the libs exist
     """
 
-    enable_tests = False # Change me if desired
+    enable_tests = False  # Change me if desired
     build_dir = os.path.join(native, "build")
     _lib = SharedLib("libclaricpp", build_dir)
     _out_src = os.path.join(BuiltLib.install_dir, "src")
 
     def __init__(self):
         chk = {self._lib.name: self._lib, "Claricpp src": self._out_src}
-        super().__init__({}, {} if self.enable_tests else chk, chk, Boost(), Z3(), Pybind11(), Backward())
+        build_chk = {} if self.enable_tests else chk
+        super().__init__({}, build_chk, chk, Boost(), Z3(), Pybind11(), Backward())
 
     @staticmethod
     def _cmake_config_args(claricpp, enable_tests):
@@ -819,7 +828,7 @@ class Claricpp(Library):
                 print("Tests built in build dir: " + self.build_dir)
 
     def _license(self):
-        pass # Same as main project
+        pass  # Same as main project
 
     def _install(self):
         self._lib.install()
@@ -831,10 +840,10 @@ class Claricpp(Library):
             self._lib.clean_install()
             shutil.rmtree(self._out_src, ignore_errors=True)
         if level.implies(CleanLevel.BUILD):
-            try: # No clue if this stuff even exists
+            try:  # No clue if this stuff even exists
                 with chdir(self.build_dir):
                     run_cmd_no_fail(self.generator(), "clean")
-            except: # Ignore errors during the above
+            except:  # Ignore errors during the above
                 pass
             shutil.rmtree(self.build_dir, ignore_errors=True)
             self._lib.clean_build()
@@ -859,7 +868,7 @@ class ClaricppAPI(Library):
             run_cmd_no_fail(Claricpp.generator(), self._api_target)
 
     def _license(self):
-        pass # Same as main project
+        pass  # Same as main project
 
     def _install(self):
         self._lib.install()
@@ -886,19 +895,27 @@ class SDist(SDistOriginal):
 
 class BuildExt(BuildExtOriginal):
     def run(self):
-        f = lambda: ClaricppAPI().install(False) # Native install to the python src location
+        # Build native components and install to the python src location
+        f = lambda: ClaricppAPI().install(False)
         self.execute(f, (), msg="Building native components")
         super().run()
 
+
 class SimpleCommand(Command):
     user_options = []
-    def initialize_options(self): pass
-    def finalize_options(self): pass
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
 
 class BuildTests(SimpleCommand):
     def run(self):
         Claricpp.enable_tests = True
         self.run_command("build_ext")
+
 
 class Clean(SimpleCommand):
     def run(self):
@@ -913,7 +930,7 @@ if __name__ == "__main__":
         cmdclass={
             "sdist": SDist,
             "build_ext": BuildExt,
-            "build_tests": BuildTests, # A custom command to build native tests
-            "clean": Clean, # A custom command, makes dev easier
+            "build_tests": BuildTests,  # A custom command to build native tests
+            "clean": Clean,  # A custom command, makes dev easier
         },
     )
