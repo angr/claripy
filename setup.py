@@ -1,8 +1,7 @@
 from distutils.command.build import build as _build
 from distutils.command.clean import clean as _clean
 from distutils.command.sdist import sdist as _sdist
-from native.build_ffi import build_ffi_wrapper
-from setuptools import find_packages, setup
+from setuptools import setup, Command
 from multiprocessing import cpu_count
 from contextlib import contextmanager
 from hashlib import sha256
@@ -14,7 +13,6 @@ import requests
 import platform
 import tempfile
 import shutil
-import errno
 import sys
 import os
 import re
@@ -41,7 +39,6 @@ with open(os.path.join(claripy, "VERSION")) as f:
 
 # Claricpp library names; these should be in MANIFEST.in
 claricpp = "claricpp"
-claricpp_ffi = "claricpp_ffi"
 
 
 ######################################################################
@@ -73,14 +70,6 @@ def chdir(new):
     finally:
         print("cd " + old)
         os.chdir(old)
-
-
-def nprocd(delta=1):
-    """
-    Return: `nproc` - delta or 1, whichever is larger
-    """
-    assert delta >= 0, "delta may not be negative"
-    return max(cpu_count() - delta, 1)
 
 
 def find_exe(name):
@@ -123,8 +112,8 @@ class BuiltLib:
         self._lic_cleaner = cleaner
 
     def _find_ext(self, where, ext):
-        files = glob(os.path.join(where, self.name) + "*.*")
-        files = [i for i in files if i.endswith(ext)]
+        files = glob(os.path.join(where, self.name) + ".*")
+        files = [i for i in files if i.endswith(ext)] # Check ext here b/c .'s can overlap
         if len(files) == 1:
             return files[0]
         if len(files) > 1:
@@ -212,16 +201,6 @@ class StaticLib(BuiltLib):
         super().__init__(name, build_dir, permit_shared=False, permit_static=True)
 
 
-def parse_info_file(info_file):
-    """
-    Parses the info file cmake outputs
-    """
-    with open(info_file) as f:
-        data = f.readlines()
-    data = [i.split("=", 1) for i in data if len(i.strip()) > 0]
-    return JDict({i[0].strip(): i[1].strip() for i in data})
-
-
 def run_cmd_no_fail(*args, **kwargs):
     """
     A wrapper around subprocess.run that errors on subprocess failure
@@ -238,6 +217,25 @@ def run_cmd_no_fail(*args, **kwargs):
         what = os.path.basename(args[0])
         raise RuntimeError(what + " failed with return code: " + str(rc.returncode))
     return rc
+
+
+def parse_cmake_cache(build_dir):
+    """
+    Parses the cmake cache
+    """
+
+    def extract(x):
+        x = x.split("=")
+        if len(x) == 2:
+            left = x[0].split(":")
+            if len(left) == 2:
+                return (left[0], x[1])
+
+    cmd = [find_exe("cmake"), "-LA", "-N", "."]
+    with chdir(build_dir):
+        cache = run_cmd_no_fail(*cmd, stdout=subprocess.PIPE).stdout.decode()
+    variables = [extract(i) for i in cache.split("\n")] # Extract cache vars
+    return JDict({i[0]: i[1] for i in variables if i is not None})
 
 
 def extract(d, f, ext):
@@ -259,19 +257,14 @@ def extract(d, f, ext):
         raise RuntimeError("Compression type not supported: " + ext)
 
 
-def generator(name):
+def make_mutliproc(name):
     """
-    Find a build generator (e.g. make)
+    Add the -j flag to name if it is make
     """
-    print("Finding generator...")
-    is_make = name.endswith("make")
-    makej = [name]  # TODO: test on windows; angr uses nmake /f Makefile-win
-    try:
-        if makej[0].endswith("make"):
-            makej.append("-j" + str(nprocd()))
-    except NotImplementedError:
-        pass
-    return makej, is_make
+    if name.endswith("make"):
+        nproc = max(cpu_count() - 1, 1)
+        return [name, "-j" + str(nproc)]
+    return [name]
 
 
 def download_checksum_extract(name, where, url, sha, ext):
@@ -529,7 +522,7 @@ class GMP(Library):
             "GMP library": self._lib,
             "GMP include directory": self.include_dir,
         }
-        install_chk = {"GMP source": self._lib.find_installed}
+        install_chk = {"GMP lib": self._lib.find_installed}
         super().__init__(get_chk, build_chk, install_chk)
 
     def _get(self):
@@ -590,7 +583,7 @@ class GMP(Library):
             ]
             self._set_lib_type(self._run("Configuring", "./configure", *config_args))
             # Building + Checking
-            makej = ["make", "-j" + str(nprocd())]
+            makej = make_mutliproc(find_exe("make"))
             _ = self._run("Building GMP", *makej)
             _ = self._run("Checking GMP build", *makej, "check")
             # Include dir
@@ -723,23 +716,45 @@ class Backward(Library):
     def _license(self):
         pass
 
+class Pybind11(Library):
+    """
+    A class used to manage the backward dependency
+    """
+
+    def __init__(self):
+        # TODO: https://sourceware.org/elfutils/
+        # TODO: https://sourceware.org/elfutils/ftp/0.186/
+        # TODO: these depend on libdebuginfod (=dummy is an option?)
+        super().__init__({}, {}, {})
+
+    def _get(self):
+        root = os.path.join(native, "pybind11")
+        b = os.path.exists(root)
+        assert b, "pybind11 is missing; run: git submodule init --recursive"
+        lic = os.path.join(root, "LICENSE")
+        assert os.path.exists(lic), "pybind11 missing license"
+
+    def _license(self):
+        pass
+
 
 class Claricpp(Library):
     """
     A class to manage Claricpp
+    Warning: if enable_tests, .build() will not be skipped if just the libs exist
     """
 
+    enable_tests = False # Change me if desired
     build_dir = os.path.join(native, "build")
-    info_file = os.path.join(build_dir, "_for_setup_py.txt")
     _lib = SharedLib("libclaricpp", build_dir)
     _out_src = os.path.join(BuiltLib.install_dir, "src")
 
     def __init__(self):
         chk = {self._lib.name: self._lib, "Claricpp src": self._out_src}
-        super().__init__({}, chk, chk, Boost(), Z3(), Backward())
+        super().__init__({}, {} if self.enable_tests else chk, chk, Boost(), Z3(), Pybind11(), Backward())
 
     @staticmethod
-    def _cmake_config_args(out_file, claricpp):
+    def _cmake_config_args(claricpp, enable_tests):
         """
         Create arguments to pass to cmake for configuring claricpp
         """
@@ -748,14 +763,13 @@ class Claricpp(Library):
         config = {
             "VERSION": version,
             "CLARICPP": claricpp,
-            "FOR_SETUP_PY_F": out_file,
             # Build options
             "CMAKE_BUILD_TYPE": "RelWithDebInfo",
             "WARN_BACKWARD_LIMITATIONS": True,
             "REQUIRE_BACKWARD_BACKEND": False,  # TODO:
-            "SOURCE_ROOT_FOR_BACKTRACE": None,  # We will configure this on import
+            "SOURCE_ROOT_FOR_BACKTRACE": None,  # TODO
             # Disable build options
-            "ENABLE_TESTING": False,
+            "ENABLE_TESTING": enable_tests,
             "CPP_CHECK": False,
             "CLANG_TIDY": False,
             "ENABLE_MEMCHECK": False,
@@ -765,33 +779,42 @@ class Claricpp(Library):
             "GMPDIR": GMP.lib_dir,
             "GMP_INCLUDE_DIR": GMP.include_dir,
             "Boost_INCLUDE_DIRS": Boost.root,
+            "Z3_ACQUISITION_MODE": "PATH",
             "Z3_INCLUDE_DIR": Z3.include_dir,
             "Z3_LIB": z3_built,
-            "Z3_ACQUISITION_MODE": "PATH",
         }
         on_off = lambda x: ("ON" if x else "OFF") if type(x) is bool else x
         dd = lambda key, val: "-D" + key + "=" + ("" if val is None else on_off(val))
         return [dd(*i) for i in config.items()]
 
     @classmethod
-    def _cmake(cls, native, build, info_file):
+    def _cmake(cls, native, build):
         print("Configuring...")
-        cmake_args = cls._cmake_config_args(cls.info_file, claricpp)
+        cmake_args = cls._cmake_config_args(claricpp, cls.enable_tests)
         with chdir(build):
             run_cmd_no_fail(find_exe("cmake"), *cmake_args, native)
-        return parse_info_file(info_file)
+
+    @classmethod
+    def generator(cls):
+        """
+        Warning: Will fail if CMake cache does not exist
+        """
+        return parse_cmake_cache(cls.build_dir).CMAKE_MAKE_PROGRAM
 
     def _build(self):
         if not os.path.exists(self.build_dir):
             os.mkdir(self.build_dir)
-        cmake_out = self._cmake(native, self.build_dir, self.info_file)
-        makej, is_make = generator(cmake_out.CMAKE_MAKE_PROGRAM)
+        self._cmake(native, self.build_dir)
+        makej = make_mutliproc(self.generator())
         print("Building " + claricpp + "...")
         with chdir(self.build_dir):
             run_cmd_no_fail(*makej, claricpp)
+            if self.enable_tests:
+                print("Building tests...")
+                run_cmd_no_fail(*makej, "all")
 
     def _license(self):
-        pass
+        pass # Same as main project
 
     def _install(self):
         self._lib.install()
@@ -803,63 +826,35 @@ class Claricpp(Library):
             self._lib.clean_install()
             shutil.rmtree(self._out_src, ignore_errors=True)
         if level.implies(CleanLevel.BUILD):
+            try: # No clue if this stuff even exists
+                with chdir(self.build_dir):
+                    run_cmd_no_fail(self.generator(), "clean")
+            except: # Ignore errors during the above
+                pass
             shutil.rmtree(self.build_dir, ignore_errors=True)
             self._lib.clean_build()
 
 
-class ClaricppFFI(Library):
+class ClaricppAPI(Library):
     """
-    A class to manage ClaricppFFI
+    A class to manage ClaricppAPI
     """
 
-    _build_dir = os.path.join(Claricpp.build_dir, "ffi")
-    _lib = SharedLib("claricpp", _build_dir)
+    _api_target = "clari"
+    _build_dir = os.path.join(Claricpp.build_dir, "src/api")
+    _lib = SharedLib(_api_target, _build_dir)
 
     def __init__(self):
         chk = {self._lib.name: self._lib}
         super().__init__({}, chk, chk, Claricpp())
 
-    @staticmethod
-    def _verify_generator_supported(makej, is_make):
-        if not is_make:  # Make works, not sure about other generators
-            var = "FFI_FORCE_BUILD_dir "
-            if var in os.eniron:
-                print(var + " is set! Forcing build with non-make generator.")
-            else:
-                print("Current generator: ", makej[0])
-                raise RuntimeError(
-                    "Unknown if non-make generators support intermediate file targets. Set the "
-                    + var
-                    + " environment variable to forcibly continue",
-                    file=sys.stderr,
-                )
-
     def _build(self):
-        info = parse_info_file(Claricpp.info_file)
-        intermediate_f = info.CDEFS_SOURCE_F + ".i"
-        include_dirs = info.Python_INCLUDE_DIRS
-        makej, is_make = generator(info.CMAKE_MAKE_PROGRAM)
-        py_version = str(sys.version_info.major) + "." + str(sys.version_info.minor)
-        print("Building " + claricpp + "FFI API...")
-        with chdir(Claricpp.build_dir):
-            # We care about the intermediate file and its target
-            cdefs_target = os.path.relpath(intermediate_f, Claricpp.build_dir)
-            # Build the cdefs intermediate file
-            self._verify_generator_supported(makej, is_make)
-            run_cmd_no_fail(*makej, cdefs_target)
-            # Run build_ffi
-            build_ffi_wrapper(
-                input_lib=claricpp,
-                output_lib=claricpp_ffi,
-                build_dir=Claricpp.build_dir,
-                ffi_dir=self._build_dir,
-                intermediate_f=intermediate_f,
-                include_dirs="/include/python" + py_version + ";" + include_dirs,
-                verbose=True,
-            )
+        print("Building " + self._api_target + "...")
+        with chdir(self._build_dir):
+            run_cmd_no_fail(Claricpp.generator(), self._api_target)
 
     def _license(self):
-        pass
+        pass # Same as main project
 
     def _install(self):
         self._lib.install()
@@ -878,45 +873,43 @@ class ClaricppFFI(Library):
 
 
 class sdist(_sdist):
-    def run(self, *args):
-        f = lambda: ClaricppFFI().get(False)
+    def run(self):
+        f = lambda: ClaricppAPI().get(False)
         self.execute(f, (), msg="Getting build source dependencies")
-        _sdist.run(self, *args)
+        super().run()
 
 
 class build(_build):
-    def run(self, *args):
-        f = lambda: ClaricppFFI().install(False)
-        self.execute(f, (), msg="Getting build source dependencies")
-        _build.run(self, *args)
+    def run(self):
+        f = lambda: ClaricppAPI().install(False) # Native install to the python src location
+        self.execute(f, (), msg="Building native components")
+        super().run()
+
+
+class build_tests(Command):
+    def run(self):
+        Claricpp.enable_tests = True
+        self.run_command("build")
+    def initialize_options(self): pass
+    def finalize_options(self): pass
+    user_options = []
 
 
 class clean(_clean):
-    def run(self, *args):
+    def run(self):
         lvl = os.getenv("SETUP_PY_CLEAN_LEVEL", "get").upper()
         print("Clean level set to: " + lvl)
-        f = lambda: ClaricppFFI().clean(getattr(CleanLevel, lvl))
+        f = lambda: ClaricppAPI().clean(getattr(CleanLevel, lvl))
         self.execute(f, (), msg="Cleaning claripy/native")
-        _clean.run(self, *args)
+        super().run()
 
 
 if __name__ == "__main__":
     setup(
-        name="claripy",
-        version=version,
-        python_requires=">=3.6",
-        packages=find_packages(),
-        install_requires=[
-            "z3-solver>=4.8.5.0",
-            "future",
-            "cachetools",
-            "decorator",
-            "pysmt>=0.9.1.dev119",
-            "six",
-        ],
-        description="An abstraction layer for constraint solvers",
-        url="https://github.com/angr/claripy",
-        cmdclass={"sdist": sdist, "build": build, "clean": clean},
-        include_package_data=True,
-        package_data={"claripy": ["claricpp/*", "claricpp/**/*"]},
+        cmdclass={
+            "sdist": sdist,
+            "build": build,
+            "build_tests": build_tests,
+            "clean": clean,
+        },
     )
