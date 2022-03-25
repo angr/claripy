@@ -3,7 +3,7 @@ include README.md
 include VERSION
 
 prune native
-include native/README.md native/CMakeLists.txt native/build_ffi.py
+include native/README.md native/CMakeLists.txt
 recursive-include native/cmake *
 recursive-include native/src *
 
@@ -12,6 +12,7 @@ include native/Doxyfile.in native/logo.png
 
 # Dependencies
 recursive-include native/backward-cpp *
+recursive-include native/pybind11 *
 recursive-include native/boost *
 recursive-include native/gmp *
 
