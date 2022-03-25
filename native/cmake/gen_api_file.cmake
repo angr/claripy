@@ -3,8 +3,16 @@ include(read_lines)
 include (hash_dir)
 
 # Generates API_SOURCE
-function(gen_api_file API_SOURCE BINDER_DIR) # Append 'must include' files
+function(gen_api_file API_TARGET API_SOURCE BINDER_DIR) # Append 'must include' files
     set(MUST_INCLUDE "${ARGN}")
+
+    # Remove bad auto-gen'd code
+    if (EXISTS "${BINDER_DIR}/std")
+        message(STATUS "Removing auto-generated STL bindings...")
+        file(REMOVE "${BINDER_DIR}/${API_TARGET}.modules")
+        file(REMOVE "${BINDER_DIR}/${API_TARGET}.sources")
+        file(REMOVE_RECURSE "${BINDER_DIR}/std")
+    endif()
 
     # Hash check BINDER_DIR in case clang-format or something broke it
     # This is useful for developers; ex. detecting if clang-format edited autogen'd code
@@ -52,12 +60,6 @@ function(gen_api_file API_SOURCE BINDER_DIR) # Append 'must include' files
         message(FATAL_ERROR "binder directory does not exist; please run binder first")
     endif()
 
-    # Remove bad auto-gen'd code
-    if (EXISTS "${BINDER_DIR}/std")
-        message(STATUS "Removing auto-generated STL bindings...")
-        file(REMOVE_RECURSE "${BINDER_DIR}/std")
-    endif()
-
     # Must includes headers
     set(HEADERS "")
     get_filename_component(API_SOURCE_DIR "${API_SOURCE}" DIRECTORY)
@@ -68,7 +70,7 @@ function(gen_api_file API_SOURCE BINDER_DIR) # Append 'must include' files
 
     # Read in file as list of lines (cannot use file(STRINGS) because semicolons :( )
     message(STATUS "Parsing binder generated code...")
-    set(IN_FILE "${BINDER_DIR}/clari.cpp")
+    set(IN_FILE "${BINDER_DIR}/${API_TARGET}.cpp")
     read_lines("${IN_FILE}" RAW_LINES)
     split_code("${RAW_LINES}" HEADERS BODY_LINES)
 
