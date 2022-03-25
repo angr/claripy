@@ -1,6 +1,5 @@
-from distutils.command.build import build as _build
-from distutils.command.clean import clean as _clean
-from distutils.command.sdist import sdist as _sdist
+from setuptools.command.build_ext import build_ext as BuildExtOriginal
+from setuptools.command.sdist import sdist as SDistOriginal
 from setuptools import setup, Command
 from multiprocessing import cpu_count
 from contextlib import contextmanager
@@ -817,6 +816,7 @@ class Claricpp(Library):
             if self.enable_tests:
                 print("Building tests...")
                 run_cmd_no_fail(*makej, "all")
+                print("Tests built in build dir: " + self.build_dir)
 
     def _license(self):
         pass # Same as main project
@@ -877,44 +877,43 @@ class ClaricppAPI(Library):
 ######################################################################
 
 
-class sdist(_sdist):
+class SDist(SDistOriginal):
     def run(self):
         f = lambda: ClaricppAPI().get(False)
         self.execute(f, (), msg="Getting build source dependencies")
         super().run()
 
 
-class build(_build):
+class BuildExt(BuildExtOriginal):
     def run(self):
         f = lambda: ClaricppAPI().install(False) # Native install to the python src location
         self.execute(f, (), msg="Building native components")
         super().run()
 
-
-class build_tests(Command):
-    def run(self):
-        Claricpp.enable_tests = True
-        self.run_command("build")
+class SimpleCommand(Command):
+    user_options = []
     def initialize_options(self): pass
     def finalize_options(self): pass
-    user_options = []
 
+class BuildTests(SimpleCommand):
+    def run(self):
+        Claricpp.enable_tests = True
+        self.run_command("build_ext")
 
-class clean(_clean):
+class Clean(SimpleCommand):
     def run(self):
         lvl = os.getenv("SETUP_PY_CLEAN_LEVEL", "get").upper()
         print("Clean level set to: " + lvl)
         f = lambda: ClaricppAPI().clean(getattr(CleanLevel, lvl))
         self.execute(f, (), msg="Cleaning claripy/native")
-        super().run()
 
 
 if __name__ == "__main__":
     setup(
         cmdclass={
-            "sdist": sdist,
-            "build": build,
-            "build_tests": build_tests,
-            "clean": clean,
+            "sdist": SDist,
+            "build_ext": BuildExt,
+            "build_tests": BuildTests, # A custom command to build native tests
+            "clean": Clean, # A custom command, makes dev easier
         },
     )
