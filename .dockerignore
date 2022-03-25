@@ -1,0 +1,69 @@
+# Build system
+Dockerfile
+build.sh
+
+# Config files
+.dockerignore
+.editorconfig
+**/.gitignore
+
+# Vim
+**/.ycm_extra_conf.py
+**/*.swp
+**/*.swo
+**/*.swn
+
+# setup.py artifacts
+claripy.egg-info
+MANIFEST
+build
+dist
+
+# Native build artifacts
+native/Doxyfile
+native/.build.*
+native/.cache
+native/build
+
+# External projects
+native/backward-cpp
+native/pybind11
+native/boost
+native/gmp
+
+# Explicit
+native/Ignore/*
+native/ignore/*
+
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
