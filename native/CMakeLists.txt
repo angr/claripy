@@ -56,10 +56,6 @@ default(SOURCE_ROOT_FOR_BACKTRACE "${CMAKE_CURRENT_SOURCE_DIR}")
 default( CLARICPP "claricpp" )
 message("Library name: ${CLARICPP}")
 
-# API Version
-# This is different from version which is read from /VERSION
-default( SOVERSION 1 )
-
 # Run make <DOC_MAKE_TARGET> to build documentation if BUILD_DOC is ON
 # Running make <DOC_MAKE_TARGET> generates html, latex, and man pages
 set( DOC_MAKE_TARGET "docs" )
@@ -295,6 +291,9 @@ if (VERSION STREQUAL "")
 	endif()
 endif()
 message(STATUS "Version: ${VERSION}")
+
+# The API version (on macOS: the compatability version; we support only the current one)
+default( SOVERSION "${VERSION}" )
 
 # Library source
 # Used for compilation and header lookup for tests
@@ -571,8 +570,8 @@ endif()
 # Z3 config
 target_include_directories("${CLARICPP}"
 	SYSTEM BEFORE
-	PRIVATE "${Z3_INCLUDE_DIR}"
-	PRIVATE ${Boost_INCLUDE_DIRS}
+	PUBLIC "${Z3_INCLUDE_DIR}"
+	PUBLIC ${Boost_INCLUDE_DIRS}
 )
 if (NOT GMP_INCLUDE_DIR STREQUAL "")
 	target_include_directories("${CLARICPP}" SYSTEM BEFORE PUBLIC "${GMP_INCLUDE_DIR}")
@@ -588,15 +587,3 @@ if(ENABLE_TESTING)
 	target_link_libraries("${CLARICPP}" PUBLIC dl)
 	add_subdirectory(tests)
 endif()
-
-
-#################################################
-#                                               #
-#               Data for setup.py               #
-#                                               #
-#################################################
-
-
-# Save generator
-default(FOR_SETUP_PY_F "${CMAKE_CURRENT_BINARY_DIR}/setup.txt")
-file(WRITE "${FOR_SETUP_PY_F}" "CMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}\n")

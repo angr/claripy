@@ -22,8 +22,9 @@ gen_api_file(
 message(STATUS "Configuring API target...")
 pybind11_add_module("${API_TARGET}")
 target_sources(clari PRIVATE "${API_SOURCE}" manual.cpp)
-target_include_directories("${API_TARGET}" SYSTEM BEFORE PRIVATE ${Boost_INCLUDE_DIRS})
+target_include_directories("${API_TARGET}" SYSTEM BEFORE PUBLIC "${Z3_INCLUDE_DIR}" PUBLIC ${Boost_INCLUDE_DIRS})
 target_link_libraries("${API_TARGET}" PUBLIC "${CLARICPP}" PUBLIC "${Z3_LINK_TARGET}" PUBLIC "${GMP_LIBRARIES}")
+# TODO: these target_ functions should be inherited from claricpp... why aren't they?
 
 # Code quality exceptions for auto-generated code
 message(STATUS "Permitting and suppressing warnings for auto-generated code...")
