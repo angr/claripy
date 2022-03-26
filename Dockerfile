@@ -106,8 +106,8 @@ ARG VERBOSE=""
 # Constants
 ENV CLARIPY="/claripy/" \
 	VERBOSE="${VERBOSE}" \
-	BUILD="${CLARIPY}/native/build/" \
 	CTEST_OUTPUT_ON_FAILURE="${CTEST_OUTPUT_ON_FAILURE}"
+ENV BUILD="${CLARIPY}/native/build/"
 
 # Get source
 RUN mkdir "${CLARIPY}"
@@ -132,9 +132,9 @@ LABEL stage=sdist
 RUN python setup.py sdist
 
 FROM sdist as build
+# Derive from sdist for speed
 LABEL stage=build
 RUN python setup.py build
-# TODO: is verbose even when VERBOSE=0; fix me
 
 FROM build as bdist_wheel
 LABEL stage=bdist_wheel
@@ -145,6 +145,7 @@ LABEL stage=install
 RUN pip3 install --no-build-isolation --verbose .
 
 FROM sdist as build_tests
+# Derive from sdist for speed
 LABEL stage=build_tests
 RUN python setup.py build_tests
 
