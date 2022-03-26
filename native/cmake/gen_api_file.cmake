@@ -119,6 +119,7 @@ function(gen_api_file API_TARGET API_SOURCE BINDER_DIR) # Append 'must include' 
         list(JOIN BODY_LINES "\n" BODY)
         string(STRIP "${BODY}" BODY)
         string(REPLACE "void bind_" "namespace API::Binder {\nvoid bind_" BODY "${BODY}") # namespace
+        string(REPLACE "PyCallBack_Util_Err_Claricpp, std::exception>" "PyCallBack_Util_Err_Claricpp>" BODY "${BODY}")
         # Add to merged
         file(RELATIVE_PATH FNAME "${API_SOURCE_DIR}" "${NEXT}")
         string(APPEND MERGED "\n\n\n//\n// File: ${FNAME}\n//\n\n\n${BODY}\n} // namespace API::Binder")
