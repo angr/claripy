@@ -8,10 +8,10 @@ function(gen_api_file API_TARGET API_SOURCE BINDER_DIR) # Append 'must include' 
 
     # Remove bad auto-gen'd code
     if (EXISTS "${BINDER_DIR}/std")
-        message(STATUS "Removing auto-generated STL bindings...")
+        message(STATUS "Removing undesired auto-generated code...")
         file(REMOVE "${BINDER_DIR}/${API_TARGET}.modules")
         file(REMOVE "${BINDER_DIR}/${API_TARGET}.sources")
-        file(REMOVE_RECURSE "${BINDER_DIR}/std")
+        file(REMOVE_RECURSE "${BINDER_DIR}/std") # std bindings
     endif()
 
     # Hash check BINDER_DIR in case clang-format or something broke it

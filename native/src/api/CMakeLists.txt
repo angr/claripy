@@ -7,13 +7,14 @@ set(AUTOGEN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/autogen/")
 # API source file name
 # Include binary dir path to avoid clobbering other CMakes
 string(MD5 BD_HASH "${CMAKE_CURRENT_BINARY_DIR}")
-set(API_SOURCE "${AUTOGEN_DIR}/cmake/api.${BD_HASH}.cpp")
+set(API_SOURCE "${AUTOGEN_DIR}/api.${BD_HASH}.cpp")
 message("API source file will be: ${API_SOURCE}")
 
 # Gen API files
 gen_api_file(
+    "${API_TARGET}"
     "${API_SOURCE}"
-    "${AUTOGEN_DIR}/binder/"
+    "${CMAKE_CURRENT_SOURCE_DIR}/binder/"
     "${CMAKE_CURRENT_SOURCE_DIR}/manual.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/headers.hpp"
 )
