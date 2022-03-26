@@ -1,5 +1,6 @@
-from setuptools.command.build_ext import build_ext as BuildExtOriginal
 from setuptools.command.sdist import sdist as SDistOriginal
+from distutils.command.build import build as BuildOriginal
+from distutils.command.clean import clean as CleanOriginal
 from setuptools import setup, Command
 from multiprocessing import cpu_count
 from contextlib import contextmanager
@@ -893,15 +894,17 @@ class SDist(SDistOriginal):
         super().run()
 
 
-class BuildExt(BuildExtOriginal):
+class Build(BuildOriginal):
     def run(self):
         # Build native components and install to the python src location
         f = lambda: ClaricppAPI().install(False)
         self.execute(f, (), msg="Building native components")
+        print("Done building native components")
         super().run()
 
 
-class SimpleCommand(Command):
+class BuildTests(Command):
+
     user_options = []
 
     def initialize_options(self):
@@ -910,14 +913,12 @@ class SimpleCommand(Command):
     def finalize_options(self):
         pass
 
-
-class BuildTests(SimpleCommand):
     def run(self):
         Claricpp.enable_tests = True
-        self.run_command("build_ext")
+        self.run_command("build")
+        print("To test: cd " + Claricpp.build_dir + " && ctest .")
 
-
-class Clean(SimpleCommand):
+class Clean(CleanOriginal):
     def run(self):
         lvl = os.getenv("SETUP_PY_CLEAN_LEVEL", "get").upper()
         print("Clean level set to: " + lvl)
@@ -929,7 +930,7 @@ if __name__ == "__main__":
     setup(
         cmdclass={
             "sdist": SDist,
-            "build_ext": BuildExt,
+            "build": Build,
             "build_tests": BuildTests,  # A custom command to build native tests
             "clean": Clean,  # A custom command, makes dev easier
         },
