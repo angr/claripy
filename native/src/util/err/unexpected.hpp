@@ -45,22 +45,22 @@ namespace Util::Err {
     UTIL_ERR_DEFINE_FINAL_EXCEPTION(BadVariantAccess, Unexpected);
 
     /** Raised when a virtual function that should have been overridden was called */
-    UTIL_ERR_DEFINE_FINAL_EXCEPTION(MissingVirtualFunction, Claricpp);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(MissingVirtualFunction, Unexpected);
 
     /** Raised when a function is given invalid arguments */
-    UTIL_ERR_DEFINE_FINAL_EXCEPTION(Usage, Claricpp);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(Usage, Unexpected);
 
     /** Raised when a recurrence guarded function recurses too many times */
-    UTIL_ERR_DEFINE_FINAL_EXCEPTION(RecurrenceLimit, Claricpp);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(RecurrenceLimit, Unexpected);
 
     /** Raised when something unknown occurs */
-    UTIL_ERR_DEFINE_FINAL_EXCEPTION(Unknown, Claricpp);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(Unknown, Unexpected);
 
     /** Raised when an unsupported op is invoked */
-    UTIL_ERR_DEFINE_FINAL_EXCEPTION(NotSupported, Claricpp);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(NotSupported, Unexpected);
 
     /** Raised when a dynamic type error occurs */
-    UTIL_ERR_DEFINE_FINAL_EXCEPTION(Type, Claricpp);
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(Type, Unexpected);
 
 } // namespace Util::Err
 
