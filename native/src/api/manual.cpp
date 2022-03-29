@@ -26,35 +26,35 @@ namespace py = pybind11;
         }                                                                                          \
     })
 
-/** Register unexpected Claricpp exceptions with pybind11 */
-static void register_unexpected(py::module_ &m, const py::handle &claricpp) {
+/** Register internal Claricpp exceptions with pybind11 */
+static void register_internal(py::module_ &m, const py::handle &claricpp) {
 /** A macro for brevity and consistency; provides a standard name */
-#define REGISTER_UNEXPECTED_SUB(TYPE, BASE)                                                        \
+#define REGISTER_INTERNAL(TYPE, BASE)                                                              \
     py::register_exception<Util::Err::TYPE>(m, "internal." #TYPE, (BASE))
     // C++ exceptions; if python receives these, something went very wrong
     // Python functions do not need to plan for these, crashing should be ok
-    // The base unexpected method, this is a fallback
-    const auto unexpected { REGISTER_UNEXPECTED_SUB(Unexpected, claricpp) };
+    // The base internal method, this is a fallback
+    const auto internal { REGISTER_INTERNAL(Internal, claricpp) };
     // Collisions
-    const auto collision { REGISTER_UNEXPECTED_SUB(Collision, unexpected) };
-    REGISTER_UNEXPECTED_SUB(HashCollision, collision);
+    const auto collision { REGISTER_INTERNAL(Collision, internal) };
+    REGISTER_INTERNAL(HashCollision, collision);
     // Directly derived classes
     // Note: some of these map to python builtin exception types
     // We choose not to map these to that, however, as these are internal claricpp exceptions
-    // We thus choose to let them derive Unexpected instead.
-    REGISTER_UNEXPECTED_SUB(Null, unexpected);
-    REGISTER_UNEXPECTED_SUB(BadPath, unexpected);
-    REGISTER_UNEXPECTED_SUB(Syscall, unexpected);
-    REGISTER_UNEXPECTED_SUB(Size, unexpected);
-    REGISTER_UNEXPECTED_SUB(Index, unexpected);
-    REGISTER_UNEXPECTED_SUB(BadCast, unexpected);
-    REGISTER_UNEXPECTED_SUB(BadVariantAccess, unexpected);
-    REGISTER_UNEXPECTED_SUB(MissingVirtualFunction, unexpected);
-    REGISTER_UNEXPECTED_SUB(Usage, unexpected);
-    REGISTER_UNEXPECTED_SUB(RecurrenceLimit, unexpected);
-    REGISTER_UNEXPECTED_SUB(Unknown, unexpected);
-    REGISTER_UNEXPECTED_SUB(NotSupported, unexpected);
-    REGISTER_UNEXPECTED_SUB(Type, unexpected);
+    // We thus choose to let them derive Internal instead.
+    REGISTER_INTERNAL(Null, internal);
+    REGISTER_INTERNAL(BadPath, internal);
+    REGISTER_INTERNAL(Syscall, internal);
+    REGISTER_INTERNAL(Size, internal);
+    REGISTER_INTERNAL(Index, internal);
+    REGISTER_INTERNAL(BadCast, internal);
+    REGISTER_INTERNAL(BadVariantAccess, internal);
+    REGISTER_INTERNAL(MissingVirtualFunction, internal);
+    REGISTER_INTERNAL(Usage, internal);
+    REGISTER_INTERNAL(RecurrenceLimit, internal);
+    REGISTER_INTERNAL(Unknown, internal);
+    REGISTER_INTERNAL(NotSupported, internal);
+    REGISTER_INTERNAL(Type, internal);
 }
 
 /** Register generic python exceptions with pybind11 */
@@ -67,21 +67,21 @@ static void register_generic_python(py::module_ &m, const py::handle &py_base) {
 /** Register claripy exceptions with pybind11 */
 static void register_claripy(py::module_ &m, const py::handle &python) {
 /** A macro for brevity and consistency; provides a standard name */
-#define REGISTER_CLARIPY_SUB(NS, TYPE, BASE)                                                       \
+#define REGISTER_CLARIPY(NS, TYPE, BASE)                                                           \
     py::register_exception<NS::TYPE>(m, "claripy." #TYPE "Error", BASE)
     // The base claripy exception; this is a fallback and useful for grouping, but should be unused
-    const auto claripy { REGISTER_CLARIPY_SUB(Util::Err::Python, Claripy, python) };
+    const auto claripy { REGISTER_CLARIPY(Util::Err::Python, Claripy, python) };
     // Error::Backend
     namespace EBa = Error::Backend;
-    REGISTER_CLARIPY_SUB(EBa, Abstraction, claripy);
-    REGISTER_CLARIPY_SUB(EBa, Unsupported, claripy);
+    REGISTER_CLARIPY(EBa, Abstraction, claripy);
+    REGISTER_CLARIPY(EBa, Unsupported, claripy);
     // Error::Expr
     namespace EEx = Error::Expr;
     TRANSLATE_EXC(EEx::Value, PyExc_ValueError); // prefer python builtin
     TRANSLATE_EXC(EEx::Type, PyExc_TypeError);   // prefer python builtin
-    REGISTER_CLARIPY_SUB(EEx, Operation, claripy);
-    REGISTER_CLARIPY_SUB(EEx, Usage, claripy);
-    REGISTER_CLARIPY_SUB(EEx, Size, claripy);
+    REGISTER_CLARIPY(EEx, Operation, claripy);
+    REGISTER_CLARIPY(EEx, Usage, claripy);
+    REGISTER_CLARIPY(EEx, Size, claripy);
 }
 
 /** Register exceptions with pybind11 */
@@ -97,7 +97,7 @@ static void register_exceptions(py::module_ &m) {
     // C API and thus also in pybind11, we permit some types to map to python builtin exceptions
     // Ex., Util::Err::Python::Runtime, maps to a subclass of python's RuntimeError, nothing else
     // Note, however, that we do not require it if it makes more sense not to
-    register_unexpected(m, claricpp);
+    register_internal(m, claricpp);
     register_generic_python(m, python);
     register_claripy(m, python);
 }

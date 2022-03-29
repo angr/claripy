@@ -33,7 +33,7 @@ int UnitTest::TestLib::test_func(TestFN &f) {
         return EXIT_FAILURE;
     }
     // If there was a different error, note so and fail
-    CATCH_ERROR(Util::Err::Unexpected)
+    CATCH_ERROR(Util::Err::Internal)
     CATCH_ERROR(Util::Err::Python::Base)
     CATCH_ERROR(Util::Err::Claricpp)
     catch (std::exception &e) {
