@@ -107,7 +107,7 @@ function(gen_api_file API_TARGET API_SOURCE BINDER_DIR) # Append 'must include' 
 
     # Insert manual invocation
     message(STATUS "Generating main source code...")
-    string(APPEND MERGED "\n\n\t// Manual API call\n\tAPI::bind_manual(M);\n}")
+    string(APPEND MERGED "\n\n\t// Manual API call\n\tAPI::bind_manual(root_module);\n}")
 
     # Add source files
     message(STATUS "Merging auto-generated source files...")
