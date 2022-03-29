@@ -48,7 +48,7 @@ RUN apt-get install -yq \
 # To avoid installing cmake twice I'm installing it from pip once before everything else
 # Z3 does not declare native dependencies like cmake, even if they have pip packages :(
 
-RUN pip3 install cmake # CMake (apt cmake is ancient)
+RUN pip3 install cmake # CMake (apt cmake is ancient) and z3 doesn't declare this as a pip dependency
 RUN pip3 install wheel # Z3 fails to declare this as a dependency; TODO: PR a fix
 
 # TODO: remove once Z3 fixes broken ELF header thing

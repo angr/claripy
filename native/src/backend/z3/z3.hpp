@@ -63,7 +63,7 @@ namespace Backend::Z3 {
                     return abstract(b_obj);
                 }
                 default: {
-                    Util::Log::info("Z3 Backend will not simplify expr with CUID: ", expr->cuid);
+                    Util::Log::info("Z3 Backend cannot simplify expr of type: ", expr->type_name());
 #ifdef DEBUG
                     auto ret { Expr::find(expr->hash) };
                     UTIL_ASSERT_EMPTY(Util::Err::HashCollision, ret.get() == expr);
