@@ -1,3 +1,5 @@
+import string
+
 from setuptools.command.sdist import sdist as SDistOriginal
 from distutils.command.build import build as BuildOriginal
 from distutils.command.clean import clean as CleanOriginal
@@ -12,6 +14,7 @@ import subprocess
 import requests
 import platform
 import tempfile
+import string
 import shutil
 import sys
 import os
@@ -559,12 +562,17 @@ class GMP(Library):
         lib_type = StaticLib if is_static else SharedLib
         self._lib = lib_type(self._lib.name, self._lib.build_dir)
 
-    def _run(self, name, *args):
+    def _run(self, name, *args, _count = 0):
         """
         A wrapper for run
+        _count should only be used by this function
         """
-        log_n = "setup-py-" + re.sub(r"\W+", "", args[0]) + ".log"
-        log_f = os.path.join(self._build_dir, log_n)
+        whitelist = string.ascii_lowercase + string.digits + "_-"
+        log_f = "".join([i for i in name.lower().replace(" ", "_") if i in whitelist])
+        log_f = os.path.join(self._build_dir, "setup-py-" + log_f)
+        log_f += ('' if _count == 0 else "_" + str(_count)) + '.log'
+        if os.path.exists(log_f):
+            return self._run(name, *args, _count = _count + 1)
         with open(log_f, "w") as f:
             print(name + "...")
             print("  - Output file: " + log_f)
@@ -735,9 +743,6 @@ class Pybind11(Library):
     """
 
     def __init__(self):
-        # TODO: https://sourceware.org/elfutils/
-        # TODO: https://sourceware.org/elfutils/ftp/0.186/
-        # TODO: these depend on libdebuginfod (=dummy is an option?)
         super().__init__({}, {}, {})
 
     def _get(self):
