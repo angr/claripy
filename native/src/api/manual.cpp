@@ -86,20 +86,18 @@ static void register_claripy(py::module_ &m, const py::handle &python) {
 
 /** Register exceptions with pybind11 */
 static void register_exceptions(py::module_ &m) {
-    namespace UE = Util::Err;
-    namespace UEP = UE::Python;
     // Base exceptions
     // Ideally, these should not be used; they are fallbacks and useful for grouping
-    const auto claricpp { py::register_exception<UE::Claricpp>(m, "BaseError") };
-    const auto python { py::register_exception<UEP::Base>(m, "PythonError", claricpp) };
+    const auto base { py::register_exception<Util::Err::Claricpp>(m, "BaseError") };
+    const auto py_e { py::register_exception<Util::Err::Python::Base>(m, "PythonError", base) };
     // Derived and builtin derived exceptions
     // Note: Since we *cannot* do multiple inheritance due to a limitation in the python
     // C API and thus also in pybind11, we permit some types to map to python builtin exceptions
     // Ex., Util::Err::Python::Runtime, maps to a subclass of python's RuntimeError, nothing else
     // Note, however, that we do not require it if it makes more sense not to
-    register_internal(m, claricpp);
-    register_generic_python(m, python);
-    register_claripy(m, python);
+    register_internal(m, base);
+    register_generic_python(m, py_e);
+    register_claripy(m, py_e);
 }
 
 
@@ -110,4 +108,6 @@ static void register_exceptions(py::module_ &m) {
 
 void API::bind_manual(py::module_ &m) {
     register_exceptions(m);
+    // TODO: link logging systems (link classes and add + bind some init_logging() function)
+    // TODO: hookup simplify (link classes and add + bind some init_simplify() function)
 }
