@@ -982,9 +982,15 @@ class SimplificationManager:
         If the high bits of b are all zeros (in case of __eq__) or have at least one ones (in case of __ne__), ZeroExt
         can be eliminated.
         """
-        if op in {operator.__eq__, operator.__ne__} and a.op == "ZeroExt" and b.op == "BVV":
+        if op in {operator.__eq__, operator.__ne__} and b.op == "BVV":
             # check if the high bits of b are zeros
-            a_zeroext_bits = a.args[0]
+            if a.op == "ZeroExt":
+                a_zeroext_bits = a.args[0]
+            elif a.op == "Concat" and len(a.args) == 2 and (a.args[0] == 0).is_true():
+                a_zeroext_bits = a.args[0].size()
+            else:
+                return None
+
             b_highbits = b[b.size() - 1 : b.size() - a_zeroext_bits]
             if (b_highbits == 0).is_true():
                 # we can get rid of ZeroExt
