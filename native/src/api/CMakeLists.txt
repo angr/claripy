@@ -2,13 +2,12 @@ include(gen_api_file)
 
 # Config
 set(API_TARGET clari)
-set(AUTOGEN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/autogen/")
+set(API_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/autogen.cpp")
 
 # API source file name
 # Include binary dir path to avoid clobbering other CMakes
 string(MD5 BD_HASH "${CMAKE_CURRENT_BINARY_DIR}")
-set(API_SOURCE "${AUTOGEN_DIR}/api.${BD_HASH}.cpp")
-message("API source file will be: ${API_SOURCE}")
+message("API autogen source file will be: ${API_SOURCE}")
 
 # Gen API files
 gen_api_file(

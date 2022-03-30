@@ -110,4 +110,5 @@ void API::bind_manual(py::module_ &m) {
     register_exceptions(m);
     // TODO: link logging systems (link classes and add + bind some init_logging() function)
     // TODO: hookup simplify (link classes and add + bind some init_simplify() function)
+    // TODO: python operators; == should not work as it does!
 }
