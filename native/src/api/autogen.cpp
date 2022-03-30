@@ -2,6 +2,7 @@
 
 #include "manual.hpp"
 #include "headers.hpp"
+#include "constants.hpp"
 #include <map>
 #include <memory>
 #include <stdexcept>
@@ -137,7 +138,7 @@ PYBIND11_MODULE(clari, root_module) {
 		{"Util::Cast", "Static"},
 		{"Util", "Err"},
 		{"Util::Err", "Python"},
-		{"", "std"},
+		{"", "API"},
 	};
 	for(auto &p : sub_modules ) modules[p.first.size() ? p.first+"::"+p.second : p.second] = modules[p.first].def_submodule( mangle_namespace_name(p.second).c_str(), ("Bindings for " + p.first + "::" + p.second + " namespace").c_str() );
 
@@ -198,7 +199,7 @@ PYBIND11_MODULE(clari, root_module) {
 	API::Binder::bind_unknown_unknown_52(M);
 
 	// Manual API call
-	API::bind_manual(root_module);
+	API::bind_manual(root_module, M);
 }
 
 
