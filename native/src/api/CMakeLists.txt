@@ -9,22 +9,32 @@ set(API_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/autogen.cpp")
 string(MD5 BD_HASH "${CMAKE_CURRENT_BINARY_DIR}")
 message("API autogen source file will be: ${API_SOURCE}")
 
+# Headers
+set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/manual.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/headers.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/constants.hpp"
+)
+
 # Gen API files
 gen_api_file(
     "${API_TARGET}"
     "${API_SOURCE}"
     "${CMAKE_CURRENT_SOURCE_DIR}/binder/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/manual.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/headers.hpp"
+    ${HEADERS}
 )
 
 # Configure target
 message(STATUS "Configuring API target...")
 pybind11_add_module("${API_TARGET}")
-target_sources(clari PRIVATE "${API_SOURCE}" manual.cpp)
 target_include_directories("${API_TARGET}" SYSTEM BEFORE PUBLIC "${Z3_INCLUDE_DIR}" PUBLIC ${Boost_INCLUDE_DIRS})
 target_link_libraries("${API_TARGET}" PUBLIC "${CLARICPP}" PUBLIC "${Z3_LINK_TARGET}" PUBLIC "${GMP_LIBRARIES}")
 # TODO: these target_ functions should be inherited from claricpp... why aren't they?
+target_sources(clari PRIVATE "${API_SOURCE}"
+    exceptions.cpp
+    manual.cpp
+    log.cpp
+)
 
 # Code quality exceptions for auto-generated code
 message(STATUS "Permitting and suppressing warnings for auto-generated code...")
