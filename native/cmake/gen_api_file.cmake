@@ -110,9 +110,11 @@ function(gen_api_file API_TARGET API_SOURCE BINDER_DIR) # Append 'must include' 
     string(SUBSTRING "${BODY_LINES}" 0 "${INDEX}" BODY_LINES)
 
     # Generate output string
+    # This also strips out std stuff and adds an API namespace
     set(MERGED "namespace API::Binder {\n\n${DECLS}\n\n} // namespace API::Binder\n\n\n")
     foreach(LINE IN LISTS BODY_LINES)
         if (NOT "${LINE}" MATCHES "bind_std") # strip out std stuff; list(FILTER) cannot handle ';'s
+            string(REPLACE "{\"\", \"std\"}," "{\"\", \"API\"}," LINE "${LINE}") # Create API namespace and kill std
             string(REPLACE "ModuleGetter" "API::Binder::ModuleGetter" LINE "${LINE}") # namespace
             string(REPLACE "bind_" "API::Binder::bind_" LINE "${LINE}") # namespace
             string(APPEND MERGED "${LINE}\n")
@@ -122,7 +124,7 @@ function(gen_api_file API_TARGET API_SOURCE BINDER_DIR) # Append 'must include' 
 
     # Insert manual invocation
     message(STATUS "Generating main source code...")
-    string(APPEND MERGED "\n\n\t// Manual API call\n\tAPI::bind_manual(root_module);\n}")
+    string(APPEND MERGED "\n\n\t// Manual API call\n\tAPI::bind_manual(root_module, M);\n}")
 
     # Add source files
     message(STATUS "Merging auto-generated source files...")
