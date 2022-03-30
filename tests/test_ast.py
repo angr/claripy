@@ -1,5 +1,3 @@
-import nose.tools
-
 import claripy
 
 
