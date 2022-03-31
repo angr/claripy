@@ -7,6 +7,7 @@
 
 #include "constants.hpp"
 
+
 namespace Simplify {
 
     /** Generates a Vec of built in simplifiers to be used on all Exprs */

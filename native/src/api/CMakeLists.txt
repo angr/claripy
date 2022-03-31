@@ -32,6 +32,7 @@ target_link_libraries("${API_TARGET}" PUBLIC "${CLARICPP}" PUBLIC "${Z3_LINK_TAR
 # TODO: these target_ functions should be inherited from claricpp... why aren't they?
 target_sources(clari PRIVATE "${API_SOURCE}"
     exceptions.cpp
+    simplify.cpp
     manual.cpp
     log.cpp
 )

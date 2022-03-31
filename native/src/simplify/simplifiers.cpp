@@ -182,14 +182,8 @@ namespace Bitwise {
 
 // From header
 
-/** A local macro for consistency */
-#define ENTRY(X, ...)                                                                              \
-    {                                                                                              \
-        (::Op::X::static_cuid), { __VA_ARGS__ }                                                    \
-    }
-
 Simplify::Vec Simplify::builtin_vec() {
-    return {};
+    return {}; // No universal simplifier right now
 }
 
 Simplify::Map Simplify::builtin_map() {
@@ -197,10 +191,9 @@ Simplify::Map Simplify::builtin_map() {
     Util::sink(concat, BV::reverse, Shift::r, Shift::l, Shift::lshr, eq, ne, Boolean::and_,
                Boolean::or_, Boolean::not_, Bitwise::add, Bitwise::mul, Bitwise::sub,
                Bitwise::xor_minmax, Bitwise::or_, Bitwise::and_, Bitwise::xor_);
-    return {
-        ENTRY(If, if_),
-    };
+/** A local macro for consistency */
+#define ENTRY(OPT, FUNC_POINTER) ret[::Op::OPT::static_cuid].emplace_back(FUNC_POINTER);
+    Map ret;
+    ENTRY(If, if_);
+    return ret;
 }
-
-// Cleanup
-#undef ENTRY

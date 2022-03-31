@@ -6,6 +6,7 @@
 #define R_SIMPLIFY_MANAGER_HPP_
 
 #include "constants.hpp"
+#include "simplifiers.hpp"
 
 #include "../op.hpp"
 
@@ -17,6 +18,9 @@ namespace Simplify {
      */
     class Manager {
       public:
+        /** Constructor */
+        inline Manager() : vec { builtin_vec() }, map { builtin_map() } {}
+
         /** Simplify old and return the result
          *  old may not be nullptr
          *  Note: Calls simplifiers in op_map first in order of the vector, then the base vector
@@ -43,22 +47,12 @@ namespace Simplify {
 
         // Adders
 
-        /** Add a simplifier function to use on Exprs of the given op cuid */
-        inline void register_(const CUID::CUID cuid, CTSC<Func> func) {
-            {
-                auto [m, lock] { map.unique() };
-                add_to_vec(m[cuid], func);
-            }
-            Util::Log::debug<SimplifyLog>("Simplify::Manager registered new op simplifier");
-        }
-
-        /** Add a simplifier function to use on all Exprs */
-        inline void register_(CTSC<Func> func) {
-            {
-                auto [v, lock] { vec.unique() };
-                add_to_vec(v, func);
-            }
-            Util::Log::info<SimplifyLog>("Simplify::Manager registered new global simplifier");
+        /** Add a simplifier function to use on Exprs of the given op cuid
+         *  nullptr is permitted
+         */
+        inline void set_python_simplifier(const std::function<Func> &func) {
+            Util::Log::info<SimplifyLog>("Simplify::Manager set python simplifier");
+            py_simp = func;
         }
 
       private:
@@ -69,31 +63,20 @@ namespace Simplify {
             UTIL_ASSERT_NOT_NULL_DEBUG(old->op); // Sanity check
             Expr::BasePtr ret { old };
             // Op map
-            {
-                auto [m, lock] = map.shared();
-                if (const auto itr { m.find(old->op->cuid) }; itr != m.end()) {
-                    for (const auto &f : itr->second) {
-                        ret = f(ret);
-                    }
-                }
-            }
-            // Base vector
-            {
-                auto [v, lock] = vec.shared();
-                for (const auto &f : v) {
+            if (const auto itr { map.find(old->op->cuid) }; itr != map.end()) {
+                for (const auto &f : itr->second) {
                     ret = f(ret);
                 }
             }
-            return ret;
-        }
-
-        /** Add a simplifier function to the vector */
-        static inline void add_to_vec(Vec &v, CTSC<Func> f) {
-            for (const auto i : v) {
-                UTIL_ASSERT(Util::Err::Python::Runtime, i != f,
-                            "Given simplifier already in op_map");
+            // Base vector
+            for (const auto &f : vec) {
+                ret = f(ret);
             }
-            v.emplace_back(f);
+            // Python simplifier
+            if (UNLIKELY(py_simp)) {
+                ret = py_simp(ret);
+            }
+            return ret;
         }
 
         // Representation
@@ -102,9 +85,12 @@ namespace Simplify {
         Util::WeakCache<Hash::Hash, Expr::Base> wcache {};
 
         /** Simplifiers that run on all ops */
-        static Util::ThreadSafe::Mutable<Vec> vec;
+        const Vec vec;
         /** Determines which functions to run on which ops */
-        static Util::ThreadSafe::Mutable<Map> map;
+        const Map map;
+
+        /** Python simplifier */
+        std::function<Func> py_simp { nullptr };
     };
 
 } // namespace Simplify
