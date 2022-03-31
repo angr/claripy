@@ -30,7 +30,7 @@ namespace API {
         /** The python logging function
          *  Note: we choose to store a reference in case pybind11 cleans up internally on shutdown
          */
-        const Func &py_log;
+        const Func py_log;
     };
 } // namespace API
 

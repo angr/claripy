@@ -10,6 +10,5 @@ void API::bind_manual(pybind11::module_ &root_module, Binder::ModuleGetter &m) {
     API::bind_exceptions(root_module);
     API::bind_simplify_init(m);
     API::bind_log_init(m);
-    // TODO: hookup simplify (link classes and add + bind some init_simplify() function)
     // TODO: python operators; this should probably be fixed in python, not C++
 }
