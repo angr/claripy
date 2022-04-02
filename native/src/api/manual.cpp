@@ -1,7 +1,6 @@
 #include "manual.hpp"
 
 #include "exceptions.hpp"
-#include "headers.hpp"
 #include "log.hpp"
 #include "simplify.hpp"
 

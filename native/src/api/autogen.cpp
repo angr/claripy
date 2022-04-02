@@ -30,6 +30,9 @@
 //
 
 
+/** The name of the root module */
+CCSC API::root_mod_name {"clari"};
+
 namespace API::Binder {
 
 typedef std::function< pybind11::module & (std::string const &) > ModuleGetter;
