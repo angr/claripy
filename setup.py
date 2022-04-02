@@ -598,7 +598,7 @@ class GMP(Library):
             ]
             self._set_lib_type(self._run("Configuring", "./configure", *config_args))
             # Building + Checking
-            makej = make_mutliproc(find_exe("make"))
+            makej = make_mutliproc(find_exe("make")) # We need make for this step
             _ = self._run("Building GMP", *makej)
             _ = self._run("Checking GMP build", *makej, "check")
             # Include dir
@@ -871,7 +871,8 @@ class ClaricppAPI(Library):
     def _build(self):
         print("Building " + self._api_target + "...")
         with chdir(self._build_dir):
-            run_cmd_no_fail(Claricpp.generator(), self._api_target)
+            makej = make_mutliproc(Claricpp.generator())
+            run_cmd_no_fail(*makej, self._api_target)
 
     def _license(self):
         pass  # Same as main project
