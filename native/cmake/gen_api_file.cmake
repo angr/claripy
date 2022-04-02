@@ -3,6 +3,9 @@ include(read_lines)
 include(is_eldest)
 include(hash_dir)
 
+# The root module name
+set(ROOT_MOD_NAME clari)
+
 # Helper function
 function(_use_existing API_SOURCE BINDER_DIR MUST_INCLUDE RET_VAR)
     set("${RET_VAR}" FALSE PARENT_SCOPE)
@@ -109,7 +112,15 @@ function(gen_api_file API_TARGET API_SOURCE BINDER_DIR) # Append 'must include' 
     endif()
     string(SUBSTRING "${BODY_LINES}" 0 "${INDEX}" BODY_LINES)
 
-    # Generate output string
+    # Root module name replacements
+    string(REGEX REPLACE "^PYBIND11_MODULE\\([a-zA-Z0-9_]+, root_module\\) {"
+            "PYBIND11_MODULE(${ROOT_MOD_NAME}, root_module) {"
+            BODY_LINES "${BODY_LINES}")
+    string(REGEX REPLACE "root_module\\.doc\\(\\) = \"[a-zA-Z0-9_]+ module\""
+            "root_module.doc() = \"${ROOT_MOD_NAME} module\""
+            BODY_LINES "${BODY_LINES}")
+
+    # Generate beginning of output string
     # This also strips out std stuff and adds an API namespace
     set(MERGED "namespace API::Binder {\n\n${DECLS}\n\n} // namespace API::Binder\n\n\n")
     foreach(LINE IN LISTS BODY_LINES)
@@ -122,9 +133,10 @@ function(gen_api_file API_TARGET API_SOURCE BINDER_DIR) # Append 'must include' 
     endforeach()
     string(STRIP "${MERGED}" MERGED)
 
-    # Insert manual invocation
+    # Insert manual invocation and macros
     message(STATUS "Generating main source code...")
     string(APPEND MERGED "\n\n\t// Manual API call\n\tAPI::bind_manual(root_module, M);\n}")
+    string(PREPEND MERGED "/** The name of the root module */\nCCSC API::root_mod_name {\"${ROOT_MOD_NAME}\"};\n\n")
 
     # Add source files
     message(STATUS "Merging auto-generated source files...")
