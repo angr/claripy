@@ -55,9 +55,13 @@ namespace Op {
          */
         inline std::vector<ArgVar> python_children() const final { return { left, right }; }
 
-        /** Python's repr function (outputs json) */
-        inline void repr(std::ostream &out) const override {
-            repr_helper(out);
+        /** repr */
+        inline void append_repr(std::ostream &out) const override {
+            out << R"|({ "name":")|" << op_name() << R"|(", "consider_size":)|" << std::boolalpha
+                << ConsiderSize << R"|(, "left":)|";
+            left->repr(out);
+            out << R"|(, "right":)|";
+            right->repr(out);
             out << " }";
         }
 
@@ -71,15 +75,6 @@ namespace Op {
             const bool same { Expr::are_same_type<ConsiderSize>(left, right) };
             UTIL_ASSERT(Error::Expr::Type, same, "left and right differ by type",
                         ConsiderSize ? " or size" : "");
-        }
-
-        /** Python's repr function (outputs json), but without the closing '}' */
-        inline void repr_helper(std::ostream &out) const {
-            out << R"|({ "name":")|" << op_name() << R"|(", "consider_size":)|" << std::boolalpha
-                << ConsiderSize << R"|(, "left":)|";
-            left->repr(out);
-            out << R"|(, "right":)|";
-            right->repr(out);
         }
     };
 

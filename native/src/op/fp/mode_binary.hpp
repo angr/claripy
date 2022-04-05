@@ -40,8 +40,8 @@ namespace Op::FP {
         /** Right operand */
         const Expr::BasePtr right;
 
-        /** Python's repr function (outputs json) */
-        inline void repr(std::ostream &out) const final {
+        /** repr */
+        inline void append_repr(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "mode":)|" << Util::to_underlying(mode)
                 << R"|(, "left":)|";
             left->repr(out);

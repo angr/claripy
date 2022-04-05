@@ -28,8 +28,8 @@ namespace Op::String {
          */
         const Expr::BasePtr full_string;
 
-        /** Python's repr function (outputs json) */
-        inline void repr(std::ostream &out) const final {
+        /** repr */
+        inline void append_repr(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "start_index":)|";
             start_index->repr(out);
             out << R"|(, "count":)|";

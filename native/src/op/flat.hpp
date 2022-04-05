@@ -90,8 +90,8 @@ namespace Op {
         /** Return ConsiderSize */
         inline bool consider_size() const noexcept final { return ConsiderSize; }
 
-        /** Python's repr function (outputs json) */
-        inline void repr(std::ostream &out) const final {
+        /** repr */
+        inline void append_repr(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "consider_size":)|" << std::boolalpha
                 << ConsiderSize << R"|(, "args":[ )|";
             operands[0]->repr(out);

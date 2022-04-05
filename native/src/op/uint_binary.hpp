@@ -38,8 +38,8 @@ namespace Op {
         /* Integer operand */
         const U64 integer;
 
-        /** Python's repr function (outputs json) */
-        inline void repr(std::ostream &out) const final {
+        /** repr */
+        inline void append_repr(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "expr":)|";
             expr->repr(out);
             out << R"|(, "integer":)|" << integer << " }";

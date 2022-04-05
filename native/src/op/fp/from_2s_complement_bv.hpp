@@ -23,8 +23,8 @@ namespace Op::FP {
         /** The fp width to convert to */
         const Mode::FP::Width width;
 
-        /** Python's repr function (outputs json) */
-        inline void repr(std::ostream &out) const final {
+        /** repr */
+        inline void append_repr(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(, "rounding mode":)|"
                 << Util::to_underlying(mode) << R"|(, "bv":)|";
             bv->repr(out);

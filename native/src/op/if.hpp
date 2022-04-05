@@ -24,8 +24,8 @@ namespace Op {
         /** If false expr */
         const Expr::BasePtr if_false;
 
-        /** Python's repr function (outputs json) */
-        inline void repr(std::ostream &out) const final {
+        /** repr */
+        inline void append_repr(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "cond":)|";
             cond->repr(out);
             out << R"|(, "if_true":)|";

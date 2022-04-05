@@ -32,8 +32,8 @@ namespace Op {
             }
         }
 
-        /** Python's repr function (outputs json) */
-        inline void repr(std::ostream &out) const final {
+        /** repr */
+        inline void append_repr(std::ostream &out) const final {
 
 /** A local macro used for consistency */
 #define VCASE_PRE(INDEX, TYPE)                                                                     \

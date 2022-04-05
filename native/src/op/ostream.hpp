@@ -11,13 +11,13 @@
 
 namespace Op {
 
-    /** Overload the << stream operator to use repr */
+    /** Overload the << stream operator to use append_repr */
     inline std::ostream &operator<<(std::ostream &os, const Op::Base *p) {
-        p->repr(os);
+        p->append_repr(os);
         return os;
     }
 
-    /** Overload the << stream operator to use repr */
+    /** Overload the << stream operator to use append_repr */
     inline std::ostream &operator<<(std::ostream &os, const BasePtr &p) {
         os << p.get();
         return os;

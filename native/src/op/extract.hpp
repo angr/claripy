@@ -22,8 +22,8 @@ namespace Op {
         /** What we extract from */
         const Expr::BasePtr from;
 
-        /** Python's repr function (outputs json) */
-        inline void repr(std::ostream &out) const final {
+        /** repr */
+        inline void append_repr(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "high":)|" << high << R"|(, "low":)|"
                 << low << R"|(, "from":)|";
             from->repr(out);

@@ -34,8 +34,8 @@ namespace Op {
         /** The operand */
         const Expr::BasePtr child;
 
-        /** Python's repr function (outputs json) */
-        inline void repr(std::ostream &out) const final {
+        /** repr */
+        inline void append_repr(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "child":)|";
             child->repr(out);
             out << " }";

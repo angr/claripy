@@ -41,8 +41,8 @@ namespace Op {
         /** Third operand */
         const Expr::BasePtr third;
 
-        /** Python's repr function (outputs json) */
-        inline void repr(std::ostream &out) const final {
+        /** repr */
+        inline void append_repr(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "consider_size":)|" << std::boolalpha
                 << ConsiderSize << R"|(, "first":)|";
             first->repr(out);

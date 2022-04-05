@@ -29,13 +29,19 @@ namespace Annotation {
         }
         /** Internal vector */
         const RawVec vec;
-        /** repr */
-        inline void repr(std::ostream &o) const {
+        /** Fast append_repr append */
+        inline void append_repr(std::ostream &o) const {
             o << R"|({"size":)|" << vec.size() << R"|(, "values": [)|";
             for (U64 i { 0 }; i < vec.size(); ++i) {
                 o << (i == 0 ? " \"" : ", \"") << vec[i]->name() << '"';
             }
             o << " ] }";
+        }
+        /** Fast append_repr */
+        inline std::string repr() const {
+            std::ostringstream r;
+            append_repr(r);
+            return r.str();
         }
     };
 

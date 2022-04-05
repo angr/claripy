@@ -21,10 +21,10 @@ void Expr::Base::repr(std::ostream &out) const {
         out << R"|("bit_length":)|" << bits->bit_length << ", ";
     }
     out << R"|("op":)|";
-    op->repr(out);
+    op->append_repr(out);
     if (annotations != nullptr) {
         out << R"|(, "annotations":)|";
-        annotations->repr(out);
+        annotations->append_repr(out);
     }
     out << " }";
 }

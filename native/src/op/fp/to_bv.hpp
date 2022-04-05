@@ -23,8 +23,8 @@ namespace Op::FP {
          */
         const Expr::BasePtr fp;
 
-        /** Python's repr function (outputs json) */
-        inline void repr(std::ostream &out) const final {
+        /** repr */
+        inline void append_repr(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(, "mode":)|" << Util::to_underlying(mode)
                 << R"|(, "fp":)|";
             fp->repr(out);

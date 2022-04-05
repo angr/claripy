@@ -25,15 +25,29 @@ del _cls_init # No need to keep this name around
 clari.API.set_log_propagation_level(logging.DEBUG)
 clari.API.install_logger(lambda a,b,c: logging.getLogger(a).log(b,c))
 
-### Fix / define operators
+### Operators ###
 
-# Passthrough
-clari.Expr.Base.__hash__ = lambda x: x.hash
+# Fixes
+
+# Define repr
+# TODO: clari.Annotation.Base.__repr__ = clari.Annotation.Base.repr
+clari.Annotation.Vec.__repr__ = clari.Annotation.Vec.repr
 clari.Expr.Base.__repr__ = clari.Expr.Base.repr
+clari.Op.Base.__repr__ = clari.Op.Base.repr
+
+# Fix hashing
+r_hash = lambda x: x.hash
+clari.Annotation.Base.__hash__ = r_hash
+clari.Annotation.Vec.__hash__ = r_hash
+clari.Expr.Base.__hash__ = r_hash
+clari.Op.Base.__hash__ = r_hash
+del r_hash
 
 # Equality
 clari.Expr.Base.__eq__ = lambda a,b: clari.Create.eq(a,b)
 clari.Expr.Base.__ne__ = lambda a,b: clari.Create.neq(a,b)
+
+# Define new operators
 
 # Comparisons
 clari.Expr.Base.__le__ = lambda x,y: clari.Create.ule(x,y)
@@ -45,19 +59,45 @@ clari.Expr.FP.__lt__ = lambda x,y: clari.Create.slt(x,y)
 clari.Expr.FP.__ge__ = lambda x,y: clari.Create.sge(x,y)
 clari.Expr.FP.__gt__ = lambda x,y: clari.Create.sgt(x,y)
 
+# Math
+
+#
+
+# Base: +, -, *, /
+clari.Expr.Base.__pos__ = lambda x: x
+clari.Expr.Base.__add__ = lambda *args: clari.Create.add(args)
+clari.Expr.Base.__neg__ = lambda x: clari.Create.neg(x)
+clari.Expr.Base.__sub__ = lambda x,y: clari.Create.sub(x,y)
+clari.Expr.Base.__mul__ = lambda *args: clari.Create.mul(args)
+# TODO: div
+
+# Other: +, -, *, /
+# TODO: these are not all __x__ methods?
+# clari.Expr.FP.__add__ = lambda x,y: clari.Create.FP.add(x,y)
+clari.Expr.String.__add__ = lambda x,y: clari.Create.concat(x,y)
+# clari.Expr.FP.__sub__ = lambda x,y: clari.Create.FP.sub(x,y)
+# clari.Expr.FP.__mul__ = lambda x,y: clari.Create.FP.mul(x,y) TODO: rounding mode
+# clari.Expr.FP.__truediv__ = lambda x,y: clari.Create.FP.div(x,y) TODO: rounding mode
+# TODO: sub = concat???
+
+# TODO: div
+
+clari.Expr.Base.__invert__ = lambda x: clari.Create.invert(x)
+
 # TODO: define new ops! +, -, etc
 
 # TODO: exception init
 a = clari.Create.literal(5)
 b = clari.Create.literal(5.0)
-print("Doing cmp")
-print(repr(a.op))
-print(repr(a < a))
-print(repr(b < b))
+# print("Doing cmp")
+# print(repr(a.op))
+# print(repr(a < a))
+# print(repr(b < b))
 
+'''
 print("\n\n")
 try:
-    clari.Create.sge(a,b)
+    a < b
 except Exception as e:
     ts = '  '
     print("\nCaught exception:\n" + ts + "msg: " + str(e))
@@ -71,6 +111,10 @@ except Exception as e:
 
     import IPython
     IPython.embed()
+'''
+
+import IPython
+IPython.embed()
 
 
 # Logical
