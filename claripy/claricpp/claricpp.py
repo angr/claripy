@@ -1,231 +1,82 @@
-__all__ = ["ffi", "to_utf8", "claricpp", "ClaricppException"]
-
-from .claricpp_ffi import ffi, lib as raw_lib
-from ..errors import *
-from os import path
-import functools
+from enum import Enum
+import clari
 import logging
-import sys
 
-# TODO: slots!
-# TODO: finalizers for exceptions etc!
-
-# Init
 logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(levelname)-7s | %(asctime)-23s | %(name)-8s | %(message)s",
+    level=logging.DEBUG, # TODO: use angr logging system
+    format='%(levelname)-7s | %(asctime)-23s | %(name)-8s | %(message)s'
 )
 
+### Exceptions grab extra info
 
-# Helpers
-def to_utf8(cdata) -> str:
-    """
-    Convert a char * to a str
-    """
-    if cdata != ffi.NULL:
-        return ffi.string(cdata).decode("utf-8")  # TODO: this is slow
-    return ""
+clari.Util.Err.Claricpp.toggle_backtrace(True) # TODO: remove me when not debugging
+def _cls_init(self, *args, **kwargs):
+    tr = clari.Util.Err.Claricpp.backtrace()
+    self.native_trace = tr if len(tr) > 0 else "Native tracing is disabled"
+    super(clari.py_err._internal.Base, self).__init__(*args, **kwargs)
+clari.py_err._internal.Base.__init__ = _cls_init
+del _cls_init # No need to keep this name around
 
+### Init clari
 
-# Callbacks
-@ffi.def_extern()
-def claripy_log(id_, lvl, msg):
-    """
-    Claricpp's log callback
-    """
-    logging.getLogger(name=to_utf8(id_)).log(level=lvl, msg=to_utf8(msg))
+# Set claricpp log level to debug
+# Note: the python log level still defines which messages are printed
+# This simply defines if claricpp even bothers to send a message to python
+clari.API.set_log_propagation_level(logging.DEBUG)
+clari.API.install_logger(lambda a,b,c: logging.getLogger(a).log(b,c))
 
+### Fix / define operators
 
-@ffi.def_extern()
-def claripy_level(id_):
-    """
-    Claricpp's 'get log level' callback
-    """
-    return logging.getLogger(name=to_utf8(id_)).getEffectiveLevel()
+# Passthrough
+clari.Expr.Base.__hash__ = lambda x: x.hash
+clari.Expr.Base.__repr__ = clari.Expr.Base.repr
 
+# Equality
+clari.Expr.Base.__eq__ = lambda a,b: clari.Create.eq(a,b)
+clari.Expr.Base.__ne__ = lambda a,b: clari.Create.neq(a,b)
 
-@ffi.def_extern()
-def claripy_simplify(expr):
-    """
-    Claricpp's python shell out to simplify
-    """
-    logging.debug("Python simplifier callback invoked")
-    return expr
+# Comparisons
+clari.Expr.Base.__le__ = lambda x,y: clari.Create.ule(x,y)
+clari.Expr.Base.__lt__ = lambda x,y: clari.Create.ult(x,y)
+clari.Expr.Base.__ge__ = lambda x,y: clari.Create.uge(x,y)
+clari.Expr.Base.__gt__ = lambda x,y: clari.Create.ugt(x,y)
+clari.Expr.FP.__le__ = lambda x,y: clari.Create.sle(x,y)
+clari.Expr.FP.__lt__ = lambda x,y: clari.Create.slt(x,y)
+clari.Expr.FP.__ge__ = lambda x,y: clari.Create.sge(x,y)
+clari.Expr.FP.__gt__ = lambda x,y: clari.Create.sgt(x,y)
 
+# TODO: define new ops! +, -, etc
 
-######################################################################
-#                         Library Exceptions                         #
-######################################################################
+# TODO: exception init
+a = clari.Create.literal(5)
+b = clari.Create.literal(5.0)
+print("Doing cmp")
+print(repr(a.op))
+print(repr(a < a))
+print(repr(b < b))
 
-# Exceptions @todo: Update python traceback with C++ trace info
-class ClaricppException(Exception):
-    """
-    The exception type claricpp throws for an internal error
-    """
+print("\n\n")
+try:
+    clari.Create.sge(a,b)
+except Exception as e:
+    ts = '  '
+    print("\nCaught exception:\n" + ts + "msg: " + str(e))
+    print(ts + "type: " + str(type(e)))
+    import inspect
+    mro = [ str(i).split("'")[1] for i in inspect.getmro(type(e)) ]
+    print(ts + "mro:\n" + ts*2 + ('\n'+ts*2).join(mro))
+    print('\n' + ts + "e.native_trace:\n\n" + e.native_trace)
+    ln = '\n' + '*' * 70
+    print(ln + '\n*' + 'End of exception info'.center(68, ' ') + '*' + ln + '\n')
 
-    def __init__(self, exc):
-        self.type: int = exc.type
-        self.msg: str = to_utf8(exc.msg)
-        self.trace: str = to_utf8(exc.trace)
-        super().__init__(repr(self))
-
-    def msg_trace(self):
-        return (
-            "Type: "
-            + str(self.type)
-            + "\n\nMsg: "
-            + self.msg
-            + "\n\nTrace: "
-            + self.trace
-        )
-
-    def __repr__(self):
-        return self.msg_trace() + "\n\nEND OF TRACE"
-
-
-# 'Crash now' exception handlers
+    import IPython
+    IPython.embed()
 
 
-def alloc_fail(_):
-    logging.critical(
-        "Memory allocation failure within claricpp; memory may be corrupted"
-    )
-    return OSError("Cannot allocate memory")
+# Logical
 
 
-def fail_critical(ex):
-    logging.critical("Critical claricpp error detected. Please report this.")
-    logging.critical("Given error: " + ex)
-    logging.critical("Terminating program")
-    return SystemExit(1)
+# TODO: existing: format, new, reduce, reduce_ex, sizeof, str,
 
-
-# Fallbacks (report these)
-
-
-def unknown_exception(ex):
-    logging.critical(
-        "Unknown exception type raised; claricpp does not recognize the error. Please report this."
-    )
-    return ex
-
-
-def std_exception(ex):
-    logging.critical("Uncaught std::exception in claricpp. Please report this.")
-    return ex
-
-
-def unexpected_exception(ex):
-    logging.critical("Intnernal claricpp error. Please report this.")
-    return ex
-
-
-def unknown_py_exception(ex):
-    logging.critical("Unknown python exception raised in claricpp. Please report this.")
-    return Exception("Given Error: " + repr(ex))
-
-
-def unknown_claripy(ex):
-    logging.critical(
-        "Unknown claripy exception raised in claricpp. Please report this."
-    )
-    return Exception("Given Error: " + repr(ex))  # @todo: claripy exception
-
-
-# Direct mappings
-def _map_ex_to_func(typ):
-    def f(ex) -> None:
-        out: Exception = typ(ex.msg_trace())
-        out.trace: str = ex.trace
-        out.msg: str = ex.msg
-        return out
-
-    return f
-
-
-# Maps exception types to corresponding functions
-# @todo: Edit errors.py (remove unneeded errors?)
-exception_map = {
-    # Crash now
-    raw_lib.ClaricppExceptionEnumFailAlloc: alloc_fail,
-    raw_lib.ClaricppExceptionEnumFailCritical: fail_critical,
-    # Fallbacks (report these)
-    raw_lib.ClaricppExceptionEnumUnknown: unknown_exception,
-    raw_lib.ClaricppExceptionEnumStd: std_exception,
-    raw_lib.ClaricppExceptionEnumUnexpected: unexpected_exception,
-    raw_lib.ClaricppExceptionEnumPython: unknown_py_exception,
-    raw_lib.ClaricppExceptionEnumClaripy: unknown_claripy,
-    # Direct mappings
-    raw_lib.ClaricppExceptionRuntimeError: _map_ex_to_func(RuntimeError),
-    raw_lib.ClaricppExceptionEnumExprType: _map_ex_to_func(ClaripyTypeError),
-    raw_lib.ClaricppExceptionEnumExprUsage: _map_ex_to_func(ClaripyASTUsageError),
-    raw_lib.ClaricppExceptionEnumExprValue: _map_ex_to_func(ClaripyValueError),
-    raw_lib.ClaricppExceptionEnumExprSize: _map_ex_to_func(ClaripySizeError),
-    raw_lib.ClaricppExceptionEnumExprOperation: _map_ex_to_func(ClaripyOperationError),
-    raw_lib.ClaricppExceptionEnumBackendAbstraction: _map_ex_to_func(
-        BackendAbstractionError
-    ),
-    raw_lib.ClaricppExceptionEnumBackendUnsupported: _map_ex_to_func(
-        BackendUnsupportedError
-    ),
-}
-
-
-######################################################################
-#                            Library Wrap                            #
-######################################################################
-
-
-# Claricpp helpers
-def wrap(func):
-    """
-    Wrap a raw_lib function call with exception handling
-    """
-
-    @functools.wraps(func)
-    def internal(*args, **kwargs):
-        res = func(*args, **kwargs)
-        if bool(raw_lib.claricpp_has_exception()):
-            ex = ClaricppException(raw_lib.claricpp_get_exception())
-            raise exception_map[ex.type](ex)
-        return res
-
-    return internal
-
-
-# Wrap raw_lib to handle exceptions
-class Claricpp:
-    """
-    Wraps raw_lib with exception handling code
-    """
-
-    def __getattribute__(self, attr):
-        """
-        When a function is requested, return the wrapped version
-        We make exceptions for the exception handling functions to prevent infinite loops
-        """
-        got = getattr(raw_lib, attr)
-        exempt = ["claricpp_get_exception", "claricpp_has_exception"]
-        if hasattr(got, "__call__") and attr not in exempt:
-            return wrap(got)
-        return got
-
-
-######################################################################
-#                            Library Init                            #
-######################################################################
-
-
-# Claricpp
-claricpp = Claricpp()
-
-# The location of the C++ source root
-# This is used mostly for generating detailed backtraces
-src_root = path.dirname(path.abspath(__file__)).encode()
-if not path.exists(src_root):  # In case we are running from a zip or something weird
-    src_root = ffi.NULL
-
-# Configure Claricpp for use with python
-claricpp.claricpp_init_for_python_usage(
-    src_root, raw_lib.claripy_log, raw_lib.claripy_level, raw_lib.claripy_simplify
-)
+# TODO: __not__, is, is_not
+# TODO: reverse operators?
