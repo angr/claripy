@@ -45,7 +45,7 @@ static_assert(((__COUNTER__ + 1) == __COUNTER__) && ((__COUNTER__ + 2) != __COUN
             /** Default constructor */                                                             \
             RunAfterMain() noexcept = default;                                                     \
             /** Destructor */                                                                      \
-            ~RunAfterMain() { (void) (F)(__VA_ARGS__); }                                           \
+            ~RunAfterMain() { (void) (F) (__VA_ARGS__); }                                          \
             /* Disable non-default creation methods */                                             \
             SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(RunAfterMain, delete)                               \
         };                                                                                         \

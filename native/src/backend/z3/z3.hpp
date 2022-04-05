@@ -450,7 +450,9 @@ namespace Backend::Z3 {
         }
 
         /** The method used to simplify z3 boolean exprs*/
-        inline z3::expr bool_simplify(const z3::expr &expr) const { return tls.bt(expr); }
+        inline z3::expr bool_simplify(const z3::expr &expr) const {
+            return tls.bt(expr);
+        }
 
         /** Abstract b_obj to a type in PrimVar */
         inline Op::PrimVar abstract_to_prim(const z3::expr &b_obj) const {

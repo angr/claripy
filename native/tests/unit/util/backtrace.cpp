@@ -19,7 +19,9 @@
 
 namespace {
     /** A wrapper in an anonymous namespace */
-    [[noreturn, gnu::noinline]] void wrapper2() { wrapper3(); }
+    [[noreturn, gnu::noinline]] void wrapper2() {
+        wrapper3();
+    }
 } // namespace
 
 /** A non-static wrapper function */

@@ -15,7 +15,9 @@ namespace Mode {
     enum class Compare { UGE = 0, UGT, ULE, ULT, SGE = 4, SGT, SLE, SLT };
 
     /** Return true iff a Compare is signed */
-    constexpr bool is_signed(const Compare c) { return c >= Compare::SGE; }
+    constexpr bool is_signed(const Compare c) {
+        return c >= Compare::SGE;
+    }
 
     /** Stream operator */
     inline std::ostream &operator<<(std::ostream &os, const Compare &c) {

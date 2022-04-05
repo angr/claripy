@@ -86,7 +86,9 @@ namespace Expr {
     }
 
     /** Overload the << stream operator to use repr */
-    inline std::ostream &operator<<(std::ostream &os, const BasePtr &p) { return (os << p.get()); }
+    inline std::ostream &operator<<(std::ostream &os, const BasePtr &p) {
+        return (os << p.get());
+    }
 
 } // namespace Expr
 

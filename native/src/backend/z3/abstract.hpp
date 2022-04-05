@@ -319,7 +319,9 @@ namespace Backend::Z3 {
         // BV Misc
 
         /** Abstraction function for Z3_OP_CONCAT */
-        static Expr::BasePtr concat(const ArgsVec &args) { BINARY(Create::concat); }
+        static Expr::BasePtr concat(const ArgsVec &args) {
+            BINARY(Create::concat);
+        }
 
         /** Abstraction function for Z3_OP_SIGN_EXT */
         static Expr::BasePtr sign_ext(const ArgsVec &args, const z3::func_decl &decl) {

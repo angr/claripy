@@ -43,7 +43,7 @@ static_assert(((__COUNTER__ + 1) == __COUNTER__) && ((__COUNTER__ + 2) != __COUN
         /** Declare a class that will run F(args...) before main */                                \
         struct [[nodiscard]] RunBeforeMain final {                                                 \
             /** Constructor */                                                                     \
-            RunBeforeMain() { (void) (F)(__VA_ARGS__); }                                           \
+            RunBeforeMain() { (void) (F) (__VA_ARGS__); }                                          \
             /** Rule of 5: Destructor */                                                           \
             ~RunBeforeMain() noexcept = default;                                                   \
             /* Disable other creation methods */                                                   \

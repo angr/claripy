@@ -23,7 +23,9 @@ namespace Backend::Z3 {
     };
 
     /** Stream operator */
-    inline std::ostream &operator<<(std::ostream &os, const Solver &s) { return os << s.s; }
+    inline std::ostream &operator<<(std::ostream &os, const Solver &s) {
+        return os << s.s;
+    }
 
 } // namespace Backend::Z3
 

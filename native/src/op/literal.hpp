@@ -139,7 +139,9 @@ namespace Op {
         P_CTOR(std::string) {};
         P_CTOR(float) {};
         P_CTOR(double) {};
-        P_CTOR(PyObj::VSPtr) { UTIL_ASSERT_NOT_NULL_DEBUG(std::get<PyObj::VSPtr>(value)); }
+        P_CTOR(PyObj::VSPtr) {
+            UTIL_ASSERT_NOT_NULL_DEBUG(std::get<PyObj::VSPtr>(value));
+        }
         // BV constructors
         P_CTOR(uint8_t) {};
         P_CTOR(uint16_t) {};

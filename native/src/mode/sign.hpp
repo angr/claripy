@@ -23,7 +23,9 @@ namespace Mode::Sign {
     enum class Real : signed char { Minus = -1, None = 0, Plus = 1 };
 
     /** Convert an FP to a Real */
-    constexpr Real to_real(const FP f) { return static_cast<Real>(Util::to_underlying(f)); }
+    constexpr Real to_real(const FP f) {
+        return static_cast<Real>(Util::to_underlying(f));
+    }
 
 } // namespace Mode::Sign
 

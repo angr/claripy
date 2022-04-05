@@ -402,7 +402,9 @@ namespace Backend::Z3 {
 
           public:
             /** ToIEEEBV converter */
-            static z3::expr to_ieee_bv(const z3::expr &e) { return e.mk_to_ieee_bv(); }
+            static z3::expr to_ieee_bv(const z3::expr &e) {
+                return e.mk_to_ieee_bv();
+            }
 
             /** FP::Add converter */
             static z3::expr add(const Mode::FP::Rounding mode, const z3::expr &l,

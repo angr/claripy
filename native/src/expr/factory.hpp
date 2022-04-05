@@ -58,7 +58,9 @@ namespace Expr {
     /** Get a shared pointer from a hash
      *  If the object does not exist it returns a shared pointer to nullptr
      */
-    inline Factory::Ptr<Base> find(const Hash::Hash h) { return ::Factory::find<Base>(h); }
+    inline Factory::Ptr<Base> find(const Hash::Hash h) {
+        return ::Factory::find<Base>(h);
+    }
 
 } // namespace Expr
 

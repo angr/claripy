@@ -54,7 +54,9 @@ namespace Op::Private {
     /** The name of the op */                                                                      \
     static inline const CCSC static_op_name { ::Op::Private::str(PREFIX #CLASS, TARG) };           \
     /** The name of the op */                                                                      \
-    inline const char *op_name() const noexcept final { return static_op_name; };                  \
+    inline const char *op_name() const noexcept final {                                            \
+        return static_op_name;                                                                     \
+    };                                                                                             \
                                                                                                    \
   private:                                                                                         \
     ENABLE_UNITTEST_FRIEND_ACCESS;

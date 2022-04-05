@@ -19,7 +19,9 @@ namespace Util::Log::Level {
 #ifdef CONSTANT_LOG_LEVEL
 
     /** Return the log level */
-    constexpr Level get() noexcept { return default_; }
+    constexpr Level get() noexcept {
+        return default_;
+    }
 
 #else
 
