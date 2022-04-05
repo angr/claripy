@@ -87,10 +87,8 @@ static void register_internal(py::module_ &m, const py::handle &claricpp) {
 }
 
 /** Register generic python exceptions with pybind11 */
-static void register_generic_python(py::module_ &m, const py::handle &py_base) {
+static void register_generic_python() {
     TRANSLATE_EXC(Util::Err::Python::Runtime, PyExc_RuntimeError); // prefer python builtin
-    (void) py_base;
-    (void) m;
 }
 
 /** Register claripy exceptions with pybind11 */
@@ -127,6 +125,6 @@ void API::bind_exceptions(py::module_ &root_module) {
     // Ex., Util::Err::Python::Runtime, maps to a subclass of python's RuntimeError, nothing else
     // Note, however, that we do not require it if it makes more sense not to
     register_internal(internal, base);
-    register_generic_python(py_err, py_e);
     register_claripy(py_err, py_e);
+    register_generic_python();
 }

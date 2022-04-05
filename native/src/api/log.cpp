@@ -41,4 +41,12 @@ void API::bind_log_init(Binder::ModuleGetter &m) {
         "Installs log_func to Claricpp's logger. The function "
         "will be called as py_log(id: str, level: int, msg: str)",
         pybind11::arg("py_log"));
+    m("API").def(
+        "set_log_propagation_level",
+        [](const unsigned lvl) {
+            Util::Log::Level::set(static_cast<Util::Log::Level::Level>(lvl));
+        },
+        "Installs log_func to Claricpp's logger. The function "
+        "will be called as py_log(id: str, level: int, msg: str)",
+        pybind11::arg("py_log"));
 }
