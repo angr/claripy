@@ -165,8 +165,8 @@ default( Z3_ACQUISITION_MODE SYSTEM )
 
 # If on, forces re-creation of Z3 links and such
 # If on and Z3_ACQUISITION_MODE is BUID, forces a rebuild of libz3
-# For build: Note: It is reccomended you reconfigure cmake after a libz3 build otherwise
-# libz3 may re-build every time make is invoked as it is using an old configuration
+# For build: Note: It is recommended that you reconfigure cmake after a libz3 build
+# otherwise libz3 may re-build every time make is invoked as it is using an old configuration
 default( Z3_FORCE_CLEAN OFF )
 
 # This option is used to help locate the Z3 library.
