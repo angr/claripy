@@ -238,7 +238,7 @@ void bind_unknown_unknown(std::function< pybind11::module &(std::string const &n
 	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
 #endif
 
-// Util::Err::Claricpp file: line:31
+// Util::Err::Claricpp file: line:33
 struct PyCallBack_Util_Err_Claricpp : public Util::Err::Claricpp {
 	using Util::Err::Claricpp::Claricpp;
 
@@ -259,18 +259,16 @@ struct PyCallBack_Util_Err_Collision : public Util::Err::Collision {
 namespace API::Binder {
 void bind_unknown_unknown_1(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
-	{ // Util::Err::Claricpp file: line:31
-		pybind11::class_<Util::Err::Claricpp, std::shared_ptr<Util::Err::Claricpp>, PyCallBack_Util_Err_Claricpp> cl(M("Util::Err"), "Claricpp", "The base claricpp exception class\n  Any exception thrown intentionally must subclass this\n  Note: Since exceptions do not need to be super fast and since we have const date members:\n  for clarity we ignore the rule of 5 in favor of what the compiler defaults. Subclasses\n  of Claricpp should feel free to do the same unless they have non-const data members");
-		cl.def("backtrace", (std::string (Util::Err::Claricpp::*)() const) &Util::Err::Claricpp::backtrace, "C++: Util::Err::Claricpp::backtrace() const --> std::string");
+	{ // Util::Err::Claricpp file: line:33
+		pybind11::class_<Util::Err::Claricpp, std::shared_ptr<Util::Err::Claricpp>, PyCallBack_Util_Err_Claricpp> cl(M("Util::Err"), "Claricpp", "The base claricpp exception class\n  Any exception thrown intentionally must subclass this\n  Note: Since exceptions do not need to be super fast and since we have const date members:\n  for clarity we ignore the rule of 5 in favor of what the compiler defaults. Subclasses\n  of Claricpp should feel free to do the same unless they have non-const data members\n  This class saves the last n_backtraces backtraces");
 		cl.def_static("log_atomic_change", (void (*)(const char *const, const bool, const bool)) &Util::Err::Claricpp::log_atomic_change, "Logs that an atomic was toggled \n\nC++: Util::Err::Claricpp::log_atomic_change(const char *const, const bool, const bool) --> void", pybind11::arg("what"), pybind11::arg("old"), pybind11::arg("new_"));
 		cl.def_static("warn_backtrace_slow", (void (*)()) &Util::Err::Claricpp::warn_backtrace_slow, "Warns that enabling backtraces causes a preformance hit \n\nC++: Util::Err::Claricpp::warn_backtrace_slow() --> void");
 		cl.def_static("toggle_backtrace", [](const bool & a0) -> bool { return Util::Err::Claricpp::toggle_backtrace(a0); }, "", pybind11::arg("set"));
 		cl.def_static("toggle_backtrace", (bool (*)(const bool, const bool)) &Util::Err::Claricpp::toggle_backtrace, "Enable / disable backtraces\n  Returns the old state\n\nC++: Util::Err::Claricpp::toggle_backtrace(const bool, const bool) --> bool", pybind11::arg("set"), pybind11::arg("log_me"));
 		cl.def_static("backtraces_enabled", (bool (*)()) &Util::Err::Claricpp::backtraces_enabled, "Return true if and only if backtraces are enabled \n\nC++: Util::Err::Claricpp::backtraces_enabled() --> bool");
-		cl.def_static("toggle_append_backtrace", (bool (*)(const bool, const bool)) &Util::Err::Claricpp::toggle_append_backtrace, "Enable / disable appending backtraces\n  Returns the old state\n\nC++: Util::Err::Claricpp::toggle_append_backtrace(const bool, const bool) --> bool", pybind11::arg("set"), pybind11::arg("log_me"));
-		cl.def_static("append_backtraces_enabled", (bool (*)()) &Util::Err::Claricpp::append_backtraces_enabled, "Return true if and only if backtraces are enabled \n\nC++: Util::Err::Claricpp::append_backtraces_enabled() --> bool");
-		cl.def("raw_what", (const char * (Util::Err::Claricpp::*)() const) &Util::Err::Claricpp::raw_what, "Message getter\n  If enable_backtraces and append_backtraces, appends a backtrace\n\nC++: Util::Err::Claricpp::raw_what() const --> const char *", pybind11::return_value_policy::automatic);
-		cl.def("what", (const char * (Util::Err::Claricpp::*)() const) &Util::Err::Claricpp::what, "Message getter\n  If enable_backtraces and append_backtraces, appends a backtrace\n  Warning: Will return dynamically allocated memory if a backtrace is included\n  Note: If something goes wrong trying to print the backtrace, skips it\n\nC++: Util::Err::Claricpp::what() const --> const char *", pybind11::return_value_policy::automatic);
+		cl.def("what", (const char * (Util::Err::Claricpp::*)() const) &Util::Err::Claricpp::what, "Message getter \n\nC++: Util::Err::Claricpp::what() const --> const char *", pybind11::return_value_policy::automatic);
+		cl.def_static("backtrace", []() -> std::string { return Util::Err::Claricpp::backtrace(); }, "");
+		cl.def_static("backtrace", (std::string (*)(const unsigned long)) &Util::Err::Claricpp::backtrace, "Get a previous backtrace; returns \"\" on error\n  Get the a previous backtrace\n  Ignores the last index'th backtraces\n  Ex. index = 0 gets the last backtrace, index = 1 gets the second to last\n\nC++: Util::Err::Claricpp::backtrace(const unsigned long) --> std::string", pybind11::arg("index"));
 	}
 	{ // Util::Err::Internal file: line:18
 		pybind11::class_<Util::Err::Internal, std::shared_ptr<Util::Err::Internal>, PyCallBack_Util_Err_Internal, Util::Err::Claricpp> cl(M("Util::Err"), "Internal", "Base unexpected exception\n  All unexpected exceptions must derive from this");
