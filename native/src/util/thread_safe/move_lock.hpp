@@ -43,7 +43,7 @@ namespace Util::ThreadSafe {
         /** Move assignment */
         MoveLock &operator=(MoveLock &&old) noexcept {
             if (UNLIKELY(old.mutex == nullptr)) {
-                fallback_error_log(
+                UTIL_NEW_FALLBACK_ERROR_LOG(
                     "MoveLock move assignment operator detected null mutex pointer on input; this "
                     "is probably indicates the improper usage of a dead mutex! This is dangerous!");
             }

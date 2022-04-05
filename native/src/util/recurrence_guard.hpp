@@ -47,8 +47,7 @@ namespace Util {
 #ifdef DEBUG
             // Check for stack unwinding
             if (UNLIKELY(num == 0)) {
-                fallback_error_log(
-                    "RecurrenceGuard is trying to decrement a count of 0."
+                UTIL_NEW_FALLBACK_ERROR_LOG(
                     "\nThis probably happened because something went wrong with control flow."
                     "\nFor example, an exception was thrown in a guarded function but nothing was "
                     "cleaned up.");

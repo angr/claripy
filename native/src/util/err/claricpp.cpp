@@ -8,11 +8,14 @@
 #include "../fallback_error_log.hpp"
 #include "../log.hpp"
 
+// For brevity
+using C = Util::Err::Claricpp;
 
-std::atomic_bool Util::Err::Claricpp::enable_backtraces { TRUE_IF_DEBUG };
+// Statics
+std::atomic_bool C::enable_backtraces { TRUE_IF_DEBUG };
+thread_local std::deque<std::ostringstream> C::backtraces {};
 
-std::atomic_bool Util::Err::Claricpp::append_backtrace { false };
-
+// Functions
 void Util::Err::Claricpp::log_atomic_change(CCSC what, const bool old, const bool new_) noexcept {
     const constexpr auto str { [](const bool b) { return b ? "enabled" : "disabled"; } };
     try {
@@ -20,14 +23,14 @@ void Util::Err::Claricpp::log_atomic_change(CCSC what, const bool old, const boo
                         str(new_));
     }
     catch (std::exception &e) {
-        Util::fallback_error_log("Util::Err::Claricpp: ", false);
-        Util::fallback_error_log(what, false);
-        Util::fallback_error_log(" changed from ");
-        Util::fallback_error_log(old ? "true" : "false", false);
-        Util::fallback_error_log(" to ", false);
-        Util::fallback_error_log(new_ ? "true" : "false");
-        Util::fallback_error_log("Log failure! Fallback log was used. Log exception: ", false);
-        Util::fallback_error_log(e.what());
+        UTIL_NEW_FALLBACK_ERROR_LOG("Util::Err::Claricpp: ")
+            .log(what)
+            .log(" changed from ")
+            .log(old ? "true" : "false")
+            .log(" to ")
+            .log(new_ ? "true" : "false")
+            .log("\nLog failure! Fallback log was used. Log exception: ")
+            .log(e.what());
     }
 }
 
@@ -40,19 +43,24 @@ void Util::Err::Claricpp::warn_backtrace_slow() noexcept {
         Util::Log::warning(msg);
     }
     catch (std::exception &e) {
-        Util::fallback_error_log(msg);
-        Util::fallback_error_log("Log failure! Fallback log was used. Log exception: ", false);
-        Util::fallback_error_log(e.what());
+        UTIL_NEW_FALLBACK_ERROR_LOG(msg)
+            .log("\nLog failure! Fallback log was used. Logging failed because: ")
+            .log(e.what());
     }
 }
 
-std::ostringstream Util::Err::Claricpp::save_backtrace() noexcept {
-    std::ostringstream o;
-    if (backtraces_enabled()) {
-        ::Util::Backtrace::backward(o, frame_offset); // Prefer 'backward' over 'native'
+void Util::Err::Claricpp::save_backtrace() noexcept {
+    try {
+        backtraces.emplace_front();
+        ::Util::Backtrace::backward(backtraces.front(), frame_offset); // 'backward' > 'native'
+        if (backtraces.size() > n_backtraces) {
+            backtraces.pop_back();
+        }
     }
-    else {
-        o << "Backtraces are disabled.";
+    catch (std::exception &e) {
+        UTIL_NEW_FALLBACK_ERROR_LOG("Failed to save backtrace due to exception: ").log(e.what());
     }
-    return o; // Copy elision or compile error :)
+    catch (...) {
+        UTIL_NEW_FALLBACK_ERROR_LOG("Failed to save backtrace due non-exception exception.");
+    }
 }
