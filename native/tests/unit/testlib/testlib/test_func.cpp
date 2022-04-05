@@ -14,7 +14,7 @@
 /** Catch and print an error before exiting */
 #define CATCH_ERROR(ERROR)                                                                         \
     catch (const ERROR &e) {                                                                       \
-        UNITTEST_ERR(e.backtrace(), "\n", #ERROR ": ", e.raw_what());                              \
+        UNITTEST_ERR(e.backtrace(), "\n", #ERROR ": ", e.what());                                  \
     }
 
 
@@ -29,7 +29,7 @@ int UnitTest::TestLib::test_func(TestFN &f) {
     }
     // UnitTest error
     catch (Error &e) {
-        Util::Log::error(e.backtrace(), "\n", e.raw_what());
+        Util::Log::error(e.backtrace(), "\n", e.what());
         return EXIT_FAILURE;
     }
     // If there was a different error, note so and fail

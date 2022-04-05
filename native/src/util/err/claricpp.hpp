@@ -16,6 +16,7 @@
 
 #include <atomic>
 #include <cstring>
+#include <deque>
 #include <exception>
 #include <string>
 
@@ -27,6 +28,7 @@ namespace Util::Err {
      *  Note: Since exceptions do not need to be super fast and since we have const date members:
      *  for clarity we ignore the rule of 5 in favor of what the compiler defaults. Subclasses
      *  of Claricpp should feel free to do the same unless they have non-const data members
+     *  This class saves the last n_backtraces backtraces
      */
     class Claricpp : public std::exception {
         /** Allow all error factories friend access */
@@ -34,15 +36,17 @@ namespace Util::Err {
 
       public:
         /** Constructor: This constructor consumes its arguments via const reference */
-        explicit inline Claricpp(std::string &&msg_) : msg { msg_ }, bt { save_backtrace() } {}
+        explicit inline Claricpp(std::string &&msg_) : msg { std::move(msg_) } {
+            if (backtraces_enabled()) {
+                save_backtrace();
+            }
+        }
 
         /** Default virtual destructor */
         ~Claricpp() noexcept override = default;
 
         // Rule of 5
         SET_IMPLICITS_NONDEFAULT_CTORS(Claricpp, delete);
-
-        inline std::string backtrace() const noexcept { return bt.str(); }
 
         /** Logs that an atomic was toggled */
         static void log_atomic_change(CCSC what, const bool old, const bool new_) noexcept;
@@ -67,71 +71,37 @@ namespace Util::Err {
         /** Return true if and only if backtraces are enabled */
         static inline bool backtraces_enabled() noexcept { return enable_backtraces; }
 
-        /** Enable / disable appending backtraces
-         *  Returns the old state
+        /** Message getter */
+        [[nodiscard]] inline const char *what() const noexcept final { return msg.c_str(); }
+
+        /** Get a previous backtrace; returns "" on error
+         *  Get the a previous backtrace
+         *  Ignores the last index'th backtraces
+         *  Ex. index = 0 gets the last backtrace, index = 1 gets the second to last
          */
-        static inline bool toggle_append_backtrace(const bool set, const bool log_me) noexcept {
-            const bool ret { append_backtrace.exchange(set) };
-            if (UNLIKELY((log_me))) {
-                log_atomic_change("Claricpp::append_backtrace ", ret, set);
+        static inline std::string backtrace(const std::size_t index = 0) noexcept {
+            try {
+                return backtraces.at(index).str(); // .at is memory safe
             }
-            return ret;
-        }
-
-        /** Return true if and only if backtraces are enabled */
-        static inline bool append_backtraces_enabled() noexcept { return append_backtrace; }
-
-        /** Message getter
-         *  If enable_backtraces and append_backtraces, appends a backtrace
-         */
-        [[nodiscard]] inline const char *raw_what() const noexcept { return msg.c_str(); }
-
-        /** Message getter
-         *  If enable_backtraces and append_backtraces, appends a backtrace
-         *  Warning: Will return dynamically allocated memory if a backtrace is included
-         *  Note: If something goes wrong trying to print the backtrace, skips it
-         */
-        [[nodiscard]] inline const char *what() const noexcept final {
-            if (enable_backtraces && append_backtrace) {
-                try {
-                    auto out { backtrace() };
-                    const static std::string mid { "\n\n" };
-                    // Since we cannot use Safe::malloc as it uses this, use malloc
-                    const U64 len { out.size() + mid.size() + msg.size() };
-                    char *const ret { static_cast<char *>(std::malloc(len + 1)) };
-                    if (ret != nullptr) {
-                        std::memcpy(ret, out.c_str(), out.size());
-                        std::memcpy(ret + out.size(), mid.c_str(), mid.size()); // NOLINT
-                        std::memcpy(ret + out.size() + mid.size(), msg.c_str(), msg.size());
-                        ret[len] = 0;
-                        return ret;
-                    }
-                }
-                catch (std::exception &e) {
-                    fallback_error_log("Claricpp.what() failed internally with error: ", false);
-                    fallback_error_log(e.what());
-                }
+            catch (...) {
+                return {};
             }
-            return raw_what();
         }
 
       private:
-        /** Saves a backtrace */
-        static std::ostringstream save_backtrace() noexcept;
-
-        // Representation
+        /** Generate and save a backtrace */
+        void save_backtrace() noexcept;
 
         /** The message */
         const std::string msg;
-        /** The backtrace */
-        const std::ostringstream bt;
-
-        // Statics
 
         /** True if backtraces should be enabled */
         static std::atomic_bool enable_backtraces;
-        /** If true and if enable_backtraces, what() will contain a backtrace */
-        static std::atomic_bool append_backtrace;
+        /** The number of previous backtraces Claricpp will store */
+        static const constexpr U64 n_backtraces { 3_ui };
+        /** The last saved backtraces; newest come first */
+        static thread_local std::deque<std::ostringstream> backtraces;
+
         /** The frame offset used when generating the backtrace
          *  This prevents Claricpp's internals from showing up in the backtrace
          *  This is found expirimentally; there is no issue if it is too small
