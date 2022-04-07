@@ -12,6 +12,7 @@
 
 #include "../constants.hpp"
 
+#include <climits>
 #include <cstdint>
 #include <type_traits>
 
