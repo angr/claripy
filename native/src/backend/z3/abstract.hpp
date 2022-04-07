@@ -153,7 +153,7 @@ namespace Backend::Z3 {
         /** A boolean expr */
         template <bool B> static Expr::BasePtr bool_() {
             static Expr::BasePtr ret { nullptr };
-            if (ret == nullptr) {
+            if (UNLIKELY(ret == nullptr)) {
                 ret = Create::literal(B);
             }
             return ret;
