@@ -5,36 +5,50 @@
 #include <pybind11/functional.h>
 
 
-namespace API {
-    /** The python log backend */
-    struct PythonLog final : public Util::Log::Backend::Base {
-      private:
-        /** For brevity */
-        using Lvl = ::Util::Log::Level::Level;
+/** The python log backend */
+struct PythonLog final : public Util::Log::Backend::Base {
+  private:
+    /** For brevity */
+    using Lvl = ::Util::Log::Level::Level;
 
-      public:
-        /** The log function type */
-        using Func = std::function<void(CCSC, std::underlying_type_t<Lvl>, std::string)>;
-        /** Constructor */
-        PythonLog(const Func &log_func) : py_log(log_func) {}
-        /** Backend name */
-        const char *name() const noexcept final { return "PythonLog"; }
-        /** Log the given message */
-        void log(CCSC id, const Lvl &lvl, Util::LazyStr &&msg) const final {
-            py_log(id, Util::to_underlying(lvl), msg());
-        }
-        /** Flush the log if applicable
-         *  We choose to leave this to python
-         */
-        void flush() const final {}
-        /** The python logging function
-         *  Note: we choose to store a reference in case pybind11 cleans up internally on shutdown
-         */
-        const Func py_log;
-    };
-} // namespace API
+  public:
+    /** The log function type */
+    using Func = std::function<void(CCSC, std::underlying_type_t<Lvl>, std::string)>;
+    /** Constructor */
+    PythonLog(const Func &log_func) : py_log(log_func) {}
+    /** Backend name */
+    const char *name() const noexcept final { return "PythonLog"; }
+    /** Log the given message */
+    void log(CCSC id, const Lvl &lvl, Util::LazyStr &&msg) const final {
+        py_log(id, Util::to_underlying(lvl), msg());
+    }
+    /** Flush the log if applicable
+     *  We choose to leave this to python
+     */
+    void flush() const final {}
+    /** The python logging function
+     *  Note: we choose to store a reference in case pybind11 cleans up internally on shutdown
+     */
+    const Func py_log;
+};
+
+/** Restore the C++ log backend */
+static void set_log_default() noexcept {
+    try {
+        Util::Log::Backend::set<Util::Log::Backend::Default>();
+    }
+    catch (std::exception &e) {
+        UTIL_NEW_FALLBACK_ERROR_LOG("Failed to restore C++ default logger because: ")
+            .log(e.what()); // TODO: make this type of thing a macro since it keeps repeating
+    }
+    catch (...) {
+        UTIL_NEW_FALLBACK_ERROR_LOG(
+            "Failed to restore C++ default logger due to non-exception being thrown");
+    }
+}
 
 void API::bind_log_init(Binder::ModuleGetter &m) {
+    register_at_exit(set_log_default);
     m("API").def(
         "install_logger",
         [](const PythonLog::Func &py_log) { Util::Log::Backend::set<PythonLog>(py_log); },
