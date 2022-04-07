@@ -13,11 +13,9 @@
 
 namespace Util {
 
-    /** The abstract LazyStr class
-     *  Note: operator() may only be called once!
-     */
+    /** The abstract LazyStr class */
     struct LazyStr {
-        /** The string functor; may only be called once */
+        /** The string functor */
         virtual std::string operator()() = 0;
         /** Constructor */
         inline LazyStr() noexcept = default;
@@ -25,15 +23,9 @@ namespace Util {
         virtual inline ~LazyStr() noexcept {}
         // Disable other implicits
         SET_IMPLICITS_NONDEFAULT_CTORS(LazyStr, delete);
-
-      protected:
-        /** Used to denote if () has been called */
-        bool done { false };
     };
 
-    /** The concrete LazyStr class
-     *  Note: operator() may only be called once!
-     */
+    /** The concrete LazyStr class */
     template <typename... Args> class ConcreteLazyStr final : public LazyStr {
         SET_IMPLICITS_NONDEFAULT_CTORS(ConcreteLazyStr, delete);
 
@@ -48,18 +40,17 @@ namespace Util {
         /** Destructor */
         inline ~ConcreteLazyStr() noexcept {}
 
-        /** Output as a string; may only be called once */
+        /** Output as a string */
         inline std::string operator()() final {
-            // Once check
-            UTIL_ASSERT(Util::Err::Usage, !done,
-                        "LazyStr() may only be called once as it consumes its data");
-            done = true;
-            return std::apply(Util::to_str<Args...>, std::move(data));
+            if (std::holds_alternative<Tuple>(data)) {
+                data = std::apply(Util::to_str<Args...>, std::move(std::get<Tuple>(data)));
+            }
+            return std::get<std::string>(data);
         }
 
       private:
         /** The stored data */
-        Tuple data;
+        std::variant<std::string, Tuple> data;
     };
 
 } // namespace Util
