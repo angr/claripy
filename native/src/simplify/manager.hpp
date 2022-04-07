@@ -45,10 +45,14 @@ namespace Simplify {
             wcache.put(h, e);
         }
 
-        // Adders
+        /** A nullptr_t override which is noexcept */
+        inline void set_python_simplifier(std::nullptr_t) noexcept {
+            Util::Log::info<SimplifyLog>("Simplify::Manager cleared python simplifier");
+            py_simp = nullptr; // nullptr_t uses specialization that is noexcept
+        }
 
         /** Add a simplifier function to use on Exprs of the given op cuid
-         *  nullptr is permitted
+         *  Null functions are permitted but nullptr will be sent to a noexcept override
          */
         inline void set_python_simplifier(const std::function<Func> &func) {
             Util::Log::info<SimplifyLog>("Simplify::Manager set python simplifier");
