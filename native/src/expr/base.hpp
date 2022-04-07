@@ -81,7 +81,12 @@ namespace Expr {
 
     /** Overload the << stream operator to use repr */
     inline std::ostream &operator<<(std::ostream &os, const RawPtr &p) {
-        p->repr(os);
+        if (UNLIKELY(p == nullptr)) {
+            os << "(null Expr::BasePtr)";
+        }
+        else {
+            p->repr(os);
+        }
         return os;
     }
 
