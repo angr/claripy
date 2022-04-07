@@ -53,6 +53,23 @@ namespace Op {
     /** Default virtual destructor */
     inline Base::~Base() noexcept = default;
 
+    /** Overload the << stream operator to use append_repr */
+    inline std::ostream &operator<<(std::ostream &os, const Op::Base *p) {
+        if (UNLIKELY(p == nullptr)) {
+            os << "(null Op::BasePtr)";
+        }
+        else {
+            p->append_repr(os);
+        }
+        return os;
+    }
+
+    /** Overload the << stream operator to use append_repr */
+    inline std::ostream &operator<<(std::ostream &os, const BasePtr &p) {
+        os << p.get();
+        return os;
+    }
+
 } // namespace Op
 
 
