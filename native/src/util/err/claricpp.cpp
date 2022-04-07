@@ -12,8 +12,8 @@
 using C = Util::Err::Claricpp;
 
 // Statics
+thread_local std::deque<C::LazyTrace::Ptr> C::backtraces {};
 std::atomic_bool C::enable_backtraces { TRUE_IF_DEBUG };
-thread_local std::deque<std::ostringstream> C::backtraces {};
 
 // Functions
 void Util::Err::Claricpp::log_atomic_change(CCSC what, const bool old, const bool new_) noexcept {
@@ -51,8 +51,7 @@ void Util::Err::Claricpp::warn_backtrace_slow() noexcept {
 
 void Util::Err::Claricpp::save_backtrace() noexcept {
     try {
-        backtraces.emplace_front();
-        ::Util::Backtrace::backward(backtraces.front(), frame_offset); // 'backward' > 'native'
+        backtraces.emplace_front(LazyTrace::create(generator, frame_offset));
         if (backtraces.size() > n_backtraces) {
             backtraces.pop_back();
         }

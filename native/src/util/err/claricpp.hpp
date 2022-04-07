@@ -11,7 +11,9 @@
 #include "macros.hpp"
 
 #include "../../constants.hpp"
+#include "../backtrace.hpp"
 #include "../fallback_error_log.hpp"
+#include "../terminate.hpp"
 #include "../to_str.hpp"
 
 #include <atomic>
@@ -33,8 +35,15 @@ namespace Util::Err {
     class Claricpp : public std::exception {
         /** Allow all error factories friend access */
         template <typename T, typename S> friend T factory(const S msg);
+        /** Backtrace generator function */
+        static inline constexpr auto &generator { ::Util::Backtrace::backward };
 
       public:
+        /** Backtrace holder type */
+        using LazyTrace = ::Util::Backtrace::Lazy;
+
+        // Rule of 5
+
         /** Constructor: This constructor consumes its arguments via const reference */
         explicit inline Claricpp(std::string &&msg_) : msg { std::move(msg_) } {
             if (backtraces_enabled()) {
@@ -48,10 +57,12 @@ namespace Util::Err {
         // Rule of 5
         SET_IMPLICITS_NONDEFAULT_CTORS(Claricpp, delete);
 
+        // Functions
+
         /** Logs that an atomic was toggled */
         static void log_atomic_change(CCSC what, const bool old, const bool new_) noexcept;
 
-        /** Warns that enabling backtraces causes a preformance hit */
+        /** Warns that enabling backtraces causes a performance hit */
         static void warn_backtrace_slow() noexcept;
 
         /** Enable / disable backtraces
@@ -74,18 +85,42 @@ namespace Util::Err {
         /** Message getter */
         [[nodiscard]] inline const char *what() const noexcept final { return msg.c_str(); }
 
-        /** Get a previous backtrace; returns "" on error
+        /** Get a previous backtrace in an unevaluated form; returns {} on error
          *  Get the a previous backtrace
          *  Ignores the last index'th backtraces
          *  Ex. index = 0 gets the last backtrace, index = 1 gets the second to last
+         *  Call ->str() on the result to get the backtrace as a string
          */
-        static inline std::string backtrace(const std::size_t index = 0) noexcept {
-            try {
-                return backtraces.at(index).str(); // .at is memory safe
+        static inline LazyTrace::Ptr lazy_backtrace(const std::size_t index = 0) noexcept {
+            if (backtraces_enabled()) {
+                try {
+                    // shared_ptrs can safely be copy constructed between threads
+                    if (LIKELY(index < backtraces.size())) {
+                        return backtraces[index];
+                    }
+                    UTIL_NEW_FALLBACK_ERROR_LOG("Index out of range");
+                }
+                catch (std::exception &e) {
+                    UTIL_NEW_FALLBACK_ERROR_LOG("Failed because: ").log(e.what());
+                }
+                catch (...) {
+                    UTIL_NEW_FALLBACK_ERROR_LOG("Failed due to a non-exception being thrown");
+                }
             }
-            catch (...) {
+            // No trace to return
+            return {};
+        }
+
+        /** Eagerly evaluated lazy_backtrace(index)
+         *  If lazy_backtrace(index) returns nullptr; will return {}
+         *  Unlike lazy_backtrace, this may throw if evaluation fails
+         */
+        static inline std::string backtrace(const std::size_t index = 0) {
+            const auto ptr { lazy_backtrace(index) };
+            if (ptr == nullptr) {
                 return {};
             }
+            return ptr->str();
         }
 
       private:
@@ -100,14 +135,14 @@ namespace Util::Err {
         /** The number of previous backtraces Claricpp will store */
         static const constexpr U64 n_backtraces { 3_ui };
         /** The last saved backtraces; newest come first */
-        static thread_local std::deque<std::ostringstream> backtraces;
+        static thread_local std::deque<LazyTrace::Ptr> backtraces;
 
         /** The frame offset used when generating the backtrace
          *  This prevents Claricpp's internals from showing up in the backtrace
          *  This is found expirimentally; there is no issue if it is too small
          *  Being too small simply makes the backtraces messier as they contain this constructor
          */
-        static const constexpr U64 frame_offset {
+        static const constexpr uint16_t frame_offset {
 #ifdef __linux__
     #ifdef DEBUG
             5
@@ -121,6 +156,16 @@ namespace Util::Err {
 #endif
         }; // NOLINT
     };
+
+    //    namespace Private {
+    //        /** Define a class to force binder to autogenerate API bindings for
+    //        Claricpp::LazyTrace
+    //         *  This class is not meant to be used anywhere, it only exists because binder can
+    //         *  sometimes refuse to generate bindings for classes under certain conditions
+    //         */
+    //        class ForceBindings : public Claricpp::LazyTrace, private
+    //        ::Util::Type::Unconstructable {};
+    //    }
 
 } // namespace Util::Err
 
