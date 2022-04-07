@@ -11,6 +11,7 @@
 #include <pybind11/pybind11.h>
 
 namespace API {
+
     /** The name of the root module */
     extern CCSC root_mod_name;
     namespace Binder {
@@ -19,6 +20,16 @@ namespace API {
          */
         using ModuleGetter = std::function<pybind11::module &(std::string const &)>;
     } // namespace Binder
+
+    /** Use to register a function to run on exit; do this for *every* callback!
+     *  Callbacks are python objects, when python exits python may choose to finalize
+     *  them before C++ desturctors are called, leading to dangling references and segfaults
+     *  These functions will be called at exit, but before python finalizers
+     */
+    inline void register_at_exit(void (*const func)() noexcept) {
+        pybind11::module_::import("atexit").attr("register")(pybind11::cpp_function(func));
+    }
+
 } // namespace API
 
 #endif
