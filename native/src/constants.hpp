@@ -36,7 +36,7 @@
  *  We prefer 'long long' over int64_t if same size (makes cross platform API easier)
  */
 using I64 = long long;
-static_assert(sizeof(I64) == 8, "Refusing to compile; long long of wrong size");
+static_assert(sizeof(I64) == 8, "Refusing to compile; wrong size");
 
 /** An unsigned integer type that is consistent across all of claricpp
  *  Note that python does not have an integer maximum, C++ is bounded by this restriction
@@ -44,7 +44,7 @@ static_assert(sizeof(I64) == 8, "Refusing to compile; long long of wrong size");
  *  We prefer 'unsigned long long' over uint64_t if same size (makes cross platform API easier)
  */
 using U64 = unsigned long long;
-static_assert(sizeof(U64) == 8, "Refusing to compile; long long of wrong size");
+static_assert(sizeof(U64) == 8, "Refusing to compile; wrong size");
 
 /** A shortcut for a const Type * const */
 template <typename T> using CTSC = const T *const;
@@ -62,23 +62,14 @@ static_assert(std::is_arithmetic_v<U64>, "U64 must be an arithmetic primitive");
  *  This assumes the max of
  */
 constexpr I64 operator"" _i(const unsigned long long i) {
-    // If it is safe, cast
-    const constexpr auto max { std::numeric_limits<I64>::max() };
-    const constexpr auto lim { static_cast<unsigned long long>(max) };
-    if ((i <= lim) && (static_cast<I64>(i) <= max)) {
-        return static_cast<I64>(i);
-    }
-    // Otherwise we would have to narrow
-    else {
-        // Narrowing
-        throw std::domain_error("Constant given to literal operator: too large");
-    }
+    static_assert(sizeof(I64) == sizeof(unsigned long long), "Will not narrow");
+    return static_cast<I64>(i);
 }
-
 
 /** Create a literal prefix for U64 */
 constexpr U64 operator"" _ui(const unsigned long long u) noexcept {
-    return u; // The compiler will error if this is narrowing
+    static_assert(sizeof(U64) == sizeof(unsigned long long), "Will not narrow");
+    return u;
 }
 
 // A way to get an std::string from a char[]
