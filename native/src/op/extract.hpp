@@ -23,10 +23,10 @@ namespace Op {
         const Expr::BasePtr from;
 
         /** repr */
-        inline void append_repr(std::ostream &out) const final {
+        inline void repr_stream(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "high":)|" << high << R"|(, "low":)|"
                 << low << R"|(, "from":)|";
-            from->repr(out);
+            from->repr_stream(out);
             out << " }";
         }
 

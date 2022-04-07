@@ -22,9 +22,9 @@ namespace Op::FP {
         const Mode::FP::Width width;
 
         /** repr */
-        inline void append_repr(std::ostream &out) const final {
+        inline void repr_stream(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(, "bv":)|";
-            bv->repr(out);
+            bv->repr_stream(out);
             out << R"|(, "width":)|" << width << " }";
         }
 

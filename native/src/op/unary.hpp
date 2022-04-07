@@ -35,9 +35,9 @@ namespace Op {
         const Expr::BasePtr child;
 
         /** repr */
-        inline void append_repr(std::ostream &out) const final {
+        inline void repr_stream(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "child":)|";
-            child->repr(out);
+            child->repr_stream(out);
             out << " }";
         }
 

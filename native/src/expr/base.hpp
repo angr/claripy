@@ -24,7 +24,7 @@ namespace Expr {
     /** The base Expr type
      *  All exprs must subclass this
      */
-    class Base : public Factory::FactoryMade {
+    class Base : public HasRepr, public Factory::FactoryMade {
         FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base, 0)
       public:
         /** Return true if and only if this expr is symbolic */
@@ -39,9 +39,7 @@ namespace Expr {
         /** Get the type name */
         virtual inline const char *type_name() const noexcept = 0;
         /** Get the Expr's repr */
-        void repr(std::ostream &out) const;
-        /** Get the Expr's repr */
-        std::string repr() const;
+        virtual void repr_stream(std::ostream &out) const override;
 
       protected:
         /** Protected Constructor */
@@ -85,7 +83,7 @@ namespace Expr {
             os << "(null Expr::BasePtr)";
         }
         else {
-            p->repr(os);
+            p->repr_stream(os);
         }
         return os;
     }

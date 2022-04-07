@@ -91,13 +91,13 @@ namespace Op {
         inline bool consider_size() const noexcept final { return ConsiderSize; }
 
         /** repr */
-        inline void append_repr(std::ostream &out) const final {
+        inline void repr_stream(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "consider_size":)|" << std::boolalpha
                 << ConsiderSize << R"|(, "args":[ )|";
-            operands[0]->repr(out);
+            operands[0]->repr_stream(out);
             for (U64 i = 1; i < operands.size(); ++i) {
                 out << ", ";
-                operands[i]->repr(out);
+                operands[i]->repr_stream(out);
             }
             out << " ] }";
         }

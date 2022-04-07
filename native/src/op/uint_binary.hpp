@@ -39,9 +39,9 @@ namespace Op {
         const U64 integer;
 
         /** repr */
-        inline void append_repr(std::ostream &out) const final {
+        inline void repr_stream(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "expr":)|";
-            expr->repr(out);
+            expr->repr_stream(out);
             out << R"|(, "integer":)|" << integer << " }";
         }
 

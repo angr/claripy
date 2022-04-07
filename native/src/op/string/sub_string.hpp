@@ -29,13 +29,13 @@ namespace Op::String {
         const Expr::BasePtr full_string;
 
         /** repr */
-        inline void append_repr(std::ostream &out) const final {
+        inline void repr_stream(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "start_index":)|";
-            start_index->repr(out);
+            start_index->repr_stream(out);
             out << R"|(, "count":)|";
-            count->repr(out);
+            count->repr_stream(out);
             out << R"|(, "full_string":)|";
-            full_string->repr(out);
+            full_string->repr_stream(out);
             out << " }";
         }
 

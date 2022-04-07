@@ -9,6 +9,7 @@
 #include "macros.hpp"
 
 #include "../factory.hpp"
+#include "../has_repr.hpp"
 
 
 namespace Op {
@@ -16,20 +17,12 @@ namespace Op {
     /** Base operation expr
      *  All op exprs must subclass this
      */
-    class Base : public Factory::FactoryMade {
+    class Base : public HasRepr, public Factory::FactoryMade {
         OP_PURE_INIT(Base);
 
       public:
         /** The name of the op */
         virtual inline const char *op_name() const noexcept = 0;
-        /** Python's repr function, but appends to an ostream (outputs json) */
-        virtual inline void append_repr(std::ostream &out) const = 0;
-        /** Python's repr function (outputs json) */
-        inline std::string repr() const {
-            std::ostringstream s;
-            append_repr(s);
-            return s.str();
-        }
 
         /** Adds the raw expr children of the expr to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
@@ -53,18 +46,18 @@ namespace Op {
     /** Default virtual destructor */
     inline Base::~Base() noexcept = default;
 
-    /** Overload the << stream operator to use append_repr */
+    /** Overload the << stream operator to use repr */
     inline std::ostream &operator<<(std::ostream &os, const Op::Base *p) {
         if (UNLIKELY(p == nullptr)) {
             os << "(null Op::BasePtr)";
         }
         else {
-            p->append_repr(os);
+            p->repr_stream(os);
         }
         return os;
     }
 
-    /** Overload the << stream operator to use append_repr */
+    /** Overload the << stream operator to use repr */
     inline std::ostream &operator<<(std::ostream &os, const BasePtr &p) {
         os << p.get();
         return os;

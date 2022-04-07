@@ -56,12 +56,12 @@ namespace Op {
         inline std::vector<ArgVar> python_children() const final { return { left, right }; }
 
         /** repr */
-        inline void append_repr(std::ostream &out) const override {
+        inline void repr_stream(std::ostream &out) const override {
             out << R"|({ "name":")|" << op_name() << R"|(", "consider_size":)|" << std::boolalpha
                 << ConsiderSize << R"|(, "left":)|";
-            left->repr(out);
+            left->repr_stream(out);
             out << R"|(, "right":)|";
-            right->repr(out);
+            right->repr_stream(out);
             out << " }";
         }
 

@@ -18,7 +18,7 @@ namespace Op {
         const std::string name;
 
         /** repr */
-        inline void append_repr(std::ostream &out) const final {
+        inline void repr_stream(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "symbol":")|" << name << "\" }";
         }
 

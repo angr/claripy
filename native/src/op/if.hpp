@@ -25,13 +25,13 @@ namespace Op {
         const Expr::BasePtr if_false;
 
         /** repr */
-        inline void append_repr(std::ostream &out) const final {
+        inline void repr_stream(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "cond":)|";
-            cond->repr(out);
+            cond->repr_stream(out);
             out << R"|(, "if_true":)|";
-            if_true->repr(out);
+            if_true->repr_stream(out);
             out << R"|(, "if_false":)|";
-            if_false->repr(out);
+            if_false->repr_stream(out);
             out << " }";
         }
 

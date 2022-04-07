@@ -13,7 +13,7 @@ void Expr::Base::ctor_debug_checks() const {
     }
 }
 
-void Expr::Base::repr(std::ostream &out) const {
+void Expr::Base::repr_stream(std::ostream &out) const {
     UTIL_ASSERT_NOT_NULL_DEBUG(op); // Sanity check
     out << R"|({ "type":")|" << type_name();
     out << R"|(", "symbolic":)|" << std::boolalpha << symbolic << ", ";
@@ -21,16 +21,10 @@ void Expr::Base::repr(std::ostream &out) const {
         out << R"|("bit_length":)|" << bits->bit_length << ", ";
     }
     out << R"|("op":)|";
-    op->append_repr(out);
+    op->repr_stream(out);
     if (annotations != nullptr) {
         out << R"|(, "annotations":)|";
-        annotations->append_repr(out);
+        annotations->repr_stream(out);
     }
     out << " }";
-}
-
-std::string Expr::Base::repr() const {
-    std::ostringstream o;
-    repr(o);
-    return o.str();
 }

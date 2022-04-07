@@ -41,12 +41,12 @@ namespace Op::FP {
         const Expr::BasePtr right;
 
         /** repr */
-        inline void append_repr(std::ostream &out) const final {
+        inline void repr_stream(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "mode":)|" << Util::to_underlying(mode)
                 << R"|(, "left":)|";
-            left->repr(out);
+            left->repr_stream(out);
             out << R"|(, "right":)|";
-            right->repr(out);
+            right->repr_stream(out);
             out << " }";
         }
 

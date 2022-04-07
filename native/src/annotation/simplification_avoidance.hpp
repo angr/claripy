@@ -18,6 +18,11 @@ namespace Annotation {
         explicit inline SimplificationAvoidance(const Hash::Hash &h) noexcept
             : Base { h, static_cuid } {}
 
+        /** Get the Expr's repr */
+        virtual inline void repr_stream(std::ostream &out) const final {
+            out << R"({"Annotation Type":"SimplificationAvoidance"})";
+        }
+
         /** Returns whether this annotation can be eliminated in a simplification. */
         inline bool eliminatable() const final { return false; }
 

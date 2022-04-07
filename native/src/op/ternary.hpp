@@ -42,14 +42,14 @@ namespace Op {
         const Expr::BasePtr third;
 
         /** repr */
-        inline void append_repr(std::ostream &out) const final {
+        inline void repr_stream(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "consider_size":)|" << std::boolalpha
                 << ConsiderSize << R"|(, "first":)|";
-            first->repr(out);
+            first->repr_stream(out);
             out << R"|(, "second":)|";
-            second->repr(out);
+            second->repr_stream(out);
             out << R"|(, "third":)|";
-            third->repr(out);
+            third->repr_stream(out);
             out << " }";
         }
 
