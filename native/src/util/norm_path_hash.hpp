@@ -9,6 +9,7 @@
 #include "assert.hpp"
 #include "err.hpp"
 #include "fnv1a.hpp"
+#include "log.hpp"
 #include "str_prefix.hpp"
 #include "terminate.hpp"
 
