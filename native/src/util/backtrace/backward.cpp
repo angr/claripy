@@ -16,7 +16,7 @@
         backward::SourceFile::add_paths_to_env_variable_impl(native);
     }
     catch (std::exception &e) {
-        UTIL_NEW_FALLBACK_ERROR_LOG("Failed to set backward source root because: ").log(e.what());
+        UTIL_NEW_FALLBACK_ERROR_LOG("Failed to set backward source root because: ", e.what());
     }
     catch (...) {
         UTIL_NEW_FALLBACK_ERROR_LOG("Failed to set backward source root due "

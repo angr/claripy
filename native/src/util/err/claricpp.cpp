@@ -23,14 +23,10 @@ void Util::Err::Claricpp::log_atomic_change(CCSC what, const bool old, const boo
                         str(new_));
     }
     catch (std::exception &e) {
-        UTIL_NEW_FALLBACK_ERROR_LOG("Util::Err::Claricpp: ")
-            .log(what)
-            .log(" changed from ")
-            .log(old ? "true" : "false")
-            .log(" to ")
-            .log(new_ ? "true" : "false")
-            .log("\nLog failure! Fallback log was used. Log exception: ")
-            .log(e.what());
+        UTIL_NEW_FALLBACK_ERROR_LOG(
+            "Util::Err::Claricpp: ", what, " changed from ", (old ? "true" : "false"), " to ",
+            (new_ ? "true" : "false"),
+            "\nLog failure! Fallback log was used. Log exception: ", e.what());
     }
 }
 
@@ -42,24 +38,13 @@ void Util::Err::Claricpp::warn_backtrace_slow() noexcept {
     try {
         Util::Log::warning(msg);
     }
-    catch (std::exception &e) {
-        UTIL_NEW_FALLBACK_ERROR_LOG(msg)
-            .log("\nLog failure! Fallback log was used. Logging failed because: ")
-            .log(e.what());
-    }
+    UTIL_FALLBACKLOG_CATCH(msg, "\nLog failure! Fallback log was used. Logging failed");
 }
 
-void Util::Err::Claricpp::save_backtrace() noexcept {
-    try {
-        backtraces.emplace_front(LazyTrace::create(generator, frame_offset));
-        if (backtraces.size() > n_backtraces) {
-            backtraces.pop_back();
-        }
-    }
-    catch (std::exception &e) {
-        UTIL_NEW_FALLBACK_ERROR_LOG("Failed to save backtrace due to exception: ").log(e.what());
-    }
-    catch (...) {
-        UTIL_NEW_FALLBACK_ERROR_LOG("Failed to save backtrace due non-exception exception.");
+void Util::Err::Claricpp::save_backtrace() noexcept try {
+    backtraces.emplace_front(LazyTrace::create(generator, frame_offset));
+    if (backtraces.size() > n_backtraces) {
+        backtraces.pop_back();
     }
 }
+UTIL_FALLBACKLOG_CATCH("Failed to save backtrace");

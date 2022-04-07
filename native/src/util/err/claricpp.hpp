@@ -98,14 +98,9 @@ namespace Util::Err {
                     if (LIKELY(index < backtraces.size())) {
                         return backtraces[index];
                     }
-                    UTIL_NEW_FALLBACK_ERROR_LOG("Index out of range");
+                    UTIL_NEW_FALLBACK_ERROR_LOG("Index out of range: ", index);
                 }
-                catch (std::exception &e) {
-                    UTIL_NEW_FALLBACK_ERROR_LOG("Failed because: ").log(e.what());
-                }
-                catch (...) {
-                    UTIL_NEW_FALLBACK_ERROR_LOG("Failed due to a non-exception being thrown");
-                }
+                UTIL_FALLBACKLOG_CATCH("Failed to get backtrace ", index)
             }
             // No trace to return
             return {};

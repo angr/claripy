@@ -8,14 +8,8 @@
 
 
 /** Safely log a message */
-static inline void slog(CCSC msg) noexcept {
-    try {
-        Util::Log::info(msg);
-    }
-    catch (...) {
-        UTIL_NEW_FALLBACK_ERROR_LOG("Logging failed. Message: ").log(msg);
-    }
-}
+static inline void slog(CCSC msg) noexcept try { Util::Log::info(msg); }
+UTIL_FALLBACKLOG_CATCH("Logging failed. Original message: ", msg, "\nLogging failed");
 
 void API::bind_manual(pybind11::module_ &root_module, Binder::ModuleGetter &m) {
     register_at_exit([]() noexcept {

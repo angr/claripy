@@ -33,19 +33,10 @@ struct PythonLog final : public Util::Log::Backend::Base {
 };
 
 /** Restore the C++ log backend */
-static void set_log_default() noexcept {
-    try {
-        Util::Log::Backend::set<Util::Log::Backend::Default>();
-    }
-    catch (std::exception &e) {
-        UTIL_NEW_FALLBACK_ERROR_LOG("Failed to restore C++ default logger because: ")
-            .log(e.what()); // TODO: make this type of thing a macro since it keeps repeating
-    }
-    catch (...) {
-        UTIL_NEW_FALLBACK_ERROR_LOG(
-            "Failed to restore C++ default logger due to non-exception being thrown");
-    }
+static void set_log_default() noexcept try {
+    Util::Log::Backend::set<Util::Log::Backend::Default>();
 }
+UTIL_FALLBACKLOG_CATCH("Failed to restore C++ default logger")
 
 void API::bind_log_init(Binder::ModuleGetter &m) {
     register_at_exit(set_log_default);

@@ -36,7 +36,7 @@ namespace Util::Backtrace {
                     "Failed to generate trace because generator function pointer is null");
             }
             catch (std::exception &e) {
-                UTIL_NEW_FALLBACK_ERROR_LOG("Failed to generate trace because: ").log(e.what());
+                UTIL_NEW_FALLBACK_ERROR_LOG("Failed to generate trace because: ", e.what());
             }
             catch (...) {
                 UTIL_NEW_FALLBACK_ERROR_LOG("Failed to generate trace because"
