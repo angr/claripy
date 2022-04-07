@@ -2,43 +2,54 @@
  * @file
  * \ingroup util
  */
-#include "backward.hpp"
+#include "generators.hpp"
 
 #include "../do_once.hpp"
+#include "../fallback_error_log.hpp"
 
 #include <backward.hpp>
 
-// @todo: Add segfault handling
 
-
-void Util::Backtrace::backward_add_source_root(CCSC native) {
-    backward::SourceFile::add_paths_to_env_variable_impl(native);
+/** Add a source root for backward */
+[[maybe_unused]] static void add_source_root(CCSC native) noexcept {
+    try {
+        backward::SourceFile::add_paths_to_env_variable_impl(native);
+    }
+    catch (std::exception &e) {
+        UTIL_NEW_FALLBACK_ERROR_LOG("Failed to set backward source root because: ").log(e.what());
+    }
+    catch (...) {
+        UTIL_NEW_FALLBACK_ERROR_LOG("Failed to set backward source root due "
+                                    "to an unknown non-exception being thrown");
+    }
 }
 
-void Util::Backtrace::backward(std::ostream &o, const U64 ignore_frames,
+void Util::Backtrace::backward(std::ostream &o, const unsigned ignore_frames,
                                const int16_t max_frames) noexcept {
 #ifdef SOURCE_ROOT_FOR_BACKTRACE
-    UTIL_DOONCE(backward_add_source_root(SOURCE_ROOT_FOR_BACKTRACE));
+    // This function is threadsafe, no need to ensure it is called exactly once between threads
+    // Additional calls to this function don't cause much overhead, so no need for extra sync
+    UTIL_ATOMIC_DOONCE(add_source_root(SOURCE_ROOT_FOR_BACKTRACE));
 #endif
-    namespace B = backward;
     // Backtrace
-    B::StackTrace st;
+    ::backward::StackTrace st;
     st.load_here(static_cast<std::size_t>(max_frames));
-    st.skip_n_firsts(ignore_frames);
+    st.skip_n_firsts(static_cast<U64>(ignore_frames) + 1);
     // Config printer
-    B::Printer p;
+    ::backward::Printer p;
     p.snippet = true;
     p.object = true;
     p.address = true;
     p.color_mode =
 #ifdef ENABLE_ANSI_COLOR_CODES
-        B::ColorMode::always;
+        ::backward::ColorMode::always;
 #else
-        B::ColorMode::automatic;
+        ::backward::ColorMode::automatic;
 #endif
     // Output
     p.print(st, o);
 }
 
 // Backtraces for segfaults
+// @todo: Add segfault handling better
 backward::SignalHandling sh;

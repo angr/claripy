@@ -6,7 +6,8 @@
 #ifndef R_UTIL_BACKTRACE_HPP_
 #define R_UTIL_BACKTRACE_HPP_
 
-#include "backtrace/backward.hpp"
-#include "backtrace/native.hpp"
+#include "backtrace/constants.hpp"
+#include "backtrace/generators.hpp"
+#include "backtrace/lazy.hpp"
 
 #endif
