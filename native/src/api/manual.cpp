@@ -1,3 +1,4 @@
+/** @file */
 #include "manual.hpp"
 
 #include "exceptions.hpp"

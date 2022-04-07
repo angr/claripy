@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup util
  * @brief This file defines log level modes
  */
 #ifndef R_UTIL_LOG_LEVEL_LEVEL_HPP_

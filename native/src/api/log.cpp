@@ -1,3 +1,4 @@
+/** @file */
 #include "log.hpp"
 
 #include "../util.hpp"

@@ -1,3 +1,7 @@
+/**
+ * @file
+ * @brief This file defines the headers binder will scan to generate bindings
+ */
 #ifndef R_API_HEADERS_HPP_
 #define R_API_HEADERS_HPP_
 

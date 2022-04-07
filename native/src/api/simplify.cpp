@@ -1,3 +1,4 @@
+/** @file */
 #include "simplify.hpp"
 
 #include "../simplify.hpp"

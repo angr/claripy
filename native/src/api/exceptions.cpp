@@ -1,3 +1,4 @@
+/** @file */
 #include "exceptions.hpp"
 
 #include "constants.hpp"

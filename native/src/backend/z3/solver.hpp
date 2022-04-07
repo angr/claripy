@@ -1,3 +1,7 @@
+/**
+ * @file
+ * @brief This file defines a z3 solver wrapper
+ */
 #ifndef R_BACKEND_Z3_SOLVER_HPP_
 #define R_BACKEND_Z3_SOLVER_HPP_
 
