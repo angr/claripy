@@ -1,6 +1,7 @@
 from enum import Enum
 import clari
 import logging
+import functools
 
 logging.basicConfig(
     level=logging.DEBUG, # TODO: use angr logging system
@@ -11,8 +12,22 @@ logging.basicConfig(
 
 clari.Util.Err.Claricpp.toggle_backtrace(True) # TODO: remove me when not debugging
 def _cls_init(self, *args, **kwargs):
-    tr = clari.Util.Err.Claricpp.backtrace()
-    self.native_trace = tr if len(tr) > 0 else "Native tracing is disabled"
+    def native_trace(args):
+        if not hasattr(self, '_native_trace'):
+            lazy = args[0]
+            if lazy is None:
+                self._native_trace = ""
+            else:
+                try:
+                    self._native_trace = lazy.str() # Evaluate and cache the result
+                except Exception as e:
+                    logging.error("Failed to extract native backtrace because: " + str(e))
+                    self._native_trace = ""
+            del args[0] # Free the lazy object since we cached the evaluation
+        return self._native_trace
+    lazy = clari.Util.Err.Claricpp.lazy_backtrace() # should never throw
+    # Set the native_trace function and call the old init
+    self.native_trace = functools.partial(native_trace, [lazy])
     super(clari.py_err._internal.Base, self).__init__(*args, **kwargs)
 clari.py_err._internal.Base.__init__ = _cls_init
 del _cls_init # No need to keep this name around
@@ -28,6 +43,7 @@ clari.API.install_logger(lambda a,b,c: logging.getLogger(a).log(b,c))
 ### Operators ###
 
 # Fixes
+# TODO: make this work for instance variabels clari.Expr.Base.args = clari.Expr.Base.python_children
 
 # Define repr
 # TODO: clari.Annotation.Base.__repr__ = clari.Annotation.Base.repr
@@ -84,41 +100,10 @@ clari.Expr.String.__add__ = lambda x,y: clari.Create.concat(x,y)
 
 clari.Expr.Base.__invert__ = lambda x: clari.Create.invert(x)
 
-# TODO: define new ops! +, -, etc
-
-# TODO: exception init
-a = clari.Create.literal(5)
-b = clari.Create.literal(5.0)
-# print("Doing cmp")
-# print(repr(a.op))
-# print(repr(a < a))
-# print(repr(b < b))
-
-'''
-print("\n\n")
-try:
-    a < b
-except Exception as e:
-    ts = '  '
-    print("\nCaught exception:\n" + ts + "msg: " + str(e))
-    print(ts + "type: " + str(type(e)))
-    import inspect
-    mro = [ str(i).split("'")[1] for i in inspect.getmro(type(e)) ]
-    print(ts + "mro:\n" + ts*2 + ('\n'+ts*2).join(mro))
-    print('\n' + ts + "e.native_trace:\n\n" + e.native_trace)
-    ln = '\n' + '*' * 70
-    print(ln + '\n*' + 'End of exception info'.center(68, ' ') + '*' + ln + '\n')
-
-    import IPython
-    IPython.embed()
-'''
-
-import IPython
-IPython.embed()
-
 
 # Logical
 
+# TODO: make segfault handler optional
 
 # TODO: existing: format, new, reduce, reduce_ex, sizeof, str,
 
