@@ -1,28 +1,27 @@
 // Claricpp API
 
-#include "manual.hpp"
-#include "headers.hpp"
 #include "constants.hpp"
+#include "headers.hpp"
+#include "manual.hpp"
+#include <algorithm>
+#include <cstddef>
+#include <functional>
+#include <ios>
+#include <iterator>
+#include <locale>
 #include <map>
 #include <memory>
-#include <stdexcept>
-#include <functional>
-#include <string>
-#include <algorithm>
-#include <pybind11/pybind11.h>
-#include <sstream>
-#include <string_view>
-#include <z3++.h>
-#include <pybind11/stl.h>
-#include <ios>
 #include <ostream>
-#include <locale>
-#include <streambuf>
-#include <cstddef>
-#include <iterator>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <sstream>
 #include <stack>
+#include <stdexcept>
+#include <streambuf>
+#include <string>
 #include <variant>
 #include <vector>
+#include <z3++.h>
 
 
 //
@@ -90,8 +89,6 @@ void bind_unknown_unknown_49(std::function< pybind11::module &(std::string const
 void bind_unknown_unknown_50(std::function< pybind11::module &(std::string const &namespace_) > &M);
 void bind_unknown_unknown_51(std::function< pybind11::module &(std::string const &namespace_) > &M);
 void bind_unknown_unknown_52(std::function< pybind11::module &(std::string const &namespace_) > &M);
-void bind_unknown_unknown_53(std::function< pybind11::module &(std::string const &namespace_) > &M);
-void bind_unknown_unknown_54(std::function< pybind11::module &(std::string const &namespace_) > &M);
 
 } // namespace API::Binder
 
@@ -203,8 +200,6 @@ PYBIND11_MODULE(clari, root_module) {
 	API::Binder::bind_unknown_unknown_50(M);
 	API::Binder::bind_unknown_unknown_51(M);
 	API::Binder::bind_unknown_unknown_52(M);
-	API::Binder::bind_unknown_unknown_53(M);
-	API::Binder::bind_unknown_unknown_54(M);
 
 	// Manual API call
 	API::bind_manual(root_module, M);
@@ -709,14 +704,14 @@ void bind_unknown_unknown_19(std::function< pybind11::module &(std::string const
 		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Union,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
 		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Intersection,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
 		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Concat,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Add,std::vector<std::shared_ptr<const Expr::Base>, std::allocator<std::shared_ptr<const Expr::Base> > >>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Mul,std::vector<std::shared_ptr<const Expr::Base>, std::allocator<std::shared_ptr<const Expr::Base> > >>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Or,std::vector<std::shared_ptr<const Expr::Base>, std::allocator<std::shared_ptr<const Expr::Base> > >>, "C++: Factory::FactoryMade::static_type_check() --> void");
+		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Add,std::vector<std::shared_ptr<const Expr::Base> >>, "C++: Factory::FactoryMade::static_type_check() --> void");
+		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Mul,std::vector<std::shared_ptr<const Expr::Base> >>, "C++: Factory::FactoryMade::static_type_check() --> void");
+		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Or,std::vector<std::shared_ptr<const Expr::Base> >>, "C++: Factory::FactoryMade::static_type_check() --> void");
 		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Expr::Base,Expr::String,const bool &, std::shared_ptr<const Op::Base>, const unsigned long long &, std::shared_ptr<const Annotation::Vec>>, "C++: Factory::FactoryMade::static_type_check() --> void");
 		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Expr::Base,Expr::FP,const bool &, std::shared_ptr<const Op::Base>, const unsigned long long &, std::shared_ptr<const Annotation::Vec>>, "C++: Factory::FactoryMade::static_type_check() --> void");
 		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Expr::Base,Expr::VS,const bool &, std::shared_ptr<const Op::Base>, const unsigned long long &, std::shared_ptr<const Annotation::Vec>>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::And,std::vector<std::shared_ptr<const Expr::Base>, std::allocator<std::shared_ptr<const Expr::Base> > >>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Xor,std::vector<std::shared_ptr<const Expr::Base>, std::allocator<std::shared_ptr<const Expr::Base> > >>, "C++: Factory::FactoryMade::static_type_check() --> void");
+		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::And,std::vector<std::shared_ptr<const Expr::Base> >>, "C++: Factory::FactoryMade::static_type_check() --> void");
+		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Xor,std::vector<std::shared_ptr<const Expr::Base> >>, "C++: Factory::FactoryMade::static_type_check() --> void");
 	}
 }
 } // namespace API::Binder
@@ -857,7 +852,7 @@ void bind_unknown_unknown_20(std::function< pybind11::module &(std::string const
 namespace API::Binder {
 void bind_unknown_unknown_21(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
-	{ // HasRepr file: line:12
+	{ // HasRepr file: line:13
 		pybind11::class_<HasRepr, std::shared_ptr<HasRepr>> cl(M(""), "HasRepr", "A struct with a repr function ");
 		cl.def("assign", (struct HasRepr & (HasRepr::*)(const struct HasRepr &)) &HasRepr::operator=, "C++: HasRepr::operator=(const struct HasRepr &) --> struct HasRepr &", pybind11::return_value_policy::automatic, pybind11::arg(""));
 		cl.def("repr", (std::string (HasRepr::*)() const) &HasRepr::repr, "Return the repr as a string \n\nC++: HasRepr::repr() const --> std::string");
@@ -1262,43 +1257,51 @@ void bind_unknown_unknown_31(std::function< pybind11::module &(std::string const
 	{ // Op::Base file: line:20
 		pybind11::class_<Op::Base, std::shared_ptr<Op::Base>, HasRepr, Factory::FactoryMade> cl(M("Op"), "Base", "Base operation expr\n  All op exprs must subclass this");
 		cl.def("op_name", (const char * (Op::Base::*)() const) &Op::Base::op_name, "The name of the op \n\nC++: Op::Base::op_name() const --> const char *", pybind11::return_value_policy::automatic);
-		cl.def("unsafe_add_reversed_children", (void (Op::Base::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::Base::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n  Be careful to ensure 'this' does not destruct while using said pointers\n\nC++: Op::Base::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg(""));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::Base::*)() const) &Op::Base::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Base::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
+		cl.def("unsafe_add_reversed_children", (void (Op::Base::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::Base::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n  Be careful to ensure 'this' does not destruct while using said pointers\n\nC++: Op::Base::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg(""));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::Base::*)() const) &Op::Base::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Base::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
 	}
 	{ // Op::Binary file: line:36
 		pybind11::class_<Op::Binary<true>, std::shared_ptr<Op::Binary<true>>, Op::Base> cl(M("Op"), "Binary_true_t", "");
 		cl.def_readonly("left", &Op::Binary<true>::left);
 		cl.def_readonly("right", &Op::Binary<true>::right);
-		cl.def("unsafe_add_reversed_children", (void (Op::Binary<true>::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::Binary<true>::unsafe_add_reversed_children, "C++: Op::Binary<true>::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg("s"));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::Binary<true>::*)() const) &Op::Binary<true>::python_children, "C++: Op::Binary<true>::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
+		cl.def("unsafe_add_reversed_children", (void (Op::Binary<true>::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::Binary<true>::unsafe_add_reversed_children, "C++: Op::Binary<true>::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg("s"));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::Binary<true>::*)() const) &Op::Binary<true>::python_children, "C++: Op::Binary<true>::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
 		cl.def("op_name", (const char * (Op::Base::*)() const) &Op::Base::op_name, "The name of the op \n\nC++: Op::Base::op_name() const --> const char *", pybind11::return_value_policy::automatic);
-		cl.def("unsafe_add_reversed_children", (void (Op::Base::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::Base::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n  Be careful to ensure 'this' does not destruct while using said pointers\n\nC++: Op::Base::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg(""));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::Base::*)() const) &Op::Base::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Base::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
+		cl.def("unsafe_add_reversed_children", (void (Op::Base::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::Base::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n  Be careful to ensure 'this' does not destruct while using said pointers\n\nC++: Op::Base::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg(""));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::Base::*)() const) &Op::Base::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Base::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
 	}
 	{ // Op::Binary file: line:36
 		pybind11::class_<Op::Binary<false>, std::shared_ptr<Op::Binary<false>>, Op::Base> cl(M("Op"), "Binary_false_t", "");
 		cl.def_readonly("left", &Op::Binary<false>::left);
 		cl.def_readonly("right", &Op::Binary<false>::right);
-		cl.def("unsafe_add_reversed_children", (void (Op::Binary<false>::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::Binary<false>::unsafe_add_reversed_children, "C++: Op::Binary<false>::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg("s"));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::Binary<false>::*)() const) &Op::Binary<false>::python_children, "C++: Op::Binary<false>::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
+		cl.def("unsafe_add_reversed_children", (void (Op::Binary<false>::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::Binary<false>::unsafe_add_reversed_children, "C++: Op::Binary<false>::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg("s"));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::Binary<false>::*)() const) &Op::Binary<false>::python_children, "C++: Op::Binary<false>::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
 		cl.def("op_name", (const char * (Op::Base::*)() const) &Op::Base::op_name, "The name of the op \n\nC++: Op::Base::op_name() const --> const char *", pybind11::return_value_policy::automatic);
-		cl.def("unsafe_add_reversed_children", (void (Op::Base::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::Base::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n  Be careful to ensure 'this' does not destruct while using said pointers\n\nC++: Op::Base::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg(""));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::Base::*)() const) &Op::Base::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Base::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
+		cl.def("unsafe_add_reversed_children", (void (Op::Base::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::Base::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n  Be careful to ensure 'this' does not destruct while using said pointers\n\nC++: Op::Base::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg(""));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::Base::*)() const) &Op::Base::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Base::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
 	}
 	{ // Op::Extract file: line:14
 		pybind11::class_<Op::Extract, std::shared_ptr<Op::Extract>, Op::Base> cl(M("Op"), "Extract", "The op class: Extract ");
 		cl.def_readonly("high", &Op::Extract::high);
 		cl.def_readonly("low", &Op::Extract::low);
 		cl.def_readonly("from", &Op::Extract::from);
-		cl.def("unsafe_add_reversed_children", (void (Op::Extract::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::Extract::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n\nC++: Op::Extract::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg("s"));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::Extract::*)() const) &Op::Extract::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Extract::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
+		cl.def("unsafe_add_reversed_children", (void (Op::Extract::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::Extract::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n\nC++: Op::Extract::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg("s"));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::Extract::*)() const) &Op::Extract::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Extract::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
 	}
 	{ // Op::AbstractFlat file: line:36
 		pybind11::class_<Op::AbstractFlat, std::shared_ptr<Op::AbstractFlat>, Op::Base> cl(M("Op"), "AbstractFlat", "An abstract flattened Op class\n  Operands must all be of the same type and there must be at least 2\n  These conditions are *not* validated");
 		cl.def_readonly("operands", &Op::AbstractFlat::operands);
 		cl.def("consider_size", (bool (Op::AbstractFlat::*)() const) &Op::AbstractFlat::consider_size, "Return true if this class requires each operand be of the same size \n\nC++: Op::AbstractFlat::consider_size() const --> bool");
-		cl.def("unsafe_add_reversed_children", (void (Op::AbstractFlat::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::AbstractFlat::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n\nC++: Op::AbstractFlat::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg("s"));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::AbstractFlat::*)() const) &Op::AbstractFlat::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::AbstractFlat::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
+		cl.def("unsafe_add_reversed_children", (void (Op::AbstractFlat::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::AbstractFlat::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n\nC++: Op::AbstractFlat::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg("s"));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::AbstractFlat::*)() const) &Op::AbstractFlat::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::AbstractFlat::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
+	}
+	{ // Op::Flat file: line:86
+		pybind11::class_<Op::Flat<true>, std::shared_ptr<Op::Flat<true>>, Op::AbstractFlat> cl(M("Op"), "Flat_true_t", "");
+		cl.def("consider_size", (bool (Op::Flat<true>::*)() const) &Op::Flat<true>::consider_size, "C++: Op::Flat<true>::consider_size() const --> bool");
+		cl.def_readonly("operands", &Op::AbstractFlat::operands);
+		cl.def("consider_size", (bool (Op::AbstractFlat::*)() const) &Op::AbstractFlat::consider_size, "Return true if this class requires each operand be of the same size \n\nC++: Op::AbstractFlat::consider_size() const --> bool");
+		cl.def("unsafe_add_reversed_children", (void (Op::AbstractFlat::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::AbstractFlat::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n\nC++: Op::AbstractFlat::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg("s"));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::AbstractFlat::*)() const) &Op::AbstractFlat::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::AbstractFlat::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
 	}
 }
 } // namespace API::Binder
@@ -1319,13 +1322,70 @@ void bind_unknown_unknown_31(std::function< pybind11::module &(std::string const
 namespace API::Binder {
 void bind_unknown_unknown_32(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
-	{ // Op::Flat file: line:86
-		pybind11::class_<Op::Flat<true>, std::shared_ptr<Op::Flat<true>>, Op::AbstractFlat> cl(M("Op"), "Flat_true_t", "");
-		cl.def("consider_size", (bool (Op::Flat<true>::*)() const) &Op::Flat<true>::consider_size, "C++: Op::Flat<true>::consider_size() const --> bool");
-		cl.def_readonly("operands", &Op::AbstractFlat::operands);
-		cl.def("consider_size", (bool (Op::AbstractFlat::*)() const) &Op::AbstractFlat::consider_size, "Return true if this class requires each operand be of the same size \n\nC++: Op::AbstractFlat::consider_size() const --> bool");
-		cl.def("unsafe_add_reversed_children", (void (Op::AbstractFlat::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::AbstractFlat::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n\nC++: Op::AbstractFlat::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg("s"));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::AbstractFlat::*)() const) &Op::AbstractFlat::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::AbstractFlat::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
+	{ // Op::FP::From2sComplementBV file: line:15
+		pybind11::class_<Op::FP::From2sComplementBV<Mode::Signed::Signed>, std::shared_ptr<Op::FP::From2sComplementBV<Mode::Signed::Signed>>, Op::Base> cl(M("Op::FP"), "From2sComplementBV_Mode_Signed_Signed_t", "");
+		cl.def_readonly("mode", &Op::FP::From2sComplementBV<Mode::Signed::Signed>::mode);
+		cl.def_readonly("bv", &Op::FP::From2sComplementBV<Mode::Signed::Signed>::bv);
+		cl.def_readonly("width", &Op::FP::From2sComplementBV<Mode::Signed::Signed>::width);
+		cl.def("unsafe_add_reversed_children", (void (Op::FP::From2sComplementBV<Mode::Signed::Signed>::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::FP::From2sComplementBV<Mode::Signed::Signed>::unsafe_add_reversed_children, "C++: Op::FP::From2sComplementBV<Mode::Signed::Signed>::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg("s"));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::FP::From2sComplementBV<Mode::Signed::Signed>::*)() const) &Op::FP::From2sComplementBV<Mode::Signed::Signed>::python_children, "C++: Op::FP::From2sComplementBV<Mode::Signed::Signed>::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
+		cl.def("op_name", (const char * (Op::Base::*)() const) &Op::Base::op_name, "The name of the op \n\nC++: Op::Base::op_name() const --> const char *", pybind11::return_value_policy::automatic);
+		cl.def("unsafe_add_reversed_children", (void (Op::Base::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::Base::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n  Be careful to ensure 'this' does not destruct while using said pointers\n\nC++: Op::Base::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg(""));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::Base::*)() const) &Op::Base::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Base::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
+	}
+	{ // Op::FP::From2sComplementBV file: line:15
+		pybind11::class_<Op::FP::From2sComplementBV<Mode::Signed::Unsigned>, std::shared_ptr<Op::FP::From2sComplementBV<Mode::Signed::Unsigned>>, Op::Base> cl(M("Op::FP"), "From2sComplementBV_Mode_Signed_Unsigned_t", "");
+		cl.def_readonly("mode", &Op::FP::From2sComplementBV<Mode::Signed::Unsigned>::mode);
+		cl.def_readonly("bv", &Op::FP::From2sComplementBV<Mode::Signed::Unsigned>::bv);
+		cl.def_readonly("width", &Op::FP::From2sComplementBV<Mode::Signed::Unsigned>::width);
+		cl.def("unsafe_add_reversed_children", (void (Op::FP::From2sComplementBV<Mode::Signed::Unsigned>::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::FP::From2sComplementBV<Mode::Signed::Unsigned>::unsafe_add_reversed_children, "C++: Op::FP::From2sComplementBV<Mode::Signed::Unsigned>::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg("s"));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::FP::From2sComplementBV<Mode::Signed::Unsigned>::*)() const) &Op::FP::From2sComplementBV<Mode::Signed::Unsigned>::python_children, "C++: Op::FP::From2sComplementBV<Mode::Signed::Unsigned>::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
+		cl.def("op_name", (const char * (Op::Base::*)() const) &Op::Base::op_name, "The name of the op \n\nC++: Op::Base::op_name() const --> const char *", pybind11::return_value_policy::automatic);
+		cl.def("unsafe_add_reversed_children", (void (Op::Base::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::Base::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n  Be careful to ensure 'this' does not destruct while using said pointers\n\nC++: Op::Base::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg(""));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::Base::*)() const) &Op::Base::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Base::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
+	}
+	{ // Op::FP::FromFP file: line:15
+		pybind11::class_<Op::FP::FromFP, std::shared_ptr<Op::FP::FromFP>, Op::Base> cl(M("Op::FP"), "FromFP", "The op class which converts an FP into another FP (for example, a float into a double) ");
+		cl.def_readonly("mode", &Op::FP::FromFP::mode);
+		cl.def_readonly("fp", &Op::FP::FromFP::fp);
+		cl.def_readonly("width", &Op::FP::FromFP::width);
+		cl.def("unsafe_add_reversed_children", (void (Op::FP::FromFP::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::FP::FromFP::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n\nC++: Op::FP::FromFP::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg("s"));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::FP::FromFP::*)() const) &Op::FP::FromFP::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::FP::FromFP::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
+	}
+	{ // Op::FP::FromNot2sComplementBV file: line:15
+		pybind11::class_<Op::FP::FromNot2sComplementBV, std::shared_ptr<Op::FP::FromNot2sComplementBV>, Op::Base> cl(M("Op::FP"), "FromNot2sComplementBV", "The op class which converts a non-2s-complement BV into an FP ");
+		cl.def_readonly("bv", &Op::FP::FromNot2sComplementBV::bv);
+		cl.def_readonly("width", &Op::FP::FromNot2sComplementBV::width);
+		cl.def("unsafe_add_reversed_children", (void (Op::FP::FromNot2sComplementBV::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::FP::FromNot2sComplementBV::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n\nC++: Op::FP::FromNot2sComplementBV::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg("s"));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::FP::FromNot2sComplementBV::*)() const) &Op::FP::FromNot2sComplementBV::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::FP::FromNot2sComplementBV::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
+	}
+	{ // Op::FP::ModeBinary file: line:32
+		pybind11::class_<Op::FP::ModeBinary, std::shared_ptr<Op::FP::ModeBinary>, Op::Base> cl(M("Op::FP"), "ModeBinary", "An FP Binary Op class\n  Operands must all be of the same type and size");
+		cl.def_readonly("mode", &Op::FP::ModeBinary::mode);
+		cl.def_readonly("left", &Op::FP::ModeBinary::left);
+		cl.def_readonly("right", &Op::FP::ModeBinary::right);
+		cl.def("unsafe_add_reversed_children", (void (Op::FP::ModeBinary::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::FP::ModeBinary::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n\nC++: Op::FP::ModeBinary::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg("s"));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::FP::ModeBinary::*)() const) &Op::FP::ModeBinary::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::FP::ModeBinary::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
+	}
+	{ // Op::FP::ToBV file: line:15
+		pybind11::class_<Op::FP::ToBV<Mode::Signed::Signed>, std::shared_ptr<Op::FP::ToBV<Mode::Signed::Signed>>, Op::Base> cl(M("Op::FP"), "ToBV_Mode_Signed_Signed_t", "");
+		cl.def_readonly("mode", &Op::FP::ToBV<Mode::Signed::Signed>::mode);
+		cl.def_readonly("fp", &Op::FP::ToBV<Mode::Signed::Signed>::fp);
+		cl.def("unsafe_add_reversed_children", (void (Op::FP::ToBV<Mode::Signed::Signed>::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::FP::ToBV<Mode::Signed::Signed>::unsafe_add_reversed_children, "C++: Op::FP::ToBV<Mode::Signed::Signed>::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg("s"));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::FP::ToBV<Mode::Signed::Signed>::*)() const) &Op::FP::ToBV<Mode::Signed::Signed>::python_children, "C++: Op::FP::ToBV<Mode::Signed::Signed>::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
+		cl.def("op_name", (const char * (Op::Base::*)() const) &Op::Base::op_name, "The name of the op \n\nC++: Op::Base::op_name() const --> const char *", pybind11::return_value_policy::automatic);
+		cl.def("unsafe_add_reversed_children", (void (Op::Base::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::Base::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n  Be careful to ensure 'this' does not destruct while using said pointers\n\nC++: Op::Base::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg(""));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::Base::*)() const) &Op::Base::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Base::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
+	}
+	{ // Op::FP::ToBV file: line:15
+		pybind11::class_<Op::FP::ToBV<Mode::Signed::Unsigned>, std::shared_ptr<Op::FP::ToBV<Mode::Signed::Unsigned>>, Op::Base> cl(M("Op::FP"), "ToBV_Mode_Signed_Unsigned_t", "");
+		cl.def_readonly("mode", &Op::FP::ToBV<Mode::Signed::Unsigned>::mode);
+		cl.def_readonly("fp", &Op::FP::ToBV<Mode::Signed::Unsigned>::fp);
+		cl.def("unsafe_add_reversed_children", (void (Op::FP::ToBV<Mode::Signed::Unsigned>::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::FP::ToBV<Mode::Signed::Unsigned>::unsafe_add_reversed_children, "C++: Op::FP::ToBV<Mode::Signed::Unsigned>::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg("s"));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::FP::ToBV<Mode::Signed::Unsigned>::*)() const) &Op::FP::ToBV<Mode::Signed::Unsigned>::python_children, "C++: Op::FP::ToBV<Mode::Signed::Unsigned>::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
+		cl.def("op_name", (const char * (Op::Base::*)() const) &Op::Base::op_name, "The name of the op \n\nC++: Op::Base::op_name() const --> const char *", pybind11::return_value_policy::automatic);
+		cl.def("unsafe_add_reversed_children", (void (Op::Base::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::Base::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n  Be careful to ensure 'this' does not destruct while using said pointers\n\nC++: Op::Base::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg(""));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::Base::*)() const) &Op::Base::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Base::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
 	}
 }
 } // namespace API::Binder
@@ -1346,50 +1406,22 @@ void bind_unknown_unknown_32(std::function< pybind11::module &(std::string const
 namespace API::Binder {
 void bind_unknown_unknown_33(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
-	{ // Op::FP::From2sComplementBV file: line:15
-		pybind11::class_<Op::FP::From2sComplementBV<Mode::Signed::Signed>, std::shared_ptr<Op::FP::From2sComplementBV<Mode::Signed::Signed>>, Op::Base> cl(M("Op::FP"), "From2sComplementBV_Mode_Signed_Signed_t", "");
-		cl.def_readonly("mode", &Op::FP::From2sComplementBV<Mode::Signed::Signed>::mode);
-		cl.def_readonly("bv", &Op::FP::From2sComplementBV<Mode::Signed::Signed>::bv);
-		cl.def_readonly("width", &Op::FP::From2sComplementBV<Mode::Signed::Signed>::width);
-		cl.def("unsafe_add_reversed_children", (void (Op::FP::From2sComplementBV<Mode::Signed::Signed>::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::FP::From2sComplementBV<Mode::Signed::Signed>::unsafe_add_reversed_children, "C++: Op::FP::From2sComplementBV<Mode::Signed::Signed>::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg("s"));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::FP::From2sComplementBV<Mode::Signed::Signed>::*)() const) &Op::FP::From2sComplementBV<Mode::Signed::Signed>::python_children, "C++: Op::FP::From2sComplementBV<Mode::Signed::Signed>::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
+	{ // Op::Ternary file: line:33
+		pybind11::class_<Op::Ternary<false>, std::shared_ptr<Op::Ternary<false>>, Op::Base> cl(M("Op"), "Ternary_false_t", "");
+		cl.def_readonly("first", &Op::Ternary<false>::first);
+		cl.def_readonly("second", &Op::Ternary<false>::second);
+		cl.def_readonly("third", &Op::Ternary<false>::third);
+		cl.def("unsafe_add_reversed_children", (void (Op::Ternary<false>::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::Ternary<false>::unsafe_add_reversed_children, "C++: Op::Ternary<false>::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg("s"));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::Ternary<false>::*)() const) &Op::Ternary<false>::python_children, "C++: Op::Ternary<false>::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
 		cl.def("op_name", (const char * (Op::Base::*)() const) &Op::Base::op_name, "The name of the op \n\nC++: Op::Base::op_name() const --> const char *", pybind11::return_value_policy::automatic);
-		cl.def("unsafe_add_reversed_children", (void (Op::Base::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::Base::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n  Be careful to ensure 'this' does not destruct while using said pointers\n\nC++: Op::Base::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg(""));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::Base::*)() const) &Op::Base::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Base::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
+		cl.def("unsafe_add_reversed_children", (void (Op::Base::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::Base::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n  Be careful to ensure 'this' does not destruct while using said pointers\n\nC++: Op::Base::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg(""));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::Base::*)() const) &Op::Base::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Base::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
 	}
-	{ // Op::FP::From2sComplementBV file: line:15
-		pybind11::class_<Op::FP::From2sComplementBV<Mode::Signed::Unsigned>, std::shared_ptr<Op::FP::From2sComplementBV<Mode::Signed::Unsigned>>, Op::Base> cl(M("Op::FP"), "From2sComplementBV_Mode_Signed_Unsigned_t", "");
-		cl.def_readonly("mode", &Op::FP::From2sComplementBV<Mode::Signed::Unsigned>::mode);
-		cl.def_readonly("bv", &Op::FP::From2sComplementBV<Mode::Signed::Unsigned>::bv);
-		cl.def_readonly("width", &Op::FP::From2sComplementBV<Mode::Signed::Unsigned>::width);
-		cl.def("unsafe_add_reversed_children", (void (Op::FP::From2sComplementBV<Mode::Signed::Unsigned>::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::FP::From2sComplementBV<Mode::Signed::Unsigned>::unsafe_add_reversed_children, "C++: Op::FP::From2sComplementBV<Mode::Signed::Unsigned>::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg("s"));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::FP::From2sComplementBV<Mode::Signed::Unsigned>::*)() const) &Op::FP::From2sComplementBV<Mode::Signed::Unsigned>::python_children, "C++: Op::FP::From2sComplementBV<Mode::Signed::Unsigned>::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
-		cl.def("op_name", (const char * (Op::Base::*)() const) &Op::Base::op_name, "The name of the op \n\nC++: Op::Base::op_name() const --> const char *", pybind11::return_value_policy::automatic);
-		cl.def("unsafe_add_reversed_children", (void (Op::Base::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::Base::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n  Be careful to ensure 'this' does not destruct while using said pointers\n\nC++: Op::Base::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg(""));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::Base::*)() const) &Op::Base::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Base::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
-	}
-	{ // Op::FP::FromFP file: line:15
-		pybind11::class_<Op::FP::FromFP, std::shared_ptr<Op::FP::FromFP>, Op::Base> cl(M("Op::FP"), "FromFP", "The op class which converts an FP into another FP (for example, a float into a double) ");
-		cl.def_readonly("mode", &Op::FP::FromFP::mode);
-		cl.def_readonly("fp", &Op::FP::FromFP::fp);
-		cl.def_readonly("width", &Op::FP::FromFP::width);
-		cl.def("unsafe_add_reversed_children", (void (Op::FP::FromFP::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::FP::FromFP::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n\nC++: Op::FP::FromFP::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg("s"));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::FP::FromFP::*)() const) &Op::FP::FromFP::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::FP::FromFP::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
-	}
-	{ // Op::FP::FromNot2sComplementBV file: line:15
-		pybind11::class_<Op::FP::FromNot2sComplementBV, std::shared_ptr<Op::FP::FromNot2sComplementBV>, Op::Base> cl(M("Op::FP"), "FromNot2sComplementBV", "The op class which converts a non-2s-complement BV into an FP ");
-		cl.def_readonly("bv", &Op::FP::FromNot2sComplementBV::bv);
-		cl.def_readonly("width", &Op::FP::FromNot2sComplementBV::width);
-		cl.def("unsafe_add_reversed_children", (void (Op::FP::FromNot2sComplementBV::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::FP::FromNot2sComplementBV::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n\nC++: Op::FP::FromNot2sComplementBV::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg("s"));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::FP::FromNot2sComplementBV::*)() const) &Op::FP::FromNot2sComplementBV::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::FP::FromNot2sComplementBV::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
-	}
-	{ // Op::FP::ModeBinary file: line:32
-		pybind11::class_<Op::FP::ModeBinary, std::shared_ptr<Op::FP::ModeBinary>, Op::Base> cl(M("Op::FP"), "ModeBinary", "An FP Binary Op class\n  Operands must all be of the same type and size");
-		cl.def_readonly("mode", &Op::FP::ModeBinary::mode);
-		cl.def_readonly("left", &Op::FP::ModeBinary::left);
-		cl.def_readonly("right", &Op::FP::ModeBinary::right);
-		cl.def("unsafe_add_reversed_children", (void (Op::FP::ModeBinary::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::FP::ModeBinary::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n\nC++: Op::FP::ModeBinary::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg("s"));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::FP::ModeBinary::*)() const) &Op::FP::ModeBinary::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::FP::ModeBinary::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
+	{ // Op::Unary file: line:30
+		pybind11::class_<Op::Unary, std::shared_ptr<Op::Unary>, Op::Base> cl(M("Op"), "Unary", "A Unary Op class ");
+		cl.def_readonly("child", &Op::Unary::child);
+		cl.def("unsafe_add_reversed_children", (void (Op::Unary::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::Unary::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n\nC++: Op::Unary::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg("s"));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::Unary::*)() const) &Op::Unary::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Unary::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
 	}
 }
 } // namespace API::Binder
@@ -1409,81 +1441,6 @@ void bind_unknown_unknown_33(std::function< pybind11::module &(std::string const
 
 namespace API::Binder {
 void bind_unknown_unknown_34(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
-	{ // Op::FP::ToBV file: line:15
-		pybind11::class_<Op::FP::ToBV<Mode::Signed::Signed>, std::shared_ptr<Op::FP::ToBV<Mode::Signed::Signed>>, Op::Base> cl(M("Op::FP"), "ToBV_Mode_Signed_Signed_t", "");
-		cl.def_readonly("mode", &Op::FP::ToBV<Mode::Signed::Signed>::mode);
-		cl.def_readonly("fp", &Op::FP::ToBV<Mode::Signed::Signed>::fp);
-		cl.def("unsafe_add_reversed_children", (void (Op::FP::ToBV<Mode::Signed::Signed>::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::FP::ToBV<Mode::Signed::Signed>::unsafe_add_reversed_children, "C++: Op::FP::ToBV<Mode::Signed::Signed>::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg("s"));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::FP::ToBV<Mode::Signed::Signed>::*)() const) &Op::FP::ToBV<Mode::Signed::Signed>::python_children, "C++: Op::FP::ToBV<Mode::Signed::Signed>::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
-		cl.def("op_name", (const char * (Op::Base::*)() const) &Op::Base::op_name, "The name of the op \n\nC++: Op::Base::op_name() const --> const char *", pybind11::return_value_policy::automatic);
-		cl.def("unsafe_add_reversed_children", (void (Op::Base::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::Base::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n  Be careful to ensure 'this' does not destruct while using said pointers\n\nC++: Op::Base::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg(""));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::Base::*)() const) &Op::Base::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Base::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
-	}
-	{ // Op::FP::ToBV file: line:15
-		pybind11::class_<Op::FP::ToBV<Mode::Signed::Unsigned>, std::shared_ptr<Op::FP::ToBV<Mode::Signed::Unsigned>>, Op::Base> cl(M("Op::FP"), "ToBV_Mode_Signed_Unsigned_t", "");
-		cl.def_readonly("mode", &Op::FP::ToBV<Mode::Signed::Unsigned>::mode);
-		cl.def_readonly("fp", &Op::FP::ToBV<Mode::Signed::Unsigned>::fp);
-		cl.def("unsafe_add_reversed_children", (void (Op::FP::ToBV<Mode::Signed::Unsigned>::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::FP::ToBV<Mode::Signed::Unsigned>::unsafe_add_reversed_children, "C++: Op::FP::ToBV<Mode::Signed::Unsigned>::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg("s"));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::FP::ToBV<Mode::Signed::Unsigned>::*)() const) &Op::FP::ToBV<Mode::Signed::Unsigned>::python_children, "C++: Op::FP::ToBV<Mode::Signed::Unsigned>::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
-		cl.def("op_name", (const char * (Op::Base::*)() const) &Op::Base::op_name, "The name of the op \n\nC++: Op::Base::op_name() const --> const char *", pybind11::return_value_policy::automatic);
-		cl.def("unsafe_add_reversed_children", (void (Op::Base::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::Base::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n  Be careful to ensure 'this' does not destruct while using said pointers\n\nC++: Op::Base::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg(""));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::Base::*)() const) &Op::Base::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Base::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
-	}
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_35.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-namespace API::Binder {
-void bind_unknown_unknown_35(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
-	{ // Op::Ternary file: line:33
-		pybind11::class_<Op::Ternary<false>, std::shared_ptr<Op::Ternary<false>>, Op::Base> cl(M("Op"), "Ternary_false_t", "");
-		cl.def_readonly("first", &Op::Ternary<false>::first);
-		cl.def_readonly("second", &Op::Ternary<false>::second);
-		cl.def_readonly("third", &Op::Ternary<false>::third);
-		cl.def("unsafe_add_reversed_children", (void (Op::Ternary<false>::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::Ternary<false>::unsafe_add_reversed_children, "C++: Op::Ternary<false>::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg("s"));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::Ternary<false>::*)() const) &Op::Ternary<false>::python_children, "C++: Op::Ternary<false>::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
-		cl.def("op_name", (const char * (Op::Base::*)() const) &Op::Base::op_name, "The name of the op \n\nC++: Op::Base::op_name() const --> const char *", pybind11::return_value_policy::automatic);
-		cl.def("unsafe_add_reversed_children", (void (Op::Base::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::Base::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n  Be careful to ensure 'this' does not destruct while using said pointers\n\nC++: Op::Base::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg(""));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::Base::*)() const) &Op::Base::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Base::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
-	}
-	{ // Op::Unary file: line:30
-		pybind11::class_<Op::Unary, std::shared_ptr<Op::Unary>, Op::Base> cl(M("Op"), "Unary", "A Unary Op class ");
-		cl.def_readonly("child", &Op::Unary::child);
-		cl.def("unsafe_add_reversed_children", (void (Op::Unary::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::Unary::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n\nC++: Op::Unary::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg("s"));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::Unary::*)() const) &Op::Unary::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Unary::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
-	}
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_36.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-namespace API::Binder {
-void bind_unknown_unknown_36(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	{ // Op::FP::ToIEEEBV file: line:22
 		pybind11::class_<Op::FP::ToIEEEBV, std::shared_ptr<Op::FP::ToIEEEBV>, Op::Unary> cl(M("Op::FP"), "ToIEEEBV", "The unary fp op class: FP::ToIEEEBV ");
@@ -1508,6 +1465,75 @@ void bind_unknown_unknown_36(std::function< pybind11::module &(std::string const
 
 
 //
+// File: binder/unknown/unknown_35.cpp
+//
+
+
+#ifndef BINDER_PYBIND11_TYPE_CASTER
+	#define BINDER_PYBIND11_TYPE_CASTER
+	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
+	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
+	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
+#endif
+
+namespace API::Binder {
+void bind_unknown_unknown_35(std::function< pybind11::module &(std::string const &namespace_) > &M)
+{
+	{ // Op::If file: line:14
+		pybind11::class_<Op::If, std::shared_ptr<Op::If>, Op::Base> cl(M("Op"), "If", "The op class: If ");
+		cl.def_readonly("cond", &Op::If::cond);
+		cl.def_readonly("if_true", &Op::If::if_true);
+		cl.def_readonly("if_false", &Op::If::if_false);
+		cl.def("unsafe_add_reversed_children", (void (Op::If::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::If::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n\nC++: Op::If::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg("s"));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::If::*)() const) &Op::If::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::If::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
+	}
+	{ // Op::Literal file: line:15
+		pybind11::class_<Op::Literal, std::shared_ptr<Op::Literal>, Op::Base> cl(M("Op"), "Literal", "The op class Literal ");
+		cl.def_readonly("value", &Op::Literal::value);
+		cl.def("bit_length", (unsigned long long (Op::Literal::*)() const) &Op::Literal::bit_length, "Returns the bit_length of the value stored in Data\n  If Data contains a type that doesn't correspond to an Expr that is a subclass\n  of BitLength then an Usage exception is thrown\n\nC++: Op::Literal::bit_length() const --> unsigned long long");
+		cl.def("unsafe_add_reversed_children", (void (Op::Literal::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::Literal::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n\nC++: Op::Literal::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg(""));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::Literal::*)() const) &Op::Literal::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Literal::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
+	}
+}
+} // namespace API::Binder
+
+
+//
+// File: binder/unknown/unknown_36.cpp
+//
+
+
+#ifndef BINDER_PYBIND11_TYPE_CASTER
+	#define BINDER_PYBIND11_TYPE_CASTER
+	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
+	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
+	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
+#endif
+
+namespace API::Binder {
+void bind_unknown_unknown_36(std::function< pybind11::module &(std::string const &namespace_) > &M)
+{
+	{ // Op::String::IndexOf file: line:14
+		pybind11::class_<Op::String::IndexOf, std::shared_ptr<Op::String::IndexOf>, Op::Base> cl(M("Op::String"), "IndexOf", "The op class: String::IndexOf ");
+		cl.def_readonly("str", &Op::String::IndexOf::str);
+		cl.def_readonly("pattern", &Op::String::IndexOf::pattern);
+		cl.def_readonly("start_index", &Op::String::IndexOf::start_index);
+		cl.def("unsafe_add_reversed_children", (void (Op::String::IndexOf::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::String::IndexOf::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n\nC++: Op::String::IndexOf::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg("s"));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::String::IndexOf::*)() const) &Op::String::IndexOf::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::String::IndexOf::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
+	}
+	{ // Op::String::SubString file: line:14
+		pybind11::class_<Op::String::SubString, std::shared_ptr<Op::String::SubString>, Op::Base> cl(M("Op::String"), "SubString", "The op class: String::SubString ");
+		cl.def_readonly("start_index", &Op::String::SubString::start_index);
+		cl.def_readonly("count", &Op::String::SubString::count);
+		cl.def_readonly("full_string", &Op::String::SubString::full_string);
+		cl.def("unsafe_add_reversed_children", (void (Op::String::SubString::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::String::SubString::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n\nC++: Op::String::SubString::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg("s"));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::String::SubString::*)() const) &Op::String::SubString::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::String::SubString::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
+	}
+}
+} // namespace API::Binder
+
+
+//
 // File: binder/unknown/unknown_37.cpp
 //
 
@@ -1522,20 +1548,12 @@ void bind_unknown_unknown_36(std::function< pybind11::module &(std::string const
 namespace API::Binder {
 void bind_unknown_unknown_37(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
-	{ // Op::If file: line:14
-		pybind11::class_<Op::If, std::shared_ptr<Op::If>, Op::Base> cl(M("Op"), "If", "The op class: If ");
-		cl.def_readonly("cond", &Op::If::cond);
-		cl.def_readonly("if_true", &Op::If::if_true);
-		cl.def_readonly("if_false", &Op::If::if_false);
-		cl.def("unsafe_add_reversed_children", (void (Op::If::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::If::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n\nC++: Op::If::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg("s"));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::If::*)() const) &Op::If::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::If::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
-	}
-	{ // Op::Literal file: line:15
-		pybind11::class_<Op::Literal, std::shared_ptr<Op::Literal>, Op::Base> cl(M("Op"), "Literal", "The op class Literal ");
-		cl.def_readonly("value", &Op::Literal::value);
-		cl.def("bit_length", (unsigned long long (Op::Literal::*)() const) &Op::Literal::bit_length, "Returns the bit_length of the value stored in Data\n  If Data contains a type that doesn't correspond to an Expr that is a subclass\n  of BitLength then an Usage exception is thrown\n\nC++: Op::Literal::bit_length() const --> unsigned long long");
-		cl.def("unsafe_add_reversed_children", (void (Op::Literal::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::Literal::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n\nC++: Op::Literal::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg(""));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::Literal::*)() const) &Op::Literal::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Literal::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
+	{ // Op::UIntBinary file: line:32
+		pybind11::class_<Op::UIntBinary, std::shared_ptr<Op::UIntBinary>, Op::Base> cl(M("Op"), "UIntBinary", "An Op class that has an Expr operand and an int operand ");
+		cl.def_readonly("expr", &Op::UIntBinary::expr);
+		cl.def_readonly("integer", &Op::UIntBinary::integer);
+		cl.def("unsafe_add_reversed_children", (void (Op::UIntBinary::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::UIntBinary::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n\nC++: Op::UIntBinary::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg("s"));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::UIntBinary::*)() const) &Op::UIntBinary::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::UIntBinary::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
 	}
 }
 } // namespace API::Binder
@@ -1556,21 +1574,29 @@ void bind_unknown_unknown_37(std::function< pybind11::module &(std::string const
 namespace API::Binder {
 void bind_unknown_unknown_38(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
-	{ // Op::String::IndexOf file: line:14
-		pybind11::class_<Op::String::IndexOf, std::shared_ptr<Op::String::IndexOf>, Op::Base> cl(M("Op::String"), "IndexOf", "The op class: String::IndexOf ");
-		cl.def_readonly("str", &Op::String::IndexOf::str);
-		cl.def_readonly("pattern", &Op::String::IndexOf::pattern);
-		cl.def_readonly("start_index", &Op::String::IndexOf::start_index);
-		cl.def("unsafe_add_reversed_children", (void (Op::String::IndexOf::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::String::IndexOf::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n\nC++: Op::String::IndexOf::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg("s"));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::String::IndexOf::*)() const) &Op::String::IndexOf::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::String::IndexOf::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
+	{ // Op::String::IsDigit file: line:21
+		pybind11::class_<Op::String::IsDigit, std::shared_ptr<Op::String::IsDigit>, Op::Unary> cl(M("Op::String"), "IsDigit", "The unary string op class: String::IsDigit ");
 	}
-	{ // Op::String::SubString file: line:14
-		pybind11::class_<Op::String::SubString, std::shared_ptr<Op::String::SubString>, Op::Base> cl(M("Op::String"), "SubString", "The op class: String::SubString ");
-		cl.def_readonly("start_index", &Op::String::SubString::start_index);
-		cl.def_readonly("count", &Op::String::SubString::count);
-		cl.def_readonly("full_string", &Op::String::SubString::full_string);
-		cl.def("unsafe_add_reversed_children", (void (Op::String::SubString::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::String::SubString::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n\nC++: Op::String::SubString::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg("s"));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::String::SubString::*)() const) &Op::String::SubString::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::String::SubString::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
+	{ // Op::String::FromInt file: line:24
+		pybind11::class_<Op::String::FromInt, std::shared_ptr<Op::String::FromInt>, Op::Unary> cl(M("Op::String"), "FromInt", "The unary string op class: String::FromInt ");
+	}
+	{ // Op::String::ToInt file: line:31
+		pybind11::class_<Op::String::ToInt, std::shared_ptr<Op::String::ToInt>, Op::UIntBinary> cl(M("Op::String"), "ToInt", "The int binary op class: String::ToInt ");
+	}
+	{ // Op::String::Len file: line:34
+		pybind11::class_<Op::String::Len, std::shared_ptr<Op::String::Len>, Op::UIntBinary> cl(M("Op::String"), "Len", "The int binary op class: String::Len ");
+	}
+	{ // Op::String::Contains file: line:43
+		pybind11::class_<Op::String::Contains, std::shared_ptr<Op::String::Contains>, Op::Binary<false>> cl(M("Op::String"), "Contains", "The string binary op class: String::Contains\n  Input sizes may differ");
+	}
+	{ // Op::String::PrefixOf file: line:48
+		pybind11::class_<Op::String::PrefixOf, std::shared_ptr<Op::String::PrefixOf>, Op::Binary<false>> cl(M("Op::String"), "PrefixOf", "The string binary op class: String::PrefixOf\n  Input sizes may differ");
+	}
+	{ // Op::String::SuffixOf file: line:53
+		pybind11::class_<Op::String::SuffixOf, std::shared_ptr<Op::String::SuffixOf>, Op::Binary<false>> cl(M("Op::String"), "SuffixOf", "The string binary op class: String::SuffixOf\n  Input sizes may differ");
+	}
+	{ // Op::String::Replace file: line:62
+		pybind11::class_<Op::String::Replace, std::shared_ptr<Op::String::Replace>, Op::Ternary<false>> cl(M("Op::String"), "Replace", "The ternary string op class: String::Replace\n  Input sizes may differ");
 	}
 }
 } // namespace API::Binder
@@ -1591,12 +1617,68 @@ void bind_unknown_unknown_38(std::function< pybind11::module &(std::string const
 namespace API::Binder {
 void bind_unknown_unknown_39(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
-	{ // Op::UIntBinary file: line:32
-		pybind11::class_<Op::UIntBinary, std::shared_ptr<Op::UIntBinary>, Op::Base> cl(M("Op"), "UIntBinary", "An Op class that has an Expr operand and an int operand ");
-		cl.def_readonly("expr", &Op::UIntBinary::expr);
-		cl.def_readonly("integer", &Op::UIntBinary::integer);
-		cl.def("unsafe_add_reversed_children", (void (Op::UIntBinary::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::UIntBinary::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n\nC++: Op::UIntBinary::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg("s"));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::UIntBinary::*)() const) &Op::UIntBinary::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::UIntBinary::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
+	{ // Op::Symbol file: line:14
+		pybind11::class_<Op::Symbol, std::shared_ptr<Op::Symbol>, Op::Base> cl(M("Op"), "Symbol", "The op class Symbol ");
+		cl.def_readonly("name", &Op::Symbol::name);
+		cl.def("unsafe_add_reversed_children", (void (Op::Symbol::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::Symbol::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n\nC++: Op::Symbol::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg(""));
+		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::Symbol::*)() const) &Op::Symbol::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Symbol::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
+	}
+	{ // Op::Abs file: line:25
+		pybind11::class_<Op::Abs, std::shared_ptr<Op::Abs>, Op::Unary> cl(M("Op"), "Abs", "The unary mathematical op class: Abs ");
+	}
+	{ // Op::Neg file: line:28
+		pybind11::class_<Op::Neg, std::shared_ptr<Op::Neg>, Op::Unary> cl(M("Op"), "Neg", "The unary op class: Neg ");
+	}
+	{ // Op::Not file: line:31
+		pybind11::class_<Op::Not, std::shared_ptr<Op::Not>, Op::Unary> cl(M("Op"), "Not", "The unary op class: Not ");
+	}
+	{ // Op::Invert file: line:34
+		pybind11::class_<Op::Invert, std::shared_ptr<Op::Invert>, Op::Unary> cl(M("Op"), "Invert", "The unary op class: Invert ");
+	}
+	{ // Op::Reverse file: line:37
+		pybind11::class_<Op::Reverse, std::shared_ptr<Op::Reverse>, Op::Unary> cl(M("Op"), "Reverse", "The unary bitwise op class: Reverse ");
+	}
+	{ // Op::SignExt file: line:44
+		pybind11::class_<Op::SignExt, std::shared_ptr<Op::SignExt>, Op::UIntBinary> cl(M("Op"), "SignExt", "The int binary op class: SignExt ");
+	}
+	{ // Op::ZeroExt file: line:47
+		pybind11::class_<Op::ZeroExt, std::shared_ptr<Op::ZeroExt>, Op::UIntBinary> cl(M("Op"), "ZeroExt", "The int binary op class: ZeroExt ");
+	}
+	{ // Op::Eq file: line:58
+		pybind11::class_<Op::Eq, std::shared_ptr<Op::Eq>, Op::Binary<true>> cl(M("Op"), "Eq", "The binary comparison op class: Eq\n  Requires equal sized inputs");
+	}
+	{ // Op::Neq file: line:61
+		pybind11::class_<Op::Neq, std::shared_ptr<Op::Neq>, Op::Binary<false>> cl(M("Op"), "Neq", "The binary comparison op class: Neq ");
+	}
+	{ // Op::Sub file: line:71
+		pybind11::class_<Op::Sub, std::shared_ptr<Op::Sub>, Op::Binary<true>> cl(M("Op"), "Sub", "The mathematical binary op class: Sub\n  Requires equal sized inputs");
+	}
+	{ // Op::Widen file: line:100
+		pybind11::class_<Op::Widen, std::shared_ptr<Op::Widen>, Op::Binary<true>> cl(M("Op"), "Widen", "The set binary op class: Widen\n  Requires equal sized inputs");
+	}
+	{ // Op::Union file: line:105
+		pybind11::class_<Op::Union, std::shared_ptr<Op::Union>, Op::Binary<true>> cl(M("Op"), "Union", "The set binary op class: Union\n  Requires equal sized inputs");
+	}
+	{ // Op::Intersection file: line:110
+		pybind11::class_<Op::Intersection, std::shared_ptr<Op::Intersection>, Op::Binary<true>> cl(M("Op"), "Intersection", "The set binary op class: Intersection\n  Requires equal sized inputs");
+	}
+	{ // Op::Concat file: line:115
+		pybind11::class_<Op::Concat, std::shared_ptr<Op::Concat>, Op::Binary<false>> cl(M("Op"), "Concat", "The binary op class: Concat\n  Input sizes may differ");
+	}
+	{ // Op::Add file: line:126
+		pybind11::class_<Op::Add, std::shared_ptr<Op::Add>, Op::Flat<true>> cl(M("Op"), "Add", "The flat math op class: Add\n  Requires equal sized inputs");
+	}
+	{ // Op::Mul file: line:131
+		pybind11::class_<Op::Mul, std::shared_ptr<Op::Mul>, Op::Flat<true>> cl(M("Op"), "Mul", "The flat op class: Mul\n  Requires equal sized inputs");
+	}
+	{ // Op::Or file: line:138
+		pybind11::class_<Op::Or, std::shared_ptr<Op::Or>, Op::Flat<true>> cl(M("Op"), "Or", "The flat op class: Or\n  Requires equal sized inputs");
+	}
+	{ // Op::And file: line:143
+		pybind11::class_<Op::And, std::shared_ptr<Op::And>, Op::Flat<true>> cl(M("Op"), "And", "The flat op class: And\n  Requires equal sized inputs");
+	}
+	{ // Op::Xor file: line:148
+		pybind11::class_<Op::Xor, std::shared_ptr<Op::Xor>, Op::Flat<true>> cl(M("Op"), "Xor", "The flat op class: Xor\n  Requires equal sized inputs");
 	}
 }
 } // namespace API::Binder
@@ -1681,30 +1763,10 @@ void bind_unknown_unknown_4(std::function< pybind11::module &(std::string const 
 namespace API::Binder {
 void bind_unknown_unknown_40(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
-	{ // Op::String::IsDigit file: line:21
-		pybind11::class_<Op::String::IsDigit, std::shared_ptr<Op::String::IsDigit>, Op::Unary> cl(M("Op::String"), "IsDigit", "The unary string op class: String::IsDigit ");
-	}
-	{ // Op::String::FromInt file: line:24
-		pybind11::class_<Op::String::FromInt, std::shared_ptr<Op::String::FromInt>, Op::Unary> cl(M("Op::String"), "FromInt", "The unary string op class: String::FromInt ");
-	}
-	{ // Op::String::ToInt file: line:31
-		pybind11::class_<Op::String::ToInt, std::shared_ptr<Op::String::ToInt>, Op::UIntBinary> cl(M("Op::String"), "ToInt", "The int binary op class: String::ToInt ");
-	}
-	{ // Op::String::Len file: line:34
-		pybind11::class_<Op::String::Len, std::shared_ptr<Op::String::Len>, Op::UIntBinary> cl(M("Op::String"), "Len", "The int binary op class: String::Len ");
-	}
-	{ // Op::String::Contains file: line:43
-		pybind11::class_<Op::String::Contains, std::shared_ptr<Op::String::Contains>, Op::Binary<false>> cl(M("Op::String"), "Contains", "The string binary op class: String::Contains\n  Input sizes may differ");
-	}
-	{ // Op::String::PrefixOf file: line:48
-		pybind11::class_<Op::String::PrefixOf, std::shared_ptr<Op::String::PrefixOf>, Op::Binary<false>> cl(M("Op::String"), "PrefixOf", "The string binary op class: String::PrefixOf\n  Input sizes may differ");
-	}
-	{ // Op::String::SuffixOf file: line:53
-		pybind11::class_<Op::String::SuffixOf, std::shared_ptr<Op::String::SuffixOf>, Op::Binary<false>> cl(M("Op::String"), "SuffixOf", "The string binary op class: String::SuffixOf\n  Input sizes may differ");
-	}
-	{ // Op::String::Replace file: line:62
-		pybind11::class_<Op::String::Replace, std::shared_ptr<Op::String::Replace>, Op::Ternary<false>> cl(M("Op::String"), "Replace", "The ternary string op class: String::Replace\n  Input sizes may differ");
-	}
+	// Create::extract(const unsigned long long, const unsigned long long, const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>) file: line:16
+	M("Create").def("extract", [](const unsigned long long & a0, const unsigned long long & a1, const class std::shared_ptr<const class Expr::Base> & a2) -> std::shared_ptr<const class Expr::Base> { return Create::extract(a0, a1, a2); }, "", pybind11::arg("high"), pybind11::arg("low"), pybind11::arg("from"));
+	M("Create").def("extract", (class std::shared_ptr<const class Expr::Base> (*)(const unsigned long long, const unsigned long long, const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>)) &Create::extract, "Create an Expr with an Extract op\n  Expr pointers may not be nullptr\n\nC++: Create::extract(const unsigned long long, const unsigned long long, const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("high"), pybind11::arg("low"), pybind11::arg("from"), pybind11::arg("sp"));
+
 }
 } // namespace API::Binder
 
@@ -1723,111 +1785,6 @@ void bind_unknown_unknown_40(std::function< pybind11::module &(std::string const
 
 namespace API::Binder {
 void bind_unknown_unknown_41(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
-	{ // Op::Symbol file: line:14
-		pybind11::class_<Op::Symbol, std::shared_ptr<Op::Symbol>, Op::Base> cl(M("Op"), "Symbol", "The op class Symbol ");
-		cl.def_readonly("name", &Op::Symbol::name);
-		cl.def("unsafe_add_reversed_children", (void (Op::Symbol::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const) &Op::Symbol::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n\nC++: Op::Symbol::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > > &) const --> void", pybind11::arg(""));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > > (Op::Symbol::*)() const) &Op::Symbol::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Symbol::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > >");
-	}
-	{ // Op::Abs file: line:25
-		pybind11::class_<Op::Abs, std::shared_ptr<Op::Abs>, Op::Unary> cl(M("Op"), "Abs", "The unary mathematical op class: Abs ");
-	}
-	{ // Op::Neg file: line:28
-		pybind11::class_<Op::Neg, std::shared_ptr<Op::Neg>, Op::Unary> cl(M("Op"), "Neg", "The unary op class: Neg ");
-	}
-	{ // Op::Not file: line:31
-		pybind11::class_<Op::Not, std::shared_ptr<Op::Not>, Op::Unary> cl(M("Op"), "Not", "The unary op class: Not ");
-	}
-	{ // Op::Invert file: line:34
-		pybind11::class_<Op::Invert, std::shared_ptr<Op::Invert>, Op::Unary> cl(M("Op"), "Invert", "The unary op class: Invert ");
-	}
-	{ // Op::Reverse file: line:37
-		pybind11::class_<Op::Reverse, std::shared_ptr<Op::Reverse>, Op::Unary> cl(M("Op"), "Reverse", "The unary bitwise op class: Reverse ");
-	}
-	{ // Op::SignExt file: line:44
-		pybind11::class_<Op::SignExt, std::shared_ptr<Op::SignExt>, Op::UIntBinary> cl(M("Op"), "SignExt", "The int binary op class: SignExt ");
-	}
-	{ // Op::ZeroExt file: line:47
-		pybind11::class_<Op::ZeroExt, std::shared_ptr<Op::ZeroExt>, Op::UIntBinary> cl(M("Op"), "ZeroExt", "The int binary op class: ZeroExt ");
-	}
-	{ // Op::Eq file: line:58
-		pybind11::class_<Op::Eq, std::shared_ptr<Op::Eq>, Op::Binary<true>> cl(M("Op"), "Eq", "The binary comparison op class: Eq\n  Requires equal sized inputs");
-	}
-	{ // Op::Neq file: line:61
-		pybind11::class_<Op::Neq, std::shared_ptr<Op::Neq>, Op::Binary<false>> cl(M("Op"), "Neq", "The binary comparison op class: Neq ");
-	}
-	{ // Op::Sub file: line:71
-		pybind11::class_<Op::Sub, std::shared_ptr<Op::Sub>, Op::Binary<true>> cl(M("Op"), "Sub", "The mathematical binary op class: Sub\n  Requires equal sized inputs");
-	}
-	{ // Op::Widen file: line:100
-		pybind11::class_<Op::Widen, std::shared_ptr<Op::Widen>, Op::Binary<true>> cl(M("Op"), "Widen", "The set binary op class: Widen\n  Requires equal sized inputs");
-	}
-	{ // Op::Union file: line:105
-		pybind11::class_<Op::Union, std::shared_ptr<Op::Union>, Op::Binary<true>> cl(M("Op"), "Union", "The set binary op class: Union\n  Requires equal sized inputs");
-	}
-	{ // Op::Intersection file: line:110
-		pybind11::class_<Op::Intersection, std::shared_ptr<Op::Intersection>, Op::Binary<true>> cl(M("Op"), "Intersection", "The set binary op class: Intersection\n  Requires equal sized inputs");
-	}
-	{ // Op::Concat file: line:115
-		pybind11::class_<Op::Concat, std::shared_ptr<Op::Concat>, Op::Binary<false>> cl(M("Op"), "Concat", "The binary op class: Concat\n  Input sizes may differ");
-	}
-	{ // Op::Add file: line:126
-		pybind11::class_<Op::Add, std::shared_ptr<Op::Add>, Op::Flat<true>> cl(M("Op"), "Add", "The flat math op class: Add\n  Requires equal sized inputs");
-	}
-	{ // Op::Mul file: line:131
-		pybind11::class_<Op::Mul, std::shared_ptr<Op::Mul>, Op::Flat<true>> cl(M("Op"), "Mul", "The flat op class: Mul\n  Requires equal sized inputs");
-	}
-	{ // Op::Or file: line:138
-		pybind11::class_<Op::Or, std::shared_ptr<Op::Or>, Op::Flat<true>> cl(M("Op"), "Or", "The flat op class: Or\n  Requires equal sized inputs");
-	}
-	{ // Op::And file: line:143
-		pybind11::class_<Op::And, std::shared_ptr<Op::And>, Op::Flat<true>> cl(M("Op"), "And", "The flat op class: And\n  Requires equal sized inputs");
-	}
-	{ // Op::Xor file: line:148
-		pybind11::class_<Op::Xor, std::shared_ptr<Op::Xor>, Op::Flat<true>> cl(M("Op"), "Xor", "The flat op class: Xor\n  Requires equal sized inputs");
-	}
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_42.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-namespace API::Binder {
-void bind_unknown_unknown_42(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
-	// Create::extract(const unsigned long long, const unsigned long long, const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>) file: line:16
-	M("Create").def("extract", [](const unsigned long long & a0, const unsigned long long & a1, const class std::shared_ptr<const class Expr::Base> & a2) -> std::shared_ptr<const class Expr::Base> { return Create::extract(a0, a1, a2); }, "", pybind11::arg("high"), pybind11::arg("low"), pybind11::arg("from"));
-	M("Create").def("extract", (class std::shared_ptr<const class Expr::Base> (*)(const unsigned long long, const unsigned long long, const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>)) &Create::extract, "Create an Expr with an Extract op\n  Expr pointers may not be nullptr\n\nC++: Create::extract(const unsigned long long, const unsigned long long, const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("high"), pybind11::arg("low"), pybind11::arg("from"), pybind11::arg("sp"));
-
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_43.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-namespace API::Binder {
-void bind_unknown_unknown_43(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	// Create::FP::from_2s_complement_bv_signed(const enum Mode::FP::Rounding, const class std::shared_ptr<const class Expr::Base> &, const struct Mode::FP::Width &, class std::shared_ptr<const struct Annotation::Vec>) file: line:26
 	M("Create::FP").def("from_2s_complement_bv_signed", [](const enum Mode::FP::Rounding & a0, const class std::shared_ptr<const class Expr::Base> & a1, const struct Mode::FP::Width & a2) -> std::shared_ptr<const class Expr::Base> { return Create::FP::from_2s_complement_bv_signed(a0, a1, a2); }, "", pybind11::arg("m"), pybind11::arg("bv"), pybind11::arg("w"));
@@ -1858,7 +1815,7 @@ void bind_unknown_unknown_43(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_44.cpp
+// File: binder/unknown/unknown_42.cpp
 //
 
 
@@ -1870,7 +1827,7 @@ void bind_unknown_unknown_43(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_44(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_42(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	// Create::FP::to_ieee_bv(const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>) file: line:24
 	M("Create::FP").def("to_ieee_bv", [](const class std::shared_ptr<const class Expr::Base> & a0) -> std::shared_ptr<const class Expr::Base> { return Create::FP::to_ieee_bv(a0); }, "", pybind11::arg("x"));
@@ -1901,7 +1858,7 @@ void bind_unknown_unknown_44(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_45.cpp
+// File: binder/unknown/unknown_43.cpp
 //
 
 
@@ -1913,7 +1870,7 @@ void bind_unknown_unknown_44(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_45(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_43(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	// Create::if_(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>) file: line:16
 	M("Create").def("if_", [](const class std::shared_ptr<const class Expr::Base> & a0, const class std::shared_ptr<const class Expr::Base> & a1, const class std::shared_ptr<const class Expr::Base> & a2) -> std::shared_ptr<const class Expr::Base> { return Create::if_(a0, a1, a2); }, "", pybind11::arg("cond"), pybind11::arg("left"), pybind11::arg("right"));
@@ -1968,7 +1925,7 @@ void bind_unknown_unknown_45(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_46.cpp
+// File: binder/unknown/unknown_44.cpp
 //
 
 
@@ -1980,7 +1937,7 @@ void bind_unknown_unknown_45(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_46(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_44(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	// Create::String::from_int(const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>) file: line:20
 	M("Create::String").def("from_int", [](const class std::shared_ptr<const class Expr::Base> & a0) -> std::shared_ptr<const class Expr::Base> { return Create::String::from_int(a0); }, "", pybind11::arg("x"));
@@ -1999,7 +1956,7 @@ void bind_unknown_unknown_46(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_47.cpp
+// File: binder/unknown/unknown_45.cpp
 //
 
 
@@ -2011,7 +1968,7 @@ void bind_unknown_unknown_46(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_47(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_45(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	// Create::String::sub_string(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>) file: line:43
 	M("Create::String").def("sub_string", [](const class std::shared_ptr<const class Expr::Base> & a0, const class std::shared_ptr<const class Expr::Base> & a1, const class std::shared_ptr<const class Expr::Base> & a2) -> std::shared_ptr<const class Expr::Base> { return Create::String::sub_string(a0, a1, a2); }, "", pybind11::arg("start_index"), pybind11::arg("count"), pybind11::arg("full_string"));
@@ -2022,7 +1979,7 @@ void bind_unknown_unknown_47(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_48.cpp
+// File: binder/unknown/unknown_46.cpp
 //
 
 
@@ -2034,7 +1991,7 @@ void bind_unknown_unknown_47(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_48(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_46(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	// Create::String::is_digit(const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>) file: line:22
 	M("Create::String").def("is_digit", [](const class std::shared_ptr<const class Expr::Base> & a0) -> std::shared_ptr<const class Expr::Base> { return Create::String::is_digit(a0); }, "", pybind11::arg("x"));
@@ -2065,7 +2022,7 @@ void bind_unknown_unknown_48(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_49.cpp
+// File: binder/unknown/unknown_47.cpp
 //
 
 
@@ -2077,7 +2034,7 @@ void bind_unknown_unknown_48(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_49(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_47(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	// Create::symbol_bool(std::string, class std::shared_ptr<const struct Annotation::Vec>) file: line:35
 	M("Create").def("symbol_bool", [](std::string const & a0) -> std::shared_ptr<const class Expr::Base> { return Create::symbol_bool(a0); }, "", pybind11::arg("name"));
@@ -2104,7 +2061,7 @@ void bind_unknown_unknown_49(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_5.cpp
+// File: binder/unknown/unknown_48.cpp
 //
 
 
@@ -2116,38 +2073,7 @@ void bind_unknown_unknown_49(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_5(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
-	// Util::empty(const class std::shared_ptr<const class Expr::Base> &) file: line:22
-	M("Util").def("empty", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &Util::empty<const Expr::Base>, "C++: Util::empty(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("p"));
-
-	// Util::empty(const class std::shared_ptr<const class Op::Base> &) file: line:22
-	M("Util").def("empty", (bool (*)(const class std::shared_ptr<const class Op::Base> &)) &Util::empty<const Op::Base>, "C++: Util::empty(const class std::shared_ptr<const class Op::Base> &) --> bool", pybind11::arg("p"));
-
-	// Util::full(const class std::shared_ptr<const class Expr::Base> &) file: line:32
-	M("Util").def("full", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &Util::full<const Expr::Base>, "C++: Util::full(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("p"));
-
-	// Util::full(const class std::shared_ptr<const class Op::Base> &) file: line:32
-	M("Util").def("full", (bool (*)(const class std::shared_ptr<const class Op::Base> &)) &Util::full<const Op::Base>, "C++: Util::full(const class std::shared_ptr<const class Op::Base> &) --> bool", pybind11::arg("p"));
-
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_50.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-namespace API::Binder {
-void bind_unknown_unknown_50(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_48(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	// Create::abs(const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>) file: line:24
 	M("Create").def("abs", [](const class std::shared_ptr<const class Expr::Base> & a0) -> std::shared_ptr<const class Expr::Base> { return Create::abs(a0); }, "", pybind11::arg("x"));
@@ -2222,7 +2148,7 @@ void bind_unknown_unknown_50(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_51.cpp
+// File: binder/unknown/unknown_49.cpp
 //
 
 
@@ -2234,7 +2160,7 @@ void bind_unknown_unknown_50(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_51(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_49(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	// Create::sub(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>) file: line:169
 	M("Create").def("sub", [](const class std::shared_ptr<const class Expr::Base> & a0, const class std::shared_ptr<const class Expr::Base> & a1) -> std::shared_ptr<const class Expr::Base> { return Create::sub(a0, a1); }, "", pybind11::arg("left"), pybind11::arg("right"));
@@ -2292,10 +2218,102 @@ void bind_unknown_unknown_51(std::function< pybind11::module &(std::string const
 	M("Create").def("concat", [](const class std::shared_ptr<const class Expr::Base> & a0, const class std::shared_ptr<const class Expr::Base> & a1) -> std::shared_ptr<const class Expr::Base> { return Create::concat(a0, a1); }, "", pybind11::arg("left"), pybind11::arg("right"));
 	M("Create").def("concat", (class std::shared_ptr<const class Expr::Base> (*)(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>)) &Create::concat, "Create an Expr with an Concat op\n  Expr pointers may not be nullptr\n\nC++: Create::concat(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("left"), pybind11::arg("right"), pybind11::arg("sp"));
 
-	// Create::add(class std::vector<class std::shared_ptr<const class Expr::Base>, class std::allocator<class std::shared_ptr<const class Expr::Base> > >, class std::shared_ptr<const struct Annotation::Vec>) file: line:320
-	M("Create").def("add", [](class std::vector<class std::shared_ptr<const class Expr::Base>, class std::allocator<class std::shared_ptr<const class Expr::Base> > > const & a0) -> std::shared_ptr<const class Expr::Base> { return Create::add(a0); }, "", pybind11::arg("operands"));
-	M("Create").def("add", (class std::shared_ptr<const class Expr::Base> (*)(class std::vector<class std::shared_ptr<const class Expr::Base>, class std::allocator<class std::shared_ptr<const class Expr::Base> > >, class std::shared_ptr<const struct Annotation::Vec>)) &Create::add, "Create an Expr with an Add op\n  Expr pointers may not be nullptr\n\nC++: Create::add(class std::vector<class std::shared_ptr<const class Expr::Base>, class std::allocator<class std::shared_ptr<const class Expr::Base> > >, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("operands"), pybind11::arg("sp"));
+	// Create::add(class std::vector<class std::shared_ptr<const class Expr::Base> >, class std::shared_ptr<const struct Annotation::Vec>) file: line:320
+	M("Create").def("add", [](class std::vector<class std::shared_ptr<const class Expr::Base> > const & a0) -> std::shared_ptr<const class Expr::Base> { return Create::add(a0); }, "", pybind11::arg("operands"));
+	M("Create").def("add", (class std::shared_ptr<const class Expr::Base> (*)(class std::vector<class std::shared_ptr<const class Expr::Base> >, class std::shared_ptr<const struct Annotation::Vec>)) &Create::add, "Create an Expr with an Add op\n  Expr pointers may not be nullptr\n\nC++: Create::add(class std::vector<class std::shared_ptr<const class Expr::Base> >, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("operands"), pybind11::arg("sp"));
 
+}
+} // namespace API::Binder
+
+
+//
+// File: binder/unknown/unknown_5.cpp
+//
+
+
+#ifndef BINDER_PYBIND11_TYPE_CASTER
+	#define BINDER_PYBIND11_TYPE_CASTER
+	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
+	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
+	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
+#endif
+
+namespace API::Binder {
+void bind_unknown_unknown_5(std::function< pybind11::module &(std::string const &namespace_) > &M)
+{
+	// Util::empty(const class std::shared_ptr<const class Expr::Base> &) file: line:22
+	M("Util").def("empty", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &Util::empty<const Expr::Base>, "C++: Util::empty(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("p"));
+
+	// Util::empty(const class std::shared_ptr<const class Op::Base> &) file: line:22
+	M("Util").def("empty", (bool (*)(const class std::shared_ptr<const class Op::Base> &)) &Util::empty<const Op::Base>, "C++: Util::empty(const class std::shared_ptr<const class Op::Base> &) --> bool", pybind11::arg("p"));
+
+	// Util::full(const class std::shared_ptr<const class Expr::Base> &) file: line:32
+	M("Util").def("full", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &Util::full<const Expr::Base>, "C++: Util::full(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("p"));
+
+	// Util::full(const class std::shared_ptr<const class Op::Base> &) file: line:32
+	M("Util").def("full", (bool (*)(const class std::shared_ptr<const class Op::Base> &)) &Util::full<const Op::Base>, "C++: Util::full(const class std::shared_ptr<const class Op::Base> &) --> bool", pybind11::arg("p"));
+
+}
+} // namespace API::Binder
+
+
+//
+// File: binder/unknown/unknown_50.cpp
+//
+
+
+#ifndef BINDER_PYBIND11_TYPE_CASTER
+	#define BINDER_PYBIND11_TYPE_CASTER
+	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
+	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
+	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
+#endif
+
+namespace API::Binder {
+void bind_unknown_unknown_50(std::function< pybind11::module &(std::string const &namespace_) > &M)
+{
+	// Create::mul(class std::vector<class std::shared_ptr<const class Expr::Base> >, class std::shared_ptr<const struct Annotation::Vec>) file: line:328
+	M("Create").def("mul", [](class std::vector<class std::shared_ptr<const class Expr::Base> > const & a0) -> std::shared_ptr<const class Expr::Base> { return Create::mul(a0); }, "", pybind11::arg("operands"));
+	M("Create").def("mul", (class std::shared_ptr<const class Expr::Base> (*)(class std::vector<class std::shared_ptr<const class Expr::Base> >, class std::shared_ptr<const struct Annotation::Vec>)) &Create::mul, "Create an Expr with an Mul op\n  Expr pointers may not be nullptr\n\nC++: Create::mul(class std::vector<class std::shared_ptr<const class Expr::Base> >, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("operands"), pybind11::arg("sp"));
+
+	// Create::or_(class std::vector<class std::shared_ptr<const class Expr::Base> >, class std::shared_ptr<const struct Annotation::Vec>) file: line:338
+	M("Create").def("or_", [](class std::vector<class std::shared_ptr<const class Expr::Base> > const & a0) -> std::shared_ptr<const class Expr::Base> { return Create::or_(a0); }, "", pybind11::arg("operands"));
+	M("Create").def("or_", (class std::shared_ptr<const class Expr::Base> (*)(class std::vector<class std::shared_ptr<const class Expr::Base> >, class std::shared_ptr<const struct Annotation::Vec>)) &Create::or_, "Create an Expr with an Or op\n  Expr pointers may not be nullptr\n\nC++: Create::or_(class std::vector<class std::shared_ptr<const class Expr::Base> >, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("operands"), pybind11::arg("sp"));
+
+	// Create::and_(class std::vector<class std::shared_ptr<const class Expr::Base> >, class std::shared_ptr<const struct Annotation::Vec>) file: line:345
+	M("Create").def("and_", [](class std::vector<class std::shared_ptr<const class Expr::Base> > const & a0) -> std::shared_ptr<const class Expr::Base> { return Create::and_(a0); }, "", pybind11::arg("operands"));
+	M("Create").def("and_", (class std::shared_ptr<const class Expr::Base> (*)(class std::vector<class std::shared_ptr<const class Expr::Base> >, class std::shared_ptr<const struct Annotation::Vec>)) &Create::and_, "Create an Expr with an And op\n  Expr pointers may not be nullptr\n\nC++: Create::and_(class std::vector<class std::shared_ptr<const class Expr::Base> >, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("operands"), pybind11::arg("sp"));
+
+	// Create::xor_(class std::vector<class std::shared_ptr<const class Expr::Base> >, class std::shared_ptr<const struct Annotation::Vec>) file: line:352
+	M("Create").def("xor_", [](class std::vector<class std::shared_ptr<const class Expr::Base> > const & a0) -> std::shared_ptr<const class Expr::Base> { return Create::xor_(a0); }, "", pybind11::arg("operands"));
+	M("Create").def("xor_", (class std::shared_ptr<const class Expr::Base> (*)(class std::vector<class std::shared_ptr<const class Expr::Base> >, class std::shared_ptr<const struct Annotation::Vec>)) &Create::xor_, "Create an Expr with an Xor op\n  Expr pointers may not be nullptr\n\nC++: Create::xor_(class std::vector<class std::shared_ptr<const class Expr::Base> >, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("operands"), pybind11::arg("sp"));
+
+}
+} // namespace API::Binder
+
+
+//
+// File: binder/unknown/unknown_51.cpp
+//
+
+
+#ifndef BINDER_PYBIND11_TYPE_CASTER
+	#define BINDER_PYBIND11_TYPE_CASTER
+	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
+	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
+	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
+#endif
+
+namespace API::Binder {
+void bind_unknown_unknown_51(std::function< pybind11::module &(std::string const &namespace_) > &M)
+{
+	{ // Backend::Z3::Solver file: line:13
+		pybind11::class_<Backend::Z3::Solver, std::shared_ptr<Backend::Z3::Solver>> cl(M("Backend::Z3"), "Solver", "A Z3 Solver object ");
+		cl.def( pybind11::init( [](Backend::Z3::Solver const &o){ return new Backend::Z3::Solver(o); } ) );
+		cl.def("assign", (class Backend::Z3::Solver & (Backend::Z3::Solver::*)(const class Backend::Z3::Solver &)) &Backend::Z3::Solver::operator=, "C++: Backend::Z3::Solver::operator=(const class Backend::Z3::Solver &) --> class Backend::Z3::Solver &", pybind11::return_value_policy::automatic, pybind11::arg(""));
+
+		cl.def("__str__", [](Backend::Z3::Solver const &o) -> std::string { std::ostringstream s; s << o; return s.str(); } );
+	}
 }
 } // namespace API::Binder
 
@@ -2315,67 +2333,6 @@ void bind_unknown_unknown_51(std::function< pybind11::module &(std::string const
 namespace API::Binder {
 void bind_unknown_unknown_52(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
-	// Create::mul(class std::vector<class std::shared_ptr<const class Expr::Base>, class std::allocator<class std::shared_ptr<const class Expr::Base> > >, class std::shared_ptr<const struct Annotation::Vec>) file: line:328
-	M("Create").def("mul", [](class std::vector<class std::shared_ptr<const class Expr::Base>, class std::allocator<class std::shared_ptr<const class Expr::Base> > > const & a0) -> std::shared_ptr<const class Expr::Base> { return Create::mul(a0); }, "", pybind11::arg("operands"));
-	M("Create").def("mul", (class std::shared_ptr<const class Expr::Base> (*)(class std::vector<class std::shared_ptr<const class Expr::Base>, class std::allocator<class std::shared_ptr<const class Expr::Base> > >, class std::shared_ptr<const struct Annotation::Vec>)) &Create::mul, "Create an Expr with an Mul op\n  Expr pointers may not be nullptr\n\nC++: Create::mul(class std::vector<class std::shared_ptr<const class Expr::Base>, class std::allocator<class std::shared_ptr<const class Expr::Base> > >, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("operands"), pybind11::arg("sp"));
-
-	// Create::or_(class std::vector<class std::shared_ptr<const class Expr::Base>, class std::allocator<class std::shared_ptr<const class Expr::Base> > >, class std::shared_ptr<const struct Annotation::Vec>) file: line:338
-	M("Create").def("or_", [](class std::vector<class std::shared_ptr<const class Expr::Base>, class std::allocator<class std::shared_ptr<const class Expr::Base> > > const & a0) -> std::shared_ptr<const class Expr::Base> { return Create::or_(a0); }, "", pybind11::arg("operands"));
-	M("Create").def("or_", (class std::shared_ptr<const class Expr::Base> (*)(class std::vector<class std::shared_ptr<const class Expr::Base>, class std::allocator<class std::shared_ptr<const class Expr::Base> > >, class std::shared_ptr<const struct Annotation::Vec>)) &Create::or_, "Create an Expr with an Or op\n  Expr pointers may not be nullptr\n\nC++: Create::or_(class std::vector<class std::shared_ptr<const class Expr::Base>, class std::allocator<class std::shared_ptr<const class Expr::Base> > >, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("operands"), pybind11::arg("sp"));
-
-	// Create::and_(class std::vector<class std::shared_ptr<const class Expr::Base>, class std::allocator<class std::shared_ptr<const class Expr::Base> > >, class std::shared_ptr<const struct Annotation::Vec>) file: line:345
-	M("Create").def("and_", [](class std::vector<class std::shared_ptr<const class Expr::Base>, class std::allocator<class std::shared_ptr<const class Expr::Base> > > const & a0) -> std::shared_ptr<const class Expr::Base> { return Create::and_(a0); }, "", pybind11::arg("operands"));
-	M("Create").def("and_", (class std::shared_ptr<const class Expr::Base> (*)(class std::vector<class std::shared_ptr<const class Expr::Base>, class std::allocator<class std::shared_ptr<const class Expr::Base> > >, class std::shared_ptr<const struct Annotation::Vec>)) &Create::and_, "Create an Expr with an And op\n  Expr pointers may not be nullptr\n\nC++: Create::and_(class std::vector<class std::shared_ptr<const class Expr::Base>, class std::allocator<class std::shared_ptr<const class Expr::Base> > >, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("operands"), pybind11::arg("sp"));
-
-	// Create::xor_(class std::vector<class std::shared_ptr<const class Expr::Base>, class std::allocator<class std::shared_ptr<const class Expr::Base> > >, class std::shared_ptr<const struct Annotation::Vec>) file: line:352
-	M("Create").def("xor_", [](class std::vector<class std::shared_ptr<const class Expr::Base>, class std::allocator<class std::shared_ptr<const class Expr::Base> > > const & a0) -> std::shared_ptr<const class Expr::Base> { return Create::xor_(a0); }, "", pybind11::arg("operands"));
-	M("Create").def("xor_", (class std::shared_ptr<const class Expr::Base> (*)(class std::vector<class std::shared_ptr<const class Expr::Base>, class std::allocator<class std::shared_ptr<const class Expr::Base> > >, class std::shared_ptr<const struct Annotation::Vec>)) &Create::xor_, "Create an Expr with an Xor op\n  Expr pointers may not be nullptr\n\nC++: Create::xor_(class std::vector<class std::shared_ptr<const class Expr::Base>, class std::allocator<class std::shared_ptr<const class Expr::Base> > >, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("operands"), pybind11::arg("sp"));
-
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_53.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-namespace API::Binder {
-void bind_unknown_unknown_53(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
-	{ // Backend::Z3::Solver file: line:9
-		pybind11::class_<Backend::Z3::Solver, std::shared_ptr<Backend::Z3::Solver>> cl(M("Backend::Z3"), "Solver", "A Z3 Solver object ");
-		cl.def( pybind11::init( [](Backend::Z3::Solver const &o){ return new Backend::Z3::Solver(o); } ) );
-		cl.def("assign", (class Backend::Z3::Solver & (Backend::Z3::Solver::*)(const class Backend::Z3::Solver &)) &Backend::Z3::Solver::operator=, "C++: Backend::Z3::Solver::operator=(const class Backend::Z3::Solver &) --> class Backend::Z3::Solver &", pybind11::return_value_policy::automatic, pybind11::arg(""));
-
-		cl.def("__str__", [](Backend::Z3::Solver const &o) -> std::string { std::ostringstream s; s << o; return s.str(); } );
-	}
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_54.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-namespace API::Binder {
-void bind_unknown_unknown_54(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
 	{ // Backend::Z3::Z3 file: line:24
 		pybind11::class_<Backend::Z3::Z3, std::shared_ptr<Backend::Z3::Z3>> cl(M("Backend::Z3"), "Z3", "The Z3 backend\n  Warning: All Z3 backends within a given thread share their data");
 		cl.def( pybind11::init( [](){ return new Backend::Z3::Z3(); } ) );
@@ -2383,14 +2340,14 @@ void bind_unknown_unknown_54(std::function< pybind11::module &(std::string const
 		cl.def("simplify", (class std::shared_ptr<const class Expr::Base> (Backend::Z3::Z3::*)(const class Expr::Base *const)) &Backend::Z3::Z3::simplify, "Simplify the given expr\n  expr may not be nullptr\n\nC++: Backend::Z3::Z3::simplify(const class Expr::Base *const) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("expr"));
 		cl.def("clear_persistent_data", (void (Backend::Z3::Z3::*)()) &Backend::Z3::Z3::clear_persistent_data, "Clears translocation data \n\nC++: Backend::Z3::Z3::clear_persistent_data() --> void");
 		cl.def("satisfiable", (bool (Backend::Z3::Z3::*)(class Backend::Z3::Solver &) const) &Backend::Z3::Z3::satisfiable, "Check to see if the solver is in a satisfiable state \n\nC++: Backend::Z3::Z3::satisfiable(class Backend::Z3::Solver &) const --> bool", pybind11::arg("solver"));
-		cl.def("satisfiable", (bool (Backend::Z3::Z3::*)(class Backend::Z3::Solver &, const class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > &)) &Backend::Z3::Z3::satisfiable, "Check to see if the solver is in a satisfiable state \n\nC++: Backend::Z3::Z3::satisfiable(class Backend::Z3::Solver &, const class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > &) --> bool", pybind11::arg("solver"), pybind11::arg("extra_constraints"));
-		cl.def("solution", (bool (Backend::Z3::Z3::*)(const class Expr::Base *const, const class Expr::Base *const, class Backend::Z3::Solver &, const class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > &)) &Backend::Z3::Z3::solution, "Check if expr = sol is a solution to the given solver; none may be nullptr \n\nC++: Backend::Z3::Z3::solution(const class Expr::Base *const, const class Expr::Base *const, class Backend::Z3::Solver &, const class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > &) --> bool", pybind11::arg("expr"), pybind11::arg("sol"), pybind11::arg("solver"), pybind11::arg("extra_constraints"));
+		cl.def("satisfiable", (bool (Backend::Z3::Z3::*)(class Backend::Z3::Solver &, const class std::vector<const class Expr::Base *> &)) &Backend::Z3::Z3::satisfiable, "Check to see if the solver is in a satisfiable state \n\nC++: Backend::Z3::Z3::satisfiable(class Backend::Z3::Solver &, const class std::vector<const class Expr::Base *> &) --> bool", pybind11::arg("solver"), pybind11::arg("extra_constraints"));
+		cl.def("solution", (bool (Backend::Z3::Z3::*)(const class Expr::Base *const, const class Expr::Base *const, class Backend::Z3::Solver &, const class std::vector<const class Expr::Base *> &)) &Backend::Z3::Z3::solution, "Check if expr = sol is a solution to the given solver; none may be nullptr \n\nC++: Backend::Z3::Z3::solution(const class Expr::Base *const, const class Expr::Base *const, class Backend::Z3::Solver &, const class std::vector<const class Expr::Base *> &) --> bool", pybind11::arg("expr"), pybind11::arg("sol"), pybind11::arg("solver"), pybind11::arg("extra_constraints"));
 		cl.def("solution", (bool (Backend::Z3::Z3::*)(const class Expr::Base *const, const class Expr::Base *const, class Backend::Z3::Solver &)) &Backend::Z3::Z3::solution, "Check to see if sol is a solution to expr w.r.t the solver; neither may be nullptr \n\nC++: Backend::Z3::Z3::solution(const class Expr::Base *const, const class Expr::Base *const, class Backend::Z3::Solver &) --> bool", pybind11::arg("expr"), pybind11::arg("sol"), pybind11::arg("solver"));
-		cl.def("unsat_core", (class std::vector<class std::shared_ptr<const class Expr::Base>, class std::allocator<class std::shared_ptr<const class Expr::Base> > > (Backend::Z3::Z3::*)(const class Backend::Z3::Solver &)) &Backend::Z3::Z3::unsat_core, "Return the unsat core from the solver\n  Warning: This assumes all of solver->assertions were added by add<true>\n\nC++: Backend::Z3::Z3::unsat_core(const class Backend::Z3::Solver &) --> class std::vector<class std::shared_ptr<const class Expr::Base>, class std::allocator<class std::shared_ptr<const class Expr::Base> > >", pybind11::arg("solver"));
-		cl.def("eval", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt> > > (Backend::Z3::Z3::*)(const class Expr::Base *const, class Backend::Z3::Solver &, const unsigned long long)) &Backend::Z3::Z3::eval, "Evaluate expr, return up to n different solutions\n  No pointers may be nullptr\n\nC++: Backend::Z3::Z3::eval(const class Expr::Base *const, class Backend::Z3::Solver &, const unsigned long long) --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt> > >", pybind11::arg("expr"), pybind11::arg("solver"), pybind11::arg("n_sol"));
-		cl.def("eval", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt> > > (Backend::Z3::Z3::*)(const class Expr::Base *const, class Backend::Z3::Solver &, const unsigned long long, const class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > &)) &Backend::Z3::Z3::eval, "Evaluate expr, return up to n different solutions\n  No pointers may be nullptr\n\nC++: Backend::Z3::Z3::eval(const class Expr::Base *const, class Backend::Z3::Solver &, const unsigned long long, const class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > &) --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt> > >", pybind11::arg("expr"), pybind11::arg("s"), pybind11::arg("n"), pybind11::arg("extra_constraints"));
-		cl.def("batch_eval", (class std::vector<class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt> > >, class std::allocator<class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt> > > > > (Backend::Z3::Z3::*)(const class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > &, class Backend::Z3::Solver &, const unsigned long long)) &Backend::Z3::Z3::batch_eval, "Evaluate every expr, return up to n different solutions\n  No pointers may be nullptr\n\nC++: Backend::Z3::Z3::batch_eval(const class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > &, class Backend::Z3::Solver &, const unsigned long long) --> class std::vector<class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt> > >, class std::allocator<class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt> > > > >", pybind11::arg("exprs"), pybind11::arg("s"), pybind11::arg("n"));
-		cl.def("batch_eval", (class std::vector<class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt> > >, class std::allocator<class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt> > > > > (Backend::Z3::Z3::*)(const class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > &, class Backend::Z3::Solver &, const unsigned long long, const class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > &)) &Backend::Z3::Z3::batch_eval, "Evaluate every expr, return up to n different solutions\n  No pointers may be nullptr\n\nC++: Backend::Z3::Z3::batch_eval(const class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > &, class Backend::Z3::Solver &, const unsigned long long, const class std::vector<const class Expr::Base *, class std::allocator<const class Expr::Base *> > &) --> class std::vector<class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt> > >, class std::allocator<class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt>, class std::allocator<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt> > > > >", pybind11::arg("exprs"), pybind11::arg("s"), pybind11::arg("n"), pybind11::arg("extra_constraints"));
+		cl.def("unsat_core", (class std::vector<class std::shared_ptr<const class Expr::Base> > (Backend::Z3::Z3::*)(const class Backend::Z3::Solver &)) &Backend::Z3::Z3::unsat_core, "Return the unsat core from the solver\n  Warning: This assumes all of solver->assertions were added by add<true>\n\nC++: Backend::Z3::Z3::unsat_core(const class Backend::Z3::Solver &) --> class std::vector<class std::shared_ptr<const class Expr::Base> >", pybind11::arg("solver"));
+		cl.def("eval", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt> > (Backend::Z3::Z3::*)(const class Expr::Base *const, class Backend::Z3::Solver &, const unsigned long long)) &Backend::Z3::Z3::eval, "Evaluate expr, return up to n different solutions\n  No pointers may be nullptr\n\nC++: Backend::Z3::Z3::eval(const class Expr::Base *const, class Backend::Z3::Solver &, const unsigned long long) --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt> >", pybind11::arg("expr"), pybind11::arg("solver"), pybind11::arg("n_sol"));
+		cl.def("eval", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt> > (Backend::Z3::Z3::*)(const class Expr::Base *const, class Backend::Z3::Solver &, const unsigned long long, const class std::vector<const class Expr::Base *> &)) &Backend::Z3::Z3::eval, "Evaluate expr, return up to n different solutions\n  No pointers may be nullptr\n\nC++: Backend::Z3::Z3::eval(const class Expr::Base *const, class Backend::Z3::Solver &, const unsigned long long, const class std::vector<const class Expr::Base *> &) --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt> >", pybind11::arg("expr"), pybind11::arg("s"), pybind11::arg("n"), pybind11::arg("extra_constraints"));
+		cl.def("batch_eval", (class std::vector<class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt> > > (Backend::Z3::Z3::*)(const class std::vector<const class Expr::Base *> &, class Backend::Z3::Solver &, const unsigned long long)) &Backend::Z3::Z3::batch_eval, "Evaluate every expr, return up to n different solutions\n  No pointers may be nullptr\n\nC++: Backend::Z3::Z3::batch_eval(const class std::vector<const class Expr::Base *> &, class Backend::Z3::Solver &, const unsigned long long) --> class std::vector<class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt> > >", pybind11::arg("exprs"), pybind11::arg("s"), pybind11::arg("n"));
+		cl.def("batch_eval", (class std::vector<class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt> > > (Backend::Z3::Z3::*)(const class std::vector<const class Expr::Base *> &, class Backend::Z3::Solver &, const unsigned long long, const class std::vector<const class Expr::Base *> &)) &Backend::Z3::Z3::batch_eval, "Evaluate every expr, return up to n different solutions\n  No pointers may be nullptr\n\nC++: Backend::Z3::Z3::batch_eval(const class std::vector<const class Expr::Base *> &, class Backend::Z3::Solver &, const unsigned long long, const class std::vector<const class Expr::Base *> &) --> class std::vector<class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt> > >", pybind11::arg("exprs"), pybind11::arg("s"), pybind11::arg("n"), pybind11::arg("extra_constraints"));
 	}
 }
 } // namespace API::Binder

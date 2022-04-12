@@ -156,6 +156,7 @@ function(gen_api_file API_TARGET API_SOURCE BINDER_DIR) # Append 'must include' 
 
     # Consolidate headers
     list(REMOVE_DUPLICATES HEADERS)
+    list(SORT HEADERS)
     list(FILTER HEADERS EXCLUDE REGEX "__") # We do not want internal headers (this is probably safe?)
 
     # Create code
