@@ -229,25 +229,6 @@ def run_cmd_no_fail(*args, **kwargs):
     return rc
 
 
-def parse_cmake_cache(build_dir):
-    """
-    Parses the cmake cache
-    """
-
-    def extract(x):
-        x = x.split("=")
-        if len(x) == 2:
-            left = x[0].split(":")
-            if len(left) == 2:
-                return (left[0], x[1])
-
-    cmd = [find_exe("cmake"), "-LA", "-N", "."]
-    with chdir(build_dir):
-        cache = run_cmd_no_fail(*cmd, stdout=subprocess.PIPE).stdout.decode()
-    variables = [extract(i) for i in cache.split("\n")]  # Extract cache vars
-    return JDict({i[0]: i[1] for i in variables if i is not None})
-
-
 def extract(d, f, ext):
     """
     Extract f into d given, the compression is assumed from the extension (ext)
@@ -267,14 +248,15 @@ def extract(d, f, ext):
         raise RuntimeError("Compression type not supported: " + ext)
 
 
-def make_mutliproc(name):
+def build_cmake_target(target, *args):
     """
-    Add the -j flag to name if it is make
+    Build the target with multiple jobs
+    Extra args may be passed to the generator via args
+    Run this from the same directory you would the generator
     """
-    if name.endswith("make"):
-        nproc = max(cpu_count() - 1, 1)
-        return [name, "-j" + str(nproc)]
-    return [name]
+    cmake = [find_exe("cmake"), "--build", "."]
+    j = "-j" + str(max(cpu_count() - 1, 1))
+    return run_cmd_no_fail(*cmake, j, "--target", target, "--", *args)
 
 
 def download_checksum_extract(name, where, url, sha, ext):
@@ -598,7 +580,8 @@ class GMP(Library):
             ]
             self._set_lib_type(self._run("Configuring", "./configure", *config_args))
             # Building + Checking
-            makej = make_mutliproc(find_exe("make")) # We need make for this step
+            nproc = max(cpu_count() - 1, 1)
+            makej = (find_exe("make"), "-j" + str(nproc)) # GMP requires make
             _ = self._run("Building GMP", *makej)
             _ = self._run("Checking GMP build", *makej, "check")
             # Include dir
@@ -813,24 +796,16 @@ class Claricpp(Library):
         with chdir(build):
             run_cmd_no_fail(find_exe("cmake"), *cmake_args, native)
 
-    @classmethod
-    def generator(cls):
-        """
-        Warning: Will fail if CMake cache does not exist
-        """
-        return parse_cmake_cache(cls.build_dir).CMAKE_MAKE_PROGRAM
-
     def _build(self):
         if not os.path.exists(self.build_dir):
             os.mkdir(self.build_dir)
         self._cmake(native, self.build_dir)
-        makej = make_mutliproc(self.generator())
         print("Building " + claricpp + "...")
         with chdir(self.build_dir):
-            run_cmd_no_fail(*makej, claricpp)
+            build_cmake_target(claricpp)
             if self.enable_tests:
                 print("Building tests...")
-                run_cmd_no_fail(*makej, "all")
+                build_cmake_target("all")
                 print("Tests built in build dir: " + self.build_dir)
 
     def _license(self):
@@ -848,7 +823,7 @@ class Claricpp(Library):
         if level.implies(CleanLevel.BUILD):
             try:  # No clue if this stuff even exists
                 with chdir(self.build_dir):
-                    run_cmd_no_fail(self.generator(), "clean")
+                    build_cmake_target("clean")
             except:  # Ignore errors during the above
                 pass
             shutil.rmtree(self.build_dir, ignore_errors=True)
@@ -871,8 +846,7 @@ class ClaricppAPI(Library):
     def _build(self):
         print("Building " + self._api_target + "...")
         with chdir(self._build_dir):
-            makej = make_mutliproc(Claricpp.generator())
-            run_cmd_no_fail(*makej, self._api_target)
+            build_cmake_target(self._api_target)
 
     def _license(self):
         pass  # Same as main project
