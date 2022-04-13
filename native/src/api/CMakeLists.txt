@@ -31,6 +31,7 @@ target_include_directories("${API_TARGET}" SYSTEM BEFORE PUBLIC "${Z3_INCLUDE_DI
 target_link_libraries("${API_TARGET}" PUBLIC "${CLARICPP}" PUBLIC "${Z3_LINK_TARGET}" PUBLIC "${GMP_LIBRARIES}")
 # TODO: these target_ functions should be inherited from claricpp... why aren't they?
 target_sources(clari PRIVATE "${API_SOURCE}"
+    py_shim_code.cpp
     exceptions.cpp
     simplify.cpp
     manual.cpp
