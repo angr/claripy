@@ -1,5 +1,3 @@
-import string
-
 from setuptools.command.sdist import sdist as SDistOriginal
 from distutils.command.build import build as BuildOriginal
 from distutils.command.clean import clean as CleanOriginal
@@ -384,7 +382,7 @@ class Library:
         """
         A helper function used to automate the logic of invoking dependencies and body
         Note: for lvl = license, license files are force cleaned!
-        @param force: True if old files should be purged instead of possible reused
+        @param force: True if old files should be purged instead of possibly reused
         @param lvl: The clean level to be used for this
         @param chk: A dict where each entry contains the arguments to give to _done
         @param called: The set of already called methods
@@ -742,21 +740,24 @@ class Pybind11(Library):
 class Claricpp(Library):
     """
     A class to manage Claricpp
-    Warning: if enable_tests, .build() will not be skipped if just the libs exist
+    Warning: if build_doc or enable_tests, .build() may be forced
     """
-
-    enable_tests = False  # Change me if desired
+    # Config
+    build_doc = False
+    enable_tests = False
+    build_claricpp = True
+    # Constants
     build_dir = os.path.join(native, "build")
     _lib = SharedLib("libclaricpp", build_dir)
     _out_src = os.path.join(BuiltLib.install_dir, "src")
 
     def __init__(self):
         chk = {self._lib.name: self._lib, "Claricpp src": self._out_src}
-        build_chk = {} if self.enable_tests else chk
+        build_chk = {} if self.build_doc or self.enable_tests else chk
         super().__init__({}, build_chk, chk, Boost(), Z3(), Pybind11(), Backward())
 
     @staticmethod
-    def _cmake_config_args(claricpp, enable_tests):
+    def _cmake_config_args(claricpp, enable_tests, build_doc):
         """
         Create arguments to pass to cmake for configuring claricpp
         """
@@ -775,7 +776,7 @@ class Claricpp(Library):
             "CPP_CHECK": False,
             "CLANG_TIDY": False,
             "ENABLE_MEMCHECK": False,
-            "BUILD_DOC": False,
+            "BUILD_DOC": build_doc,
             "LWYU": False,
             # Library config
             "GMPDIR": GMP.lib_dir,
@@ -792,7 +793,7 @@ class Claricpp(Library):
     @classmethod
     def _cmake(cls, native, build):
         print("Configuring...")
-        cmake_args = cls._cmake_config_args(claricpp, cls.enable_tests)
+        cmake_args = cls._cmake_config_args(claricpp, cls.enable_tests, cls.build_doc)
         with chdir(build):
             run_cmd_no_fail(find_exe("cmake"), *cmake_args, native)
 
@@ -800,21 +801,33 @@ class Claricpp(Library):
         if not os.path.exists(self.build_dir):
             os.mkdir(self.build_dir)
         self._cmake(native, self.build_dir)
-        print("Building " + claricpp + "...")
         with chdir(self.build_dir):
-            build_cmake_target(claricpp)
+            if self.build_claricpp:
+                print("Building " + claricpp + "...")
+                build_cmake_target(claricpp)
             if self.enable_tests:
                 print("Building tests...")
                 build_cmake_target("all")
                 print("Tests built in build dir: " + self.build_dir)
+            if self.build_doc:
+                print("Building docs...")
+                build_cmake_target("docs")
+                print("Docs built in: " + os.path.join(self.build_dir, 'docs'))
 
     def _license(self):
         pass  # Same as main project
 
+    @classmethod
+    def _install_ignore(d, fs):
+        d = os.path.abspath(d)
+        skip = os.path.join(self.build_dir, 'docs') # Don't install docs
+        paths = { os.path.join(d, i):i for i in fs }
+        return [ k for i,k in paths.items() if os.path.samefile(i, skip) ]
+
     def _install(self):
         self._lib.install()
         if not os.path.exists(self._out_src):
-            shutil.copytree(os.path.join(native, "src"), self._out_src)
+            shutil.copytree(os.path.join(native, "src"), self._out_src, ignore=_install_ignore)
 
     def _clean(self, level):
         if level.implies(CleanLevel.INSTALL):
@@ -883,7 +896,7 @@ class Build(BuildOriginal):
         super().run()
 
 
-class BuildTests(Command):
+class SimpleCommand(Command):
 
     user_options = []
 
@@ -893,10 +906,18 @@ class BuildTests(Command):
     def finalize_options(self):
         pass
 
+class BuildTests(SimpleCommand):
     def run(self):
         Claricpp.enable_tests = True
         self.run_command("build")
         print("To test: cd " + Claricpp.build_dir + " && ctest .")
+
+class BuildDocs(SimpleCommand):
+    def run(self):
+        Claricpp.build_doc = True
+        Claricpp.build_claricpp = False
+        f = lambda: Claricpp().build(False)
+        self.execute(f, (), msg="Building native docs")
 
 class Clean(CleanOriginal):
     def run(self):
@@ -911,6 +932,7 @@ if __name__ == "__main__":
         cmdclass={
             "sdist": SDist,
             "build": Build,
+            "docs": BuildDocs,
             "build_tests": BuildTests,  # A custom command to build native tests
             "clean": Clean,  # A custom command, makes dev easier
         },

@@ -47,7 +47,6 @@ RUN apt-get install -yq \
 # These are not necessary because of pip, however Z3 needs some CMake to build the wheel
 # To avoid installing cmake twice I'm installing it from pip once before everything else
 # Z3 does not declare native dependencies like cmake, even if they have pip packages :(
-
 RUN pip3 install cmake # CMake (apt cmake is ancient) and z3 doesn't declare this as a pip dependency
 RUN pip3 install wheel # Z3 fails to declare this as a dependency; TODO: PR a fix
 
@@ -56,7 +55,6 @@ RUN pip3 install z3-solver
 RUN python3 -c 'import os, z3; lib=os.path.dirname(z3.__file__)+"/lib/libz3.so"; os.symlink(lib,lib+".4.8")'
 
 # Optional depending on use build config
-
 RUN if [[ "${INSTALL_OPTIONAL}" -ne 0 ]]; then \
 	pip3 install clang-format; fi
 RUN if [[ "${INSTALL_OPTIONAL}" -ne 0 ]]; then \
@@ -84,8 +82,9 @@ RUN if [[ "${INSTALL_QOL_OPTIONAL}" -ne 0 ]]; then \
 RUN if [[ "${INSTALL_QOL_OPTIONAL}" -ne 0 ]]; then \
 	pip3 install \
 		setuptools>=39.6.0 \
-		z3-solver \
+		z3-solver>=4.8.15.0 \
 		requests \
+		wheel \
 		tqdm \
 	;fi
 
@@ -126,13 +125,13 @@ RUN python3 setup.py clean
 
 # Let's test things individually
 # If a setp fails, this makes debugging easier
+# All stages which derive from sdist do for only for speed
 
 FROM config as sdist
 LABEL stage=sdist
 RUN python setup.py sdist
 
 FROM sdist as build
-# Derive from sdist for speed
 LABEL stage=build
 RUN python setup.py build
 
@@ -145,9 +144,13 @@ LABEL stage=install
 RUN pip3 install --no-build-isolation --verbose .
 
 FROM sdist as build_tests
-# Derive from sdist for speed
 LABEL stage=build_tests
 RUN python setup.py build_tests
+
+FROM sdist as docs
+LABEL stage=docs
+RUN apt-get install -yq graphviz doxygen
+RUN python setup.py docs
 
 
 ##################################################
@@ -157,23 +160,4 @@ RUN python setup.py build_tests
 
 FROM build_tests as test
 LABEL stage=test
-
-# Test
 RUN cd "${BUILD}" && ctest .
-
-
-##################################################
-#                   Docs Stage                   #
-##################################################
-
-
-FROM build_tests as docs
-LABEL stage=docs
-
-# TODO: fix me
-RUN echo "TODO: Have setup.py provide an env var to toggle doc target"; \
-	echo "Then verify INSTALL_OPTIONAL is true (i.e. doxygen is installed)"; \
-	exit 1
-
-# Make docs
-RUN "${BUILD}" && make -j "$(("$(nproc)"-1))" docs
