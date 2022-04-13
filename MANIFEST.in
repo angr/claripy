@@ -21,3 +21,6 @@ global-exclude *.so
 global-exclude *.dylib
 global-exclude *.dll
 global-exclude *.a
+
+# Do not include python cache
+recursive-exclude *.pyc
