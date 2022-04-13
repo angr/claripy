@@ -3,9 +3,12 @@ Dockerfile
 build.sh
 
 # Config files
-.dockerignore
-.editorconfig
+**/.editorconfig
+**/.dockerignore
+
+# Git
 **/.gitignore
+**/.git
 
 # Vim
 **/.ycm_extra_conf.py
@@ -26,44 +29,42 @@ native/.cache
 native/build
 
 # External projects
-native/backward-cpp
-native/pybind11
+native/gmp/build
 native/boost
-native/gmp
 
 # Explicit
 native/Ignore/*
 native/ignore/*
 
 # Prerequisites
-*.d
+**/*.d
 
 # Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+**/*.slo
+**/*.lo
+**/*.o
+**/*.obj
 
 # Precompiled Headers
-*.gch
-*.pch
+**/*.gch
+**/*.pch
 
 # Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
+**/*.so
+**/*.dylib
+**/*.dll
 
 # Fortran module files
-*.mod
-*.smod
+**/*.mod
+**/*.smod
 
 # Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
+**/*.lai
+**/*.la
+**/*.a
+**/*.lib
 
 # Executables
-*.exe
-*.out
-*.app
+**/*.exe
+**/*.out
+**/*.app

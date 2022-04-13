@@ -6,6 +6,10 @@
 # options as desired.
 
 
+# Set this to config_verbose if desired
+ARG CONFIG_STAGE=config
+
+
 ##################################################
 #                   Base Stage                   #
 ##################################################
@@ -44,6 +48,7 @@ RUN apt-get install -yq \
 	make
 
 # Python dependencies
+# TODO: PRs fixing both of these have been made; newer releases should fix these!
 # These are not necessary because of pip, however Z3 needs some CMake to build the wheel
 # To avoid installing cmake twice I'm installing it from pip once before everything else
 # Z3 does not declare native dependencies like cmake, even if they have pip packages :(
@@ -98,13 +103,10 @@ FROM base AS config
 LABEL stage=config
 
 # Optional build arguments
-# Note: VERBOSE must be empty to be off
 ARG CTEST_OUTPUT_ON_FAILURE=1
-ARG VERBOSE=""
 
 # Constants
 ENV CLARIPY="/claripy/" \
-	VERBOSE="${VERBOSE}" \
 	CTEST_OUTPUT_ON_FAILURE="${CTEST_OUTPUT_ON_FAILURE}"
 ENV BUILD="${CLARIPY}/native/build/"
 
@@ -112,10 +114,15 @@ ENV BUILD="${CLARIPY}/native/build/"
 RUN mkdir "${CLARIPY}"
 COPY . "${CLARIPY}"
 WORKDIR "${CLARIPY}"
-RUN git submodule update --init --recursive
 
 # Prune existing built objects
 RUN python3 setup.py clean
+
+
+# Verbose config stage
+FROM config as config_verbose
+LABEL stage=config_verbose
+ENV VERBOSE=1
 
 
 ##################################################
@@ -127,7 +134,7 @@ RUN python3 setup.py clean
 # If a setp fails, this makes debugging easier
 # All stages which derive from sdist do for only for speed
 
-FROM config as sdist
+FROM "${CONFIG_STAGE}" as sdist
 LABEL stage=sdist
 RUN python setup.py sdist
 
