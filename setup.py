@@ -818,16 +818,16 @@ class Claricpp(Library):
         pass  # Same as main project
 
     @classmethod
-    def _install_ignore(d, fs):
+    def _install_ignore(cls, d, fs):
         d = os.path.abspath(d)
-        skip = os.path.join(self.build_dir, 'docs') # Don't install docs
-        paths = { os.path.join(d, i):i for i in fs }
-        return [ k for i,k in paths.items() if os.path.samefile(i, skip) ]
+        skip = os.path.realpath(os.path.join(cls.build_dir, 'docs')) # Don't install docs
+        paths = { os.path.realpath(os.path.join(d, i)):i for i in fs }
+        return [ k for i,k in paths.items() if i == skip ]
 
     def _install(self):
         self._lib.install()
         if not os.path.exists(self._out_src):
-            shutil.copytree(os.path.join(native, "src"), self._out_src, ignore=_install_ignore)
+            shutil.copytree(os.path.join(native, "src"), self._out_src, ignore=self._install_ignore)
 
     def _clean(self, level):
         if level.implies(CleanLevel.INSTALL):
