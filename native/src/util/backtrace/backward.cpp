@@ -49,7 +49,3 @@ void Util::Backtrace::backward(std::ostream &o, const unsigned ignore_frames,
     // Output
     p.print(st, o);
 }
-
-// Backtraces for segfaults
-// @todo: Add segfault handling better
-backward::SignalHandling sh;
