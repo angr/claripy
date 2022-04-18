@@ -21,9 +21,9 @@ void Lev::silent_set(const Level l) noexcept {
 }
 
 void Lev::set(const Level l) noexcept {
-    info("Log level updating from: ", get());
+    info("Claricpp log level updating from: ", get());
     silent_set(l);
-    info("Log level updated to: ", l);
+    info("Claricpp log level updated to: ", l);
 }
 
 Lev::Level Lev::get() noexcept {

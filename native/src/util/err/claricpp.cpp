@@ -32,7 +32,7 @@ void Util::Err::Claricpp::log_atomic_change(CCSC what, const bool old, const boo
 
 void Util::Err::Claricpp::warn_backtrace_slow() noexcept {
     static constexpr CCSC msg {
-        "Backtraces enabled; claricpp exceptions will generate a backtrace on creation! This will "
+        "Backtraces enabled; Claricpp exceptions will generate a backtrace on creation! This will "
         "slow down the program whenever exceptions are created!"
     };
     try {
