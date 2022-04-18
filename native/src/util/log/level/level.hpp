@@ -8,7 +8,7 @@
 
 #ifdef CONSTANT_LOG_LEVEL
     /** Constexpr if and only if the log level is immutable */
-    #define UTIL_LOG_LEVELCONSTEXPR constexpr
+    #define UTIL_LOG_LEVEL_CONSTEXPR constexpr
 #else
     /** Constexpr if and only if the log level is immutable */
     #define UTIL_LOG_LEVEL_CONSTEXPR
