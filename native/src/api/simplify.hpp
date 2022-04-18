@@ -1,6 +1,7 @@
 /**
  * @file
  * @brief Define a way to store custom simplifiers
+ * \ingroup api
  */
 #ifndef R_API_SIMPLIFY_HPP_
 #define R_API_SIMPLIFY_HPP_
@@ -9,7 +10,7 @@
 
 namespace API {
     /** Register simplify set API function */
-    void bind_simplify_init(API::Binder::ModuleGetter &m);
+    void simplify(API::Binder::ModuleGetter &m);
 } // namespace API
 
 #endif

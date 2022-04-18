@@ -1,4 +1,7 @@
-/** @file */
+/**
+ * @file
+ * \ingroup api
+ */
 #include "exceptions.hpp"
 
 #include "constants.hpp"
@@ -107,7 +110,7 @@ static void register_claripy(py::module_ &m, const py::handle &python) {
 }
 
 /** Bind exceptions with pybind11 */
-void API::bind_exceptions(py::module_ &root_module) {
+void API::exceptions(py::module_ &root_module) {
     // Constants
     static constexpr CCSC internal_name { "_internal" };
     static constexpr CCSC py_err_name { "py_err" };

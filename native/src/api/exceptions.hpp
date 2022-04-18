@@ -1,6 +1,7 @@
 /**
  * @file
  * @brief This file defines a function to link Python and C++ exceptions
+ * \ingroup api
  */
 #ifndef R_API_EXCEPTIONS_HPP_
 #define R_API_EXCEPTIONS_HPP_
@@ -9,7 +10,7 @@
 
 namespace API {
     /** Register exceptions with pybind11 */
-    void bind_exceptions(pybind11::module_ &);
+    void exceptions(pybind11::module_ &);
 } // namespace API
 
 #endif

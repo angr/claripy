@@ -1,4 +1,7 @@
-/** @file */
+/**
+ * @file
+ * \ingroup api
+ */
 #include "py_shim_code.hpp"
 
 #include "constants.hpp"

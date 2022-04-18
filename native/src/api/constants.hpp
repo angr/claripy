@@ -1,6 +1,11 @@
+/** \defgroup api Claricpp Python API
+ * @brief A group of files which define the python API
+ */
+
 /**
  * @file
  * @brief This file defines constants used throughout the API
+ * \ingroup api
  */
 #ifndef R_API_CONSTANTS_HPP_
 #define R_API_CONSTANTS_HPP_

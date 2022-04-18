@@ -1,6 +1,7 @@
 /**
  * @file
  * @brief This file defines a function to register the manually written API code
+ * \ingroup api
  */
 #ifndef R_API_MANUAL_HPP_
 #define R_API_MANUAL_HPP_

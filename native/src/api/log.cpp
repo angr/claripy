@@ -1,4 +1,7 @@
-/** @file */
+/**
+ * @file
+ * \ingroup api
+ */
 #include "log.hpp"
 
 #include "../util.hpp"
@@ -39,7 +42,7 @@ static void set_log_default() noexcept try {
 }
 UTIL_FALLBACKLOG_CATCH("Failed to restore C++ default logger")
 
-void API::bind_log_init(Binder::ModuleGetter &m) {
+void API::logger(Binder::ModuleGetter &m) {
     register_at_exit(set_log_default);
     m("API").def(
         "install_logger",

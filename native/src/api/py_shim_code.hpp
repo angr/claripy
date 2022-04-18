@@ -1,6 +1,7 @@
 /**
  * @file
  * @brief This file defines python code used for the multiple inheritance shim
+ * \ingroup api
  */
 #ifndef R_PY_SHIM_CODE_HPP_
 #define R_PY_SHIM_CODE_HPP_
