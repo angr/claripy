@@ -3,8 +3,8 @@
  * @brief This file defines python code used for the multiple inheritance shim
  * \ingroup api
  */
-#ifndef R_PY_SHIM_CODE_HPP_
-#define R_PY_SHIM_CODE_HPP_
+#ifndef R_API_PYSHIMCODE_HPP_
+#define R_API_PYSHIMCODE_HPP_
 
 #include <string>
 #include <utility>
