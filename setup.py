@@ -290,11 +290,14 @@ class CleanLevel(Enum):
     """
     Higher clean levels imply lower clean levels
     Values will be incremented by 1 between levels
+    Non-whole values are allowed but may only be referenced in clean functions
     """
 
     INSTALL = 1
     LICENSE = 2
+    BUILT_LIBS = 2.5
     BUILD = 3
+    BUILD_DEPS = 3.5
     GET = 4
 
 
@@ -614,7 +617,7 @@ class GMP(Library):
             self._lib.clean_install()
         if level.implies(CleanLevel.LICENSE):
             shutil.rmtree(self._lic_d, ignore_errors=True)
-        if level.implies(CleanLevel.BUILD):
+        if level.implies(CleanLevel.BUILD_DEPS):
             shutil.rmtree(self._build_dir, ignore_errors=True)
             shutil.rmtree(self.include_dir, ignore_errors=True)
             self._lib.clean_build()
@@ -744,6 +747,7 @@ class Claricpp(Library):
     """
     # Config
     build_doc = False
+    build_debug = False
     enable_tests = False
     build_claricpp = True
     # Constants
@@ -756,8 +760,8 @@ class Claricpp(Library):
         build_chk = {} if self.build_doc or self.enable_tests else chk
         super().__init__({}, build_chk, chk, Boost(), Z3(), Pybind11(), Backward())
 
-    @staticmethod
-    def _cmake_config_args(claricpp, enable_tests, build_doc):
+    @classmethod
+    def _cmake_config_args(cls, claricpp):
         """
         Create arguments to pass to cmake for configuring claricpp
         """
@@ -767,16 +771,19 @@ class Claricpp(Library):
             "VERSION": version,
             "CLARICPP": claricpp,
             # Build options
-            "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+            "CONSTANT_LOG_LEVEL": cls.build_debug,
+            "DEFAULT_RELEASE_LOG_LEVEL": "Critical",
+            "CMAKE_BUILD_TYPE": "Debug" if cls.build_debug else "Release",
+            # Backtrace options
             "WARN_BACKWARD_LIMITATIONS": True,
             "REQUIRE_BACKWARD_BACKEND": False,  # TODO:
-            "SOURCE_ROOT_FOR_BACKTRACE": None,  # TODO
-            # Disable build options
-            "ENABLE_TESTING": enable_tests,
+            "SOURCE_ROOT_FOR_BACKTRACE": None,  # TODO: make a runtime thing config'd by python
+            # Disable options
+            "ENABLE_TESTING": cls.enable_tests,
             "CPP_CHECK": False,
             "CLANG_TIDY": False,
             "ENABLE_MEMCHECK": False,
-            "BUILD_DOC": build_doc,
+            "BUILD_DOC": cls.build_doc,
             "LWYU": False,
             # Library config
             "GMPDIR": GMP.lib_dir,
@@ -793,7 +800,7 @@ class Claricpp(Library):
     @classmethod
     def _cmake(cls, native, build):
         print("Configuring...")
-        cmake_args = cls._cmake_config_args(claricpp, cls.enable_tests, cls.build_doc)
+        cmake_args = cls._cmake_config_args(claricpp)
         with chdir(build):
             run_cmd_no_fail(find_exe("cmake"), *cmake_args, native)
 
@@ -833,6 +840,8 @@ class Claricpp(Library):
         if level.implies(CleanLevel.INSTALL):
             self._lib.clean_install()
             shutil.rmtree(self._out_src, ignore_errors=True)
+        if level.implies(CleanLevel.BUILT_LIBS):
+            self._lib.clean_build()
         if level.implies(CleanLevel.BUILD):
             try:  # No clue if this stuff even exists
                 with chdir(self.build_dir):
@@ -840,7 +849,6 @@ class Claricpp(Library):
             except:  # Ignore errors during the above
                 pass
             shutil.rmtree(self.build_dir, ignore_errors=True)
-            self._lib.clean_build()
 
 
 class ClaricppAPI(Library):
@@ -870,9 +878,10 @@ class ClaricppAPI(Library):
     def _clean(self, level):
         if level.implies(CleanLevel.INSTALL):
             self._lib.clean_install()
+        if level.implies(CleanLevel.BUILT_LIBS):
+            self._lib.clean_build()
         if level.implies(CleanLevel.BUILD):
             shutil.rmtree(self._build_dir, ignore_errors=True)
-            self._lib.clean_build()
 
 
 ######################################################################
@@ -890,6 +899,7 @@ class SDist(SDistOriginal):
 class Build(BuildOriginal):
     def run(self):
         # Build native components and install to the python src location
+        Claricpp.build_debug = ("SETUP_PY_BUILD_DEBUG" in os.environ)
         f = lambda: ClaricppAPI().install(False)
         self.execute(f, (), msg="Building native components")
         print("Done building native components")
