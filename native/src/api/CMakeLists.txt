@@ -33,6 +33,7 @@ target_link_libraries("${API_TARGET}" PUBLIC "${CLARICPP}" PUBLIC "${Z3_LINK_TAR
 target_sources(clari PRIVATE "${API_SOURCE}"
     py_shim_code.cpp
     exceptions.cpp
+    signal_handler.cpp
     simplify.cpp
     manual.cpp
     log.cpp

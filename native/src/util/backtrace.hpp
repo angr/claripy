@@ -8,6 +8,7 @@
 
 #include "backtrace/constants.hpp"
 #include "backtrace/generators.hpp"
+#include "backtrace/handle_signals.hpp"
 #include "backtrace/lazy.hpp"
 
 #endif

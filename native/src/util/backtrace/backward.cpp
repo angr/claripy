@@ -3,11 +3,14 @@
  * \ingroup util
  */
 #include "generators.hpp"
+#include "handle_signals.hpp"
 
 #include "../do_once.hpp"
 #include "../fallback_error_log.hpp"
+#include "../log.hpp"
 
 #include <backward.hpp>
+#include <memory>
 
 
 /** Add a source root for backward */
@@ -48,4 +51,17 @@ void Util::Backtrace::backward(std::ostream &o, const unsigned ignore_frames,
 #endif
     // Output
     p.print(st, o);
+}
+
+void Util::Backtrace::backward_handle_signals() {
+    static std::unique_ptr<backward::SignalHandling> sh { nullptr };
+    static std::atomic_bool installed { false };
+    if (!installed.exchange(true)) {
+        Util::Log::debug("Installing backward signal handler");
+        sh = std::make_unique<backward::SignalHandling>();
+        Util::Log::info("Signal handler installed.");
+    }
+    else {
+        Util::Log::warning("This function has been called before. Doing nothing");
+    }
 }
