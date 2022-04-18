@@ -96,7 +96,7 @@ option( EFFECTIVE_CPP_STYLE_CHECK "Enable effective C++ style checks as warnings
 option( ENABLE_MEMCHECK "Enable memcheck on test target" ON )
 option( ALLOW_NO_MEMCHECK_APPLE "Allow not using memcheck on apple" ON )
 # If enabled: log calls to log levels lower than defined will have no performance penalty
-option( CONSTANT_LOG_LEVEL "Force log level to be set at compiletime for release builds" OFF )
+option( CONSTANT_LOG_LEVEL "Force log level to be set at compile time" OFF )
 
 # Security Options
 # These options will overide any previously set option if enabled

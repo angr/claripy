@@ -50,13 +50,24 @@ void API::logger(Binder::ModuleGetter &m) {
         "Installs log_func to Claricpp's logger. The function "
         "will be called as py_log(id: str, level: int, msg: str)",
         pybind11::arg("py_log"));
+    // TODO: handle non default log levels (i.e. 1)
+    m("API").def(
+        "get_log_level", []() { return Util::to_underlying(Util::Log::Level::get()); },
+        "Get Claricpp's log level2.");
+#ifndef CONSTANT_LOG_LEVEL
     m("API").def(
         "set_log_level",
         [](const unsigned lvl) {
-            Util::Log::Level::set(static_cast<Util::Log::Level::Level>(lvl));
+    #ifdef DEBUG
+            Util::Log::Level::set
+    #else
+            Util::Log::Level::silent_set
+    #endif
+                (static_cast<Util::Log::Level::Level>(lvl));
         },
         "Set the level Claricpp's log level. When a python logger is installed this functionally "
         "defines the minimum log level at which Claricpp will generate a log message and send it "
-        "to python's logger",
-        pybind11::arg("py_log"));
+        "to python's logger.",
+        pybind11::arg("lvl"));
+#endif
 }
