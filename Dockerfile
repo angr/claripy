@@ -6,6 +6,10 @@
 # options as desired.
 
 
+# Set this to base if no dev stuff is desired
+# Set to base_dev_extras to also install optional packages
+ARG BASE_STAGE=base_dev
+
 # Set this to config_verbose if desired
 ARG CONFIG_STAGE=config
 
@@ -15,14 +19,12 @@ ARG CONFIG_STAGE=config
 ##################################################
 
 
-FROM ubuntu:20.04 AS base
+FROM ubuntu:20.04 as base
 LABEL stage=base
 SHELL [ "/bin/bash", "-ecux" ]
 
 # Optional build args
-ARG CXX_COMPILER="g++"
-ARG INSTALL_OPTIONAL=0
-ARG INSTALL_QOL_OPTIONAL=1
+ARG CXX="g++"
 
 # Prep apt
 ENV DEBIAN_FRONTEND=noninteractive
@@ -34,7 +36,7 @@ RUN apt-get install -yq \
 	git
 
 # Install pip and prep python
-RUN apt-get install -y python3-pip python3.8-venv
+RUN apt-get install -yq python3-pip python3.8-venv
 ENV VIRTUAL_ENV=/venv
 RUN python3 -m venv "${VIRTUAL_ENV}"
 ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
@@ -43,55 +45,53 @@ RUN pip3 install --upgrade pip
 # Install required dependencies
 
 # Native dependencies
-RUN apt-get install -yq \
-	"${CXX_COMPILER}" \
-	make
+RUN apt-get install -yq "${CXX}" make
 
-# Python dependencies
-# TODO: PRs fixing both of these have been made; newer releases should fix these!
-# These are not necessary because of pip, however Z3 needs some CMake to build the wheel
-# To avoid installing cmake twice I'm installing it from pip once before everything else
-# Z3 does not declare native dependencies like cmake, even if they have pip packages :(
-RUN pip3 install cmake # CMake (apt cmake is ancient) and z3 doesn't declare this as a pip dependency
-RUN pip3 install wheel # Z3 fails to declare this as a dependency; TODO: PR a fix
+# TODO: until a new z3 release
+RUN git clone --depth 1 https://github.com/Z3Prover/z3 /z3-src \
+    && cd /z3-src/src/api/python \
+	&& python setup.py sdist \
+	&& cd dist \
+	&& tar -xvf * \
+	&& rm *.gz \
+	&& cd * \
+	&& pip install . \
+	&& cd / \
+	&& rm -rf /z3-src
 
-# TODO: remove once Z3 fixes broken ELF header thing
-RUN pip3 install z3-solver
-RUN python3 -c 'import os, z3; lib=os.path.dirname(z3.__file__)+"/lib/libz3.so"; os.symlink(lib,lib+".4.8")'
 
-# Optional depending on use build config
-RUN if [[ "${INSTALL_OPTIONAL}" -ne 0 ]]; then \
-	pip3 install clang-format; fi
-RUN if [[ "${INSTALL_OPTIONAL}" -ne 0 ]]; then \
-	apt-get install -yq \
-		\
-		`# Documentation` \
-		graphviz \
-		doxygen \
-		\
-		`# Static Analysis` \
-		clang-tidy \
-		cppcheck \
-		iwyu \
-		`# Dynamic Analysis` \
-		valgrind \
-	;fi
+FROM base as base_dev
+LABEL stage=base_dev
+ENV DEV_MODE=1
 
 # Improved backtraces
-RUN if [[ "${INSTALL_QOL_OPTIONAL}" -ne 0 ]]; then \
-	apt-get install -yq libdw-dev; fi
+RUN apt-get install -yq libdw-dev
 
-# Avoid having pip install these during build stage. This makes debugging
-# easier since testing doesn't require re-downloading / building wheels of
-# dependencies (ex. z3 is very slow to build). These come from pyproject.toml
-RUN if [[ "${INSTALL_QOL_OPTIONAL}" -ne 0 ]]; then \
-	pip3 install \
-		setuptools>=39.6.0 \
-		z3-solver>=4.8.15.0 \
-		requests \
-		wheel \
-		tqdm \
-	;fi
+# Python dependencies
+RUN pip3 install \
+	'setuptools>=39.6.0' \
+	requests \
+	wheel \
+	cmake \
+	tqdm
+	# TODO: Once new z3 comes out 'z3-solver>=4.8.15.0' \
+
+FROM base_dev as base_dev_extras
+LABEL stage=base_dev_extras
+
+RUN pip3 install clang-format \
+RUN apt-get install -yq \
+    \
+    `# Documentation` \
+    graphviz \
+    doxygen \
+    \
+    `# Static Analysis` \
+    clang-tidy \
+    cppcheck \
+    iwyu \
+    `# Dynamic Analysis` \
+    valgrind
 
 
 ##################################################
@@ -99,7 +99,7 @@ RUN if [[ "${INSTALL_QOL_OPTIONAL}" -ne 0 ]]; then \
 ##################################################
 
 
-FROM base AS config
+FROM "${BASE_STAGE}" as config
 LABEL stage=config
 
 # Optional build arguments
@@ -109,15 +109,12 @@ ARG CTEST_OUTPUT_ON_FAILURE=1
 ENV CLARIPY="/claripy/" \
 	CTEST_OUTPUT_ON_FAILURE="${CTEST_OUTPUT_ON_FAILURE}"
 ENV BUILD="${CLARIPY}/native/build/"
+ENV CXX="${CXX}"
 
 # Get source
 RUN mkdir "${CLARIPY}"
 COPY . "${CLARIPY}"
 WORKDIR "${CLARIPY}"
-
-# Prune existing built objects
-RUN python3 setup.py clean
-
 
 # Verbose config stage
 FROM config as config_verbose
@@ -126,7 +123,25 @@ ENV VERBOSE=1
 
 
 ##################################################
-#                setup.py stages                 #
+#              setup.py pip stages               #
+##################################################
+
+
+FROM "${CONFIG_STAGE}" as install
+LABEL stage=install
+# TODO: remove once new z3 comes out
+RUN pip3 install \
+	'setuptools>=39.6.0' \
+	requests \
+	wheel \
+	cmake \
+	tqdm
+RUN pip3 install --no-build-isolation --verbose .
+# TODO: once new z3 comes out. RUN pip3 install --verbose .
+
+
+##################################################
+#              setup.py dev stages               #
 ##################################################
 
 
@@ -134,7 +149,15 @@ ENV VERBOSE=1
 # If a setp fails, this makes debugging easier
 # All stages which derive from sdist do for only for speed
 
-FROM "${CONFIG_STAGE}" as sdist
+FROM "${CONFIG_STAGE}" as clean
+LABEL stage=clean
+RUN if [[ "${DEV_MODE}" -ne 1 ]]; then \
+		echo "To run the python setup.py dev stages you must use the base_dev base stage" \
+		exit 1; \
+	fi
+RUN python setup.py clean
+
+FROM clean as sdist
 LABEL stage=sdist
 RUN python setup.py sdist
 
@@ -145,10 +168,6 @@ RUN python setup.py build
 FROM build as bdist_wheel
 LABEL stage=bdist_wheel
 RUN python setup.py bdist_wheel
-
-FROM build as install
-LABEL stage=install
-RUN pip3 install --no-build-isolation --verbose .
 
 FROM sdist as build_tests
 LABEL stage=build_tests
