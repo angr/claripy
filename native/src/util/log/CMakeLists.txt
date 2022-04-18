@@ -1,11 +1,4 @@
-# Add current directory's source files
-target_sources("${CLARICPP}" PRIVATE
-	# Level
-	level/ostream.cpp
-	level/access.cpp
-	# Style
-	style/level_timestamp_message.cpp
-	style/access.cpp
-	# Backend
-	backend/access.cpp
-)
+# Add subdirectories
+add_subdirectory(level)
+add_subdirectory(style)
+add_subdirectory(backend)
