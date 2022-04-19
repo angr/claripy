@@ -631,6 +631,7 @@ class Boost(Library):
     """
 
     root = os.path.join(native, "boost")
+    _inc = os.path.join(root, "boost")
     _lic = os.path.join(root, "LICENSE")
 
     def __init__(self):
@@ -655,7 +656,9 @@ class Boost(Library):
         }[os.name]
 
     def _get(self):
-        d, fs = download_checksum_extract("boost headers", native, *self.url_data())
+        self._clean(CleanLevel.GET)  # Do not operate on a dirty boost dir
+        os.mkdir(self.root)
+        d, fs = download_checksum_extract("boost headers", self.root, *self.url_data())
         print("Installing boost license...")
         if len(fs) != 1:
             raise RuntimeError("Boost should decompress into a single directory.")
