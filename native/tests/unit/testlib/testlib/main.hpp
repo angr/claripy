@@ -10,21 +10,24 @@
 #include "test_func.hpp"
 
 
-/** Toggle claricpp backtrace */
-static inline void toggle_backtrace() {
-    Util::Log::info("Enabling backtrace...");
+/** Testlib init */
+static inline void testlib_init() {
+    Util::Log::info("Preparing for unit test");
+    Util::Log::Level::set(Util::Log::Level::debug);
     Util::Err::Claricpp::toggle_backtrace(true);
+    Util::Backtrace::handle_signals();
+    // Used to restore state of logger on failure in order to log failure
+    UnitTest::TestLib::original_bk = Util::Log::Backend::get();
+    UnitTest::TestLib::original_sty = Util::Log::Style::get();
+    Util::Log::info("Unit test preparations complete");
 }
 
 /** Define the main function and use it to test a given function */
 #define UNITTEST_DEFINE_MAIN_TEST(TFUNC)                                                           \
     /** Main function: test TFUNC */                                                               \
     int main() {                                                                                   \
-        using namespace UnitTest::TestLib;                                                         \
-        original_bk = Util::Log::Backend::get();                                                   \
-        original_sty = Util::Log::Style::get();                                                    \
-        toggle_backtrace();                                                                        \
-        return test_func((TFUNC));                                                                 \
+        testlib_init();                                                                            \
+        return UnitTest::TestLib::test_func((TFUNC));                                              \
     }
 
 
