@@ -635,7 +635,7 @@ class Boost(Library):
     _lic = os.path.join(root, "LICENSE")
 
     def __init__(self):
-        chk = {"boost headers": self.root, "boost license": self._lic}
+        chk = {"boost headers": self._inc, "boost license": self._lic}
         # Boost depends on GMP
         super().__init__(chk, {}, {}, GMP())
 
@@ -753,14 +753,15 @@ class Claricpp(Library):
     _lib = SharedLib("libclaricpp", build_dir)
     _out_src = os.path.join(BuiltLib.install_dir, "src")
 
-    def __init__(self, *, docs, debug, tests):
+    def __init__(self, *, no_lib, docs, debug, tests):
         # Options
-        self.enable_tests = tests
-        self.build_debug = debug
-        self.build_doc = docs
+        self._build_lib = not no_lib
+        self._enable_tests = tests
+        self._build_debug = debug
+        self._build_doc = docs
         # Config
         chk = {self._lib.name: self._lib, "Claricpp src": self._out_src}
-        build_chk = {} if self.build_doc or self.enable_tests else chk
+        build_chk = {} if self._build_doc or self._enable_tests else chk
         super().__init__({}, build_chk, chk, Boost(), Z3(), Pybind11(), Backward())
 
     def _cmake_config_args(self, claricpp):
@@ -775,17 +776,17 @@ class Claricpp(Library):
             # Build options
             "CONSTANT_LOG_LEVEL": not self.build_debug,
             "DEFAULT_RELEASE_LOG_LEVEL": "critical",
-            "CMAKE_BUILD_TYPE": "Debug" if self.build_debug else "Release",
+            "CMAKE_BUILD_TYPE": "Debug" if self._build_debug else "Release",
             # Backtrace options
             "WARN_BACKWARD_LIMITATIONS": True,
             "REQUIRE_BACKWARD_BACKEND": False,  # TODO:
             "SOURCE_ROOT_FOR_BACKTRACE": None,  # TODO: make a runtime thing config'd by python
             # Disable options
-            "ENABLE_TESTING": self.enable_tests,
+            "ENABLE_TESTING": self._enable_tests,
             "CPP_CHECK": False,
             "CLANG_TIDY": False,
             "ENABLE_MEMCHECK": False,
-            "BUILD_DOC": self.build_doc,
+            "BUILD_DOC": self._build_doc,
             "LWYU": False,
             # Library config
             "GMPDIR": GMP.lib_dir,
@@ -810,9 +811,10 @@ class Claricpp(Library):
             os.mkdir(self.build_dir)
         self._cmake(native, self.build_dir)
         with chdir(self.build_dir):
-            print("Building " + claricpp + "...")
-            build_cmake_target(claricpp)
-            if self.enable_tests:
+            if self._build_lib:
+                print("Building " + claricpp + "...")
+                build_cmake_target(claricpp)
+            if self._enable_tests:
                 print("Building tests...")
                 build_cmake_target("all")
                 print("To test: cd " + self.build_dir + " && ctest .")
@@ -900,9 +902,10 @@ class SDist(SDistOriginal):
 class Native(Command):
     description = "Build native components"
     user_options = [
+        ("no-lib", None, "Do not build the Claricpp library; requires --no-api"),
         ("no-api", None, "Do not build the Claricpp API"),
         ("docs", None, "Build Claricpp docs"),
-        ("tests", "t", "Build Claricpp tests"),
+        ("tests", "t", "Build Claricpp tests; incompatible with --no-lib"),
         ("debug", "d", "Prefers debug mode to release mode while building"),
         ("force", "f", "Forces builds, ignores existing files via calling clean"),
     ]
@@ -915,11 +918,14 @@ class Native(Command):
         # We namespace the args and make them bools here
         self.args = JDict({i: (getattr(self, i) is not None) for i in self.args})
         _ = [delattr(self, i) for i in self.args]
+        if self.args.no_lib and (not self.args.no_api or self.args.tests):
+            msg = "--no-lib must be used with --no-api and may not be used with --tests"
+            raise RuntimeError(msg)
 
     def run(self) -> None:
         # Function
-        cls = ClaricppAPI if self.args.no_api else Claricpp
-        params = ["docs", "tests", "debug"]
+        cls = Claricpp if self.args.no_api else ClaricppAPI
+        params = ["no_lib", "docs", "tests", "debug"]
         params = {i: k for i, k in self.args.items() if i in params}
         f = lambda: cls(**params).build(self.args.force)
         # Message
@@ -955,7 +961,7 @@ class Clean(Command):
 
     def run(self):
         print("Clean level set to: " + self.level.name)
-        kwargs = {i: False for i in ["docs", "tests", "debug"]}
+        kwargs = {i: False for i in ["no_lib", "docs", "tests", "debug"]}
         f = lambda: ClaricppAPI(**kwargs).clean(self.level)
         self.execute(f, (), msg="Cleaning claricpp")
 
