@@ -898,6 +898,7 @@ class SDist(SDistOriginal):
 class Native(Command):
     description = "Build native components"
     user_options = [
+        ("no-install", None, "Do not install built libraries"),
         ("no-lib", None, "Do not build the Claricpp library; requires --no-api"),
         ("no-api", None, "Do not build the Claricpp API"),
         ("docs", None, "Build Claricpp docs"),
@@ -923,7 +924,8 @@ class Native(Command):
         cls = Claricpp if self.args.no_api else ClaricppAPI
         params = ["no_lib", "docs", "tests", "debug"]
         params = {i: k for i, k in self.args.items() if i in params}
-        f = lambda: cls(**params).build(self.args.force)
+        fname = "build" if self.args.no_install else "install"
+        f = lambda: getattr(cls(**params), fname)(self.args.force)
         # Message
         msg = "Building native components"
         options = ["--" + i.replace("_", "-") for i, k in self.args.items() if k]
