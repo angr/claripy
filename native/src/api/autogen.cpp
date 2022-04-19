@@ -4,7 +4,6 @@
 #include "headers.hpp"
 #include "manual.hpp"
 #include <algorithm>
-#include <cstddef>
 #include <functional>
 #include <ios>
 #include <iterator>
@@ -14,7 +13,6 @@
 #include <ostream>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <sstream>
 #include <stack>
 #include <stdexcept>
 #include <streambuf>
@@ -77,23 +75,6 @@ void bind_unknown_unknown_37(std::function< pybind11::module &(std::string const
 void bind_unknown_unknown_38(std::function< pybind11::module &(std::string const &namespace_) > &M);
 void bind_unknown_unknown_39(std::function< pybind11::module &(std::string const &namespace_) > &M);
 void bind_unknown_unknown_40(std::function< pybind11::module &(std::string const &namespace_) > &M);
-void bind_unknown_unknown_41(std::function< pybind11::module &(std::string const &namespace_) > &M);
-void bind_unknown_unknown_42(std::function< pybind11::module &(std::string const &namespace_) > &M);
-void bind_unknown_unknown_43(std::function< pybind11::module &(std::string const &namespace_) > &M);
-void bind_unknown_unknown_44(std::function< pybind11::module &(std::string const &namespace_) > &M);
-void bind_unknown_unknown_45(std::function< pybind11::module &(std::string const &namespace_) > &M);
-void bind_unknown_unknown_46(std::function< pybind11::module &(std::string const &namespace_) > &M);
-void bind_unknown_unknown_47(std::function< pybind11::module &(std::string const &namespace_) > &M);
-void bind_unknown_unknown_48(std::function< pybind11::module &(std::string const &namespace_) > &M);
-void bind_unknown_unknown_49(std::function< pybind11::module &(std::string const &namespace_) > &M);
-void bind_unknown_unknown_50(std::function< pybind11::module &(std::string const &namespace_) > &M);
-void bind_unknown_unknown_51(std::function< pybind11::module &(std::string const &namespace_) > &M);
-void bind_unknown_unknown_52(std::function< pybind11::module &(std::string const &namespace_) > &M);
-void bind_unknown_unknown_53(std::function< pybind11::module &(std::string const &namespace_) > &M);
-void bind_unknown_unknown_54(std::function< pybind11::module &(std::string const &namespace_) > &M);
-void bind_unknown_unknown_55(std::function< pybind11::module &(std::string const &namespace_) > &M);
-void bind_unknown_unknown_56(std::function< pybind11::module &(std::string const &namespace_) > &M);
-void bind_unknown_unknown_57(std::function< pybind11::module &(std::string const &namespace_) > &M);
 
 } // namespace API::Binder
 
@@ -124,13 +105,9 @@ PYBIND11_MODULE(clari, root_module) {
 		{"", "Backend"},
 		{"Backend", "Z3"},
 		{"", "CUID"},
-		{"CUID", "Private"},
 		{"", "Create"},
 		{"Create", "FP"},
 		{"Create", "String"},
-		{"", "Error"},
-		{"Error", "Backend"},
-		{"Error", "Expr"},
 		{"", "Expr"},
 		{"", "Factory"},
 		{"", "Hash"},
@@ -143,11 +120,7 @@ PYBIND11_MODULE(clari, root_module) {
 		{"", "PyObj"},
 		{"", "Util"},
 		{"Util", "Backtrace"},
-		{"Util", "Cast"},
-		{"Util::Cast", "Private"},
-		{"Util::Cast", "Static"},
 		{"Util", "Err"},
-		{"Util::Err", "Python"},
 		{"", "API"},
 	};
 	for(auto &p : sub_modules ) modules[p.first.size() ? p.first+"::"+p.second : p.second] = modules[p.first].def_submodule( mangle_namespace_name(p.second).c_str(), ("Bindings for " + p.first + "::" + p.second + " namespace").c_str() );
@@ -195,23 +168,6 @@ PYBIND11_MODULE(clari, root_module) {
 	API::Binder::bind_unknown_unknown_38(M);
 	API::Binder::bind_unknown_unknown_39(M);
 	API::Binder::bind_unknown_unknown_40(M);
-	API::Binder::bind_unknown_unknown_41(M);
-	API::Binder::bind_unknown_unknown_42(M);
-	API::Binder::bind_unknown_unknown_43(M);
-	API::Binder::bind_unknown_unknown_44(M);
-	API::Binder::bind_unknown_unknown_45(M);
-	API::Binder::bind_unknown_unknown_46(M);
-	API::Binder::bind_unknown_unknown_47(M);
-	API::Binder::bind_unknown_unknown_48(M);
-	API::Binder::bind_unknown_unknown_49(M);
-	API::Binder::bind_unknown_unknown_50(M);
-	API::Binder::bind_unknown_unknown_51(M);
-	API::Binder::bind_unknown_unknown_52(M);
-	API::Binder::bind_unknown_unknown_53(M);
-	API::Binder::bind_unknown_unknown_54(M);
-	API::Binder::bind_unknown_unknown_55(M);
-	API::Binder::bind_unknown_unknown_56(M);
-	API::Binder::bind_unknown_unknown_57(M);
 
 	// Manual API call
 	API::bind_manual(root_module, M);
@@ -233,9 +189,10 @@ PYBIND11_MODULE(clari, root_module) {
 namespace API::Binder {
 void bind_unknown_unknown(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
-	// Util::OStream(class std::basic_ostringstream<char> &, const struct Mode::FP::Width &) file: line:19
-	M("Util").def("OStream", (void (*)(class std::basic_ostringstream<char> &, const struct Mode::FP::Width &)) &Util::OStream<std::basic_ostringstream<char>,Mode::FP::Width>, "C++: Util::OStream(class std::basic_ostringstream<char> &, const struct Mode::FP::Width &) --> void", pybind11::arg("left"), pybind11::arg("right"));
-
+	{ // Util::Backtrace::Lazy file: line:21
+		pybind11::class_<Util::Backtrace::Lazy, std::shared_ptr<Util::Backtrace::Lazy>> cl(M("Util::Backtrace"), "Lazy", "The lazy backtrace holder type ");
+		cl.def("str", (std::string (Util::Backtrace::Lazy::*)() const) &Util::Backtrace::Lazy::str, "As string \n\nC++: Util::Backtrace::Lazy::str() const --> std::string");
+	}
 }
 } // namespace API::Binder
 
@@ -252,15 +209,28 @@ void bind_unknown_unknown(std::function< pybind11::module &(std::string const &n
 	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
 #endif
 
+// Util::Err::Claricpp file: line:35
+struct PyCallBack_Util_Err_Claricpp : public Util::Err::Claricpp {
+	using Util::Err::Claricpp::Claricpp;
+
+};
+
 namespace API::Binder {
 void bind_unknown_unknown_1(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
-	// Util::Backtrace::backward_handle_signals() file: line:13
-	M("Util::Backtrace").def("backward_handle_signals", (void (*)()) &Util::Backtrace::backward_handle_signals, "Enable signal handling so backtraces are printed on signals using backward \n\nC++: Util::Backtrace::backward_handle_signals() --> void");
-
-	// Util::Backtrace::handle_signals() file: line:16
-	M("Util::Backtrace").def("handle_signals", (void (*)()) &Util::Backtrace::handle_signals, "Enable signal handling so backtraces are printed on signals \n\nC++: Util::Backtrace::handle_signals() --> void");
-
+	{ // Util::Err::Claricpp file: line:35
+		pybind11::class_<Util::Err::Claricpp, std::shared_ptr<Util::Err::Claricpp>, PyCallBack_Util_Err_Claricpp> cl(M("Util::Err"), "Claricpp", "The base claricpp exception class\n  Any exception thrown intentionally must subclass this\n  Note: Since exceptions do not need to be super fast and since we have const date members:\n  for clarity we ignore the rule of 5 in favor of what the compiler defaults. Subclasses\n  of Claricpp should feel free to do the same unless they have non-const data members\n  This class saves the last n_backtraces backtraces");
+		cl.def_static("log_atomic_change", (void (*)(const char *const, const bool, const bool)) &Util::Err::Claricpp::log_atomic_change, "Logs that an atomic was toggled \n\nC++: Util::Err::Claricpp::log_atomic_change(const char *const, const bool, const bool) --> void", pybind11::arg("what"), pybind11::arg("old"), pybind11::arg("new_"));
+		cl.def_static("warn_backtrace_slow", (void (*)()) &Util::Err::Claricpp::warn_backtrace_slow, "Warns that enabling backtraces causes a performance hit \n\nC++: Util::Err::Claricpp::warn_backtrace_slow() --> void");
+		cl.def_static("toggle_backtrace", [](const bool & a0) -> bool { return Util::Err::Claricpp::toggle_backtrace(a0); }, "", pybind11::arg("set"));
+		cl.def_static("toggle_backtrace", (bool (*)(const bool, const bool)) &Util::Err::Claricpp::toggle_backtrace, "Enable / disable backtraces\n  Returns the old state\n\nC++: Util::Err::Claricpp::toggle_backtrace(const bool, const bool) --> bool", pybind11::arg("set"), pybind11::arg("log_me"));
+		cl.def_static("backtraces_enabled", (bool (*)()) &Util::Err::Claricpp::backtraces_enabled, "Return true if and only if backtraces are enabled \n\nC++: Util::Err::Claricpp::backtraces_enabled() --> bool");
+		cl.def("what", (const char * (Util::Err::Claricpp::*)() const) &Util::Err::Claricpp::what, "Message getter \n\nC++: Util::Err::Claricpp::what() const --> const char *", pybind11::return_value_policy::automatic);
+		cl.def_static("lazy_backtrace", []() -> std::shared_ptr<const class Util::Backtrace::Lazy> { return Util::Err::Claricpp::lazy_backtrace(); }, "");
+		cl.def_static("lazy_backtrace", (class std::shared_ptr<const class Util::Backtrace::Lazy> (*)(const unsigned long)) &Util::Err::Claricpp::lazy_backtrace, "Get a previous backtrace in an unevaluated form; returns {} on error\n  Get the a previous backtrace\n  Ignores the last index'th backtraces\n  Ex. index = 0 gets the last backtrace, index = 1 gets the second to last\n  Call ->str() on the result to get the backtrace as a string\n\nC++: Util::Err::Claricpp::lazy_backtrace(const unsigned long) --> class std::shared_ptr<const class Util::Backtrace::Lazy>", pybind11::arg("index"));
+		cl.def_static("backtrace", []() -> std::string { return Util::Err::Claricpp::backtrace(); }, "");
+		cl.def_static("backtrace", (std::string (*)(const unsigned long)) &Util::Err::Claricpp::backtrace, "Eagerly evaluated lazy_backtrace(index)\n  If lazy_backtrace(index) returns nullptr; will return {}\n  Unlike lazy_backtrace, this may throw if evaluation fails\n\nC++: Util::Err::Claricpp::backtrace(const unsigned long) --> std::string", pybind11::arg("index"));
+	}
 }
 } // namespace API::Binder
 
@@ -280,108 +250,9 @@ void bind_unknown_unknown_1(std::function< pybind11::module &(std::string const 
 namespace API::Binder {
 void bind_unknown_unknown_10(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
-	// Util::Cast::Static::up(const class std::shared_ptr<const struct Annotation::Base> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const struct Hash::Hashed> (*)(const class std::shared_ptr<const struct Annotation::Base> &)) &Util::Cast::Static::up<Hash::Hashed,const Annotation::Base>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const struct Annotation::Base> &) --> class std::shared_ptr<const struct Hash::Hashed>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Expr::Base> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const struct Hash::Hashed> (*)(const class std::shared_ptr<const class Expr::Base> &)) &Util::Cast::Static::up<Hash::Hashed,const Expr::Base>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Expr::Base> &) --> class std::shared_ptr<const struct Hash::Hashed>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Extract> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Extract> &)) &Util::Cast::Static::up<const Op::Base,const Op::Extract>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Extract> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const struct Annotation::Vec> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const struct Hash::Hashed> (*)(const class std::shared_ptr<const struct Annotation::Vec> &)) &Util::Cast::Static::up<Hash::Hashed,const Annotation::Vec>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const struct Annotation::Vec> &) --> class std::shared_ptr<const struct Hash::Hashed>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Base> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const struct Hash::Hashed> (*)(const class std::shared_ptr<const class Op::Base> &)) &Util::Cast::Static::up<Hash::Hashed,const Op::Base>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Base> &) --> class std::shared_ptr<const struct Hash::Hashed>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Expr::BV> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Expr::Base> (*)(const class std::shared_ptr<const class Expr::BV> &)) &Util::Cast::Static::up<const Expr::Base,const Expr::BV>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Expr::BV> &) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::FP::From2sComplementBV<Mode::Signed::Signed> > &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::FP::From2sComplementBV<Mode::Signed::Signed> > &)) &Util::Cast::Static::up<const Op::Base,const Op::FP::From2sComplementBV<Mode::Signed::Signed>>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::FP::From2sComplementBV<Mode::Signed::Signed> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::FP::From2sComplementBV<Mode::Signed::Unsigned> > &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::FP::From2sComplementBV<Mode::Signed::Unsigned> > &)) &Util::Cast::Static::up<const Op::Base,const Op::FP::From2sComplementBV<Mode::Signed::Unsigned>>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::FP::From2sComplementBV<Mode::Signed::Unsigned> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::FP::FromFP> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::FP::FromFP> &)) &Util::Cast::Static::up<const Op::Base,const Op::FP::FromFP>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::FP::FromFP> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Expr::FP> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Expr::Base> (*)(const class std::shared_ptr<const class Expr::FP> &)) &Util::Cast::Static::up<const Expr::Base,const Expr::FP>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Expr::FP> &) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::FP::FromNot2sComplementBV> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::FP::FromNot2sComplementBV> &)) &Util::Cast::Static::up<const Op::Base,const Op::FP::FromNot2sComplementBV>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::FP::FromNot2sComplementBV> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::FP::ToBV<Mode::Signed::Signed> > &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::FP::ToBV<Mode::Signed::Signed> > &)) &Util::Cast::Static::up<const Op::Base,const Op::FP::ToBV<Mode::Signed::Signed>>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::FP::ToBV<Mode::Signed::Signed> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::FP::ToBV<Mode::Signed::Unsigned> > &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::FP::ToBV<Mode::Signed::Unsigned> > &)) &Util::Cast::Static::up<const Op::Base,const Op::FP::ToBV<Mode::Signed::Unsigned>>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::FP::ToBV<Mode::Signed::Unsigned> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::FP::ToIEEEBV> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::FP::ToIEEEBV> &)) &Util::Cast::Static::up<const Op::Base,const Op::FP::ToIEEEBV>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::FP::ToIEEEBV> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::FP::Add> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::FP::Add> &)) &Util::Cast::Static::up<const Op::Base,const Op::FP::Add>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::FP::Add> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::FP::Sub> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::FP::Sub> &)) &Util::Cast::Static::up<const Op::Base,const Op::FP::Sub>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::FP::Sub> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::FP::Mul> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::FP::Mul> &)) &Util::Cast::Static::up<const Op::Base,const Op::FP::Mul>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::FP::Mul> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::FP::Div> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::FP::Div> &)) &Util::Cast::Static::up<const Op::Base,const Op::FP::Div>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::FP::Div> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::FP::FP> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::FP::FP> &)) &Util::Cast::Static::up<const Op::Base,const Op::FP::FP>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::FP::FP> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::If> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::If> &)) &Util::Cast::Static::up<const Op::Base,const Op::If>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::If> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Expr::Bool> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Expr::Base> (*)(const class std::shared_ptr<const class Expr::Bool> &)) &Util::Cast::Static::up<const Expr::Base,const Expr::Bool>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Expr::Bool> &) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Expr::VS> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Expr::Base> (*)(const class std::shared_ptr<const class Expr::VS> &)) &Util::Cast::Static::up<const Expr::Base,const Expr::VS>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Expr::VS> &) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Literal> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Literal> &)) &Util::Cast::Static::up<const Op::Base,const Op::Literal>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Literal> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const struct PyObj::VS> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const struct Hash::Hashed> (*)(const class std::shared_ptr<const struct PyObj::VS> &)) &Util::Cast::Static::up<Hash::Hashed,const PyObj::VS>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const struct PyObj::VS> &) --> class std::shared_ptr<const struct Hash::Hashed>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::String::FromInt> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::String::FromInt> &)) &Util::Cast::Static::up<const Op::Base,const Op::String::FromInt>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::String::FromInt> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Expr::String> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Expr::Base> (*)(const class std::shared_ptr<const class Expr::String> &)) &Util::Cast::Static::up<const Expr::Base,const Expr::String>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Expr::String> &) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::String::IndexOf> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::String::IndexOf> &)) &Util::Cast::Static::up<const Op::Base,const Op::String::IndexOf>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::String::IndexOf> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::String::Replace> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::String::Replace> &)) &Util::Cast::Static::up<const Op::Base,const Op::String::Replace>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::String::Replace> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::String::SubString> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::String::SubString> &)) &Util::Cast::Static::up<const Op::Base,const Op::String::SubString>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::String::SubString> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::String::IsDigit> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::String::IsDigit> &)) &Util::Cast::Static::up<const Op::Base,const Op::String::IsDigit>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::String::IsDigit> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::String::ToInt> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::String::ToInt> &)) &Util::Cast::Static::up<const Op::Base,const Op::String::ToInt>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::String::ToInt> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::String::Len> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::String::Len> &)) &Util::Cast::Static::up<const Op::Base,const Op::String::Len>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::String::Len> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::String::Contains> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::String::Contains> &)) &Util::Cast::Static::up<const Op::Base,const Op::String::Contains>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::String::Contains> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::String::PrefixOf> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::String::PrefixOf> &)) &Util::Cast::Static::up<const Op::Base,const Op::String::PrefixOf>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::String::PrefixOf> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
+	{ // Factory::FactoryMade file: line:42
+		pybind11::class_<Factory::FactoryMade, Factory::FactoryMade*, Hash::Hashed, CUID::HasCUID> cl(M("Factory"), "FactoryMade", "A type that can be constructed by the factory\n  All factory constructable types must subclass this\n  All subclasses that are or have an instantiable subclass constructed via factory\n	  1. Must include the FACTORY_ENABLE_CONSTRUCTION_FROM_BASE method. Note that\n		 this also defines a static_cuid");
+	}
 }
 } // namespace API::Binder
 
@@ -401,786 +272,6 @@ void bind_unknown_unknown_10(std::function< pybind11::module &(std::string const
 namespace API::Binder {
 void bind_unknown_unknown_11(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::String::SuffixOf> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::String::SuffixOf> &)) &Util::Cast::Static::up<const Op::Base,const Op::String::SuffixOf>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::String::SuffixOf> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Symbol> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Symbol> &)) &Util::Cast::Static::up<const Op::Base,const Op::Symbol>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Symbol> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Abs> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Abs> &)) &Util::Cast::Static::up<const Op::Base,const Op::Abs>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Abs> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Neg> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Neg> &)) &Util::Cast::Static::up<const Op::Base,const Op::Neg>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Neg> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Not> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Not> &)) &Util::Cast::Static::up<const Op::Base,const Op::Not>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Not> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Invert> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Invert> &)) &Util::Cast::Static::up<const Op::Base,const Op::Invert>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Invert> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Reverse> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Reverse> &)) &Util::Cast::Static::up<const Op::Base,const Op::Reverse>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Reverse> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::SignExt> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::SignExt> &)) &Util::Cast::Static::up<const Op::Base,const Op::SignExt>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::SignExt> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::ZeroExt> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::ZeroExt> &)) &Util::Cast::Static::up<const Op::Base,const Op::ZeroExt>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::ZeroExt> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Eq> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Eq> &)) &Util::Cast::Static::up<const Op::Base,const Op::Eq>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Eq> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Neq> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Neq> &)) &Util::Cast::Static::up<const Op::Base,const Op::Neq>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Neq> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Compare<Mode::Compare::UGE> > &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Compare<Mode::Compare::UGE> > &)) &Util::Cast::Static::up<const Op::Base,const Op::Compare<Mode::Compare::UGE>>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Compare<Mode::Compare::UGE> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Compare<Mode::Compare::UGT> > &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Compare<Mode::Compare::UGT> > &)) &Util::Cast::Static::up<const Op::Base,const Op::Compare<Mode::Compare::UGT>>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Compare<Mode::Compare::UGT> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Compare<Mode::Compare::ULE> > &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Compare<Mode::Compare::ULE> > &)) &Util::Cast::Static::up<const Op::Base,const Op::Compare<Mode::Compare::ULE>>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Compare<Mode::Compare::ULE> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Compare<Mode::Compare::ULT> > &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Compare<Mode::Compare::ULT> > &)) &Util::Cast::Static::up<const Op::Base,const Op::Compare<Mode::Compare::ULT>>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Compare<Mode::Compare::ULT> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Compare<Mode::Compare::SGE> > &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Compare<Mode::Compare::SGE> > &)) &Util::Cast::Static::up<const Op::Base,const Op::Compare<Mode::Compare::SGE>>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Compare<Mode::Compare::SGE> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Compare<Mode::Compare::SGT> > &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Compare<Mode::Compare::SGT> > &)) &Util::Cast::Static::up<const Op::Base,const Op::Compare<Mode::Compare::SGT>>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Compare<Mode::Compare::SGT> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Compare<Mode::Compare::SLE> > &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Compare<Mode::Compare::SLE> > &)) &Util::Cast::Static::up<const Op::Base,const Op::Compare<Mode::Compare::SLE>>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Compare<Mode::Compare::SLE> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Compare<Mode::Compare::SLT> > &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Compare<Mode::Compare::SLT> > &)) &Util::Cast::Static::up<const Op::Base,const Op::Compare<Mode::Compare::SLT>>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Compare<Mode::Compare::SLT> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Sub> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Sub> &)) &Util::Cast::Static::up<const Op::Base,const Op::Sub>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Sub> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Div<Mode::Signed::Signed> > &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Div<Mode::Signed::Signed> > &)) &Util::Cast::Static::up<const Op::Base,const Op::Div<Mode::Signed::Signed>>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Div<Mode::Signed::Signed> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Div<Mode::Signed::Unsigned> > &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Div<Mode::Signed::Unsigned> > &)) &Util::Cast::Static::up<const Op::Base,const Op::Div<Mode::Signed::Unsigned>>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Div<Mode::Signed::Unsigned> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Mod<Mode::Signed::Signed> > &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Mod<Mode::Signed::Signed> > &)) &Util::Cast::Static::up<const Op::Base,const Op::Mod<Mode::Signed::Signed>>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Mod<Mode::Signed::Signed> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Mod<Mode::Signed::Unsigned> > &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Mod<Mode::Signed::Unsigned> > &)) &Util::Cast::Static::up<const Op::Base,const Op::Mod<Mode::Signed::Unsigned>>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Mod<Mode::Signed::Unsigned> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Shift<Mode::Shift::Left> > &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Shift<Mode::Shift::Left> > &)) &Util::Cast::Static::up<const Op::Base,const Op::Shift<Mode::Shift::Left>>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Shift<Mode::Shift::Left> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Shift<Mode::Shift::ArithmeticRight> > &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Shift<Mode::Shift::ArithmeticRight> > &)) &Util::Cast::Static::up<const Op::Base,const Op::Shift<Mode::Shift::ArithmeticRight>>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Shift<Mode::Shift::ArithmeticRight> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Shift<Mode::Shift::LogicalRight> > &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Shift<Mode::Shift::LogicalRight> > &)) &Util::Cast::Static::up<const Op::Base,const Op::Shift<Mode::Shift::LogicalRight>>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Shift<Mode::Shift::LogicalRight> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Rotate<Mode::LR::Left> > &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Rotate<Mode::LR::Left> > &)) &Util::Cast::Static::up<const Op::Base,const Op::Rotate<Mode::LR::Left>>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Rotate<Mode::LR::Left> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Rotate<Mode::LR::Right> > &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Rotate<Mode::LR::Right> > &)) &Util::Cast::Static::up<const Op::Base,const Op::Rotate<Mode::LR::Right>>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Rotate<Mode::LR::Right> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Widen> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Widen> &)) &Util::Cast::Static::up<const Op::Base,const Op::Widen>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Widen> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Union> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Union> &)) &Util::Cast::Static::up<const Op::Base,const Op::Union>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Union> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Intersection> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Intersection> &)) &Util::Cast::Static::up<const Op::Base,const Op::Intersection>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Intersection> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Concat> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Concat> &)) &Util::Cast::Static::up<const Op::Base,const Op::Concat>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Concat> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Add> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Add> &)) &Util::Cast::Static::up<const Op::Base,const Op::Add>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Add> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_12.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-namespace API::Binder {
-void bind_unknown_unknown_12(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Mul> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Mul> &)) &Util::Cast::Static::up<const Op::Base,const Op::Mul>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Mul> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Or> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Or> &)) &Util::Cast::Static::up<const Op::Base,const Op::Or>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Or> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::And> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::And> &)) &Util::Cast::Static::up<const Op::Base,const Op::And>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::And> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Static::up(const class std::shared_ptr<const class Op::Xor> &) file: line:86
-	M("Util::Cast::Static").def("up", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Xor> &)) &Util::Cast::Static::up<const Op::Base,const Op::Xor>, "C++: Util::Cast::Static::up(const class std::shared_ptr<const class Op::Xor> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_13.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-namespace API::Binder {
-void bind_unknown_unknown_13(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
-	{ // CUID::HasCUID file: line:37
-		pybind11::class_<CUID::HasCUID, CUID::HasCUID*> cl(M("CUID"), "HasCUID", "A type that has a class unique id\n  This has the benefits of a virtual function as inherited classes\n  can have different CUIDs than their ancestors, while also avoiding\n  the overhead of a vtabel call to invoke virtual cuid() const;");
-		cl.def_readonly("cuid", &CUID::HasCUID::cuid);
-	}
-	// CUID::is_t(const class Expr::Base *const) file: line:19
-	M("CUID").def("is_t", (bool (*)(const class Expr::Base *const)) &CUID::is_t<Expr::FP,false,const Expr::Base>, "C++: CUID::is_t(const class Expr::Base *const) --> bool", pybind11::arg("x"));
-
-	// CUID::is_t(const class Expr::Base *const) file: line:19
-	M("CUID").def("is_t", (bool (*)(const class Expr::Base *const)) &CUID::is_t<Expr::BV,false,const Expr::Base>, "C++: CUID::is_t(const class Expr::Base *const) --> bool", pybind11::arg("x"));
-
-	// CUID::is_t(const class Expr::Base *const) file: line:19
-	M("CUID").def("is_t", (bool (*)(const class Expr::Base *const)) &CUID::is_t<Expr::Bool,false,const Expr::Base>, "C++: CUID::is_t(const class Expr::Base *const) --> bool", pybind11::arg("x"));
-
-	// CUID::is_t(const class Expr::Base *const) file: line:19
-	M("CUID").def("is_t", (bool (*)(const class Expr::Base *const)) &CUID::is_t<Expr::String,false,const Expr::Base>, "C++: CUID::is_t(const class Expr::Base *const) --> bool", pybind11::arg("x"));
-
-	// CUID::is_t(const class Op::Base *const) file: line:19
-	M("CUID").def("is_t", (bool (*)(const class Op::Base *const)) &CUID::is_t<Op::Literal,false,const Op::Base>, "C++: CUID::is_t(const class Op::Base *const) --> bool", pybind11::arg("x"));
-
-	// CUID::is_t(const class std::shared_ptr<const class Expr::Base> &) file: line:39
-	M("CUID").def("is_t", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::is_t<Expr::FP,false,const Expr::Base>, "C++: CUID::is_t(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::is_t(const class std::shared_ptr<const class Expr::Base> &) file: line:39
-	M("CUID").def("is_t", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::is_t<Expr::BV,false,const Expr::Base>, "C++: CUID::is_t(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::is_t(const class std::shared_ptr<const class Expr::Base> &) file: line:39
-	M("CUID").def("is_t", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::is_t<Expr::String,false,const Expr::Base>, "C++: CUID::is_t(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::is_t(const class std::shared_ptr<const class Expr::Base> &) file: line:39
-	M("CUID").def("is_t", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::is_t<Expr::Bool,false,const Expr::Base>, "C++: CUID::is_t(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::is_t(const class Expr::Base *const) file: line:44
-	M("CUID").def("is_t", (bool (*)(const class Expr::Base *const)) &CUID::is_t<Expr::BV,Expr::Base>, "C++: CUID::is_t(const class Expr::Base *const) --> bool", pybind11::arg("x"));
-
-	// CUID::is_t(const class std::shared_ptr<const class Expr::Base> &) file: line:51
-	M("CUID").def("is_t", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::is_t<Expr::BV,const Expr::Base>, "C++: CUID::is_t(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::is_t(const class std::shared_ptr<const class Expr::Base> &) file: line:51
-	M("CUID").def("is_t", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::is_t<Expr::FP,const Expr::Base>, "C++: CUID::is_t(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::is_t(const class std::shared_ptr<const class Expr::Base> &) file: line:51
-	M("CUID").def("is_t", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::is_t<Expr::Bool,const Expr::Base>, "C++: CUID::is_t(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::is_t(const class std::shared_ptr<const class Expr::Base> &) file: line:51
-	M("CUID").def("is_t", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::is_t<Expr::String,const Expr::Base>, "C++: CUID::is_t(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::is_t(const class std::shared_ptr<const class Op::Base> &) file: line:51
-	M("CUID").def("is_t", (bool (*)(const class std::shared_ptr<const class Op::Base> &)) &CUID::is_t<Op::Literal,const Op::Base>, "C++: CUID::is_t(const class std::shared_ptr<const class Op::Base> &) --> bool", pybind11::arg("x"));
-
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_14.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-namespace API::Binder {
-void bind_unknown_unknown_14(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
-	// CUID::Private::is_any(const class std::shared_ptr<const class Expr::Base> &) file: line:58
-	M("CUID::Private").def("is_any", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::Private::is_any<const Expr::Base,false,Expr::FP>, "C++: CUID::Private::is_any(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::Private::is_any(const class std::shared_ptr<const class Expr::Base> &) file: line:58
-	M("CUID::Private").def("is_any", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::Private::is_any<const Expr::Base,false,Expr::BV>, "C++: CUID::Private::is_any(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::Private::is_any(const class std::shared_ptr<const class Expr::Base> &) file: line:58
-	M("CUID::Private").def("is_any", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::Private::is_any<const Expr::Base,false,Expr::String>, "C++: CUID::Private::is_any(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::Private::is_any(const class std::shared_ptr<const class Expr::Base> &) file: line:58
-	M("CUID::Private").def("is_any", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::Private::is_any<const Expr::Base,false,Expr::BV,Expr::FP>, "C++: CUID::Private::is_any(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::Private::is_any(const class std::shared_ptr<const class Expr::Base> &) file: line:58
-	M("CUID::Private").def("is_any", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::Private::is_any<const Expr::Base,false,Expr::Bool>, "C++: CUID::Private::is_any(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::Private::is_any(const class std::shared_ptr<const class Expr::Base> &) file: line:58
-	M("CUID::Private").def("is_any", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::Private::is_any<const Expr::Base,false,Expr::FP,Expr::Bool, Expr::BV, Expr::String>, "C++: CUID::Private::is_any(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::Private::is_any(const class std::shared_ptr<const class Expr::Base> &) file: line:58
-	M("CUID::Private").def("is_any", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::Private::is_any<const Expr::Base,false,Expr::Bool,Expr::BV, Expr::String>, "C++: CUID::Private::is_any(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::Private::is_any(const class std::shared_ptr<const class Expr::Base> &) file: line:58
-	M("CUID::Private").def("is_any", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::Private::is_any<const Expr::Base,false,Expr::BV,Expr::String>, "C++: CUID::Private::is_any(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::Private::is_any(const class std::shared_ptr<const class Expr::Base> &) file: line:58
-	M("CUID::Private").def("is_any", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::Private::is_any<const Expr::Base,false,Expr::FP,Expr::BV>, "C++: CUID::Private::is_any(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::Private::is_any(const class std::shared_ptr<const class Expr::Base> &) file: line:58
-	M("CUID::Private").def("is_any", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::Private::is_any<const Expr::Base,false,Expr::BV,Expr::Bool>, "C++: CUID::Private::is_any(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_15.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-namespace API::Binder {
-void bind_unknown_unknown_15(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
-	// CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) file: line:68
-	M("CUID").def("is_any_t", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::is_any_t<const Expr::Base,false,Expr::FP>, "C++: CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) file: line:68
-	M("CUID").def("is_any_t", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::is_any_t<const Expr::Base,false,Expr::BV>, "C++: CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) file: line:68
-	M("CUID").def("is_any_t", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::is_any_t<const Expr::Base,false,Expr::String>, "C++: CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) file: line:68
-	M("CUID").def("is_any_t", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::is_any_t<const Expr::Base,false,Expr::BV,Expr::FP>, "C++: CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) file: line:68
-	M("CUID").def("is_any_t", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::is_any_t<const Expr::Base,false,Expr::Bool>, "C++: CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) file: line:68
-	M("CUID").def("is_any_t", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::is_any_t<const Expr::Base,false,Expr::FP,Expr::Bool, Expr::BV, Expr::String>, "C++: CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) file: line:68
-	M("CUID").def("is_any_t", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::is_any_t<const Expr::Base,false,Expr::FP,Expr::BV>, "C++: CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) file: line:68
-	M("CUID").def("is_any_t", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::is_any_t<const Expr::Base,false,Expr::BV,Expr::Bool>, "C++: CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) file: line:68
-	M("CUID").def("is_any_t", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::is_any_t<const Expr::Base,false,Expr::BV,Expr::String>, "C++: CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) file: line:74
-	M("CUID").def("is_any_t", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::is_any_t<const Expr::Base,Expr::FP>, "C++: CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) file: line:74
-	M("CUID").def("is_any_t", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::is_any_t<const Expr::Base,Expr::BV>, "C++: CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) file: line:74
-	M("CUID").def("is_any_t", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::is_any_t<const Expr::Base,Expr::String>, "C++: CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) file: line:74
-	M("CUID").def("is_any_t", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::is_any_t<const Expr::Base,Expr::BV,Expr::FP>, "C++: CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) file: line:74
-	M("CUID").def("is_any_t", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::is_any_t<const Expr::Base,Expr::Bool>, "C++: CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) file: line:74
-	M("CUID").def("is_any_t", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::is_any_t<const Expr::Base,Expr::FP,Expr::Bool, Expr::BV, Expr::String>, "C++: CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) file: line:74
-	M("CUID").def("is_any_t", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::is_any_t<const Expr::Base,Expr::FP,Expr::BV>, "C++: CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) file: line:74
-	M("CUID").def("is_any_t", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::is_any_t<const Expr::Base,Expr::BV,Expr::Bool>, "C++: CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-	// CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) file: line:74
-	M("CUID").def("is_any_t", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &CUID::is_any_t<const Expr::Base,Expr::BV,Expr::String>, "C++: CUID::is_any_t(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"));
-
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_16.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-namespace API::Binder {
-void bind_unknown_unknown_16(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
-	{ // Hash::Hashed file: line:16
-		pybind11::class_<Hash::Hashed, Hash::Hashed*> cl(M("Hash"), "Hashed", "A type that has a precomputed hash value ");
-		cl.def_readonly("hash", &Hash::Hashed::hash);
-	}
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_17.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-namespace API::Binder {
-void bind_unknown_unknown_17(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
-	// Mode::BigInt file: line:13
-	pybind11::enum_<Mode::BigInt>(M("Mode"), "BigInt", "A mask used to define the type of comparison to be used ")
-		.value("Str", Mode::BigInt::Str)
-		.value("Int", Mode::BigInt::Int);
-
-;
-
-	// Mode::Compare file: line:15
-	pybind11::enum_<Mode::Compare>(M("Mode"), "Compare", "A mask used to define the type of comparison to be used ")
-		.value("UGE", Mode::Compare::UGE)
-		.value("UGT", Mode::Compare::UGT)
-		.value("ULE", Mode::Compare::ULE)
-		.value("ULT", Mode::Compare::ULT)
-		.value("SGE", Mode::Compare::SGE)
-		.value("SGT", Mode::Compare::SGT)
-		.value("SLE", Mode::Compare::SLE)
-		.value("SLT", Mode::Compare::SLT);
-
-;
-
-	// Mode::is_signed(const enum Mode::Compare) file: line:18
-	M("Mode").def("is_signed", (bool (*)(const enum Mode::Compare)) &Mode::is_signed, "Return true iff a Compare is signed \n\nC++: Mode::is_signed(const enum Mode::Compare) --> bool", pybind11::arg("c"));
-
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_18.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-namespace API::Binder {
-void bind_unknown_unknown_18(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
-	// Mode::FP::Rounding file: line:10
-	pybind11::enum_<Mode::FP::Rounding>(M("Mode::FP"), "Rounding", "FP modes supported by claripy ")
-		.value("NearestTiesEven", Mode::FP::Rounding::NearestTiesEven)
-		.value("NearestTiesAwayFromZero", Mode::FP::Rounding::NearestTiesAwayFromZero)
-		.value("TowardsZero", Mode::FP::Rounding::TowardsZero)
-		.value("TowardsPositiveInf", Mode::FP::Rounding::TowardsPositiveInf)
-		.value("TowardsNegativeInf", Mode::FP::Rounding::TowardsNegativeInf);
-
-;
-
-	{ // Mode::FP::Width file: line:17
-		pybind11::class_<Mode::FP::Width, std::shared_ptr<Mode::FP::Width>> cl(M("Mode::FP"), "Width", "A floating point width struct ");
-		cl.def( pybind11::init( [](){ return new Mode::FP::Width(); } ) );
-		cl.def( pybind11::init( [](Mode::FP::Width const &o){ return new Mode::FP::Width(o); } ) );
-		cl.def_readwrite("exp", &Mode::FP::Width::exp);
-		cl.def_readwrite("mantissa", &Mode::FP::Width::mantissa);
-		cl.def("mantissa_raw", (unsigned int (Mode::FP::Width::*)() const) &Mode::FP::Width::mantissa_raw, "The width of the mantissa, excluding the implicit 1 bit \n\nC++: Mode::FP::Width::mantissa_raw() const --> unsigned int");
-		cl.def("width", (unsigned long long (Mode::FP::Width::*)() const) &Mode::FP::Width::width, "The full width of the fp \n\nC++: Mode::FP::Width::width() const --> unsigned long long");
-		cl.def("no_sign_width", (unsigned long long (Mode::FP::Width::*)() const) &Mode::FP::Width::no_sign_width, "The full width of the fp \n\nC++: Mode::FP::Width::no_sign_width() const --> unsigned long long");
-		cl.def("assign", (struct Mode::FP::Width & (Mode::FP::Width::*)(const struct Mode::FP::Width &)) &Mode::FP::Width::operator=, "C++: Mode::FP::Width::operator=(const struct Mode::FP::Width &) --> struct Mode::FP::Width &", pybind11::return_value_policy::automatic, pybind11::arg(""));
-
-		cl.def("__str__", [](Mode::FP::Width const &o) -> std::string { std::ostringstream s; s << o; return s.str(); } );
-	}
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_19.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-namespace API::Binder {
-void bind_unknown_unknown_19(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
-	// Mode::LR file: line:13
-	pybind11::enum_<Mode::LR>(M("Mode"), "LR", "A mask used to denote Left or Right ")
-		.value("Left", Mode::LR::Left)
-		.value("Right", Mode::LR::Right);
-
-;
-
-	// Mode::Shift file: line:11
-	pybind11::enum_<Mode::Shift>(M("Mode"), "Shift", "A mask used to describe a type of bit shift ")
-		.value("Left", Mode::Shift::Left)
-		.value("LogicalRight", Mode::Shift::LogicalRight)
-		.value("ArithmeticRight", Mode::Shift::ArithmeticRight);
-
-;
-
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_2.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-namespace API::Binder {
-void bind_unknown_unknown_2(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
-	{ // Util::Backtrace::Lazy file: line:21
-		pybind11::class_<Util::Backtrace::Lazy, std::shared_ptr<Util::Backtrace::Lazy>> cl(M("Util::Backtrace"), "Lazy", "The lazy backtrace holder type ");
-		cl.def("str", (std::string (Util::Backtrace::Lazy::*)() const) &Util::Backtrace::Lazy::str, "As string \n\nC++: Util::Backtrace::Lazy::str() const --> std::string");
-	}
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_20.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-namespace API::Binder {
-void bind_unknown_unknown_20(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
-	// Mode::Sign::FP file: line:17
-	pybind11::enum_<Mode::Sign::FP>(M("Mode::Sign"), "FP", "An Sign enum with an underlying signed value where non-signed-ness is disallowed\n  The underlying values of the enum values are 1 and -1\n  signed specifier is required for cross-platform support")
-		.value("Minus", Mode::Sign::FP::Minus)
-		.value("Plus", Mode::Sign::FP::Plus);
-
-;
-
-	// Mode::Sign::Real file: line:23
-	pybind11::enum_<Mode::Sign::Real>(M("Mode::Sign"), "Real", "An Sign enum with an underlying signed value where non-signed-ness is allowed\n  The underlying values of the enum values are 1, -1, and 0\n  signed specifier is required for cross-platform support")
-		.value("Minus", Mode::Sign::Real::Minus)
-		.value("None", Mode::Sign::Real::None)
-		.value("Plus", Mode::Sign::Real::Plus);
-
-;
-
-	// Mode::Sign::to_real(const enum Mode::Sign::FP) file: line:26
-	M("Mode::Sign").def("to_real", (enum Mode::Sign::Real (*)(const enum Mode::Sign::FP)) &Mode::Sign::to_real, "Convert an FP to a Real \n\nC++: Mode::Sign::to_real(const enum Mode::Sign::FP) --> enum Mode::Sign::Real", pybind11::arg("f"));
-
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_21.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-namespace API::Binder {
-void bind_unknown_unknown_21(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
-	// Mode::Signed file: line:13
-	pybind11::enum_<Mode::Signed>(M("Mode"), "Signed", "A mask used to denote Signed or Unsigned ")
-		.value("Signed", Mode::Signed::Signed)
-		.value("Unsigned", Mode::Signed::Unsigned);
-
-;
-
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_22.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-namespace API::Binder {
-void bind_unknown_unknown_22(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
-	{ // BigInt file: line:16
-		pybind11::class_<BigInt, std::shared_ptr<BigInt>> cl(M(""), "BigInt", "The arbitrary precision type claricpp uses ");
-		cl.def( pybind11::init( [](BigInt const &o){ return new BigInt(o); } ) );
-		cl.def( pybind11::init( [](){ return new BigInt(); } ) );
-		cl.def_readwrite("value", &BigInt::value);
-		cl.def_readwrite("bit_length", &BigInt::bit_length);
-		cl.def_static("from_c_str", (struct BigInt (*)(const char *const, const unsigned long long)) &BigInt::from_c_str<Mode::BigInt::Str>, "C++: BigInt::from_c_str(const char *const, const unsigned long long) --> struct BigInt", pybind11::arg("s"), pybind11::arg("bit_length"));
-		cl.def_static("from_c_str", (struct BigInt (*)(const char *const, const unsigned long long)) &BigInt::from_c_str<Mode::BigInt::Int>, "C++: BigInt::from_c_str(const char *const, const unsigned long long) --> struct BigInt", pybind11::arg("s"), pybind11::arg("bit_length"));
-		cl.def_static("from_c_str", (struct BigInt (*)(const char *const, const unsigned long long)) &BigInt::from_c_str, "Convert the input to a BigInt using the default mode \n\nC++: BigInt::from_c_str(const char *const, const unsigned long long) --> struct BigInt", pybind11::arg("s"), pybind11::arg("bit_length"));
-		cl.def_static("mode", (enum Mode::BigInt (*)(const enum Mode::BigInt)) &BigInt::mode, "Set the default BigInt mode to m \n\nC++: BigInt::mode(const enum Mode::BigInt) --> enum Mode::BigInt", pybind11::arg("m"));
-		cl.def_static("mode", (enum Mode::BigInt (*)()) &BigInt::mode, "Get the default mode \n\nC++: BigInt::mode() --> enum Mode::BigInt");
-		cl.def("assign", (struct BigInt & (BigInt::*)(const struct BigInt &)) &BigInt::operator=, "C++: BigInt::operator=(const struct BigInt &) --> struct BigInt &", pybind11::return_value_policy::automatic, pybind11::arg(""));
-
-		cl.def("__str__", [](BigInt const &o) -> std::string { std::ostringstream s; s << o; return s.str(); } );
-	}
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_23.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-namespace API::Binder {
-void bind_unknown_unknown_23(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
-	// Hash::singular(const struct Mode::FP::Width &) file: line:137
-	M("Hash").def("singular", (unsigned long long (*)(const struct Mode::FP::Width &)) &Hash::singular<Mode::FP::Width>, "A specialization for T = Mode::FP::Width \n\nC++: Hash::singular(const struct Mode::FP::Width &) --> unsigned long long", pybind11::arg("w"));
-
-	// Hash::singular(const class std::shared_ptr<const struct Annotation::Base> &) file: line:197
-	M("Hash").def("singular", (unsigned long long (*)(const class std::shared_ptr<const struct Annotation::Base> &)) &Hash::singular<Annotation::Base,0,0>, "C++: Hash::singular(const class std::shared_ptr<const struct Annotation::Base> &) --> unsigned long long", pybind11::arg("h"));
-
-	// Hash::singular(const class std::shared_ptr<const class Expr::Base> &) file: line:197
-	M("Hash").def("singular", (unsigned long long (*)(const class std::shared_ptr<const class Expr::Base> &)) &Hash::singular<Expr::Base,0,0>, "C++: Hash::singular(const class std::shared_ptr<const class Expr::Base> &) --> unsigned long long", pybind11::arg("h"));
-
-	// Hash::singular(const class std::shared_ptr<const struct Annotation::Vec> &) file: line:197
-	M("Hash").def("singular", (unsigned long long (*)(const class std::shared_ptr<const struct Annotation::Vec> &)) &Hash::singular<Annotation::Vec,0,0>, "C++: Hash::singular(const class std::shared_ptr<const struct Annotation::Vec> &) --> unsigned long long", pybind11::arg("h"));
-
-	// Hash::singular(const class std::shared_ptr<const class Op::Base> &) file: line:197
-	M("Hash").def("singular", (unsigned long long (*)(const class std::shared_ptr<const class Op::Base> &)) &Hash::singular<Op::Base,0,0>, "C++: Hash::singular(const class std::shared_ptr<const class Op::Base> &) --> unsigned long long", pybind11::arg("h"));
-
-	// Hash::singular(const class std::shared_ptr<const struct PyObj::VS> &) file: line:197
-	M("Hash").def("singular", (unsigned long long (*)(const class std::shared_ptr<const struct PyObj::VS> &)) &Hash::singular<PyObj::VS,0,0>, "C++: Hash::singular(const class std::shared_ptr<const struct PyObj::VS> &) --> unsigned long long", pybind11::arg("h"));
-
-	// Hash::hash(const unsigned long long &, const enum Mode::FP::Rounding &, const class std::shared_ptr<const class Expr::Base> &, const struct Mode::FP::Width &) file: line:22
-	M("Hash").def("hash", (unsigned long long (*)(const unsigned long long &, const enum Mode::FP::Rounding &, const class std::shared_ptr<const class Expr::Base> &, const struct Mode::FP::Width &)) &Hash::hash<const unsigned long long &, const Mode::FP::Rounding &, const std::shared_ptr<const Expr::Base> &, const Mode::FP::Width &>, "C++: Hash::hash(const unsigned long long &, const enum Mode::FP::Rounding &, const class std::shared_ptr<const class Expr::Base> &, const struct Mode::FP::Width &) --> unsigned long long", pybind11::arg("args"), pybind11::arg("args"), pybind11::arg("args"), pybind11::arg("args"));
-
-	// Hash::hash(const unsigned long long &, const class std::shared_ptr<const class Expr::Base> &, const struct Mode::FP::Width &) file: line:22
-	M("Hash").def("hash", (unsigned long long (*)(const unsigned long long &, const class std::shared_ptr<const class Expr::Base> &, const struct Mode::FP::Width &)) &Hash::hash<const unsigned long long &, const std::shared_ptr<const Expr::Base> &, const Mode::FP::Width &>, "C++: Hash::hash(const unsigned long long &, const class std::shared_ptr<const class Expr::Base> &, const struct Mode::FP::Width &) --> unsigned long long", pybind11::arg("args"), pybind11::arg("args"), pybind11::arg("args"));
-
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_24.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-namespace API::Binder {
-void bind_unknown_unknown_24(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
-	{ // Factory::FactoryMade file: line:42
-		pybind11::class_<Factory::FactoryMade, Factory::FactoryMade*, Hash::Hashed, CUID::HasCUID> cl(M("Factory"), "FactoryMade", "A type that can be constructed by the factory\n  All factory constructable types must subclass this\n  All subclasses that are or have an instantiable subclass constructed via factory\n	  1. Must include the FACTORY_ENABLE_CONSTRUCTION_FROM_BASE method. Note that\n		 this also defines a static_cuid");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Extract,const unsigned long long &, const unsigned long long &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Expr::Base,Expr::BV,const bool &, std::shared_ptr<const Op::Base>, unsigned long long, std::shared_ptr<const Annotation::Vec>>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::FP::From2sComplementBV<Mode::Signed::Signed>,const Mode::FP::Rounding &, const std::shared_ptr<const Expr::Base> &, const Mode::FP::Width &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::FP::From2sComplementBV<Mode::Signed::Unsigned>,const Mode::FP::Rounding &, const std::shared_ptr<const Expr::Base> &, const Mode::FP::Width &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::FP::FromFP,const Mode::FP::Rounding &, const std::shared_ptr<const Expr::Base> &, const Mode::FP::Width &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Expr::Base,Expr::FP,const bool &, std::shared_ptr<const Op::Base>, unsigned long long, std::shared_ptr<const Annotation::Vec>>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::FP::FromNot2sComplementBV,const std::shared_ptr<const Expr::Base> &, const Mode::FP::Width &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::FP::ToBV<Mode::Signed::Signed>,const Mode::FP::Rounding &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Expr::Base,Expr::BV,const bool &, std::shared_ptr<const Op::Base>, const unsigned long long &, std::shared_ptr<const Annotation::Vec>>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::FP::ToBV<Mode::Signed::Unsigned>,const Mode::FP::Rounding &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::FP::ToIEEEBV,const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::FP::Add,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &, const Mode::FP::Rounding &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Expr::Base,Expr::FP,bool, std::shared_ptr<const Op::Base>, unsigned long long, std::shared_ptr<const Annotation::Vec>>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::FP::Sub,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &, const Mode::FP::Rounding &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::FP::Mul,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &, const Mode::FP::Rounding &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::FP::Div,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &, const Mode::FP::Rounding &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::FP::FP,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::If,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Expr::Base,Expr::Bool,const bool &, std::shared_ptr<const Op::Base>, std::shared_ptr<const Annotation::Vec>>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Expr::Base,Expr::VS,const bool &, std::shared_ptr<const Op::Base>, unsigned long long, std::shared_ptr<const Annotation::Vec>>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Literal,bool>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Literal,std::string>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Literal,double>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Expr::Base,Expr::FP,bool, std::shared_ptr<const Op::Base>, const unsigned long long &, std::shared_ptr<const Annotation::Vec>>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Literal,float>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Literal,std::shared_ptr<const PyObj::VS>>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Expr::Base,Expr::VS,bool, std::shared_ptr<const Op::Base>, const unsigned long long &, std::shared_ptr<const Annotation::Vec>>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Literal,unsigned char>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Literal,unsigned short>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Literal,unsigned int>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Literal,unsigned long long>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Literal,BigInt>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::String::FromInt,const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Expr::Base,Expr::String,const bool &, std::shared_ptr<const Op::Base>, unsigned long long, std::shared_ptr<const Annotation::Vec>>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::String::IndexOf,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Expr::Base,Expr::BV,bool, std::shared_ptr<const Op::Base>, const unsigned long long &, std::shared_ptr<const Annotation::Vec>>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::String::Replace,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Expr::Base,Expr::String,bool, std::shared_ptr<const Op::Base>, unsigned long long &, std::shared_ptr<const Annotation::Vec>>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::String::SubString,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Expr::Base,Expr::String,bool, std::shared_ptr<const Op::Base>, const unsigned long long &, std::shared_ptr<const Annotation::Vec>>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::String::IsDigit,const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::String::ToInt,const std::shared_ptr<const Expr::Base> &, const unsigned long long &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::String::Len,const std::shared_ptr<const Expr::Base> &, const unsigned long long &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::String::Contains,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::String::PrefixOf,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::String::SuffixOf,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Symbol,std::string>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Expr::Base,Expr::Bool,bool, std::shared_ptr<const Op::Base>, std::shared_ptr<const Annotation::Vec>>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Abs,const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Neg,const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Not,const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Invert,const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Reverse,const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::SignExt,const std::shared_ptr<const Expr::Base> &, const unsigned long long &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::ZeroExt,const std::shared_ptr<const Expr::Base> &, const unsigned long long &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Eq,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Neq,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Compare<Mode::Compare::UGE>,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Compare<Mode::Compare::UGT>,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Compare<Mode::Compare::ULE>,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Compare<Mode::Compare::ULT>,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Compare<Mode::Compare::SGE>,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Compare<Mode::Compare::SGT>,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Compare<Mode::Compare::SLE>,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Compare<Mode::Compare::SLT>,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Expr::Base,Expr::BV,bool, std::shared_ptr<const Op::Base>, unsigned long long, std::shared_ptr<const Annotation::Vec>>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Sub,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Expr::Base,Expr::String,bool, std::shared_ptr<const Op::Base>, unsigned long long, std::shared_ptr<const Annotation::Vec>>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Expr::Base,Expr::VS,bool, std::shared_ptr<const Op::Base>, unsigned long long, std::shared_ptr<const Annotation::Vec>>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Div<Mode::Signed::Signed>,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Div<Mode::Signed::Unsigned>,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Mod<Mode::Signed::Signed>,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Mod<Mode::Signed::Unsigned>,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Shift<Mode::Shift::Left>,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Shift<Mode::Shift::ArithmeticRight>,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Shift<Mode::Shift::LogicalRight>,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Rotate<Mode::LR::Left>,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Rotate<Mode::LR::Right>,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Widen,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Union,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Intersection,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Concat,const std::shared_ptr<const Expr::Base> &, const std::shared_ptr<const Expr::Base> &>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Add,std::vector<std::shared_ptr<const Expr::Base> >>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Mul,std::vector<std::shared_ptr<const Expr::Base> >>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Or,std::vector<std::shared_ptr<const Expr::Base> >>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Expr::Base,Expr::String,const bool &, std::shared_ptr<const Op::Base>, const unsigned long long &, std::shared_ptr<const Annotation::Vec>>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Expr::Base,Expr::FP,const bool &, std::shared_ptr<const Op::Base>, const unsigned long long &, std::shared_ptr<const Annotation::Vec>>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Expr::Base,Expr::VS,const bool &, std::shared_ptr<const Op::Base>, const unsigned long long &, std::shared_ptr<const Annotation::Vec>>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::And,std::vector<std::shared_ptr<const Expr::Base> >>, "C++: Factory::FactoryMade::static_type_check() --> void");
-		cl.def_static("static_type_check", (void (*)()) &Factory::FactoryMade::static_type_check<Op::Base,Op::Xor,std::vector<std::shared_ptr<const Expr::Base> >>, "C++: Factory::FactoryMade::static_type_check() --> void");
-	}
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_25.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-namespace API::Binder {
-void bind_unknown_unknown_25(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
-	// Factory::find(const unsigned long long) file: line:65
-	M("Factory").def("find", (class std::shared_ptr<const class Expr::Base> (*)(const unsigned long long)) &Factory::find<Expr::Base>, "C++: Factory::find(const unsigned long long) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("h"));
-
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_26.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-namespace API::Binder {
-void bind_unknown_unknown_26(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
 	{ // HasRepr file: line:13
 		pybind11::class_<HasRepr, std::shared_ptr<HasRepr>> cl(M(""), "HasRepr", "A struct with a repr function ");
 		cl.def("assign", (struct HasRepr & (HasRepr::*)(const struct HasRepr &)) &HasRepr::operator=, "C++: HasRepr::operator=(const struct HasRepr &) --> struct HasRepr &", pybind11::return_value_policy::automatic, pybind11::arg(""));
@@ -1191,7 +282,7 @@ void bind_unknown_unknown_26(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_27.cpp
+// File: binder/unknown/unknown_12.cpp
 //
 
 
@@ -1248,7 +339,7 @@ struct PyCallBack_Annotation_Base : public Annotation::Base {
 };
 
 namespace API::Binder {
-void bind_unknown_unknown_27(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_12(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	{ // Annotation::Base file: line:21
 		pybind11::class_<Annotation::Base, std::shared_ptr<Annotation::Base>, PyCallBack_Annotation_Base, HasRepr, Factory::FactoryMade> cl(M("Annotation"), "Base", "Annotations are used to achieve claripy's goal of being an arithmetic instrumentation\n engine. They provide a means to pass extra information to the claripy backends.");
@@ -1280,7 +371,7 @@ void bind_unknown_unknown_27(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_28.cpp
+// File: binder/unknown/unknown_13.cpp
 //
 
 
@@ -1292,7 +383,7 @@ void bind_unknown_unknown_27(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_28(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_13(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	{ // Expr::Base file: line:27
 		pybind11::class_<Expr::Base, Expr::Base*, HasRepr, Factory::FactoryMade> cl(M("Expr"), "Base", "The base Expr type\n  All exprs must subclass this");
@@ -1306,7 +397,7 @@ void bind_unknown_unknown_28(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_29.cpp
+// File: binder/unknown/unknown_14.cpp
 //
 
 
@@ -1318,7 +409,7 @@ void bind_unknown_unknown_28(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_29(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_14(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	{ // BitLength file: line:13
 		pybind11::class_<BitLength, BitLength*> cl(M(""), "BitLength", "A class with a const bit length ");
@@ -1329,105 +420,7 @@ void bind_unknown_unknown_29(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_3.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-// Util::Err::Claricpp file: line:35
-struct PyCallBack_Util_Err_Claricpp : public Util::Err::Claricpp {
-	using Util::Err::Claricpp::Claricpp;
-
-};
-
-// Util::Err::Internal file: line:18
-struct PyCallBack_Util_Err_Internal : public Util::Err::Internal {
-	using Util::Err::Internal::Internal;
-
-};
-
-// Util::Err::Collision file: line:21
-struct PyCallBack_Util_Err_Collision : public Util::Err::Collision {
-	using Util::Err::Collision::Collision;
-
-};
-
-namespace API::Binder {
-void bind_unknown_unknown_3(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
-	{ // Util::Err::Claricpp file: line:35
-		pybind11::class_<Util::Err::Claricpp, std::shared_ptr<Util::Err::Claricpp>, PyCallBack_Util_Err_Claricpp> cl(M("Util::Err"), "Claricpp", "The base claricpp exception class\n  Any exception thrown intentionally must subclass this\n  Note: Since exceptions do not need to be super fast and since we have const date members:\n  for clarity we ignore the rule of 5 in favor of what the compiler defaults. Subclasses\n  of Claricpp should feel free to do the same unless they have non-const data members\n  This class saves the last n_backtraces backtraces");
-		cl.def_static("log_atomic_change", (void (*)(const char *const, const bool, const bool)) &Util::Err::Claricpp::log_atomic_change, "Logs that an atomic was toggled \n\nC++: Util::Err::Claricpp::log_atomic_change(const char *const, const bool, const bool) --> void", pybind11::arg("what"), pybind11::arg("old"), pybind11::arg("new_"));
-		cl.def_static("warn_backtrace_slow", (void (*)()) &Util::Err::Claricpp::warn_backtrace_slow, "Warns that enabling backtraces causes a performance hit \n\nC++: Util::Err::Claricpp::warn_backtrace_slow() --> void");
-		cl.def_static("toggle_backtrace", [](const bool & a0) -> bool { return Util::Err::Claricpp::toggle_backtrace(a0); }, "", pybind11::arg("set"));
-		cl.def_static("toggle_backtrace", (bool (*)(const bool, const bool)) &Util::Err::Claricpp::toggle_backtrace, "Enable / disable backtraces\n  Returns the old state\n\nC++: Util::Err::Claricpp::toggle_backtrace(const bool, const bool) --> bool", pybind11::arg("set"), pybind11::arg("log_me"));
-		cl.def_static("backtraces_enabled", (bool (*)()) &Util::Err::Claricpp::backtraces_enabled, "Return true if and only if backtraces are enabled \n\nC++: Util::Err::Claricpp::backtraces_enabled() --> bool");
-		cl.def("what", (const char * (Util::Err::Claricpp::*)() const) &Util::Err::Claricpp::what, "Message getter \n\nC++: Util::Err::Claricpp::what() const --> const char *", pybind11::return_value_policy::automatic);
-		cl.def_static("lazy_backtrace", []() -> std::shared_ptr<const class Util::Backtrace::Lazy> { return Util::Err::Claricpp::lazy_backtrace(); }, "");
-		cl.def_static("lazy_backtrace", (class std::shared_ptr<const class Util::Backtrace::Lazy> (*)(const unsigned long)) &Util::Err::Claricpp::lazy_backtrace, "Get a previous backtrace in an unevaluated form; returns {} on error\n  Get the a previous backtrace\n  Ignores the last index'th backtraces\n  Ex. index = 0 gets the last backtrace, index = 1 gets the second to last\n  Call ->str() on the result to get the backtrace as a string\n\nC++: Util::Err::Claricpp::lazy_backtrace(const unsigned long) --> class std::shared_ptr<const class Util::Backtrace::Lazy>", pybind11::arg("index"));
-		cl.def_static("backtrace", []() -> std::string { return Util::Err::Claricpp::backtrace(); }, "");
-		cl.def_static("backtrace", (std::string (*)(const unsigned long)) &Util::Err::Claricpp::backtrace, "Eagerly evaluated lazy_backtrace(index)\n  If lazy_backtrace(index) returns nullptr; will return {}\n  Unlike lazy_backtrace, this may throw if evaluation fails\n\nC++: Util::Err::Claricpp::backtrace(const unsigned long) --> std::string", pybind11::arg("index"));
-	}
-	{ // Util::Err::Internal file: line:18
-		pybind11::class_<Util::Err::Internal, std::shared_ptr<Util::Err::Internal>, PyCallBack_Util_Err_Internal, Util::Err::Claricpp> cl(M("Util::Err"), "Internal", "Base unexpected exception\n  All unexpected exceptions must derive from this");
-	}
-	{ // Util::Err::Collision file: line:21
-		pybind11::class_<Util::Err::Collision, std::shared_ptr<Util::Err::Collision>, PyCallBack_Util_Err_Collision, Util::Err::Internal> cl(M("Util::Err"), "Collision", "Hash Collision exception ");
-	}
-	{ // Util::Err::Null file: line:24
-		pybind11::class_<Util::Err::Null, std::shared_ptr<Util::Err::Null>, Util::Err::Internal> cl(M("Util::Err"), "Null", "Null pointer exception ");
-	}
-	{ // Util::Err::BadPath file: line:27
-		pybind11::class_<Util::Err::BadPath, std::shared_ptr<Util::Err::BadPath>, Util::Err::Internal> cl(M("Util::Err"), "BadPath", "Invalid path exception ");
-	}
-	{ // Util::Err::Syscall file: line:30
-		pybind11::class_<Util::Err::Syscall, std::shared_ptr<Util::Err::Syscall>, Util::Err::Internal> cl(M("Util::Err"), "Syscall", "Syscall failure exception ");
-	}
-	{ // Util::Err::Size file: line:33
-		pybind11::class_<Util::Err::Size, std::shared_ptr<Util::Err::Size>, Util::Err::Internal> cl(M("Util::Err"), "Size", "Bad size exception ");
-	}
-	{ // Util::Err::Index file: line:36
-		pybind11::class_<Util::Err::Index, std::shared_ptr<Util::Err::Index>, Util::Err::Internal> cl(M("Util::Err"), "Index", "Bad index exception ");
-	}
-	{ // Util::Err::BadCast file: line:39
-		pybind11::class_<Util::Err::BadCast, std::shared_ptr<Util::Err::BadCast>, Util::Err::Internal> cl(M("Util::Err"), "BadCast", "Bad cast exception ");
-	}
-	{ // Util::Err::HashCollision file: line:42
-		pybind11::class_<Util::Err::HashCollision, std::shared_ptr<Util::Err::HashCollision>, Util::Err::Collision> cl(M("Util::Err"), "HashCollision", "Hash Collision exception ");
-	}
-	{ // Util::Err::BadVariantAccess file: line:45
-		pybind11::class_<Util::Err::BadVariantAccess, std::shared_ptr<Util::Err::BadVariantAccess>, Util::Err::Internal> cl(M("Util::Err"), "BadVariantAccess", "Bad variant access exception ");
-	}
-	{ // Util::Err::MissingVirtualFunction file: line:48
-		pybind11::class_<Util::Err::MissingVirtualFunction, std::shared_ptr<Util::Err::MissingVirtualFunction>, Util::Err::Internal> cl(M("Util::Err"), "MissingVirtualFunction", "Raised when a virtual function that should have been overridden was called ");
-	}
-	{ // Util::Err::Usage file: line:51
-		pybind11::class_<Util::Err::Usage, std::shared_ptr<Util::Err::Usage>, Util::Err::Internal> cl(M("Util::Err"), "Usage", "Raised when a function is given invalid arguments ");
-	}
-	{ // Util::Err::RecurrenceLimit file: line:54
-		pybind11::class_<Util::Err::RecurrenceLimit, std::shared_ptr<Util::Err::RecurrenceLimit>, Util::Err::Internal> cl(M("Util::Err"), "RecurrenceLimit", "Raised when a recurrence guarded function recurses too many times ");
-	}
-	{ // Util::Err::Unknown file: line:57
-		pybind11::class_<Util::Err::Unknown, std::shared_ptr<Util::Err::Unknown>, Util::Err::Internal> cl(M("Util::Err"), "Unknown", "Raised when something unknown occurs ");
-	}
-	{ // Util::Err::NotSupported file: line:60
-		pybind11::class_<Util::Err::NotSupported, std::shared_ptr<Util::Err::NotSupported>, Util::Err::Internal> cl(M("Util::Err"), "NotSupported", "Raised when an unsupported op is invoked ");
-	}
-	{ // Util::Err::Type file: line:63
-		pybind11::class_<Util::Err::Type, std::shared_ptr<Util::Err::Type>, Util::Err::Internal> cl(M("Util::Err"), "Type", "Raised when a dynamic type error occurs ");
-	}
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_30.cpp
+// File: binder/unknown/unknown_15.cpp
 //
 
 
@@ -1439,7 +432,7 @@ void bind_unknown_unknown_3(std::function< pybind11::module &(std::string const 
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_30(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_15(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	{ // Expr::Bits file: line:16
 		pybind11::class_<Expr::Bits, Expr::Bits*, Expr::Base, BitLength> cl(M("Expr"), "Bits", "This class represents an Expr of Bits ");
@@ -1455,7 +448,7 @@ void bind_unknown_unknown_30(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_31.cpp
+// File: binder/unknown/unknown_16.cpp
 //
 
 
@@ -1467,72 +460,7 @@ void bind_unknown_unknown_30(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_31(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
-	{ // Error::Backend::Abstraction file: line:22
-		pybind11::class_<Error::Backend::Abstraction, std::shared_ptr<Error::Backend::Abstraction>, Util::Err::Python::Claripy> cl(M("Error::Backend"), "Abstraction", "document ");
-	}
-	{ // Error::Backend::Unsupported file: line:25
-		pybind11::class_<Error::Backend::Unsupported, std::shared_ptr<Error::Backend::Unsupported>, Util::Err::Python::Claripy> cl(M("Error::Backend"), "Unsupported", "document ");
-	}
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_32.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-// Error::Expr::Usage file: line:21
-struct PyCallBack_Error_Expr_Usage : public Error::Expr::Usage {
-	using Error::Expr::Usage::Usage;
-
-};
-
-namespace API::Binder {
-void bind_unknown_unknown_32(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
-	{ // Error::Expr::Operation file: line:19
-		pybind11::class_<Error::Expr::Operation, std::shared_ptr<Error::Expr::Operation>, Util::Err::Python::Claripy> cl(M("Error::Expr"), "Operation", "Expr Operation exception ");
-	}
-	{ // Error::Expr::Usage file: line:21
-		pybind11::class_<Error::Expr::Usage, std::shared_ptr<Error::Expr::Usage>, PyCallBack_Error_Expr_Usage, Util::Err::Python::Claripy> cl(M("Error::Expr"), "Usage", "Expr usage exception ");
-	}
-	{ // Error::Expr::Type file: line:23
-		pybind11::class_<Error::Expr::Type, std::shared_ptr<Error::Expr::Type>, Util::Err::Python::Claripy> cl(M("Error::Expr"), "Type", "Expr type exception ");
-	}
-	{ // Error::Expr::Value file: line:25
-		pybind11::class_<Error::Expr::Value, std::shared_ptr<Error::Expr::Value>, Util::Err::Python::Claripy> cl(M("Error::Expr"), "Value", "Expr value exception ");
-	}
-	{ // Error::Expr::Size file: line:27
-		pybind11::class_<Error::Expr::Size, std::shared_ptr<Error::Expr::Size>, Util::Err::Python::Claripy> cl(M("Error::Expr"), "Size", "Expr size exception ");
-	}
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_33.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-namespace API::Binder {
-void bind_unknown_unknown_33(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_16(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	// Expr::are_same_type(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &) file: line:19
 	M("Expr").def("are_same_type", (bool (*)(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &)) &Expr::are_same_type<true>, "C++: Expr::are_same_type(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"), pybind11::arg("y"));
@@ -1568,7 +496,7 @@ void bind_unknown_unknown_33(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_34.cpp
+// File: binder/unknown/unknown_17.cpp
 //
 
 
@@ -1580,7 +508,7 @@ void bind_unknown_unknown_33(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_34(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_17(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	{ // PyObj::Base file: line:17
 		pybind11::class_<PyObj::Base, std::shared_ptr<PyObj::Base>, Hash::Hashed> cl(M("PyObj"), "Base", "A class containing a ref to some python object and a hash ");
@@ -1594,7 +522,7 @@ void bind_unknown_unknown_34(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_35.cpp
+// File: binder/unknown/unknown_18.cpp
 //
 
 
@@ -1606,7 +534,7 @@ void bind_unknown_unknown_34(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_35(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_18(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	{ // PyObj::VS file: line:16
 		pybind11::class_<PyObj::VS, std::shared_ptr<PyObj::VS>, PyObj::Base, BitLength> cl(M("PyObj"), "VS", "A Value Set PyObj ");
@@ -1621,7 +549,7 @@ void bind_unknown_unknown_35(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_36.cpp
+// File: binder/unknown/unknown_19.cpp
 //
 
 
@@ -1633,7 +561,7 @@ void bind_unknown_unknown_35(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_36(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_19(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	{ // Op::Base file: line:20
 		pybind11::class_<Op::Base, std::shared_ptr<Op::Base>, HasRepr, Factory::FactoryMade> cl(M("Op"), "Base", "Base operation expr\n  All op exprs must subclass this");
@@ -1689,7 +617,7 @@ void bind_unknown_unknown_36(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_37.cpp
+// File: binder/unknown/unknown_2.cpp
 //
 
 
@@ -1701,30 +629,31 @@ void bind_unknown_unknown_36(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_37(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_2(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
-	{ // Op::FP::From2sComplementBV file: line:15
-		pybind11::class_<Op::FP::From2sComplementBV<Mode::Signed::Signed>, std::shared_ptr<Op::FP::From2sComplementBV<Mode::Signed::Signed>>, Op::Base> cl(M("Op::FP"), "From2sComplementBV_Mode_Signed_Signed_t", "");
-		cl.def_readonly("mode", &Op::FP::From2sComplementBV<Mode::Signed::Signed>::mode);
-		cl.def_readonly("bv", &Op::FP::From2sComplementBV<Mode::Signed::Signed>::bv);
-		cl.def_readonly("width", &Op::FP::From2sComplementBV<Mode::Signed::Signed>::width);
-		cl.def("unsafe_add_reversed_children", (void (Op::FP::From2sComplementBV<Mode::Signed::Signed>::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::FP::From2sComplementBV<Mode::Signed::Signed>::unsafe_add_reversed_children, "C++: Op::FP::From2sComplementBV<Mode::Signed::Signed>::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg("s"));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::FP::From2sComplementBV<Mode::Signed::Signed>::*)() const) &Op::FP::From2sComplementBV<Mode::Signed::Signed>::python_children, "C++: Op::FP::From2sComplementBV<Mode::Signed::Signed>::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
-		cl.def("op_name", (const char * (Op::Base::*)() const) &Op::Base::op_name, "The name of the op \n\nC++: Op::Base::op_name() const --> const char *", pybind11::return_value_policy::automatic);
-		cl.def("unsafe_add_reversed_children", (void (Op::Base::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::Base::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n  Be careful to ensure 'this' does not destruct while using said pointers\n\nC++: Op::Base::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg(""));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::Base::*)() const) &Op::Base::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Base::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
+	{ // CUID::HasCUID file: line:37
+		pybind11::class_<CUID::HasCUID, CUID::HasCUID*> cl(M("CUID"), "HasCUID", "A type that has a class unique id\n  This has the benefits of a virtual function as inherited classes\n  can have different CUIDs than their ancestors, while also avoiding\n  the overhead of a vtabel call to invoke virtual cuid() const;");
+		cl.def_readonly("cuid", &CUID::HasCUID::cuid);
 	}
-	{ // Op::FP::From2sComplementBV file: line:15
-		pybind11::class_<Op::FP::From2sComplementBV<Mode::Signed::Unsigned>, std::shared_ptr<Op::FP::From2sComplementBV<Mode::Signed::Unsigned>>, Op::Base> cl(M("Op::FP"), "From2sComplementBV_Mode_Signed_Unsigned_t", "");
-		cl.def_readonly("mode", &Op::FP::From2sComplementBV<Mode::Signed::Unsigned>::mode);
-		cl.def_readonly("bv", &Op::FP::From2sComplementBV<Mode::Signed::Unsigned>::bv);
-		cl.def_readonly("width", &Op::FP::From2sComplementBV<Mode::Signed::Unsigned>::width);
-		cl.def("unsafe_add_reversed_children", (void (Op::FP::From2sComplementBV<Mode::Signed::Unsigned>::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::FP::From2sComplementBV<Mode::Signed::Unsigned>::unsafe_add_reversed_children, "C++: Op::FP::From2sComplementBV<Mode::Signed::Unsigned>::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg("s"));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::FP::From2sComplementBV<Mode::Signed::Unsigned>::*)() const) &Op::FP::From2sComplementBV<Mode::Signed::Unsigned>::python_children, "C++: Op::FP::From2sComplementBV<Mode::Signed::Unsigned>::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
-		cl.def("op_name", (const char * (Op::Base::*)() const) &Op::Base::op_name, "The name of the op \n\nC++: Op::Base::op_name() const --> const char *", pybind11::return_value_policy::automatic);
-		cl.def("unsafe_add_reversed_children", (void (Op::Base::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::Base::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n  Be careful to ensure 'this' does not destruct while using said pointers\n\nC++: Op::Base::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg(""));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::Base::*)() const) &Op::Base::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Base::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
-	}
+}
+} // namespace API::Binder
+
+
+//
+// File: binder/unknown/unknown_20.cpp
+//
+
+
+#ifndef BINDER_PYBIND11_TYPE_CASTER
+	#define BINDER_PYBIND11_TYPE_CASTER
+	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
+	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
+	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
+#endif
+
+namespace API::Binder {
+void bind_unknown_unknown_20(std::function< pybind11::module &(std::string const &namespace_) > &M)
+{
 	{ // Op::FP::FromFP file: line:15
 		pybind11::class_<Op::FP::FromFP, std::shared_ptr<Op::FP::FromFP>, Op::Base> cl(M("Op::FP"), "FromFP", "The op class which converts an FP into another FP (for example, a float into a double) ");
 		cl.def_readonly("mode", &Op::FP::FromFP::mode);
@@ -1748,32 +677,12 @@ void bind_unknown_unknown_37(std::function< pybind11::module &(std::string const
 		cl.def("unsafe_add_reversed_children", (void (Op::FP::ModeBinary::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::FP::ModeBinary::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n\nC++: Op::FP::ModeBinary::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg("s"));
 		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::FP::ModeBinary::*)() const) &Op::FP::ModeBinary::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::FP::ModeBinary::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
 	}
-	{ // Op::FP::ToBV file: line:15
-		pybind11::class_<Op::FP::ToBV<Mode::Signed::Signed>, std::shared_ptr<Op::FP::ToBV<Mode::Signed::Signed>>, Op::Base> cl(M("Op::FP"), "ToBV_Mode_Signed_Signed_t", "");
-		cl.def_readonly("mode", &Op::FP::ToBV<Mode::Signed::Signed>::mode);
-		cl.def_readonly("fp", &Op::FP::ToBV<Mode::Signed::Signed>::fp);
-		cl.def("unsafe_add_reversed_children", (void (Op::FP::ToBV<Mode::Signed::Signed>::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::FP::ToBV<Mode::Signed::Signed>::unsafe_add_reversed_children, "C++: Op::FP::ToBV<Mode::Signed::Signed>::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg("s"));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::FP::ToBV<Mode::Signed::Signed>::*)() const) &Op::FP::ToBV<Mode::Signed::Signed>::python_children, "C++: Op::FP::ToBV<Mode::Signed::Signed>::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
-		cl.def("op_name", (const char * (Op::Base::*)() const) &Op::Base::op_name, "The name of the op \n\nC++: Op::Base::op_name() const --> const char *", pybind11::return_value_policy::automatic);
-		cl.def("unsafe_add_reversed_children", (void (Op::Base::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::Base::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n  Be careful to ensure 'this' does not destruct while using said pointers\n\nC++: Op::Base::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg(""));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::Base::*)() const) &Op::Base::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Base::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
-	}
-	{ // Op::FP::ToBV file: line:15
-		pybind11::class_<Op::FP::ToBV<Mode::Signed::Unsigned>, std::shared_ptr<Op::FP::ToBV<Mode::Signed::Unsigned>>, Op::Base> cl(M("Op::FP"), "ToBV_Mode_Signed_Unsigned_t", "");
-		cl.def_readonly("mode", &Op::FP::ToBV<Mode::Signed::Unsigned>::mode);
-		cl.def_readonly("fp", &Op::FP::ToBV<Mode::Signed::Unsigned>::fp);
-		cl.def("unsafe_add_reversed_children", (void (Op::FP::ToBV<Mode::Signed::Unsigned>::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::FP::ToBV<Mode::Signed::Unsigned>::unsafe_add_reversed_children, "C++: Op::FP::ToBV<Mode::Signed::Unsigned>::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg("s"));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::FP::ToBV<Mode::Signed::Unsigned>::*)() const) &Op::FP::ToBV<Mode::Signed::Unsigned>::python_children, "C++: Op::FP::ToBV<Mode::Signed::Unsigned>::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
-		cl.def("op_name", (const char * (Op::Base::*)() const) &Op::Base::op_name, "The name of the op \n\nC++: Op::Base::op_name() const --> const char *", pybind11::return_value_policy::automatic);
-		cl.def("unsafe_add_reversed_children", (void (Op::Base::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::Base::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n  Be careful to ensure 'this' does not destruct while using said pointers\n\nC++: Op::Base::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg(""));
-		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::Base::*)() const) &Op::Base::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Base::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
-	}
 }
 } // namespace API::Binder
 
 
 //
-// File: binder/unknown/unknown_38.cpp
+// File: binder/unknown/unknown_21.cpp
 //
 
 
@@ -1785,7 +694,7 @@ void bind_unknown_unknown_37(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_38(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_21(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	{ // Op::Ternary file: line:33
 		pybind11::class_<Op::Ternary<false>, std::shared_ptr<Op::Ternary<false>>, Op::Base> cl(M("Op"), "Ternary_false_t", "");
@@ -1809,7 +718,7 @@ void bind_unknown_unknown_38(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_39.cpp
+// File: binder/unknown/unknown_22.cpp
 //
 
 
@@ -1821,7 +730,7 @@ void bind_unknown_unknown_38(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_39(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_22(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	{ // Op::FP::ToIEEEBV file: line:22
 		pybind11::class_<Op::FP::ToIEEEBV, std::shared_ptr<Op::FP::ToIEEEBV>, Op::Unary> cl(M("Op::FP"), "ToIEEEBV", "The unary fp op class: FP::ToIEEEBV ");
@@ -1846,53 +755,7 @@ void bind_unknown_unknown_39(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_4.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-// Util::Err::Python::Base file: line:20
-struct PyCallBack_Util_Err_Python_Base : public Util::Err::Python::Base {
-	using Util::Err::Python::Base::Base;
-
-};
-
-// Util::Err::Python::Claripy file: line:25
-struct PyCallBack_Util_Err_Python_Claripy : public Util::Err::Python::Claripy {
-	using Util::Err::Python::Claripy::Claripy;
-
-};
-
-// Util::Err::Python::Runtime file: line:28
-struct PyCallBack_Util_Err_Python_Runtime : public Util::Err::Python::Runtime {
-	using Util::Err::Python::Runtime::Runtime;
-
-};
-
-namespace API::Binder {
-void bind_unknown_unknown_4(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
-	{ // Util::Err::Python::Base file: line:20
-		pybind11::class_<Util::Err::Python::Base, std::shared_ptr<Util::Err::Python::Base>, PyCallBack_Util_Err_Python_Base, Util::Err::Claricpp> cl(M("Util::Err::Python"), "Base", "Base Python exception\n  All Python exceptions must derive from this");
-	}
-	{ // Util::Err::Python::Claripy file: line:25
-		pybind11::class_<Util::Err::Python::Claripy, std::shared_ptr<Util::Err::Python::Claripy>, PyCallBack_Util_Err_Python_Claripy, Util::Err::Python::Base> cl(M("Util::Err::Python"), "Claripy", "A custom claripy exception\n  All Claripy exceptions must derive from this");
-	}
-	{ // Util::Err::Python::Runtime file: line:28
-		pybind11::class_<Util::Err::Python::Runtime, std::shared_ptr<Util::Err::Python::Runtime>, PyCallBack_Util_Err_Python_Runtime, Util::Err::Python::Base> cl(M("Util::Err::Python"), "Runtime", "A custom claripy exception for python runtime errors ");
-	}
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_40.cpp
+// File: binder/unknown/unknown_23.cpp
 //
 
 
@@ -1904,7 +767,7 @@ void bind_unknown_unknown_4(std::function< pybind11::module &(std::string const 
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_40(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_23(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	{ // Op::If file: line:14
 		pybind11::class_<Op::If, std::shared_ptr<Op::If>, Op::Base> cl(M("Op"), "If", "The op class: If ");
@@ -1926,7 +789,7 @@ void bind_unknown_unknown_40(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_41.cpp
+// File: binder/unknown/unknown_24.cpp
 //
 
 
@@ -1938,7 +801,7 @@ void bind_unknown_unknown_40(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_41(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_24(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	{ // Op::String::IndexOf file: line:14
 		pybind11::class_<Op::String::IndexOf, std::shared_ptr<Op::String::IndexOf>, Op::Base> cl(M("Op::String"), "IndexOf", "The op class: String::IndexOf ");
@@ -1961,7 +824,7 @@ void bind_unknown_unknown_41(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_42.cpp
+// File: binder/unknown/unknown_25.cpp
 //
 
 
@@ -1973,7 +836,7 @@ void bind_unknown_unknown_41(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_42(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_25(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	{ // Op::UIntBinary file: line:32
 		pybind11::class_<Op::UIntBinary, std::shared_ptr<Op::UIntBinary>, Op::Base> cl(M("Op"), "UIntBinary", "An Op class that has an Expr operand and an int operand ");
@@ -1987,7 +850,7 @@ void bind_unknown_unknown_42(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_43.cpp
+// File: binder/unknown/unknown_26.cpp
 //
 
 
@@ -1999,7 +862,7 @@ void bind_unknown_unknown_42(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_43(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_26(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	{ // Op::String::IsDigit file: line:21
 		pybind11::class_<Op::String::IsDigit, std::shared_ptr<Op::String::IsDigit>, Op::Unary> cl(M("Op::String"), "IsDigit", "The unary string op class: String::IsDigit ");
@@ -2030,7 +893,7 @@ void bind_unknown_unknown_43(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_44.cpp
+// File: binder/unknown/unknown_27.cpp
 //
 
 
@@ -2042,7 +905,7 @@ void bind_unknown_unknown_43(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_44(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_27(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	{ // Op::Symbol file: line:14
 		pybind11::class_<Op::Symbol, std::shared_ptr<Op::Symbol>, Op::Base> cl(M("Op"), "Symbol", "The op class Symbol ");
@@ -2112,7 +975,7 @@ void bind_unknown_unknown_44(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_45.cpp
+// File: binder/unknown/unknown_28.cpp
 //
 
 
@@ -2124,7 +987,7 @@ void bind_unknown_unknown_44(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_45(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_28(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	// Create::extract(const unsigned long long, const unsigned long long, const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>) file: line:16
 	M("Create").def("extract", [](const unsigned long long & a0, const unsigned long long & a1, const class std::shared_ptr<const class Expr::Base> & a2) -> std::shared_ptr<const class Expr::Base> { return Create::extract(a0, a1, a2); }, "", pybind11::arg("high"), pybind11::arg("low"), pybind11::arg("from"));
@@ -2135,7 +998,7 @@ void bind_unknown_unknown_45(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_46.cpp
+// File: binder/unknown/unknown_29.cpp
 //
 
 
@@ -2147,7 +1010,7 @@ void bind_unknown_unknown_45(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_46(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_29(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	// Create::FP::from_2s_complement_bv_signed(const enum Mode::FP::Rounding, const class std::shared_ptr<const class Expr::Base> &, const struct Mode::FP::Width &, class std::shared_ptr<const struct Annotation::Vec>) file: line:26
 	M("Create::FP").def("from_2s_complement_bv_signed", [](const enum Mode::FP::Rounding & a0, const class std::shared_ptr<const class Expr::Base> & a1, const struct Mode::FP::Width & a2) -> std::shared_ptr<const class Expr::Base> { return Create::FP::from_2s_complement_bv_signed(a0, a1, a2); }, "", pybind11::arg("m"), pybind11::arg("bv"), pybind11::arg("w"));
@@ -2178,7 +1041,7 @@ void bind_unknown_unknown_46(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_47.cpp
+// File: binder/unknown/unknown_3.cpp
 //
 
 
@@ -2190,7 +1053,30 @@ void bind_unknown_unknown_46(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_47(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_3(std::function< pybind11::module &(std::string const &namespace_) > &M)
+{
+	{ // Hash::Hashed file: line:16
+		pybind11::class_<Hash::Hashed, Hash::Hashed*> cl(M("Hash"), "Hashed", "A type that has a precomputed hash value ");
+		cl.def_readonly("hash", &Hash::Hashed::hash);
+	}
+}
+} // namespace API::Binder
+
+
+//
+// File: binder/unknown/unknown_30.cpp
+//
+
+
+#ifndef BINDER_PYBIND11_TYPE_CASTER
+	#define BINDER_PYBIND11_TYPE_CASTER
+	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
+	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
+	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
+#endif
+
+namespace API::Binder {
+void bind_unknown_unknown_30(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	// Create::FP::to_ieee_bv(const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>) file: line:24
 	M("Create::FP").def("to_ieee_bv", [](const class std::shared_ptr<const class Expr::Base> & a0) -> std::shared_ptr<const class Expr::Base> { return Create::FP::to_ieee_bv(a0); }, "", pybind11::arg("x"));
@@ -2221,7 +1107,7 @@ void bind_unknown_unknown_47(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_48.cpp
+// File: binder/unknown/unknown_31.cpp
 //
 
 
@@ -2233,7 +1119,7 @@ void bind_unknown_unknown_47(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_48(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_31(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	// Create::if_(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>) file: line:16
 	M("Create").def("if_", [](const class std::shared_ptr<const class Expr::Base> & a0, const class std::shared_ptr<const class Expr::Base> & a1, const class std::shared_ptr<const class Expr::Base> & a2) -> std::shared_ptr<const class Expr::Base> { return Create::if_(a0, a1, a2); }, "", pybind11::arg("cond"), pybind11::arg("left"), pybind11::arg("right"));
@@ -2288,7 +1174,7 @@ void bind_unknown_unknown_48(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_49.cpp
+// File: binder/unknown/unknown_32.cpp
 //
 
 
@@ -2300,7 +1186,7 @@ void bind_unknown_unknown_48(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_49(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_32(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	// Create::String::from_int(const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>) file: line:20
 	M("Create::String").def("from_int", [](const class std::shared_ptr<const class Expr::Base> & a0) -> std::shared_ptr<const class Expr::Base> { return Create::String::from_int(a0); }, "", pybind11::arg("x"));
@@ -2319,7 +1205,7 @@ void bind_unknown_unknown_49(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_5.cpp
+// File: binder/unknown/unknown_33.cpp
 //
 
 
@@ -2331,71 +1217,7 @@ void bind_unknown_unknown_49(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_5(std::function< pybind11::module &(std::string const &namespace_) > &M)
-{
-	// Util::checked_static_cast(const class Expr::Base *const) file: line:19
-	M("Util").def("checked_static_cast", (const class Expr::Bits * (*)(const class Expr::Base *const)) &Util::checked_static_cast<const Expr::Bits *,const Expr::Base *>, "C++: Util::checked_static_cast(const class Expr::Base *const) --> const class Expr::Bits *", pybind11::return_value_policy::automatic, pybind11::arg("i"));
-
-	// Util::checked_static_cast(const class Op::Base *const) file: line:19
-	M("Util").def("checked_static_cast", (const class Op::Literal *const (*)(const class Op::Base *const)) &Util::checked_static_cast<const Op::Literal *const,const Op::Base *>, "C++: Util::checked_static_cast(const class Op::Base *const) --> const class Op::Literal *const", pybind11::return_value_policy::automatic, pybind11::arg("i"));
-
-	// Util::checked_static_cast(const class Op::Base *const) file: line:19
-	M("Util").def("checked_static_cast", (const class Op::Symbol *const (*)(const class Op::Base *const)) &Util::checked_static_cast<const Op::Symbol *const,const Op::Base *>, "C++: Util::checked_static_cast(const class Op::Base *const) --> const class Op::Symbol *const", pybind11::return_value_policy::automatic, pybind11::arg("i"));
-
-	// Util::checked_static_cast(const class Expr::Base *const) file: line:19
-	M("Util").def("checked_static_cast", (const class Expr::FP *const (*)(const class Expr::Base *const)) &Util::checked_static_cast<const Expr::FP *const,const Expr::Base *>, "C++: Util::checked_static_cast(const class Expr::Base *const) --> const class Expr::FP *const", pybind11::return_value_policy::automatic, pybind11::arg("i"));
-
-	// Util::checked_static_cast(const class Expr::Base *const) file: line:19
-	M("Util").def("checked_static_cast", (const class Expr::BV *const (*)(const class Expr::Base *const)) &Util::checked_static_cast<const Expr::BV *const,const Expr::Base *>, "C++: Util::checked_static_cast(const class Expr::Base *const) --> const class Expr::BV *const", pybind11::return_value_policy::automatic, pybind11::arg("i"));
-
-	// Util::checked_static_cast(const class Op::Base *const) file: line:19
-	M("Util").def("checked_static_cast", (const class Op::UIntBinary *const (*)(const class Op::Base *const)) &Util::checked_static_cast<const Op::UIntBinary *const,const Op::Base *>, "C++: Util::checked_static_cast(const class Op::Base *const) --> const class Op::UIntBinary *const", pybind11::return_value_policy::automatic, pybind11::arg("i"));
-
-	// Util::checked_static_cast(const class Op::Base *const) file: line:19
-	M("Util").def("checked_static_cast", (const class Op::AbstractFlat *const (*)(const class Op::Base *const)) &Util::checked_static_cast<const Op::AbstractFlat *const,const Op::Base *>, "C++: Util::checked_static_cast(const class Op::Base *const) --> const class Op::AbstractFlat *const", pybind11::return_value_policy::automatic, pybind11::arg("i"));
-
-	// Util::checked_static_cast(const class Op::Base *const) file: line:19
-	M("Util").def("checked_static_cast", (const class Op::Extract *const (*)(const class Op::Base *const)) &Util::checked_static_cast<const Op::Extract *const,const Op::Base *>, "C++: Util::checked_static_cast(const class Op::Base *const) --> const class Op::Extract *const", pybind11::return_value_policy::automatic, pybind11::arg("i"));
-
-	// Util::checked_static_cast(const class Op::Base *const) file: line:19
-	M("Util").def("checked_static_cast", (const class Op::FP::ModeBinary *const (*)(const class Op::Base *const)) &Util::checked_static_cast<const Op::FP::ModeBinary *const,const Op::Base *>, "C++: Util::checked_static_cast(const class Op::Base *const) --> const class Op::FP::ModeBinary *const", pybind11::return_value_policy::automatic, pybind11::arg("i"));
-
-	// Util::checked_static_cast(const class Op::Base *const) file: line:19
-	M("Util").def("checked_static_cast", (const class Op::FP::ToBV<Mode::Signed::Signed> *const (*)(const class Op::Base *const)) &Util::checked_static_cast<const Op::FP::ToBV<Mode::Signed::Signed> *const,const Op::Base *>, "C++: Util::checked_static_cast(const class Op::Base *const) --> const class Op::FP::ToBV<Mode::Signed::Signed> *const", pybind11::return_value_policy::automatic, pybind11::arg("i"));
-
-	// Util::checked_static_cast(const class Op::Base *const) file: line:19
-	M("Util").def("checked_static_cast", (const class Op::FP::ToBV<Mode::Signed::Unsigned> *const (*)(const class Op::Base *const)) &Util::checked_static_cast<const Op::FP::ToBV<Mode::Signed::Unsigned> *const,const Op::Base *>, "C++: Util::checked_static_cast(const class Op::Base *const) --> const class Op::FP::ToBV<Mode::Signed::Unsigned> *const", pybind11::return_value_policy::automatic, pybind11::arg("i"));
-
-	// Util::checked_static_cast(const class Op::Base *const) file: line:19
-	M("Util").def("checked_static_cast", (const class Op::FP::From2sComplementBV<Mode::Signed::Signed> *const (*)(const class Op::Base *const)) &Util::checked_static_cast<const Op::FP::From2sComplementBV<Mode::Signed::Signed> *const,const Op::Base *>, "C++: Util::checked_static_cast(const class Op::Base *const) --> const class Op::FP::From2sComplementBV<Mode::Signed::Signed> *const", pybind11::return_value_policy::automatic, pybind11::arg("i"));
-
-	// Util::checked_static_cast(const class Op::Base *const) file: line:19
-	M("Util").def("checked_static_cast", (const class Op::FP::From2sComplementBV<Mode::Signed::Unsigned> *const (*)(const class Op::Base *const)) &Util::checked_static_cast<const Op::FP::From2sComplementBV<Mode::Signed::Unsigned> *const,const Op::Base *>, "C++: Util::checked_static_cast(const class Op::Base *const) --> const class Op::FP::From2sComplementBV<Mode::Signed::Unsigned> *const", pybind11::return_value_policy::automatic, pybind11::arg("i"));
-
-	// Util::checked_static_cast(const class Op::Base *const) file: line:19
-	M("Util").def("checked_static_cast", (const class Op::FP::FromFP *const (*)(const class Op::Base *const)) &Util::checked_static_cast<const Op::FP::FromFP *const,const Op::Base *>, "C++: Util::checked_static_cast(const class Op::Base *const) --> const class Op::FP::FromFP *const", pybind11::return_value_policy::automatic, pybind11::arg("i"));
-
-	// Util::checked_static_cast(const class Op::Base *const) file: line:19
-	M("Util").def("checked_static_cast", (const class Op::FP::FromNot2sComplementBV *const (*)(const class Op::Base *const)) &Util::checked_static_cast<const Op::FP::FromNot2sComplementBV *const,const Op::Base *>, "C++: Util::checked_static_cast(const class Op::Base *const) --> const class Op::FP::FromNot2sComplementBV *const", pybind11::return_value_policy::automatic, pybind11::arg("i"));
-
-}
-} // namespace API::Binder
-
-
-//
-// File: binder/unknown/unknown_50.cpp
-//
-
-
-#ifndef BINDER_PYBIND11_TYPE_CASTER
-	#define BINDER_PYBIND11_TYPE_CASTER
-	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
-	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
-	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
-#endif
-
-namespace API::Binder {
-void bind_unknown_unknown_50(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_33(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	// Create::String::sub_string(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>) file: line:43
 	M("Create::String").def("sub_string", [](const class std::shared_ptr<const class Expr::Base> & a0, const class std::shared_ptr<const class Expr::Base> & a1, const class std::shared_ptr<const class Expr::Base> & a2) -> std::shared_ptr<const class Expr::Base> { return Create::String::sub_string(a0, a1, a2); }, "", pybind11::arg("start_index"), pybind11::arg("count"), pybind11::arg("full_string"));
@@ -2406,7 +1228,7 @@ void bind_unknown_unknown_50(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_51.cpp
+// File: binder/unknown/unknown_34.cpp
 //
 
 
@@ -2418,7 +1240,7 @@ void bind_unknown_unknown_50(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_51(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_34(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	// Create::String::is_digit(const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>) file: line:22
 	M("Create::String").def("is_digit", [](const class std::shared_ptr<const class Expr::Base> & a0) -> std::shared_ptr<const class Expr::Base> { return Create::String::is_digit(a0); }, "", pybind11::arg("x"));
@@ -2449,7 +1271,7 @@ void bind_unknown_unknown_51(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_52.cpp
+// File: binder/unknown/unknown_35.cpp
 //
 
 
@@ -2461,7 +1283,7 @@ void bind_unknown_unknown_51(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_52(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_35(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	// Create::symbol_bool(std::string, class std::shared_ptr<const struct Annotation::Vec>) file: line:35
 	M("Create").def("symbol_bool", [](std::string const & a0) -> std::shared_ptr<const class Expr::Base> { return Create::symbol_bool(a0); }, "", pybind11::arg("name"));
@@ -2488,7 +1310,7 @@ void bind_unknown_unknown_52(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_53.cpp
+// File: binder/unknown/unknown_36.cpp
 //
 
 
@@ -2500,7 +1322,7 @@ void bind_unknown_unknown_52(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_53(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_36(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	// Create::abs(const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>) file: line:24
 	M("Create").def("abs", [](const class std::shared_ptr<const class Expr::Base> & a0) -> std::shared_ptr<const class Expr::Base> { return Create::abs(a0); }, "", pybind11::arg("x"));
@@ -2575,7 +1397,7 @@ void bind_unknown_unknown_53(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_54.cpp
+// File: binder/unknown/unknown_37.cpp
 //
 
 
@@ -2587,7 +1409,7 @@ void bind_unknown_unknown_53(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_54(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_37(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	// Create::sub(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>) file: line:169
 	M("Create").def("sub", [](const class std::shared_ptr<const class Expr::Base> & a0, const class std::shared_ptr<const class Expr::Base> & a1) -> std::shared_ptr<const class Expr::Base> { return Create::sub(a0, a1); }, "", pybind11::arg("left"), pybind11::arg("right"));
@@ -2654,7 +1476,7 @@ void bind_unknown_unknown_54(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_55.cpp
+// File: binder/unknown/unknown_38.cpp
 //
 
 
@@ -2666,7 +1488,7 @@ void bind_unknown_unknown_54(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_55(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_38(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	// Create::mul(class std::vector<class std::shared_ptr<const class Expr::Base> >, class std::shared_ptr<const struct Annotation::Vec>) file: line:328
 	M("Create").def("mul", [](class std::vector<class std::shared_ptr<const class Expr::Base> > const & a0) -> std::shared_ptr<const class Expr::Base> { return Create::mul(a0); }, "", pybind11::arg("operands"));
@@ -2689,7 +1511,7 @@ void bind_unknown_unknown_55(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_56.cpp
+// File: binder/unknown/unknown_39.cpp
 //
 
 
@@ -2701,7 +1523,7 @@ void bind_unknown_unknown_55(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_56(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_39(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	{ // Backend::Z3::Solver file: line:13
 		pybind11::class_<Backend::Z3::Solver, std::shared_ptr<Backend::Z3::Solver>> cl(M("Backend::Z3"), "Solver", "A Z3 Solver object ");
@@ -2715,7 +1537,7 @@ void bind_unknown_unknown_56(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_57.cpp
+// File: binder/unknown/unknown_4.cpp
 //
 
 
@@ -2727,7 +1549,49 @@ void bind_unknown_unknown_56(std::function< pybind11::module &(std::string const
 #endif
 
 namespace API::Binder {
-void bind_unknown_unknown_57(std::function< pybind11::module &(std::string const &namespace_) > &M)
+void bind_unknown_unknown_4(std::function< pybind11::module &(std::string const &namespace_) > &M)
+{
+	// Mode::BigInt file: line:13
+	pybind11::enum_<Mode::BigInt>(M("Mode"), "BigInt", "A mask used to define the type of comparison to be used ")
+		.value("Str", Mode::BigInt::Str)
+		.value("Int", Mode::BigInt::Int);
+
+;
+
+	// Mode::Compare file: line:15
+	pybind11::enum_<Mode::Compare>(M("Mode"), "Compare", "A mask used to define the type of comparison to be used ")
+		.value("UGE", Mode::Compare::UGE)
+		.value("UGT", Mode::Compare::UGT)
+		.value("ULE", Mode::Compare::ULE)
+		.value("ULT", Mode::Compare::ULT)
+		.value("SGE", Mode::Compare::SGE)
+		.value("SGT", Mode::Compare::SGT)
+		.value("SLE", Mode::Compare::SLE)
+		.value("SLT", Mode::Compare::SLT);
+
+;
+
+	// Mode::is_signed(const enum Mode::Compare) file: line:18
+	M("Mode").def("is_signed", (bool (*)(const enum Mode::Compare)) &Mode::is_signed, "Return true iff a Compare is signed \n\nC++: Mode::is_signed(const enum Mode::Compare) --> bool", pybind11::arg("c"));
+
+}
+} // namespace API::Binder
+
+
+//
+// File: binder/unknown/unknown_40.cpp
+//
+
+
+#ifndef BINDER_PYBIND11_TYPE_CASTER
+	#define BINDER_PYBIND11_TYPE_CASTER
+	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
+	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
+	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
+#endif
+
+namespace API::Binder {
+void bind_unknown_unknown_40(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	{ // Backend::Z3::Z3 file: line:24
 		pybind11::class_<Backend::Z3::Z3, std::shared_ptr<Backend::Z3::Z3>> cl(M("Backend::Z3"), "Z3", "The Z3 backend\n  Warning: All Z3 backends within a given thread share their data");
@@ -2750,6 +1614,48 @@ void bind_unknown_unknown_57(std::function< pybind11::module &(std::string const
 
 
 //
+// File: binder/unknown/unknown_5.cpp
+//
+
+
+#ifndef BINDER_PYBIND11_TYPE_CASTER
+	#define BINDER_PYBIND11_TYPE_CASTER
+	PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
+	PYBIND11_DECLARE_HOLDER_TYPE(T, T*)
+	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
+#endif
+
+namespace API::Binder {
+void bind_unknown_unknown_5(std::function< pybind11::module &(std::string const &namespace_) > &M)
+{
+	// Mode::FP::Rounding file: line:10
+	pybind11::enum_<Mode::FP::Rounding>(M("Mode::FP"), "Rounding", "FP modes supported by claripy ")
+		.value("NearestTiesEven", Mode::FP::Rounding::NearestTiesEven)
+		.value("NearestTiesAwayFromZero", Mode::FP::Rounding::NearestTiesAwayFromZero)
+		.value("TowardsZero", Mode::FP::Rounding::TowardsZero)
+		.value("TowardsPositiveInf", Mode::FP::Rounding::TowardsPositiveInf)
+		.value("TowardsNegativeInf", Mode::FP::Rounding::TowardsNegativeInf);
+
+;
+
+	{ // Mode::FP::Width file: line:17
+		pybind11::class_<Mode::FP::Width, std::shared_ptr<Mode::FP::Width>> cl(M("Mode::FP"), "Width", "A floating point width struct ");
+		cl.def( pybind11::init( [](){ return new Mode::FP::Width(); } ) );
+		cl.def( pybind11::init( [](Mode::FP::Width const &o){ return new Mode::FP::Width(o); } ) );
+		cl.def_readwrite("exp", &Mode::FP::Width::exp);
+		cl.def_readwrite("mantissa", &Mode::FP::Width::mantissa);
+		cl.def("mantissa_raw", (unsigned int (Mode::FP::Width::*)() const) &Mode::FP::Width::mantissa_raw, "The width of the mantissa, excluding the implicit 1 bit \n\nC++: Mode::FP::Width::mantissa_raw() const --> unsigned int");
+		cl.def("width", (unsigned long long (Mode::FP::Width::*)() const) &Mode::FP::Width::width, "The full width of the fp \n\nC++: Mode::FP::Width::width() const --> unsigned long long");
+		cl.def("no_sign_width", (unsigned long long (Mode::FP::Width::*)() const) &Mode::FP::Width::no_sign_width, "The full width of the fp \n\nC++: Mode::FP::Width::no_sign_width() const --> unsigned long long");
+		cl.def("assign", (struct Mode::FP::Width & (Mode::FP::Width::*)(const struct Mode::FP::Width &)) &Mode::FP::Width::operator=, "C++: Mode::FP::Width::operator=(const struct Mode::FP::Width &) --> struct Mode::FP::Width &", pybind11::return_value_policy::automatic, pybind11::arg(""));
+
+		cl.def("__str__", [](Mode::FP::Width const &o) -> std::string { std::ostringstream s; s << o; return s.str(); } );
+	}
+}
+} // namespace API::Binder
+
+
+//
 // File: binder/unknown/unknown_6.cpp
 //
 
@@ -2764,17 +1670,20 @@ void bind_unknown_unknown_57(std::function< pybind11::module &(std::string const
 namespace API::Binder {
 void bind_unknown_unknown_6(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
-	// Util::empty(const class std::shared_ptr<const class Expr::Base> &) file: line:22
-	M("Util").def("empty", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &Util::empty<const Expr::Base>, "C++: Util::empty(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("p"));
+	// Mode::LR file: line:13
+	pybind11::enum_<Mode::LR>(M("Mode"), "LR", "A mask used to denote Left or Right ")
+		.value("Left", Mode::LR::Left)
+		.value("Right", Mode::LR::Right);
 
-	// Util::empty(const class std::shared_ptr<const class Op::Base> &) file: line:22
-	M("Util").def("empty", (bool (*)(const class std::shared_ptr<const class Op::Base> &)) &Util::empty<const Op::Base>, "C++: Util::empty(const class std::shared_ptr<const class Op::Base> &) --> bool", pybind11::arg("p"));
+;
 
-	// Util::full(const class std::shared_ptr<const class Expr::Base> &) file: line:32
-	M("Util").def("full", (bool (*)(const class std::shared_ptr<const class Expr::Base> &)) &Util::full<const Expr::Base>, "C++: Util::full(const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("p"));
+	// Mode::Shift file: line:11
+	pybind11::enum_<Mode::Shift>(M("Mode"), "Shift", "A mask used to describe a type of bit shift ")
+		.value("Left", Mode::Shift::Left)
+		.value("LogicalRight", Mode::Shift::LogicalRight)
+		.value("ArithmeticRight", Mode::Shift::ArithmeticRight);
 
-	// Util::full(const class std::shared_ptr<const class Op::Base> &) file: line:32
-	M("Util").def("full", (bool (*)(const class std::shared_ptr<const class Op::Base> &)) &Util::full<const Op::Base>, "C++: Util::full(const class std::shared_ptr<const class Op::Base> &) --> bool", pybind11::arg("p"));
+;
 
 }
 } // namespace API::Binder
@@ -2795,95 +1704,23 @@ void bind_unknown_unknown_6(std::function< pybind11::module &(std::string const 
 namespace API::Binder {
 void bind_unknown_unknown_7(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const struct Annotation::Base> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const struct Hash::Hashed> (*)(const class std::shared_ptr<const struct Annotation::Base> &)) &Util::Cast::Private::static_pointer_cast<Hash::Hashed,const Annotation::Base>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const struct Annotation::Base> &) --> class std::shared_ptr<const struct Hash::Hashed>", pybind11::arg("in"));
+	// Mode::Sign::FP file: line:17
+	pybind11::enum_<Mode::Sign::FP>(M("Mode::Sign"), "FP", "An Sign enum with an underlying signed value where non-signed-ness is disallowed\n  The underlying values of the enum values are 1 and -1\n  signed specifier is required for cross-platform support")
+		.value("Minus", Mode::Sign::FP::Minus)
+		.value("Plus", Mode::Sign::FP::Plus);
 
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Expr::Base> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const struct Hash::Hashed> (*)(const class std::shared_ptr<const class Expr::Base> &)) &Util::Cast::Private::static_pointer_cast<Hash::Hashed,const Expr::Base>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Expr::Base> &) --> class std::shared_ptr<const struct Hash::Hashed>", pybind11::arg("in"));
+;
 
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Extract> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Extract> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Extract>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Extract> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
+	// Mode::Sign::Real file: line:23
+	pybind11::enum_<Mode::Sign::Real>(M("Mode::Sign"), "Real", "An Sign enum with an underlying signed value where non-signed-ness is allowed\n  The underlying values of the enum values are 1, -1, and 0\n  signed specifier is required for cross-platform support")
+		.value("Minus", Mode::Sign::Real::Minus)
+		.value("None", Mode::Sign::Real::None)
+		.value("Plus", Mode::Sign::Real::Plus);
 
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const struct Annotation::Vec> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const struct Hash::Hashed> (*)(const class std::shared_ptr<const struct Annotation::Vec> &)) &Util::Cast::Private::static_pointer_cast<Hash::Hashed,const Annotation::Vec>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const struct Annotation::Vec> &) --> class std::shared_ptr<const struct Hash::Hashed>", pybind11::arg("in"));
+;
 
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Base> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const struct Hash::Hashed> (*)(const class std::shared_ptr<const class Op::Base> &)) &Util::Cast::Private::static_pointer_cast<Hash::Hashed,const Op::Base>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Base> &) --> class std::shared_ptr<const struct Hash::Hashed>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Expr::BV> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Expr::Base> (*)(const class std::shared_ptr<const class Expr::BV> &)) &Util::Cast::Private::static_pointer_cast<const Expr::Base,const Expr::BV>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Expr::BV> &) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::FP::From2sComplementBV<Mode::Signed::Signed> > &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::FP::From2sComplementBV<Mode::Signed::Signed> > &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::FP::From2sComplementBV<Mode::Signed::Signed>>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::FP::From2sComplementBV<Mode::Signed::Signed> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::FP::From2sComplementBV<Mode::Signed::Unsigned> > &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::FP::From2sComplementBV<Mode::Signed::Unsigned> > &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::FP::From2sComplementBV<Mode::Signed::Unsigned>>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::FP::From2sComplementBV<Mode::Signed::Unsigned> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::FP::FromFP> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::FP::FromFP> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::FP::FromFP>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::FP::FromFP> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Expr::FP> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Expr::Base> (*)(const class std::shared_ptr<const class Expr::FP> &)) &Util::Cast::Private::static_pointer_cast<const Expr::Base,const Expr::FP>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Expr::FP> &) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::FP::FromNot2sComplementBV> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::FP::FromNot2sComplementBV> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::FP::FromNot2sComplementBV>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::FP::FromNot2sComplementBV> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::FP::ToBV<Mode::Signed::Signed> > &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::FP::ToBV<Mode::Signed::Signed> > &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::FP::ToBV<Mode::Signed::Signed>>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::FP::ToBV<Mode::Signed::Signed> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::FP::ToBV<Mode::Signed::Unsigned> > &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::FP::ToBV<Mode::Signed::Unsigned> > &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::FP::ToBV<Mode::Signed::Unsigned>>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::FP::ToBV<Mode::Signed::Unsigned> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::FP::ToIEEEBV> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::FP::ToIEEEBV> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::FP::ToIEEEBV>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::FP::ToIEEEBV> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::FP::Add> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::FP::Add> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::FP::Add>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::FP::Add> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::FP::Sub> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::FP::Sub> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::FP::Sub>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::FP::Sub> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::FP::Mul> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::FP::Mul> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::FP::Mul>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::FP::Mul> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::FP::Div> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::FP::Div> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::FP::Div>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::FP::Div> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::FP::FP> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::FP::FP> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::FP::FP>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::FP::FP> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::If> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::If> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::If>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::If> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Expr::Bool> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Expr::Base> (*)(const class std::shared_ptr<const class Expr::Bool> &)) &Util::Cast::Private::static_pointer_cast<const Expr::Base,const Expr::Bool>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Expr::Bool> &) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Expr::VS> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Expr::Base> (*)(const class std::shared_ptr<const class Expr::VS> &)) &Util::Cast::Private::static_pointer_cast<const Expr::Base,const Expr::VS>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Expr::VS> &) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Literal> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Literal> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Literal>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Literal> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const struct PyObj::VS> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const struct Hash::Hashed> (*)(const class std::shared_ptr<const struct PyObj::VS> &)) &Util::Cast::Private::static_pointer_cast<Hash::Hashed,const PyObj::VS>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const struct PyObj::VS> &) --> class std::shared_ptr<const struct Hash::Hashed>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::String::FromInt> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::String::FromInt> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::String::FromInt>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::String::FromInt> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Expr::String> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Expr::Base> (*)(const class std::shared_ptr<const class Expr::String> &)) &Util::Cast::Private::static_pointer_cast<const Expr::Base,const Expr::String>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Expr::String> &) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::String::IndexOf> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::String::IndexOf> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::String::IndexOf>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::String::IndexOf> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::String::Replace> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::String::Replace> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::String::Replace>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::String::Replace> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::String::SubString> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::String::SubString> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::String::SubString>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::String::SubString> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::String::IsDigit> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::String::IsDigit> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::String::IsDigit>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::String::IsDigit> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
+	// Mode::Sign::to_real(const enum Mode::Sign::FP) file: line:26
+	M("Mode::Sign").def("to_real", (enum Mode::Sign::Real (*)(const enum Mode::Sign::FP)) &Mode::Sign::to_real, "Convert an FP to a Real \n\nC++: Mode::Sign::to_real(const enum Mode::Sign::FP) --> enum Mode::Sign::Real", pybind11::arg("f"));
 
 }
 } // namespace API::Binder
@@ -2904,95 +1741,12 @@ void bind_unknown_unknown_7(std::function< pybind11::module &(std::string const 
 namespace API::Binder {
 void bind_unknown_unknown_8(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::String::ToInt> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::String::ToInt> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::String::ToInt>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::String::ToInt> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
+	// Mode::Signed file: line:13
+	pybind11::enum_<Mode::Signed>(M("Mode"), "Signed", "A mask used to denote Signed or Unsigned ")
+		.value("Signed", Mode::Signed::Signed)
+		.value("Unsigned", Mode::Signed::Unsigned);
 
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::String::Len> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::String::Len> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::String::Len>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::String::Len> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::String::Contains> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::String::Contains> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::String::Contains>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::String::Contains> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::String::PrefixOf> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::String::PrefixOf> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::String::PrefixOf>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::String::PrefixOf> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::String::SuffixOf> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::String::SuffixOf> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::String::SuffixOf>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::String::SuffixOf> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Symbol> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Symbol> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Symbol>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Symbol> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Abs> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Abs> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Abs>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Abs> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Neg> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Neg> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Neg>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Neg> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Not> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Not> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Not>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Not> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Invert> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Invert> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Invert>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Invert> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Reverse> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Reverse> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Reverse>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Reverse> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::SignExt> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::SignExt> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::SignExt>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::SignExt> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::ZeroExt> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::ZeroExt> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::ZeroExt>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::ZeroExt> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Eq> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Eq> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Eq>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Eq> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Neq> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Neq> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Neq>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Neq> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Compare<Mode::Compare::UGE> > &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Compare<Mode::Compare::UGE> > &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Compare<Mode::Compare::UGE>>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Compare<Mode::Compare::UGE> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Compare<Mode::Compare::UGT> > &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Compare<Mode::Compare::UGT> > &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Compare<Mode::Compare::UGT>>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Compare<Mode::Compare::UGT> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Compare<Mode::Compare::ULE> > &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Compare<Mode::Compare::ULE> > &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Compare<Mode::Compare::ULE>>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Compare<Mode::Compare::ULE> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Compare<Mode::Compare::ULT> > &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Compare<Mode::Compare::ULT> > &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Compare<Mode::Compare::ULT>>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Compare<Mode::Compare::ULT> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Compare<Mode::Compare::SGE> > &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Compare<Mode::Compare::SGE> > &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Compare<Mode::Compare::SGE>>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Compare<Mode::Compare::SGE> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Compare<Mode::Compare::SGT> > &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Compare<Mode::Compare::SGT> > &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Compare<Mode::Compare::SGT>>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Compare<Mode::Compare::SGT> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Compare<Mode::Compare::SLE> > &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Compare<Mode::Compare::SLE> > &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Compare<Mode::Compare::SLE>>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Compare<Mode::Compare::SLE> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Compare<Mode::Compare::SLT> > &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Compare<Mode::Compare::SLT> > &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Compare<Mode::Compare::SLT>>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Compare<Mode::Compare::SLT> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Sub> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Sub> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Sub>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Sub> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Div<Mode::Signed::Signed> > &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Div<Mode::Signed::Signed> > &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Div<Mode::Signed::Signed>>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Div<Mode::Signed::Signed> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Div<Mode::Signed::Unsigned> > &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Div<Mode::Signed::Unsigned> > &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Div<Mode::Signed::Unsigned>>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Div<Mode::Signed::Unsigned> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Mod<Mode::Signed::Signed> > &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Mod<Mode::Signed::Signed> > &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Mod<Mode::Signed::Signed>>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Mod<Mode::Signed::Signed> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Mod<Mode::Signed::Unsigned> > &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Mod<Mode::Signed::Unsigned> > &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Mod<Mode::Signed::Unsigned>>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Mod<Mode::Signed::Unsigned> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Shift<Mode::Shift::Left> > &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Shift<Mode::Shift::Left> > &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Shift<Mode::Shift::Left>>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Shift<Mode::Shift::Left> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Shift<Mode::Shift::ArithmeticRight> > &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Shift<Mode::Shift::ArithmeticRight> > &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Shift<Mode::Shift::ArithmeticRight>>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Shift<Mode::Shift::ArithmeticRight> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
+;
 
 }
 } // namespace API::Binder
@@ -3013,41 +1767,20 @@ void bind_unknown_unknown_8(std::function< pybind11::module &(std::string const 
 namespace API::Binder {
 void bind_unknown_unknown_9(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Shift<Mode::Shift::LogicalRight> > &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Shift<Mode::Shift::LogicalRight> > &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Shift<Mode::Shift::LogicalRight>>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Shift<Mode::Shift::LogicalRight> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
+	{ // BigInt file: line:16
+		pybind11::class_<BigInt, std::shared_ptr<BigInt>> cl(M(""), "BigInt", "The arbitrary precision type claricpp uses ");
+		cl.def( pybind11::init( [](BigInt const &o){ return new BigInt(o); } ) );
+		cl.def( pybind11::init( [](){ return new BigInt(); } ) );
+		cl.def_readwrite("value", &BigInt::value);
+		cl.def_readwrite("bit_length", &BigInt::bit_length);
+		cl.def_static("from_c_str", (struct BigInt (*)(const char *const, const unsigned long long)) &BigInt::from_c_str<Mode::BigInt::Str>, "C++: BigInt::from_c_str(const char *const, const unsigned long long) --> struct BigInt", pybind11::arg("s"), pybind11::arg("bit_length"));
+		cl.def_static("from_c_str", (struct BigInt (*)(const char *const, const unsigned long long)) &BigInt::from_c_str<Mode::BigInt::Int>, "C++: BigInt::from_c_str(const char *const, const unsigned long long) --> struct BigInt", pybind11::arg("s"), pybind11::arg("bit_length"));
+		cl.def_static("from_c_str", (struct BigInt (*)(const char *const, const unsigned long long)) &BigInt::from_c_str, "Convert the input to a BigInt using the default mode \n\nC++: BigInt::from_c_str(const char *const, const unsigned long long) --> struct BigInt", pybind11::arg("s"), pybind11::arg("bit_length"));
+		cl.def_static("mode", (enum Mode::BigInt (*)(const enum Mode::BigInt)) &BigInt::mode, "Set the default BigInt mode to m \n\nC++: BigInt::mode(const enum Mode::BigInt) --> enum Mode::BigInt", pybind11::arg("m"));
+		cl.def_static("mode", (enum Mode::BigInt (*)()) &BigInt::mode, "Get the default mode \n\nC++: BigInt::mode() --> enum Mode::BigInt");
+		cl.def("assign", (struct BigInt & (BigInt::*)(const struct BigInt &)) &BigInt::operator=, "C++: BigInt::operator=(const struct BigInt &) --> struct BigInt &", pybind11::return_value_policy::automatic, pybind11::arg(""));
 
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Rotate<Mode::LR::Left> > &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Rotate<Mode::LR::Left> > &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Rotate<Mode::LR::Left>>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Rotate<Mode::LR::Left> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Rotate<Mode::LR::Right> > &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Rotate<Mode::LR::Right> > &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Rotate<Mode::LR::Right>>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Rotate<Mode::LR::Right> > &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Widen> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Widen> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Widen>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Widen> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Union> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Union> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Union>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Union> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Intersection> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Intersection> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Intersection>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Intersection> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Concat> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Concat> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Concat>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Concat> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Add> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Add> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Add>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Add> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Mul> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Mul> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Mul>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Mul> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Or> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Or> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Or>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Or> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::And> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::And> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::And>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::And> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
-	// Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Xor> &) file: line:19
-	M("Util::Cast::Private").def("static_pointer_cast", (class std::shared_ptr<const class Op::Base> (*)(const class std::shared_ptr<const class Op::Xor> &)) &Util::Cast::Private::static_pointer_cast<const Op::Base,const Op::Xor>, "C++: Util::Cast::Private::static_pointer_cast(const class std::shared_ptr<const class Op::Xor> &) --> class std::shared_ptr<const class Op::Base>", pybind11::arg("in"));
-
+		cl.def("__str__", [](BigInt const &o) -> std::string { std::ostringstream s; s << o; return s.str(); } );
+	}
 }
 } // namespace API::Binder
