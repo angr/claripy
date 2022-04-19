@@ -13,7 +13,7 @@ namespace Util::Log::Backend {
     /** A backend suitable to be multiplexed */
     struct Multiplexable : public Base {
         /** Log the given message */
-        virtual void log_str(CCSC id, const Level::Level &lvl, std::string &&msg) const = 0;
+        virtual void log_str(CCSC id, const Level::Lvl lvl, std::string &&msg) const = 0;
     };
 } // namespace Util::Log::Backend
 

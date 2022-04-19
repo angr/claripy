@@ -13,7 +13,6 @@
 
 // For brevity
 using namespace Util::Log;
-using Lvl = Level::Level;
 
 
 // Default TEMPLATE_MACRO to empty
@@ -33,29 +32,29 @@ namespace UnitTest {
      */
     template <typename F, typename TestArg, typename... Args>
     void test_each_level(TestArg &test_arg, F &test, const Args &...args) {
-        if UTIL_LOG_LEVEL_CONSTEXPR (Level::enabled(Lvl::Critical)) {
+        if UTIL_LOG_LEVEL_CONSTEXPR (Level::enabled(Level::critical)) {
             critical TEMPLATE_MACRO(args...);
-            test(test_arg, Lvl::Critical);
+            test(test_arg, Level::critical);
         }
-        if UTIL_LOG_LEVEL_CONSTEXPR (Level::enabled(Lvl::Error)) {
+        if UTIL_LOG_LEVEL_CONSTEXPR (Level::enabled(Level::error)) {
             error TEMPLATE_MACRO(args...);
-            test(test_arg, Lvl::Error);
+            test(test_arg, Level::error);
         }
-        if UTIL_LOG_LEVEL_CONSTEXPR (Level::enabled(Lvl::Warning)) {
+        if UTIL_LOG_LEVEL_CONSTEXPR (Level::enabled(Level::warning)) {
             warning TEMPLATE_MACRO(args...);
-            test(test_arg, Lvl::Warning);
+            test(test_arg, Level::warning);
         }
-        if UTIL_LOG_LEVEL_CONSTEXPR (Level::enabled(Lvl::Info)) {
+        if UTIL_LOG_LEVEL_CONSTEXPR (Level::enabled(Level::info)) {
             info TEMPLATE_MACRO(args...);
-            test(test_arg, Lvl::Info);
+            test(test_arg, Level::info);
         }
-        if UTIL_LOG_LEVEL_CONSTEXPR (Level::enabled(Lvl::Debug)) {
+        if UTIL_LOG_LEVEL_CONSTEXPR (Level::enabled(Level::debug)) {
             debug TEMPLATE_MACRO(args...);
-            test(test_arg, Lvl::Debug);
+            test(test_arg, Level::debug);
         }
-        if UTIL_LOG_LEVEL_CONSTEXPR (Level::enabled(Lvl::Verbose)) {
+        if UTIL_LOG_LEVEL_CONSTEXPR (Level::enabled(Level::verbose)) {
             verbose TEMPLATE_MACRO(args...);
-            test(test_arg, Lvl::Verbose);
+            test(test_arg, Level::verbose);
         }
     }
 

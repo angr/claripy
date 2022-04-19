@@ -10,7 +10,7 @@
 
 
 namespace L = Util::Log;
-using Lvl = L::Level::Level;
+using Lvl = L::Level::Lvl;
 using namespace UnitTest::TestLib;
 
 
@@ -49,8 +49,8 @@ void lower_level_ignored() {
 
     // Change the log level if needed
 #ifndef CONSTANT_LOG_LEVEL
-    if (const auto lvl { L::Level::get() }; lvl == Lvl::Verbose) {
-        L::Level::set(Lvl::Warning);
+    if (const auto lvl { L::Level::get() }; lvl == Level::verbose) {
+        L::Level::set(Level::warning);
     }
 #endif
 

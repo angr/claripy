@@ -8,6 +8,5 @@
 
 #include "level/access.hpp"
 #include "level/enabled.hpp"
-#include "level/ostream.hpp"
 
 #endif

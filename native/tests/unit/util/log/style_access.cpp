@@ -14,7 +14,7 @@ struct Plain final : Style::Base {
     /** The style name */
     [[nodiscard]] inline const char *name() const noexcept final { return "Plain"; }
     /** The style function */
-    inline std::string str(CCSC, const Level::Level &, std::string &&s) const final {
+    inline std::string str(CCSC, const Level::Lvl, std::string &&s) const final {
         return std::move(s);
     }
 };

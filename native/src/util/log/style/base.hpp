@@ -32,7 +32,7 @@ namespace Util::Log::Style {
         virtual const char *name() const noexcept = 0;
 
         /** Format the log message */
-        virtual std::string str(CCSC log_id, const Level::Level &lvl, std::string &&raw) const = 0;
+        virtual std::string str(CCSC log_id, const Level::Lvl lvl, std::string &&raw) const = 0;
     };
 
     /** Default virtual destructor */

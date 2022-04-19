@@ -14,8 +14,8 @@ namespace Util::Log::Level {
 
     /** Determine if log level l is enabled */
     [[gnu::always_inline]] static inline UTIL_LOG_LEVEL_CONSTEXPR bool
-    enabled(const Level l) noexcept {
-        return get() <= l;
+    enabled(const Lvl l) noexcept {
+        return get().lvl <= l.lvl;
     }
 
 } // namespace Util::Log::Level

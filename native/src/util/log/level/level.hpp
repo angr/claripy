@@ -3,8 +3,16 @@
  * \ingroup util
  * @brief This file defines log level modes
  */
-#ifndef R_UTIL_LOG_LEVEL_LEVEL_HPP_
-#define R_UTIL_LOG_LEVEL_LEVEL_HPP_
+#ifndef R_UTIL_LOG_LEVEL_LEVELS_HPP_
+#define R_UTIL_LOG_LEVEL_LEVELS_HPP_
+
+#include "../../../constants.hpp"
+#include "../../../macros.hpp"
+
+#include <cstdint>
+#include <limits>
+#include <ostream>
+
 
 #ifdef CONSTANT_LOG_LEVEL
     /** Constexpr if and only if the log level is immutable */
@@ -17,16 +25,55 @@
 
 namespace Util::Log::Level {
 
-    /** A mask used to define the type of comparison to be used */
-    enum class Level {
-        Verbose = 0,
-        Debug = 10,
-        Info = 20,
-        Warning = 30,
-        Error = 40,
-        Critical = 50,
-        Disabled
+    /** The log level type */
+    struct Lvl final {
+        /** The level type */
+        using Raw = uint_fast8_t;
+        /** Level */
+        Raw lvl;
     };
+
+    // Predefined levels
+
+    /** A verbose log level */
+    static const constexpr Lvl verbose { 0 };
+    /** A debug log level */
+    static const constexpr Lvl debug { 10 };
+    /** An info log level */
+    static const constexpr Lvl info { 20 };
+    /** A warning log level */
+    static const constexpr Lvl warning { 30 };
+    /** An error log level */
+    static const constexpr Lvl error { 40 };
+    /** A critical log level */
+    static const constexpr Lvl critical { 50 };
+    /** A disabled log level */
+    static const constexpr Lvl disabled { std::numeric_limits<Lvl::Raw>::max() };
+
+    // Operators
+
+    /** Log level equality */
+    inline bool operator==(const Lvl &a, const Lvl &b) noexcept {
+        return a.lvl == b.lvl;
+    }
+    /** Log level anti-equality */
+    inline bool operator!=(const Lvl &a, const Lvl &b) noexcept {
+        return a.lvl != b.lvl;
+    }
+    /** Stream operator */
+    inline std::ostream &operator<<(std::ostream &os, const Lvl &l) {
+        static const constexpr CCSC defaults[] { "Verbose", "Debug", "Info",
+                                                 "Warning", "Error", "Critical" };
+        if (LIKELY(l.lvl % 10 == 0 && l.lvl <= critical.lvl)) {
+            return os << defaults[l.lvl / 10];
+        }
+        else if (l == disabled) {
+            return os << "Disabled";
+        }
+        else {
+            return os << "<Level: " << l.lvl << '>';
+        }
+    }
 
 } // namespace Util::Log::Level
 

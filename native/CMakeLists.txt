@@ -68,9 +68,9 @@ set( CMAKE_BUILD_TYPE "Debug" CACHE STRING "Cmake build type" )
 
 # Log levels are defined in ./src/utils/log/level/level/hpp
 # Note: Lower log levels implier higher levels (i.e. verbose implies critical)
-default( DEFAULT_RELEASE_LOG_LEVEL "Warning" )
-default( DEFAULT_DEBUG_LOG_LEVEL "Debug" )
-default( DEFAULT_OTHER_LOG_LEVEL "Info" )
+default( DEFAULT_RELEASE_LOG_LEVEL "warning" )
+default( DEFAULT_DEBUG_LOG_LEVEL "debug" )
+default( DEFAULT_OTHER_LOG_LEVEL "info" )
 
 ### Config Options ###
 

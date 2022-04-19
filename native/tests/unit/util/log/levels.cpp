@@ -11,7 +11,7 @@
 #include <sstream>
 
 
-using Lvl = Level::Level;
+using Lvl = Level::Lvl;
 namespace L = Util::Log;
 using namespace UnitTest::TestLib;
 

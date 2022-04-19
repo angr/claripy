@@ -17,13 +17,13 @@
 
 
 /** A local macro used to define standard log functions */
-#define DEFINE_LOG_LEVEL(LEVEL, NAME)                                                              \
+#define DEFINE_LOG_LEVEL(LEVEL)                                                                    \
     /** Log to a given log with given log level */                                                 \
-    template <typename Log, typename... Args> inline void NAME(Args &&...args) {                   \
-        if UTIL_LOG_LEVEL_CONSTEXPR (Level::enabled(Level::Level::LEVEL)) {                        \
+    template <typename Log, typename... Args> inline void LEVEL(Args &&...args) {                  \
+        if UTIL_LOG_LEVEL_CONSTEXPR (Level::enabled(Level::LEVEL)) {                               \
             static UTIL_LOG_LEVEL_CONSTEXPR const LogID id { Log::log_id };                        \
             Private::send_to_backend(                                                              \
-                id, Level::Level::LEVEL,                                                           \
+                id, Level::LEVEL,                                                                  \
                 Util::ConcreteLazyStr(std::make_tuple(std::forward<Args>(args)...)));              \
         }                                                                                          \
         else {                                                                                     \
@@ -31,8 +31,8 @@
         }                                                                                          \
     }                                                                                              \
     /** Log to default log with given log level */                                                 \
-    template <typename... Args> [[gnu::always_inline]] inline void NAME(Args &&...args) {          \
-        NAME<Claricpp>(std::forward<Args>(args)...);                                               \
+    template <typename... Args> [[gnu::always_inline]] inline void LEVEL(Args &&...args) {         \
+        LEVEL<Claricpp>(std::forward<Args>(args)...);                                              \
     }
 
 
@@ -42,12 +42,12 @@ namespace Util::Log {
     UTIL_LOG_DEFINE_LOG_CLASS(Claricpp)
 
     // Define all log functions
-    DEFINE_LOG_LEVEL(Verbose, verbose)
-    DEFINE_LOG_LEVEL(Debug, debug)
-    DEFINE_LOG_LEVEL(Info, info)
-    DEFINE_LOG_LEVEL(Warning, warning)
-    DEFINE_LOG_LEVEL(Error, error)
-    DEFINE_LOG_LEVEL(Critical, critical)
+    DEFINE_LOG_LEVEL(verbose)
+    DEFINE_LOG_LEVEL(debug)
+    DEFINE_LOG_LEVEL(info)
+    DEFINE_LOG_LEVEL(warning)
+    DEFINE_LOG_LEVEL(error)
+    DEFINE_LOG_LEVEL(critical)
 
 } // namespace Util::Log
 

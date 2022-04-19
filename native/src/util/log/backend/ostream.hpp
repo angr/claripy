@@ -54,12 +54,12 @@ namespace Util::Log::Backend {
         SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(OStream, delete)
 
         /** Log the given message */
-        inline void log(CCSC id, const Level::Level &lvl, Util::LazyStr &&msg) const final {
+        inline void log(CCSC id, const Level::Lvl lvl, Util::LazyStr &&msg) const final {
             log_str(id, lvl, msg());
         }
 
         /** Log the given string message */
-        inline void log_str(CCSC id, const Level::Level &lvl, std::string &&msg) const final {
+        inline void log_str(CCSC id, const Level::Lvl lvl, std::string &&msg) const final {
             std::string out { Style::get()->str(id, lvl, std::move(msg)) };
             std::lock_guard<decltype(m)> lock(m);
             *stream << std::move(out) << '\n';

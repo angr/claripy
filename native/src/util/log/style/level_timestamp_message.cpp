@@ -17,7 +17,6 @@
 using namespace Util;
 using namespace Log;
 using namespace Style;
-using Lvl = Level::Level;
 
 
 /** Get the current local time */
@@ -29,29 +28,23 @@ static auto get_time() {
 }
 
 // Return "<level>: <timestamp>: <raw>"
-std::string LevelTimestampMessage::str(CCSC, const Lvl &lvl, std::string &&raw) const {
+std::string LevelTimestampMessage::str(CCSC, const Level::Lvl l, std::string &&raw) const {
     // Color label
     const char *color { nullptr };
-    switch (lvl) {
-        case Lvl::Verbose:
-            color = ANSIColorCodes::wht;
-            break;
-        case Lvl::Info:
-            color = ANSIColorCodes::blu;
-            break;
-        case Lvl::Warning:
-            color = ANSIColorCodes::yel;
-            break;
-        case Lvl::Error:
-            color = ANSIColorCodes::Bold::mag;
-            break;
-        case Lvl::Critical:
-            color = ANSIColorCodes::HighIntensity::Bold::red;
-            break;
-        case Lvl::Debug:
-            color = ANSIColorCodes::blk;
-            break;
-        case Lvl::Disabled: // Should not be possible
+    switch (l.lvl) {
+#define CASE(LVL, COLOR)                                                                           \
+    case Level::LVL.lvl:                                                                           \
+        color = ANSIColorCodes::COLOR;                                                             \
+        break
+        CASE(verbose, wht);
+        CASE(debug, blk);
+        CASE(info, blu);
+        CASE(warning, yel);
+        CASE(error, Bold::mag);
+        CASE(critical, HighIntensity::Bold::red);
+// Cleanup
+#undef CASE
+        case Level::disabled.lvl: // Should not be possible
             UTIL_THROW(Err::Usage, "Log backend given disabled level");
         default: // Should not be possible
             UTIL_THROW(Err::Unknown, "Logger was given unknown level");
@@ -63,7 +56,7 @@ std::string LevelTimestampMessage::str(CCSC, const Lvl &lvl, std::string &&raw) 
 
     // Output
     std::ostringstream ret;
-    ret << color << lvl << ANSIColorCodes::reset << ": " << std::put_time(&tm, "%c %Z") << " -- "
+    ret << color << l << ANSIColorCodes::reset << ": " << std::put_time(&tm, "%c %Z") << " -- "
         << std::move(raw); // NOLINT (std::move might not move if << takes const ref)
     return ret.str();
 }

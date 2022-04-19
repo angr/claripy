@@ -16,7 +16,7 @@ UTIL_LOG_DEFINE_LOG_CLASS(Custom)
 
 
 namespace L = Util::Log;
-using Lvl = L::Level::Level;
+using Lvl = L::Level::Lvl;
 using namespace UnitTest::TestLib;
 
 /** A macro used for consistency */
@@ -35,7 +35,7 @@ struct CustomSty final : L::Style::Base {
     /** Name */
     [[nodiscard]] inline const char *name() const noexcept final { return "CustomSty"; }
     /** The style function */
-    std::string str(CCSC, const Lvl &, std::string &&) const final { return MSG; }
+    std::string str(CCSC, const Lvl, std::string &&) const final { return MSG; }
 };
 
 /** Each construction should have a unique pointer */

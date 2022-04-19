@@ -13,18 +13,18 @@
 struct PythonLog final : public Util::Log::Backend::Base {
   private:
     /** For brevity */
-    using Lvl = ::Util::Log::Level::Level;
+    using Lvl = ::Util::Log::Level::Lvl;
 
   public:
     /** The log function type */
-    using Func = std::function<void(CCSC, std::underlying_type_t<Lvl>, std::string)>;
+    using Func = std::function<void(CCSC, Lvl::Raw, std::string)>;
     /** Constructor */
     PythonLog(const Func &log_func) : py_log(log_func) {}
     /** Backend name */
     const char *name() const noexcept final { return "PythonLog"; }
     /** Log the given message */
-    void log(CCSC id, const Lvl &lvl, Util::LazyStr &&msg) const final {
-        py_log(id, Util::to_underlying(lvl), msg());
+    void log(CCSC id, const Lvl lvl, Util::LazyStr &&msg) const final {
+        py_log(id, lvl.lvl, msg());
     }
     /** Flush the log if applicable
      *  We choose to leave this to python
@@ -52,18 +52,18 @@ void API::logger(Binder::ModuleGetter &m) {
         pybind11::arg("py_log"));
     // TODO: handle non default log levels (i.e. 1)
     m("API").def(
-        "get_log_level", []() { return Util::to_underlying(Util::Log::Level::get()); },
+        "get_log_level", []() { return Util::Log::Level::get().lvl; },
         "Get Claricpp's log level2.");
 #ifndef CONSTANT_LOG_LEVEL
     m("API").def(
         "set_log_level",
-        [](const unsigned lvl) {
+        [](const Util::Log::Level::Lvl::Raw lvl) {
     #ifdef DEBUG
             Util::Log::Level::set
     #else
             Util::Log::Level::silent_set
     #endif
-                (static_cast<Util::Log::Level::Level>(lvl));
+                ({ lvl });
         },
         "Set the level Claricpp's log level. When a python logger is installed this functionally "
         "defines the minimum log level at which Claricpp will generate a log message and send it "

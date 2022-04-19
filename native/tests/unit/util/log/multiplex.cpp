@@ -15,7 +15,7 @@
 // For brevity
 namespace L = Util::Log;
 namespace B = L::Backend;
-using Lvl = L::Level::Level;
+using Lvl = L::Level::Lvl;
 using namespace UnitTest::TestLib;
 
 

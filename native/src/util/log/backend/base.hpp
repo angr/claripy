@@ -33,7 +33,7 @@ namespace Util::Log::Backend {
         virtual const char *name() const noexcept = 0;
 
         /** Log the given message */
-        virtual void log(CCSC id, const Level::Level &lvl, Util::LazyStr &&msg) const = 0;
+        virtual void log(CCSC id, const Level::Lvl lvl, Util::LazyStr &&msg) const = 0;
 
         /** Flush the log if applicable */
         virtual void flush() const = 0;

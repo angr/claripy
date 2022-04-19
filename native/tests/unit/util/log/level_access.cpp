@@ -6,7 +6,6 @@
 
 
 using namespace Util::Log;
-using Lvl = Level::Level;
 using namespace UnitTest::TestLib;
 
 
@@ -20,7 +19,7 @@ void level_access() {
     (void) init;
 #else
     // Select a different level
-    const auto different { (init == Lvl::Info) ? Lvl::Debug : Lvl::Info };
+    const auto different { (init == Level::info) ? Level::debug : Level::info };
     Level::set(different);
 
     // Error checking

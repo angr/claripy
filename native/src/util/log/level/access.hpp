@@ -28,13 +28,13 @@ namespace Util::Log::Level {
     /** Set the log level
      *  Internal logging will be limited
      */
-    void silent_set(const Level l) noexcept;
+    void silent_set(const Lvl l) noexcept;
 
     /** Set the log level */
-    void set(const Level l) noexcept;
+    void set(const Lvl l) noexcept;
 
     /** Return the log level */
-    Level get() noexcept;
+    Lvl get() noexcept;
 
 #endif
 

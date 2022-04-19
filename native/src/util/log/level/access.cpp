@@ -11,22 +11,22 @@
     #include "../log.hpp"
 
 
-namespace Lev = Util::Log::Level;
+namespace Level = Util::Log::Level;
 
-static std::atomic<Lev::Level> lvl { Lev::default_ };
+static std::atomic<Level::Lvl> lvl { Level::default_ };
 
 
-void Lev::silent_set(const Level l) noexcept {
+void Level::silent_set(const Lvl l) noexcept {
     lvl.store(l);
 }
 
-void Lev::set(const Level l) noexcept {
-    info("Claricpp log level updating from: ", get());
+void Level::set(const Lvl l) noexcept {
+    ::Util::Log::info("Claricpp log level updating from: ", get());
     silent_set(l);
-    info("Claricpp log level updated to: ", l);
+    ::Util::Log::info("Claricpp log level updated to: ", l);
 }
 
-Lev::Level Lev::get() noexcept {
+Level::Lvl Level::get() noexcept {
     return lvl.load();
 }
 

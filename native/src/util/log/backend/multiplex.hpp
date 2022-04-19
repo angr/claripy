@@ -27,12 +27,12 @@ namespace Util::Log::Backend {
         inline const char *name() const noexcept final { return "Multiplex"; }
 
         /** Log the given message */
-        inline void log(CCSC id, const Level::Level &lvl, Util::LazyStr &&lazy) const final {
+        inline void log(CCSC id, const Level::Lvl lvl, Util::LazyStr &&lazy) const final {
             log_str(id, lvl, lazy());
         }
 
         /** Log the given string message */
-        inline void log_str(CCSC id, const Level::Level &lvl, std::string &&msg) const final {
+        inline void log_str(CCSC id, const Level::Lvl lvl, std::string &&msg) const final {
             if (LIKELY(!backends.empty())) {
                 const U64 loop_size { backends.size() - 1 };
                 for (U64 i { 0 }; i < loop_size; ++i) {

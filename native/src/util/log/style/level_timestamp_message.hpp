@@ -16,7 +16,7 @@ namespace Util::Log::Style {
         /** Style name */
         inline const char *name() const noexcept override { return "LevelTimestampMessage"; }
         /** Format the log message */
-        std::string str(CCSC, const Level::Level &lvl, std::string &&raw) const final;
+        std::string str(CCSC, const Level::Lvl lvl, std::string &&raw) const final;
     };
 
 } // namespace Util::Log::Style
