@@ -545,7 +545,7 @@ class GMP(Library):
         lib_type = StaticLib if is_static else SharedLib
         self._lib = lib_type(self._lib.name, self._lib.build_dir)
 
-    def _run(self, name, *args, _count = 0):
+    def _run(self, name, *args, _count=0):
         """
         A wrapper for run
         _count should only be used by this function
@@ -553,9 +553,9 @@ class GMP(Library):
         whitelist = string.ascii_lowercase + string.digits + "_-"
         log_f = "".join([i for i in name.lower().replace(" ", "_") if i in whitelist])
         log_f = os.path.join(self._build_dir, "setup-py-" + log_f)
-        log_f += ('' if _count == 0 else "_" + str(_count)) + '.log'
+        log_f += ("" if _count == 0 else "_" + str(_count)) + ".log"
         if os.path.exists(log_f):
-            return self._run(name, *args, _count = _count + 1)
+            return self._run(name, *args, _count=_count + 1)
         with open(log_f, "w") as f:
             print(name + "...")
             print("  - Output file: " + log_f)
@@ -582,7 +582,7 @@ class GMP(Library):
             self._set_lib_type(self._run("Configuring", "./configure", *config_args))
             # Building + Checking
             nproc = max(cpu_count() - 1, 1)
-            makej = (find_exe("make"), "-j" + str(nproc)) # GMP requires make
+            makej = (find_exe("make"), "-j" + str(nproc))  # GMP requires make
             _ = self._run("Building GMP", *makej)
             _ = self._run("Checking GMP build", *makej, "check")
             # Include dir
@@ -745,6 +745,7 @@ class Claricpp(Library):
     A class to manage Claricpp
     Warning: if build_doc or enable_tests, .build() may be forced
     """
+
     # Config
     build_doc = False
     build_debug = False
@@ -819,7 +820,7 @@ class Claricpp(Library):
             if self.build_doc:
                 print("Building docs...")
                 build_cmake_target("docs")
-                print("Docs built in: " + os.path.join(self.build_dir, 'docs'))
+                print("Docs built in: " + os.path.join(self.build_dir, "docs"))
 
     def _license(self):
         pass  # Same as main project
@@ -827,14 +828,15 @@ class Claricpp(Library):
     @classmethod
     def _install_ignore(cls, d, fs):
         d = os.path.abspath(d)
-        skip = os.path.realpath(os.path.join(cls.build_dir, 'docs')) # Don't install docs
-        paths = { os.path.realpath(os.path.join(d, i)):i for i in fs }
-        return [ k for i,k in paths.items() if i == skip ]
+        skip = os.path.realpath(os.path.join(cls.build_dir, "docs"))
+        paths = {os.path.realpath(os.path.join(d, i)): i for i in fs}
+        return [k for i, k in paths.items() if i == skip]
 
     def _install(self):
         self._lib.install()
         if not os.path.exists(self._out_src):
-            shutil.copytree(os.path.join(native, "src"), self._out_src, ignore=self._install_ignore)
+            src = os.path.join(native, "src")
+            shutil.copytree(src, self._out_src, ignore=self._install_ignore)
 
     def _clean(self, level):
         if level.implies(CleanLevel.INSTALL):
@@ -899,7 +901,7 @@ class SDist(SDistOriginal):
 class Build(BuildOriginal):
     def run(self):
         # Build native components and install to the python src location
-        Claricpp.build_debug = ("SETUP_PY_BUILD_DEBUG" in os.environ)
+        Claricpp.build_debug = "SETUP_PY_BUILD_DEBUG" in os.environ
         f = lambda: ClaricppAPI().install(False)
         self.execute(f, (), msg="Building native components")
         print("Done building native components")
@@ -916,11 +918,13 @@ class SimpleCommand(Command):
     def finalize_options(self):
         pass
 
+
 class BuildTests(SimpleCommand):
     def run(self):
         Claricpp.enable_tests = True
         self.run_command("build")
         print("To test: cd " + Claricpp.build_dir + " && ctest .")
+
 
 class BuildDocs(SimpleCommand):
     def run(self):
@@ -928,6 +932,7 @@ class BuildDocs(SimpleCommand):
         Claricpp.build_claricpp = False
         f = lambda: Claricpp().build(False)
         self.execute(f, (), msg="Building native docs")
+
 
 class Clean(CleanOriginal):
     def run(self):
