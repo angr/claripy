@@ -12,7 +12,7 @@ logging.basicConfig(
 
 # Config
 log = logging.getLogger(__name__)
-claricpp_enable_traces = "CLARICPP_ENABLE_TRACES" in os.environ
+claricpp_debug = "CLARICPP_DEBUG" in os.environ
 
 
 ### Init Claricpp and Claripy link
@@ -29,11 +29,12 @@ def _init_logging():
             clari.API.set_log_level(lvl)
 
         log.setLevel = _set_level
-        log.setLevel(log.getEffectiveLevel())  # Should set the C++ level
-        log.info("Claripy/Claricpp log levels synchronized")
+        log.info("Synchrnoizing Claripy/Claricpp log levels: hooking log.setLevel")
     else:
         lvl = logging.getLevelName(clari.API.get_log_level())
         log.info("Claricpp's log level is fixed at: " + lvl)
+    # Update log level (also synchronizes log levels if applicable)
+    log.setLevel(logging.DEBUG if claricpp_debug else log.getEffectiveLevel())
     clari.API.install_logger(lambda a, b, c: logging.getLogger(a).log(b, c))
 
 
@@ -42,10 +43,10 @@ _init_logging()
 del _init_logging  # Cleanup
 
 # Init backtraces
-if claricpp_enable_traces:
+clari.Util.Err.Claricpp.toggle_backtrace(claricpp_debug)
+if claricpp_debug:
     clari.API.enable_signal_traces()
-    clari.Util.Err.Claricpp.toggle_backtrace(claricpp_enable_traces)
-    log.info("Backtraces enabled")
+log.info("Native backtraces " + ("en" if claricpp_debug else "dis") + "abled")
 
 
 ### Setup Exception Translations
@@ -160,3 +161,8 @@ if False:
 
         print(inspect.getmro(type(e)))
         print(e.native_trace())
+        print("Printed")
+    finally:
+        print("Fin")
+        import IPython
+        IPython.embed()
