@@ -749,7 +749,7 @@ class Claricpp(Library):
     _lib = SharedLib("libclaricpp", build_dir)
     _out_src = os.path.join(BuiltLib.install_dir, "src")
 
-    def __init__(self, *, no_lib, docs, debug, tests):
+    def __init__(self, *, no_lib=False, docs=False, debug=False, tests=False):
         # Options
         self._build_lib = not no_lib
         self._enable_tests = tests
@@ -928,7 +928,7 @@ class Native(Command):
         msg = "Building native components"
         options = ["--" + i.replace("_", "-") for i, k in self.args.items() if k]
         if len(options) > 0:
-            msg += " with options: " + ", ".join(options)
+            msg += " with options: " + " ".join(options)
         # Run
         self.execute(f, (), msg=msg)
 
@@ -957,8 +957,7 @@ class Clean(Command):
 
     def run(self):
         print("Clean level set to: " + self.level.name)
-        kwargs = {i: False for i in ["no_lib", "docs", "tests", "debug"]}
-        f = lambda: ClaricppAPI(**kwargs).clean(self.level)
+        f = lambda: ClaricppAPI().clean(self.level)
         self.execute(f, (), msg="Cleaning claricpp")
 
 

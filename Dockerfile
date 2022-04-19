@@ -171,12 +171,12 @@ RUN python setup.py bdist_wheel
 
 FROM sdist as build_tests
 LABEL stage=build_tests
-RUN python setup.py build_tests
+RUN python setup.py native --debug --tests
 
 FROM sdist as docs
 LABEL stage=docs
 RUN apt-get install -yq graphviz doxygen
-RUN python setup.py docs
+RUN python setup.py native --docs
 
 
 ##################################################

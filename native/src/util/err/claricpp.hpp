@@ -134,13 +134,13 @@ namespace Util::Err {
 
         /** The frame offset used when generating the backtrace
          *  This prevents Claricpp's internals from showing up in the backtrace
-         *  This is found expirimentally; there is no issue if it is too small
+         *  This is found experimentally; there is no issue if it is too small
          *  Being too small simply makes the backtraces messier as they contain this constructor
          */
         static const constexpr uint16_t frame_offset {
 #ifdef __linux__
     #ifdef DEBUG
-            5
+            4
     #else
             3
     #endif
