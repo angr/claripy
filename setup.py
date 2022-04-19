@@ -48,7 +48,7 @@ claricpp = "claricpp"
 
 class JDict(dict):
     """
-    A read-only dict that allows . semantics
+    A key-read-only dict that allows . semantics
     """
 
     __getattr__ = dict.get
@@ -305,6 +305,20 @@ setattr(type(CleanLevel.GET), "implies", lambda self, o: self.value >= o.value)
 setattr(type(CleanLevel.GET), "inc", lambda self: CleanLevel(self.value + 1))
 
 
+def to_clean_lvl(name):
+    """
+    Get the clean level named name
+    """
+    name = name.upper()
+    try:
+        return getattr(CleanLevel, name)
+    except AttributeError:
+        valid = [i.name for i in CleanLevel]
+        valid = "Valid clean levels: " + ", ".join(valid)
+        msg = "Invalid clean level: " + name + ". " + valid
+        raise Exception(msg)
+
+
 ######################################################################
 #                         Dependency Classes                         #
 ######################################################################
@@ -371,31 +385,27 @@ class Library:
     def _call_format(self, x, n):
         return cname(x) + "." + n + "()"
 
-    def _call(self, origin, obj, fn, force, called):
+    def _call(self, origin, obj, fn, called):
         what = self._call_format(obj, fn)
         if what not in called:
             called.add(what)
             me = self._call_format(self, origin)
             print(me + " invoking " + what)
-            getattr(obj, fn)(force, called)
+            getattr(obj, fn)(called)
             print("Resuming " + me)
 
-    def _body(self, force, lvl, chk, called):
+    def _body(self, lvl, chk, called):
         """
         A helper function used to automate the logic of invoking dependencies and body
         Note: for lvl = license, license files are force cleaned!
-        @param force: True if old files should be purged instead of possibly reused
         @param lvl: The clean level to be used for this
         @param chk: A dict where each entry contains the arguments to give to _done
         @param called: The set of already called methods
         If all calls to self._done pass, skip this stage
         If chk is empty, this stage will not be skipped
         """
-        # Clean if needed
-        if force:
-            self.clean(lvl)
         # Skip if everything is done
-        elif len(chk) and all([self._done(*i) for i in chk.items()]):
+        if len(chk) and all([self._done(*i) for i in chk.items()]):
             return
         # Call dependent levels
         next = None
@@ -405,45 +415,44 @@ class Library:
         except ValueError:
             pass
         if next is not None:
-            self._call(lvl_name, self, next, force, called)
+            self._call(lvl_name, self, next, called)
         # Call current level dependencies
         for obj in self._dependencies:
-            self._call(lvl_name, obj, lvl_name, force, called)
+            self._call(lvl_name, obj, lvl_name, called)
         getattr(self, "_" + lvl_name)()
         me = self._call_format(self, lvl_name)
         called.add(me)
 
-    def get(self, force, called=None):
+    def get(self, called=None):
         """
         Acquire source files for this class and dependencies
-        If force: ignores existing files, else may reuse existing files
+        May reuse existing files
         """
         called = set() if called is None else called
-        self._body(force, CleanLevel.GET, self._get_chk, called)
+        self._body(CleanLevel.GET, self._get_chk, called)
 
-    def build(self, force, called=None):
+    def build(self, called=None):
         """
         Build libraries for this class and dependencies
-        If force: ignores existing files, else may reuse existing files
         """
         called = set() if called is None else called
-        self._body(force, CleanLevel.BUILD, self._build_chk, called)
+        self._body(CleanLevel.BUILD, self._build_chk, called)
 
-    def license(self, force, called=None):
+    def license(self, called=None):
         """
         Install library licenses; will call ._license if it has not been called
-        If force: ignores existing files, else may reuse existing files
+        May reuse existing files
         """
         called = set() if called is None else called
-        self._body(force, CleanLevel.LICENSE, {}, called)
+        self._body(CleanLevel.LICENSE, {}, called)
 
-    def install(self, force, called=None):
+    def install(self, called=None):
         """
         Install libraries and source files for this class and dependencies
-        If force: ignores existing files, else may reuse existing files
+        May reuse existing files
         """
         called = set() if called is None else called
-        self._body(force, CleanLevel.INSTALL, self._install_chk, called)
+        self._body(CleanLevel.INSTALL, self._install_chk, called)
 
     def clean(self, level: CleanLevel):
         """
@@ -890,7 +899,7 @@ class ClaricppAPI(Library):
 
 class SDist(SDistOriginal):
     def run(self):
-        f = lambda: ClaricppAPI().get(False)
+        f = lambda: ClaricppAPI().get()
         self.execute(f, (), msg="Getting build source dependencies")
         super().run()
 
@@ -904,16 +913,24 @@ class Native(Command):
         ("docs", None, "Build Claricpp docs"),
         ("tests", "t", "Build Claricpp tests; incompatible with --no-lib"),
         ("debug", "d", "Prefers debug mode to release mode while building"),
-        ("force", "f", "Forces builds, ignores existing files via calling clean"),
+        ("clean=", "c", "Runs clean at the given level first"),
     ]
 
     def initialize_options(self) -> None:
-        self.args = [i[0].replace("-", "_") for i in self.user_options]
+        self.args = [i for i in self.user_options if "=" not in i]  # Bools only
+        self.args = [i[0].replace("-", "_") for i in self.args]
         _ = [setattr(self, i, None) for i in self.args]
+        self.clean = None  # We will put this in args later
 
     def finalize_options(self) -> None:
-        # We namespace the args and make them bools here
-        self.args = JDict({i: (getattr(self, i) is not None) for i in self.args})
+        # Namespace args and make them bools here
+        self.args = {i: (getattr(self, i) is not None) for i in self.args}
+        # Add clean to args and freeze arg keys
+        if self.clean is not None:
+            self.clean = to_clean_lvl(self.clean)
+        self.args["clean"] = self.clean
+        self.args = JDict(self.args)
+        # Error checking + cleanup
         _ = [delattr(self, i) for i in self.args]
         if self.args.no_lib and (not self.args.no_api or self.args.tests):
             msg = "--no-lib must be used with --no-api and may not be used with --tests"
@@ -925,13 +942,16 @@ class Native(Command):
         params = ["no_lib", "docs", "tests", "debug"]
         params = {i: k for i, k in self.args.items() if i in params}
         fname = "build" if self.args.no_install else "install"
-        f = lambda: getattr(cls(**params), fname)(self.args.force)
+        f = lambda: getattr(cls(**params), fname)()
         # Message
         msg = "Building native components"
         options = ["--" + i.replace("_", "-") for i, k in self.args.items() if k]
         if len(options) > 0:
             msg += " with options: " + " ".join(options)
         # Run
+        if self.args.clean is not None:
+            msg = "Cleaning Claricpp at level: " + self.args.clean.name
+            self.execute(lambda: ClaricppAPI().clean(self.args.clean), (), msg=msg)
         self.execute(f, (), msg=msg)
 
 
@@ -948,19 +968,11 @@ class Clean(Command):
         self.level = "GET"
 
     def finalize_options(self) -> None:
-        self.level = self.level.upper()
-        try:
-            self.level = getattr(CleanLevel, self.level)
-        except AttributeError:
-            valid = [i.name for i in CleanLevel]
-            valid = "Valid clean levels: " + ", ".join(valid)
-            msg = "Invalid clean level: " + self.level.name + ". " + valid
-            raise Exception(msg)
+        self.level = to_clean_lvl(self.level)
 
     def run(self):
-        print("Clean level set to: " + self.level.name)
         f = lambda: ClaricppAPI().clean(self.level)
-        self.execute(f, (), msg="Cleaning claricpp")
+        self.execute(f, (), msg="Cleaning Claricpp at level: " + self.level.name)
 
 
 if __name__ == "__main__":
