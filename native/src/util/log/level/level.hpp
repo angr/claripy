@@ -55,11 +55,11 @@ namespace Util::Log::Level {
     // Operators
 
     /** Log level equality */
-    inline bool operator==(const Lvl &a, const Lvl &b) noexcept {
+    constexpr bool operator==(const Lvl &a, const Lvl &b) noexcept {
         return a.lvl == b.lvl;
     }
     /** Log level anti-equality */
-    inline bool operator!=(const Lvl &a, const Lvl &b) noexcept {
+    constexpr bool operator!=(const Lvl &a, const Lvl &b) noexcept {
         return a.lvl != b.lvl;
     }
     /** Stream operator */

@@ -10,12 +10,12 @@
 
 
 namespace L = Util::Log;
-using Lvl = L::Level::Lvl;
+namespace Lvl = L::Level;
 using namespace UnitTest::TestLib;
 
 
 /** Test the given logging function */
-void test(std::shared_ptr<std::ostringstream> &s, const Lvl l) {
+void test(std::shared_ptr<std::ostringstream> &s, const Lvl::Lvl l) {
     const auto str { s->str() };
     if (Level::enabled(l)) {
         UNITTEST_ASSERT(str.find("Logged data") != std::string::npos);
@@ -29,14 +29,17 @@ void test(std::shared_ptr<std::ostringstream> &s, const Lvl l) {
 /** A custom log type */
 UTIL_LOG_DEFINE_LOG_CLASS(Custom)
 
+/** A hack to allow unreachable code not to cause a compile error */
+static UTIL_ICCBOOL allow_unreachable { true };
 
 /** Log levels lower than the set level should be no-op's */
 void lower_level_ignored() {
-    // Determine if this test case is possible
 #ifdef CONSTANT_LOG_LEVEL
-    if constexpr (constexpr auto lvl { Level::get() }; lvl == Lvl::Verbose) {
+    // Determine if this test case is possible
+    // Note: allow unreachable prevents compiler warnings since this is all cosntexpr else
+    if (const auto lvl { Level::get() }; lvl == Lvl::verbose && allow_unreachable) {
         Util::Log::warning(
-            "Log level is constant and at level Verbose. Unable to test lower levels");
+            "Log level is constant and at level verbose. Unable to test lower levels");
         return;
     }
 #endif
@@ -49,8 +52,8 @@ void lower_level_ignored() {
 
     // Change the log level if needed
 #ifndef CONSTANT_LOG_LEVEL
-    if (const auto lvl { L::Level::get() }; lvl == Level::verbose) {
-        L::Level::set(Level::warning);
+    if (const auto lvl { Lvl::get() }; lvl == Level::verbose) {
+        Lvl::set(Level::warning);
     }
 #endif
 

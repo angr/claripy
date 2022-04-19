@@ -12,13 +12,15 @@
 
 /** Testlib init */
 static inline void testlib_init() {
-    Util::Log::info("Preparing for unit test");
-    Util::Log::Level::set(Util::Log::Level::debug);
-    Util::Err::Claricpp::toggle_backtrace(true);
-    Util::Backtrace::handle_signals();
-    // Used to restore state of logger on failure in order to log failure
+#ifndef CONSTANT_LOG_LEVEL
     UnitTest::TestLib::original_bk = Util::Log::Backend::get();
     UnitTest::TestLib::original_sty = Util::Log::Style::get();
+    Util::Log::Level::set(Util::Log::Level::debug);
+#endif
+    // Init
+    Util::Log::info("Preparing for unit test");
+    Util::Err::Claricpp::toggle_backtrace(true);
+    Util::Backtrace::handle_signals();
     Util::Log::info("Unit test preparations complete");
 }
 

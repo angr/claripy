@@ -28,14 +28,15 @@
 
 namespace UnitTest::TestLib {
 
+    /** The UnitTest error struct */
+    UTIL_ERR_DEFINE_NAMESPACED_FINAL_EXCEPTION(Error, Claricpp, Util::Err)
+
+#ifndef CONSTANT_LOG_LEVEL
     /** The original log backend */
     extern thread_local std::shared_ptr<const Util::Log::Backend::Base> original_bk;
 
     /** The original log style */
     extern thread_local std::shared_ptr<const Util::Log::Style::Base> original_sty;
-
-    /** The UnitTest error struct */
-    UTIL_ERR_DEFINE_NAMESPACED_FINAL_EXCEPTION(Error, Claricpp, Util::Err)
 
     /** A function used to fail a unit test; the thrown exception should *not* be caught */
     [[noreturn]] inline void ut_fail(std::string &&msg) {
@@ -48,8 +49,15 @@ namespace UnitTest::TestLib {
             Util::Log::Style::silent_less_safe_set(std::move(original_sty));
         }
         // Do not catch this
-        throw UnitTest::TestLib::Error(std::move(msg));
+        throw UnitTest::TestLib::Error { std::move(msg) };
     }
+#else
+    /** A function used to fail a unit test; the thrown exception should *not* be caught */
+    [[noreturn]] inline void ut_fail(std::string &&msg) {
+        // Do not catch this
+        throw UnitTest::TestLib::Error { std::move(msg) };
+    }
+#endif
 
 } // namespace UnitTest::TestLib
 
