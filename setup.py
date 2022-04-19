@@ -1,6 +1,5 @@
 from setuptools.command.sdist import sdist as SDistOriginal
-from distutils.command.build import build as BuildOriginal
-from distutils.command.clean import clean as CleanOriginal
+from distutils.command.build import build as BuildOriginal  # TODO
 from setuptools import setup, Command
 from multiprocessing import cpu_count
 from contextlib import contextmanager
@@ -746,23 +745,22 @@ class Claricpp(Library):
     Warning: if build_doc or enable_tests, .build() may be forced
     """
 
-    # Config
-    build_doc = False
-    build_debug = False
-    enable_tests = False
-    build_claricpp = True
     # Constants
     build_dir = os.path.join(native, "build")
     _lib = SharedLib("libclaricpp", build_dir)
     _out_src = os.path.join(BuiltLib.install_dir, "src")
 
-    def __init__(self):
+    def __init__(self, *, docs, debug, tests):
+        # Options
+        self.enable_tests = tests
+        self.build_debug = debug
+        self.build_doc = docs
+        # Config
         chk = {self._lib.name: self._lib, "Claricpp src": self._out_src}
         build_chk = {} if self.build_doc or self.enable_tests else chk
         super().__init__({}, build_chk, chk, Boost(), Z3(), Pybind11(), Backward())
 
-    @classmethod
-    def _cmake_config_args(cls, claricpp):
+    def _cmake_config_args(self, claricpp):
         """
         Create arguments to pass to cmake for configuring claricpp
         """
@@ -772,19 +770,19 @@ class Claricpp(Library):
             "VERSION": version,
             "CLARICPP": claricpp,
             # Build options
-            "CONSTANT_LOG_LEVEL": not cls.build_debug,
+            "CONSTANT_LOG_LEVEL": not self.build_debug,
             "DEFAULT_RELEASE_LOG_LEVEL": "critical",
-            "CMAKE_BUILD_TYPE": "Debug" if cls.build_debug else "Release",
+            "CMAKE_BUILD_TYPE": "Debug" if self.build_debug else "Release",
             # Backtrace options
             "WARN_BACKWARD_LIMITATIONS": True,
             "REQUIRE_BACKWARD_BACKEND": False,  # TODO:
             "SOURCE_ROOT_FOR_BACKTRACE": None,  # TODO: make a runtime thing config'd by python
             # Disable options
-            "ENABLE_TESTING": cls.enable_tests,
+            "ENABLE_TESTING": self.enable_tests,
             "CPP_CHECK": False,
             "CLANG_TIDY": False,
             "ENABLE_MEMCHECK": False,
-            "BUILD_DOC": cls.build_doc,
+            "BUILD_DOC": self.build_doc,
             "LWYU": False,
             # Library config
             "GMPDIR": GMP.lib_dir,
@@ -798,10 +796,9 @@ class Claricpp(Library):
         dd = lambda key, val: "-D" + key + "=" + ("" if val is None else on_off(val))
         return [dd(*i) for i in config.items()]
 
-    @classmethod
-    def _cmake(cls, native, build):
+    def _cmake(self, native, build):
         print("Configuring...")
-        cmake_args = cls._cmake_config_args(claricpp)
+        cmake_args = self._cmake_config_args(claricpp)
         with chdir(build):
             run_cmd_no_fail(find_exe("cmake"), *cmake_args, native)
 
@@ -810,13 +807,12 @@ class Claricpp(Library):
             os.mkdir(self.build_dir)
         self._cmake(native, self.build_dir)
         with chdir(self.build_dir):
-            if self.build_claricpp:
-                print("Building " + claricpp + "...")
-                build_cmake_target(claricpp)
+            print("Building " + claricpp + "...")
+            build_cmake_target(claricpp)
             if self.enable_tests:
                 print("Building tests...")
                 build_cmake_target("all")
-                print("Tests built in build dir: " + self.build_dir)
+                print("To test: cd " + self.build_dir + " && ctest .")
             if self.build_doc:
                 print("Building docs...")
                 build_cmake_target("docs")
@@ -862,9 +858,9 @@ class ClaricppAPI(Library):
     _build_dir = os.path.join(Claricpp.build_dir, "src/api")
     _lib = SharedLib(_api_target, _build_dir)
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         chk = {self._lib.name: self._lib}
-        super().__init__({}, chk, chk, Claricpp())
+        super().__init__({}, chk, chk, Claricpp(**kwargs))
 
     def _build(self):
         print("Building " + self._api_target + "...")
@@ -898,48 +894,67 @@ class SDist(SDistOriginal):
         super().run()
 
 
+class Native(Command):
+    description = "Build native components"
+    user_options = [
+        ("no-api", None, "Do not build the Claricpp API"),
+        ("docs", None, "Build Claricpp docs"),
+        ("tests", "t", "Build Claricpp tests"),
+        ("debug", "d", "Prefers debug mode to release mode while building"),
+        ("force", "f", "Forces builds, ignores existing files via calling clean"),
+    ]
+
+    def initialize_options(self) -> None:
+        self.args = [i[0].replace("-", "_") for i in self.user_options]
+        _ = [setattr(self, i, None) for i in self.args]
+
+    def finalize_options(self) -> None:
+        # We namespace the args and make them bools here
+        self.args = JDict({i: (getattr(self, i) is not None) for i in self.args})
+        _ = [delattr(self, i) for i in self.args]
+
+    def run(self) -> None:
+        # Function
+        cls = ClaricppAPI if self.args.no_api else Claricpp
+        params = ["docs", "tests", "debug"]
+        params = {i: k for i, k in self.args.items() if i in params}
+        f = lambda: cls(**params).build(self.args.force)
+        # Message
+        msg = "Building native components"
+        options = ["--" + i.replace("_", "-") for i, k in self.args.items() if k]
+        if len(options) > 0:
+            msg += " with options: " + ", ".join(options)
+        # Run
+        self.execute(f, (), msg=msg)
+
+
 class Build(BuildOriginal):
     def run(self):
-        # Build native components and install to the python src location
-        Claricpp.build_debug = "SETUP_PY_BUILD_DEBUG" in os.environ
-        f = lambda: ClaricppAPI().install(False)
-        self.execute(f, (), msg="Building native components")
-        print("Done building native components")
+        self.run_command("native")
         super().run()
 
 
-class SimpleCommand(Command):
+class Clean(Command):
+    user_options = [("level=", "l", "Clean")]
 
-    user_options = []
+    def initialize_options(self) -> None:
+        self.level = "GET"
 
-    def initialize_options(self):
-        pass
+    def finalize_options(self) -> None:
+        self.level = self.level.upper()
+        try:
+            self.level = getattr(CleanLevel, self.level)
+        except AttributeError:
+            valid = [i.name for i in CleanLevel]
+            valid = "Valid clean levels: " + ", ".join(valid)
+            msg = "Invalid clean level: " + self.level.name + ". " + valid
+            raise Exception(msg)
 
-    def finalize_options(self):
-        pass
-
-
-class BuildTests(SimpleCommand):
     def run(self):
-        Claricpp.enable_tests = True
-        self.run_command("build")
-        print("To test: cd " + Claricpp.build_dir + " && ctest .")
-
-
-class BuildDocs(SimpleCommand):
-    def run(self):
-        Claricpp.build_doc = True
-        Claricpp.build_claricpp = False
-        f = lambda: Claricpp().build(False)
-        self.execute(f, (), msg="Building native docs")
-
-
-class Clean(CleanOriginal):
-    def run(self):
-        lvl = os.getenv("SETUP_PY_CLEAN_LEVEL", "get").upper()
-        print("Clean level set to: " + lvl)
-        f = lambda: ClaricppAPI().clean(getattr(CleanLevel, lvl))
-        self.execute(f, (), msg="Cleaning claripy/native")
+        print("Clean level set to: " + self.level.name)
+        kwargs = {i: False for i in ["docs", "tests", "debug"]}
+        f = lambda: ClaricppAPI(**kwargs).clean(self.level)
+        self.execute(f, (), msg="Cleaning claricpp")
 
 
 if __name__ == "__main__":
@@ -947,8 +962,8 @@ if __name__ == "__main__":
         cmdclass={
             "sdist": SDist,
             "build": Build,
-            "docs": BuildDocs,
-            "build_tests": BuildTests,  # A custom command to build native tests
-            "clean": Clean,  # A custom command, makes dev easier
+            # Custom commands
+            "native": Native,
+            "clean": Clean,
         },
     )
