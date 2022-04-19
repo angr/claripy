@@ -602,11 +602,9 @@ class GMP(Library):
         cpy("AUTHORS", "AUTHORS")
         cpy("COPYING.LESSERv3", "GNU-LGPLv3")
         print("Generating README...")
+        msg = "The compiled GMP library is licensed under the GNU LGPLv3. The library was built from unmodified source code which can be found at: "
         with open(os.path.join(self._lic_d, "README"), "w") as f:
-            f.write(
-                "The compiled GMP library is licensed under the GNU LGPLv3. The library was built from unmodified source code which can be found at: "
-                + self._url
-            )
+            f.write(msg + self._url)
 
     def _install(self):
         self._lib.install()
@@ -662,7 +660,6 @@ class Boost(Library):
         print("Installing boost license...")
         if len(fs) != 1:
             raise RuntimeError("Boost should decompress into a single directory.")
-        os.mkdir(self.root)
         shutil.copy2(os.path.join(fs[0], "LICENSE_1_0.txt"), self._lic)
         print("Installing boost headers...")
         os.rename(os.path.join(fs[0], "boost"), os.path.join(self.root, "boost"))
@@ -670,7 +667,7 @@ class Boost(Library):
         shutil.rmtree(d)
 
     def _license(self):
-        pass
+        pass  # Nothing to install
 
     def _clean(self, level):
         if level.implies(CleanLevel.GET):
@@ -698,7 +695,7 @@ class Z3(Library):
         assert self.lib.find_built(), "Z3 is missing"
 
     def _license(self):
-        pass
+        pass  # Nothing to install
 
 
 class Backward(Library):
@@ -720,7 +717,7 @@ class Backward(Library):
         assert os.path.exists(lic), "Backward missing license"
 
     def _license(self):
-        pass
+        pass  # Nothing to install
 
 
 class Pybind11(Library):
@@ -739,13 +736,12 @@ class Pybind11(Library):
         assert os.path.exists(lic), "pybind11 missing license"
 
     def _license(self):
-        pass
+        pass  # Nothing to install
 
 
 class Claricpp(Library):
     """
     A class to manage Claricpp
-    Warning: if build_doc or enable_tests, .build() may be forced
     """
 
     # Constants
@@ -774,7 +770,7 @@ class Claricpp(Library):
             "VERSION": version,
             "CLARICPP": claricpp,
             # Build options
-            "CONSTANT_LOG_LEVEL": not self.build_debug,
+            "CONSTANT_LOG_LEVEL": not self._build_debug,
             "DEFAULT_RELEASE_LOG_LEVEL": "critical",
             "CMAKE_BUILD_TYPE": "Debug" if self._build_debug else "Release",
             # Backtrace options
@@ -818,7 +814,7 @@ class Claricpp(Library):
                 print("Building tests...")
                 build_cmake_target("all")
                 print("To test: cd " + self.build_dir + " && ctest .")
-            if self.build_doc:
+            if self._build_doc:
                 print("Building docs...")
                 build_cmake_target("docs")
                 print("Docs built in: " + os.path.join(self.build_dir, "docs"))
