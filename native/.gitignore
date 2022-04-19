@@ -9,7 +9,6 @@ gmp/*
 ignore/*
 
 # Build artifacts
-boost_headers-dir-*.tmp # This is a temporary
 Doxyfile
 .cache/*
 .build.*
