@@ -152,16 +152,6 @@ namespace Util::Err {
         }; // NOLINT
     };
 
-    //    namespace Private {
-    //        /** Define a class to force binder to autogenerate API bindings for
-    //        Claricpp::LazyTrace
-    //         *  This class is not meant to be used anywhere, it only exists because binder can
-    //         *  sometimes refuse to generate bindings for classes under certain conditions
-    //         */
-    //        class ForceBindings : public Claricpp::LazyTrace, private
-    //        ::Util::Type::Unconstructable {};
-    //    }
-
 } // namespace Util::Err
 
 #endif

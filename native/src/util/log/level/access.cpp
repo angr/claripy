@@ -16,14 +16,16 @@ namespace Level = Util::Log::Level;
 static std::atomic<Level::Lvl> lvl { Level::default_ };
 
 
-void Level::silent_set(const Lvl l) noexcept {
-    lvl.store(l);
+Level::Lvl Level::silent_set(const Lvl l) noexcept {
+    return lvl.exchange(l);
 }
 
-void Level::set(const Lvl l) noexcept {
-    ::Util::Log::info("Claricpp log level updating from: ", get());
-    silent_set(l);
-    ::Util::Log::info("Claricpp log level updated to: ", l);
+Level::Lvl Level::set(const Lvl l) noexcept {
+    const Lvl old { silent_set(l) };
+    if (l != old) {
+        ::Util::Log::info("Claricpp log level updated: ", old, " --> ", l);
+    }
+    return old;
 }
 
 Level::Lvl Level::get() noexcept {
