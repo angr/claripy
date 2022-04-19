@@ -1,42 +1,44 @@
 from enum import Enum
-import clari
-import logging
 import functools
+import logging
+import os
 
 import clari
 
-# TODO: remove
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(levelname)-7s | %(asctime)-23s | %(name)-8s | %(message)s",
-)
+) # TODO: remove
 
 # Config
 log = logging.getLogger(__name__)
-claricpp_debug = ("CLARICPP_DEBUG" in os.environ)
+claricpp_enable_traces = ("CLARICPP_ENABLE_TRACES" in os.environ)
 
 ### Init Claricpp and Claripy link
 
-# Init logging
-if hasattr(clari.API, 'set_log_level'): # Claricpp might be compiled without this option
-    # Hook setLevel to call the C++ version as well
-    log._original_setLevel = log.setLevel
-    def _set_level(lvl):
-        log._original_setLevel(lvl)
-        clari.API.set_log_level(lvl)
-    log.setLevel = _set_level
-    del _set_level # No need to keep this around
-    log.setLevel(log.getEffectiveLevel()) # Should set the C++ level
-    log.info("Claripy/Claricpp log levels synchronized")
-else:
-    lvl = logging.getLevelName(clari.API.get_log_level())
-    log.info("Claricpp's log level is fixed at: " + lvl)
-clari.API.install_logger(lambda a,b,c: logging.getLogger(a).log(b,c))
+# Init logging; use function to scope variables
+def _init_logging():
+    if hasattr(clari.API, 'set_log_level')  # Claricpp might be compiled without this option
+        # Hook setLevel to call the C++ version as well
+        log._original_setLevel = log.setLevel
+        def _set_level(lvl):
+            log._original_setLevel(lvl)
+            clari.API.set_log_level(lvl)
+        log.setLevel = _set_level
+        del _set_level # No need to keep this around
+        log.setLevel(log.getEffectiveLevel()) # Should set the C++ level
+        log.info("Claripy/Claricpp log levels synchronized")
+    else:
+        lvl = logging.getLevelName(clari.API.get_log_level())
+        log.info("Claricpp's log level is fixed at: " + lvl)
+    clari.API.install_logger(lambda a,b,c: logging.getLogger(a).log(b,c))
+_init_logging()
+del _init_logging # Cleanup
 
 # Init backtraces
-if claricpp_debug:
+if claricpp_enable_traces:
     clari.API.enable_signal_traces()
-    clari.Util.Err.Claricpp.toggle_backtrace(claricpp_debug)
+    clari.Util.Err.Claricpp.toggle_backtrace(claricpp_enable_traces)
     log.info("Backtraces enabled")
 
 
@@ -62,15 +64,8 @@ def _cls_init(self, *args, **kwargs):
 # Override builtin init with our new init
 clari.py_err._internal.Base.__original_init = clari.py_err._internal.Base.__init__
 clari.py_err._internal.Base.__init__ = _cls_init
-del _cls_init # No need to keep this name around
+del _cls_init # Cleanup
 
-### Init clari
-
-# Set claricpp log level to debug
-# Note: the python log level still defines which messages are printed
-# This simply defines if claricpp even bothers to send a message to python
-clari.API.set_log_propagation_level(logging.DEBUG)
-clari.API.install_logger(lambda a,b,c: logging.getLogger(a).log(b,c))
 
 ### Operators ###
 
@@ -141,3 +136,17 @@ clari.Expr.Base.__invert__ = lambda x: clari.Create.invert(x)
 
 # TODO: __not__, is, is_not
 # TODO: reverse operators?
+
+
+
+if False:
+    try:
+        a = clari.Create.symbol_fp("f", 32)
+        b = clari.Create.symbol_bv("b", 32)
+        a + b
+    except TypeError as e:
+        print(e)
+        print(type(e))
+        import inspect
+        print(inspect.getmro(type(e)))
+        print(e.native_trace())
