@@ -78,7 +78,7 @@ namespace Backend::Z3 {
 
         /** Equality comparison converter */
         static z3::expr eq(const z3::expr &l, const z3::expr &r) {
-            if (!l.is_fpa()) {
+            if (l.is_fpa()) {
                 return z3::fp_eq(l, r);
             }
             return l == r;
