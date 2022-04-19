@@ -37,6 +37,10 @@ namespace Mode::FP {
     constexpr bool operator==(const Width &a, const Width &b) noexcept {
         return (a.exp == b.exp) && (a.mantissa == b.mantissa);
     }
+    /** Anti-equality operator */
+    constexpr bool operator!=(const Width &a, const Width &b) noexcept {
+        return !(a == b);
+    }
 
     /** Width stream operator */
     inline std::ostream &operator<<(std::ostream &os, const Width &w) {

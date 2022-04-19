@@ -44,6 +44,10 @@ namespace PyObj {
     inline bool operator==(const Base &a, const Base &b) {
         return Private::eq(a.hash == b.hash, a.ref == b.ref);
     }
+    /** Anti-equality operator */
+    inline bool operator!=(const Base &a, const Base &b) {
+        return !(a == b);
+    }
 
 } // namespace PyObj
 
