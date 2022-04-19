@@ -3,32 +3,64 @@ import clari
 import logging
 import functools
 
+import clari
+
+# TODO: remove
 logging.basicConfig(
-    level=logging.DEBUG, # TODO: use angr logging system
-    format='%(levelname)-7s | %(asctime)-23s | %(name)-8s | %(message)s'
+    level=logging.DEBUG,
+    format="%(levelname)-7s | %(asctime)-23s | %(name)-8s | %(message)s",
 )
 
-### Exceptions grab extra info
+# Config
+log = logging.getLogger(__name__)
+claricpp_debug = ("CLARICPP_DEBUG" in os.environ)
 
-clari.Util.Err.Claricpp.toggle_backtrace(True) # TODO: remove me when not debugging
+### Init Claricpp and Claripy link
+
+# Init logging
+if hasattr(clari.API, 'set_log_level'): # Claricpp might be compiled without this option
+    # Hook setLevel to call the C++ version as well
+    log._original_setLevel = log.setLevel
+    def _set_level(lvl):
+        log._original_setLevel(lvl)
+        clari.API.set_log_level(lvl)
+    log.setLevel = _set_level
+    del _set_level # No need to keep this around
+    log.setLevel(log.getEffectiveLevel()) # Should set the C++ level
+    log.info("Claripy/Claricpp log levels synchronized")
+else:
+    lvl = logging.getLevelName(clari.API.get_log_level())
+    log.info("Claricpp's log level is fixed at: " + lvl)
+clari.API.install_logger(lambda a,b,c: logging.getLogger(a).log(b,c))
+
+# Init backtraces
+if claricpp_debug:
+    clari.API.enable_signal_traces()
+    clari.Util.Err.Claricpp.toggle_backtrace(claricpp_debug)
+    log.info("Backtraces enabled")
+
+
+### Setup Exception Translations
+
 def _cls_init(self, *args, **kwargs):
-    def native_trace(args):
+    def native_trace():
         if not hasattr(self, '_native_trace'):
-            lazy = args[0]
-            if lazy is None:
-                self._native_trace = ""
-            else:
+            lazy = self.__lazy_bt
+            del self.__lazy_bt # Free the lazy object since we cach the evaluation
+            if lazy is not None:
                 try:
-                    self._native_trace = lazy.str() # Evaluate and cache the result
+                    lazy = lazy.str() # Evaluate lazy
                 except Exception as e:
-                    logging.error("Failed to extract native backtrace because: " + str(e))
-                    self._native_trace = ""
-            del args[0] # Free the lazy object since we cached the evaluation
+                    log.error("Failed to extract native backtrace because: " + str(e))
+            self._native_trace = lazy
         return self._native_trace
-    lazy = clari.Util.Err.Claricpp.lazy_backtrace() # should never throw
-    # Set the native_trace function and call the old init
-    self.native_trace = functools.partial(native_trace, [lazy])
-    super(clari.py_err._internal.Base, self).__init__(*args, **kwargs)
+    self.__lazy_bt = clari.Util.Err.Claricpp.lazy_backtrace() # should never throw
+    # Set the native_trace
+    self.native_trace = native_trace
+    self.__original_init(*args, **kwargs)
+
+# Override builtin init with our new init
+clari.py_err._internal.Base.__original_init = clari.py_err._internal.Base.__init__
 clari.py_err._internal.Base.__init__ = _cls_init
 del _cls_init # No need to keep this name around
 
@@ -43,10 +75,10 @@ clari.API.install_logger(lambda a,b,c: logging.getLogger(a).log(b,c))
 ### Operators ###
 
 # Fixes
-# TODO: make this work for instance variabels clari.Expr.Base.args = clari.Expr.Base.python_children
+# TODO: make this work for instance variables clari.Expr.Base.args = clari.Expr.Base.python_children
 
 # Define repr
-# TODO: clari.Annotation.Base.__repr__ = clari.Annotation.Base.repr
+clari.Annotation.Base.__repr__ = clari.Annotation.Base.repr
 clari.Annotation.Vec.__repr__ = clari.Annotation.Vec.repr
 clari.Expr.Base.__repr__ = clari.Expr.Base.repr
 clari.Op.Base.__repr__ = clari.Op.Base.repr
