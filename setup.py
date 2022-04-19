@@ -771,7 +771,7 @@ class Claricpp(Library):
             "VERSION": version,
             "CLARICPP": claricpp,
             # Build options
-            "CONSTANT_LOG_LEVEL": cls.build_debug,
+            "CONSTANT_LOG_LEVEL": not cls.build_debug,
             "DEFAULT_RELEASE_LOG_LEVEL": "critical",
             "CMAKE_BUILD_TYPE": "Debug" if cls.build_debug else "Release",
             # Backtrace options
