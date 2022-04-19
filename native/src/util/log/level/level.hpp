@@ -8,6 +8,7 @@
 
 #include "../../../constants.hpp"
 #include "../../../macros.hpp"
+#include "../../widen.hpp"
 
 #include <cstdint>
 #include <limits>
@@ -22,6 +23,7 @@
     #define UTIL_LOG_LEVEL_CONSTEXPR
 #endif
 
+#include <iostream>
 
 namespace Util::Log::Level {
 
@@ -71,7 +73,8 @@ namespace Util::Log::Level {
             return os << "Disabled";
         }
         else {
-            return os << "<Level: " << l.lvl << '>';
+            // Widen in case of unsigned char
+            return os << "<Log level: " << widen<U64>(l.lvl) << '>';
         }
     }
 
