@@ -24,7 +24,7 @@ namespace CUID {
             return x->cuid == T::static_cuid; // NOLINT (*null possible in release mode)
         }
         else if constexpr (AllowKin) {
-            return Util::Cast::Dynamic::test<T>(x);
+            return Util::PCast::Dynamic::test<T>(x);
         }
         else {
             return false;

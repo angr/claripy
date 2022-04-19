@@ -43,7 +43,7 @@ void custom() {
     // Configure backend and style to output to with all relevant info
     auto s { std::make_shared<std::ostringstream>() };
     Style::set<CustomSty>();
-    L::Backend::set<L::Backend::OStream>(Util::Cast::Static::up<std::ostream>(s), true);
+    L::Backend::set<L::Backend::OStream>(Util::PCast::Static::up<std::ostream>(s), true);
 
     // Clear the log for the next test
     s->str("");

@@ -33,7 +33,7 @@ namespace Util {
         }
         else {
             // Return initialize a static up cast from a new Derived constructed via forwarded args
-            return Cast::Static::up<Base>(
+            return PCast::Static::up<Base>(
                 std::make_shared<TrueDerived>(std::forward<Args>(args)...));
         }
     }

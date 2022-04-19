@@ -11,7 +11,7 @@
 
 /** A dynamic down-cast alias */
 template <typename T, typename U> auto dcast(const U &u) {
-    return Util::Cast::Dynamic::down_throw_on_fail<T>(u);
+    return Util::PCast::Dynamic::down_throw_on_fail<T>(u);
 }
 
 #endif

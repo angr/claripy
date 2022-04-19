@@ -20,7 +20,7 @@
 #include <type_traits>
 
 
-namespace Util::Cast {
+namespace Util::PCast {
 
     namespace Dynamic {
 
@@ -96,7 +96,7 @@ namespace Util::Cast {
         constexpr auto down(const std::shared_ptr<In> &in)
 #ifdef DEBUG
         {
-            return Util::Cast::Dynamic::down<Out>(in);
+            return Util::PCast::Dynamic::down<Out>(in);
         }
 #else
             noexcept {
@@ -113,7 +113,7 @@ namespace Util::Cast {
         constexpr auto side(const std::shared_ptr<In> &in)
 #ifdef DEBUG
         {
-            return Util::Cast::Dynamic::side<Out>(in);
+            return Util::PCast::Dynamic::side<Out>(in);
         }
 #else
             noexcept {
@@ -134,6 +134,6 @@ namespace Util::Cast {
         }
     } // namespace Static
 
-} // namespace Util::Cast
+} // namespace Util::PCast
 
 #endif

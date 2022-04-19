@@ -196,7 +196,7 @@ namespace Hash {
         std::enable_if_t<Util::Type::Is::ancestor<Hashed, Internal>, int> = 0> // Allows prims
     inline Hash singular(const std::shared_ptr<const Internal> &h) noexcept {
         // Will warn if types are different or implicit conversion is dangerous / impossible
-        return singular(Util::Cast::Static::up<Hashed>(h));
+        return singular(Util::PCast::Static::up<Hashed>(h));
     }
 
     /** A specialization for T = std::vector<Internal> */

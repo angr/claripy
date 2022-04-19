@@ -14,7 +14,7 @@ using namespace UnitTest::TestLib;
 /** Construct a t_literal<T> and up-cast it */
 template <typename T> Expr::BasePtr construct(const I64 i = 0) {
     auto ret { Factories::t_literal<T>(i) };
-    return Util::Cast::Static::up<Expr::Base>(ret);
+    return Util::PCast::Static::up<Expr::Base>(ret);
 }
 
 /** Each construction should have a unique pointer and hash */

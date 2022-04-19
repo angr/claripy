@@ -48,7 +48,7 @@ void lower_level_ignored() {
     auto s { std::make_shared<std::ostringstream>() };
     s->str("");
     UNITTEST_ASSERT_MSG(s->str().empty(), "Sanity check");
-    L::Backend::set<L::Backend::OStream>(Util::Cast::Static::up<std::ostream>(s), true, false);
+    L::Backend::set<L::Backend::OStream>(Util::PCast::Static::up<std::ostream>(s), true, false);
 
     // Change the log level if needed
 #ifndef CONSTANT_LOG_LEVEL

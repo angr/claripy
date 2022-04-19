@@ -72,7 +72,7 @@ namespace Shift {
 static Expr::BasePtr eq(const Expr::BasePtr &original) {
 #ifdef DEBUG
     UTIL_ASSERT_NOT_NULL_DEBUG(original);
-    Util::Cast::Dynamic::test_throw_on_fail<Op::Eq, Util::Err::Type>(
+    Util::PCast::Dynamic::test_throw_on_fail<Op::Eq, Util::Err::Type>(
         original->op, "Simplifer::eq's Expr's op must be an Op::Eq");
 #endif
     Util::Log::verbose<SL>("Eq simplifier invoked");
