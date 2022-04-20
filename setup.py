@@ -72,12 +72,12 @@ def chdir(new):
         os.chdir(old)
 
 
-def find_exe(name):
+def find_exe(name, fail_ok=False):
     """
     Akin to bash's which function
     """
     exe = shutil.which(name, mode=os.X_OK)
-    if exe is None:
+    if exe is None and not fail_ok:
         raise RuntimeError("Cannot find " + name)
     return exe
 
@@ -765,9 +765,9 @@ class Claricpp(Library):
         self._build_debug = debug
         self._build_doc = docs
         # Config
-        chk = {self._lib.name: self._lib, "Claricpp src": self._out_src}
-        build_chk = {} if self._build_doc or self._enable_tests else chk
-        super().__init__({}, build_chk, chk, Boost(), Z3(), Pybind11(), Backward())
+        default_chk = {self._lib.name: self._lib, "Claricpp src": self._out_src}
+        chk = {} if (self._enable_tests or self._build_doc) else default_chk
+        super().__init__({}, chk, chk, Boost(), Z3(), Pybind11(), Backward())
 
     def _cmake_config_args(self, claricpp):
         """
@@ -787,7 +787,8 @@ class Claricpp(Library):
             "REQUIRE_BACKWARD_BACKEND": False,  # TODO:
             "SOURCE_ROOT_FOR_BACKTRACE": None,  # TODO: make a runtime thing config'd by python
             # Disable options
-            "ENABLE_TESTING": self._enable_tests,
+            "ENABLE_TESTING": self._enable_tests
+            or self._build_doc,  # build_doc b/c compile_commands.json
             "CPP_CHECK": False,
             "CLANG_TIDY": False,
             "ENABLE_MEMCHECK": False,
@@ -821,12 +822,21 @@ class Claricpp(Library):
                 build_cmake_target(claricpp)
             if self._enable_tests:
                 print("Building tests...")
-                build_cmake_target("all")
-                print("To test: cd " + self.build_dir + " && ctest .")
+                build_cmake_target("unit_tests")
             if self._build_doc:
                 print("Building docs...")
                 build_cmake_target("docs")
                 print("Docs built in: " + os.path.join(self.build_dir, "docs"))
+
+    @classmethod
+    def run_tests(cls):  # Warning: tests should be built before calling this
+        # Prefer ctest over make test but either will work
+        with chdir(cls.build_dir):
+            ctest = find_exe("ctest")
+            if ctest is not None:
+                run_cmd_no_fail(ctest, "-j" + str(max(cpu_count() - 1, 1)), ".")
+            else:
+                build_cmake_target("test")  # This will not be parallel
 
     def _license(self):
         pass  # Same as main project
@@ -839,7 +849,8 @@ class Claricpp(Library):
         return [k for i, k in paths.items() if i == skip]
 
     def _install(self):
-        self._lib.install()
+        if self._build_lib:
+            self._lib.install()
         if not os.path.exists(self._out_src):
             src = os.path.join(native, "src")
             shutil.copytree(src, self._out_src, ignore=self._install_ignore)
@@ -911,7 +922,8 @@ class Native(Command):
         ("no-lib", None, "Do not build the Claricpp library; requires --no-api"),
         ("no-api", None, "Do not build the Claricpp API"),
         ("docs", None, "Build Claricpp docs"),
-        ("tests", "t", "Build Claricpp tests; incompatible with --no-lib"),
+        ("tests", "t", "Build Claricpp unit tests; incompatible with --no-lib"),
+        ("run-tests", None, "Run Claricpp tests; requires --tests"),
         ("debug", "d", "Prefers debug mode to release mode while building"),
         ("clean=", "c", "Runs clean at the given level first"),
     ]
@@ -932,17 +944,19 @@ class Native(Command):
         self.args = JDict(self.args)
         # Error checking + cleanup
         _ = [delattr(self, i) for i in self.args]
+        if self.args.run_tests and not self.args.tests:
+            msg = "--run-tests requires --tests"
+            raise RuntimeError(msg)
         if self.args.no_lib and (not self.args.no_api or self.args.tests):
             msg = "--no-lib must be used with --no-api and may not be used with --tests"
             raise RuntimeError(msg)
 
     def run(self) -> None:
-        # Function
+        # Construct the main class and determine the function name
         cls = Claricpp if self.args.no_api else ClaricppAPI
         params = ["no_lib", "docs", "tests", "debug"]
-        params = {i: k for i, k in self.args.items() if i in params}
+        instance = cls(**{i: k for i, k in self.args.items() if i in params})
         fname = "build" if self.args.no_install else "install"
-        f = lambda: getattr(cls(**params), fname)()
         # Message
         msg = "Building native components"
         options = ["--" + i.replace("_", "-") for i, k in self.args.items() if k]
@@ -951,8 +965,10 @@ class Native(Command):
         # Run
         if self.args.clean is not None:
             msg = "Cleaning Claricpp at level: " + self.args.clean.name
-            self.execute(lambda: ClaricppAPI().clean(self.args.clean), (), msg=msg)
-        self.execute(f, (), msg=msg)
+            self.execute(lambda: instance.clean(self.args.clean), (), msg=msg)
+        self.execute(lambda: getattr(instance, fname)(), (), msg=msg)
+        if self.args.run_tests:
+            self.execute(Claricpp.run_tests, (), msg="Running native tests")
 
 
 class Build(BuildOriginal):
