@@ -1,12 +1,20 @@
 # Build system
+**/.dockerignore
 Dockerfile
 build.sh
 
-# Config files
+# Misc
+claripy/claricpp/old
+.azure-pipelines
 **/.editorconfig
-**/.dockerignore
+**/__pycache__
+**/.DS_Store
+**/.idea
+**/*.pyc
+.github
 
 # Git
+**/.gitmodules
 **/.gitignore
 **/.git
 
@@ -22,6 +30,13 @@ MANIFEST
 build
 dist
 
+# Native installed items
+claripy/claricpp/clari.*
+claripy/claricpp/libclaricpp.*
+claripy/claricpp/LICENSE.GMP
+claripy/claricpp/libgmp.a
+claripy/claricpp/src
+
 # Native build artifacts
 native/Doxyfile
 native/.build.*
@@ -29,12 +44,15 @@ native/.cache
 native/build
 
 # External projects
-native/gmp/build
 native/boost
+native/gmp
 
 # Explicit
+native/src/api/binder
 native/Ignore/*
 native/ignore/*
+
+# From .gitignore:
 
 # Prerequisites
 **/*.d

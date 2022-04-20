@@ -79,12 +79,14 @@ RUN pip3 install \
 FROM base_dev as base_dev_extras
 LABEL stage=base_dev_extras
 
-RUN pip3 install clang-format \
+RUN pip3 install clang-format
 RUN apt-get install -yq \
     \
     `# Documentation` \
     graphviz \
     doxygen \
+    `# Improve Documentation` \
+    clang \
     \
     `# Static Analysis` \
     clang-tidy \
@@ -147,7 +149,7 @@ RUN pip3 install --no-build-isolation --verbose .
 
 # Let's test things individually
 # If a setp fails, this makes debugging easier
-# All stages which derive from sdist do for only for speed
+# All stages which derive from anything but clean do for only for speed
 
 FROM "${CONFIG_STAGE}" as clean
 LABEL stage=clean
@@ -171,19 +173,14 @@ RUN python setup.py bdist_wheel
 
 FROM sdist as build_tests
 LABEL stage=build_tests
-RUN python setup.py native --debug --tests
-
-FROM sdist as docs
-LABEL stage=docs
-RUN apt-get install -yq graphviz doxygen
-RUN python setup.py native --docs
-
-
-##################################################
-#                   Test Stage                   #
-##################################################
-
+RUN python setup.py native --tests --debug --no-api
 
 FROM build_tests as test
 LABEL stage=test
-RUN cd "${BUILD}" && ctest .
+RUN python setup.py native --tests --debug --no-api --run-tests
+
+FROM sdist as docs
+LABEL stage=docs
+# Dependencies; clang is optional improves output
+RUN apt-get install -yq doxygen graphviz clang
+RUN python setup.py native --docs --no-api --no-lib
