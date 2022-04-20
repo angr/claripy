@@ -557,7 +557,7 @@ endif()
 #################################################
 
 
-# Create a make target for the library
+# Claricpp library
 add_subdirectory("${CLARICPP_SRC}")
 
 # Backtrace config
@@ -581,6 +581,13 @@ target_link_libraries("${CLARICPP}"
 	PUBLIC "${GMP_LIBRARIES}" # Boost multiprecision backend
 	# PUBLIC dl (only necessary if using native backtraces; Backward handles it's own dependencies)
 )
+
+# API
+set(API_TARGET clari)
+add_subdirectory(api)
+# TODO: these target_ functions should be inherited from claricpp... why aren't they?
+target_include_directories("${API_TARGET}" SYSTEM BEFORE PUBLIC "${Z3_INCLUDE_DIR}" PUBLIC ${Boost_INCLUDE_DIRS})
+target_link_libraries("${API_TARGET}" PUBLIC "${CLARICPP}" PUBLIC "${Z3_LINK_TARGET}" PUBLIC "${GMP_LIBRARIES}")
 
 # Create a make target for test cases
 if(ENABLE_TESTING)

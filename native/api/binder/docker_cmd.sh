@@ -7,9 +7,9 @@ NATIVE="${3}"
 OUTD="${4}"
 
 # Bindings
-API_D="${NATIVE}/src/api/"
+API_D="${NATIVE}/api/"
 /usr/local/bin/binder \
-	--config="${NATIVE}/src/api/clari.conf"  \
+	--config="${API_D}/clari.conf"  \
 	\
 	-v \
 	--root-module clari \

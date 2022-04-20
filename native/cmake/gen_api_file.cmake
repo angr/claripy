@@ -7,7 +7,7 @@ include(hash_dir)
 set(ROOT_MOD_NAME clari)
 
 # Helper function
-function(_use_existing API_SOURCE BINDER_DIR MUST_INCLUDE RET_VAR)
+function(_use_existing API_SOURCE BINDINGS_DIR MUST_INCLUDE RET_VAR)
     set("${RET_VAR}" FALSE PARENT_SCOPE)
     # Determine if cache can be used
     if (NOT EXISTS "${API_SOURCE}")
@@ -15,8 +15,8 @@ function(_use_existing API_SOURCE BINDER_DIR MUST_INCLUDE RET_VAR)
         return()
     endif()
     # Check timestamps of binder code
-    if (EXISTS "${BINDER_DIR}")
-        is_eldest_of_dir("${API_SOURCE}" "${BINDER_DIR}" ELDEST)
+    if (EXISTS "${BINDINGS_DIR}")
+        is_eldest_of_dir("${API_SOURCE}" "${BINDINGS_DIR}" ELDEST)
         if (NOT ELDEST)
             message("Regenerating API code")
             return()
@@ -33,33 +33,33 @@ function(_use_existing API_SOURCE BINDER_DIR MUST_INCLUDE RET_VAR)
 endfunction()
 
 # Generates API_SOURCE
-function(gen_api_file API_TARGET API_SOURCE BINDER_DIR) # Append 'must include' files
+function(gen_api_file API_TARGET API_SOURCE BINDINGS_DIR) # Append 'must include' files
     set(MUST_INCLUDE "${ARGN}")
 
-    if (EXISTS "${BINDER_DIR}")
+    if (EXISTS "${BINDINGS_DIR}")
         # Remove bad auto-gen'd code
-        if (EXISTS "${BINDER_DIR}/std")
+        if (EXISTS "${BINDINGS_DIR}/std")
             message(STATUS "Removing undesired auto-generated code...")
-            file(REMOVE "${BINDER_DIR}/${API_TARGET}.modules")
-            file(REMOVE "${BINDER_DIR}/${API_TARGET}.sources")
-            file(REMOVE_RECURSE "${BINDER_DIR}/std") # std bindings
+            file(REMOVE "${BINDINGS_DIR}/${API_TARGET}.modules")
+            file(REMOVE "${BINDINGS_DIR}/${API_TARGET}.sources")
+            file(REMOVE_RECURSE "${BINDINGS_DIR}/std") # std bindings
         endif()
-        # Hash check BINDER_DIR in case clang-format or something broke it
+        # Hash check BINDINGS_DIR in case clang-format or something broke it
         # This is useful for developers; ex. detecting if clang-format edited autogen'd code
-        hash_dir_store_check("${BINDER_DIR}" "Binder directory is polluted; refusing to proceed.")
+        hash_dir_store_check("${BINDINGS_DIR}" "Binder directory is polluted; refusing to proceed.")
     endif()
 
     # Check if code should be reused
-    _use_existing("${API_SOURCE}" "${BINDER_DIR}" "${MUST_INCLUDE}" USE_EXISTING)
+    _use_existing("${API_SOURCE}" "${BINDINGS_DIR}" "${MUST_INCLUDE}" USE_EXISTING)
     if (USE_EXISTING)
         message(STATUS "Using existing API code")
         return()
     endif()
 
     # Dependency check
-    if (NOT EXISTS "${BINDER_DIR}")
+    if (NOT EXISTS "${BINDINGS_DIR}")
         message(FATAL_ERROR "API source must be regenerated; dependencies have changed."
-                " Please generate bindings with binder and place them in :${BINDER_DIR}")
+                " Please generate bindings with binder and place them in :${BINDINGS_DIR}")
     endif()
 
     # Split code into headers and a body
@@ -88,7 +88,7 @@ function(gen_api_file API_TARGET API_SOURCE BINDER_DIR) # Append 'must include' 
 
     # Read in file as list of lines (cannot use file(STRINGS) because semicolons :( )
     message(STATUS "Parsing binder generated code...")
-    set(IN_FILE "${BINDER_DIR}/${API_TARGET}.cpp")
+    set(IN_FILE "${BINDINGS_DIR}/${API_TARGET}.cpp")
     read_lines("${IN_FILE}" RAW_LINES)
     split_code("${RAW_LINES}" HEADERS BODY_LINES)
 
@@ -140,7 +140,7 @@ function(gen_api_file API_TARGET API_SOURCE BINDER_DIR) # Append 'must include' 
 
     # Add source files
     message(STATUS "Merging auto-generated source files...")
-    file(GLOB SOURCES "${BINDER_DIR}/*/*.cpp")
+    file(GLOB SOURCES "${BINDINGS_DIR}/*/*.cpp")
     foreach(NEXT IN LISTS SOURCES)
         read_lines("${NEXT}" DATA)
         split_code("${DATA}" HEADERS BODY_LINES) # Store headers and body

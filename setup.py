@@ -876,7 +876,7 @@ class ClaricppAPI(Library):
     """
 
     _api_target = "clari"
-    _build_dir = os.path.join(Claricpp.build_dir, "src/api")
+    _build_dir = os.path.join(Claricpp.build_dir, "api")
     _lib = SharedLib(_api_target, _build_dir)
 
     def __init__(self, **kwargs):

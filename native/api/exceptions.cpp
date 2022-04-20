@@ -7,7 +7,7 @@
 #include "constants.hpp"
 #include "py_shim_code.hpp"
 
-#include "../error.hpp"
+#include "../src/error.hpp"
 
 #include <pybind11/eval.h>
 

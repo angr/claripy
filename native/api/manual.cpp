@@ -9,7 +9,7 @@
 #include "signal_handler.hpp"
 #include "simplify.hpp"
 
-#include "../util.hpp"
+#include "../src/util.hpp"
 
 
 /** Safely log a message */

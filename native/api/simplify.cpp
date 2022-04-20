@@ -4,7 +4,7 @@
  */
 #include "simplify.hpp"
 
-#include "../simplify.hpp"
+#include "../src/simplify.hpp"
 
 #include <pybind11/functional.h>
 

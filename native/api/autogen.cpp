@@ -1,6 +1,5 @@
 // Claricpp API
 
-#include "constants.hpp"
 #include "headers.hpp"
 #include "manual.hpp"
 #include <algorithm>
@@ -23,7 +22,7 @@
 
 
 //
-// Derived from file: binder/clari.cpp
+// Derived from file: binder/raw_output/clari.cpp
 //
 
 
@@ -175,7 +174,7 @@ PYBIND11_MODULE(clari, root_module) {
 
 
 //
-// File: binder/unknown/unknown.cpp
+// File: binder/raw_output/unknown/unknown.cpp
 //
 
 
@@ -198,7 +197,7 @@ void bind_unknown_unknown(std::function< pybind11::module &(std::string const &n
 
 
 //
-// File: binder/unknown/unknown_1.cpp
+// File: binder/raw_output/unknown/unknown_1.cpp
 //
 
 
@@ -236,7 +235,7 @@ void bind_unknown_unknown_1(std::function< pybind11::module &(std::string const 
 
 
 //
-// File: binder/unknown/unknown_10.cpp
+// File: binder/raw_output/unknown/unknown_10.cpp
 //
 
 
@@ -258,7 +257,7 @@ void bind_unknown_unknown_10(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_11.cpp
+// File: binder/raw_output/unknown/unknown_11.cpp
 //
 
 
@@ -282,7 +281,7 @@ void bind_unknown_unknown_11(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_12.cpp
+// File: binder/raw_output/unknown/unknown_12.cpp
 //
 
 
@@ -371,7 +370,7 @@ void bind_unknown_unknown_12(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_13.cpp
+// File: binder/raw_output/unknown/unknown_13.cpp
 //
 
 
@@ -397,7 +396,7 @@ void bind_unknown_unknown_13(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_14.cpp
+// File: binder/raw_output/unknown/unknown_14.cpp
 //
 
 
@@ -420,7 +419,7 @@ void bind_unknown_unknown_14(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_15.cpp
+// File: binder/raw_output/unknown/unknown_15.cpp
 //
 
 
@@ -448,7 +447,7 @@ void bind_unknown_unknown_15(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_16.cpp
+// File: binder/raw_output/unknown/unknown_16.cpp
 //
 
 
@@ -496,7 +495,7 @@ void bind_unknown_unknown_16(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_17.cpp
+// File: binder/raw_output/unknown/unknown_17.cpp
 //
 
 
@@ -522,7 +521,7 @@ void bind_unknown_unknown_17(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_18.cpp
+// File: binder/raw_output/unknown/unknown_18.cpp
 //
 
 
@@ -549,7 +548,7 @@ void bind_unknown_unknown_18(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_19.cpp
+// File: binder/raw_output/unknown/unknown_19.cpp
 //
 
 
@@ -617,7 +616,7 @@ void bind_unknown_unknown_19(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_2.cpp
+// File: binder/raw_output/unknown/unknown_2.cpp
 //
 
 
@@ -640,7 +639,7 @@ void bind_unknown_unknown_2(std::function< pybind11::module &(std::string const 
 
 
 //
-// File: binder/unknown/unknown_20.cpp
+// File: binder/raw_output/unknown/unknown_20.cpp
 //
 
 
@@ -682,7 +681,7 @@ void bind_unknown_unknown_20(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_21.cpp
+// File: binder/raw_output/unknown/unknown_21.cpp
 //
 
 
@@ -718,7 +717,7 @@ void bind_unknown_unknown_21(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_22.cpp
+// File: binder/raw_output/unknown/unknown_22.cpp
 //
 
 
@@ -755,7 +754,7 @@ void bind_unknown_unknown_22(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_23.cpp
+// File: binder/raw_output/unknown/unknown_23.cpp
 //
 
 
@@ -789,7 +788,7 @@ void bind_unknown_unknown_23(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_24.cpp
+// File: binder/raw_output/unknown/unknown_24.cpp
 //
 
 
@@ -824,7 +823,7 @@ void bind_unknown_unknown_24(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_25.cpp
+// File: binder/raw_output/unknown/unknown_25.cpp
 //
 
 
@@ -850,7 +849,7 @@ void bind_unknown_unknown_25(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_26.cpp
+// File: binder/raw_output/unknown/unknown_26.cpp
 //
 
 
@@ -893,7 +892,7 @@ void bind_unknown_unknown_26(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_27.cpp
+// File: binder/raw_output/unknown/unknown_27.cpp
 //
 
 
@@ -975,7 +974,7 @@ void bind_unknown_unknown_27(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_28.cpp
+// File: binder/raw_output/unknown/unknown_28.cpp
 //
 
 
@@ -998,7 +997,7 @@ void bind_unknown_unknown_28(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_29.cpp
+// File: binder/raw_output/unknown/unknown_29.cpp
 //
 
 
@@ -1041,7 +1040,7 @@ void bind_unknown_unknown_29(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_3.cpp
+// File: binder/raw_output/unknown/unknown_3.cpp
 //
 
 
@@ -1064,7 +1063,7 @@ void bind_unknown_unknown_3(std::function< pybind11::module &(std::string const 
 
 
 //
-// File: binder/unknown/unknown_30.cpp
+// File: binder/raw_output/unknown/unknown_30.cpp
 //
 
 
@@ -1107,7 +1106,7 @@ void bind_unknown_unknown_30(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_31.cpp
+// File: binder/raw_output/unknown/unknown_31.cpp
 //
 
 
@@ -1174,7 +1173,7 @@ void bind_unknown_unknown_31(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_32.cpp
+// File: binder/raw_output/unknown/unknown_32.cpp
 //
 
 
@@ -1205,7 +1204,7 @@ void bind_unknown_unknown_32(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_33.cpp
+// File: binder/raw_output/unknown/unknown_33.cpp
 //
 
 
@@ -1228,7 +1227,7 @@ void bind_unknown_unknown_33(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_34.cpp
+// File: binder/raw_output/unknown/unknown_34.cpp
 //
 
 
@@ -1271,7 +1270,7 @@ void bind_unknown_unknown_34(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_35.cpp
+// File: binder/raw_output/unknown/unknown_35.cpp
 //
 
 
@@ -1310,7 +1309,7 @@ void bind_unknown_unknown_35(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_36.cpp
+// File: binder/raw_output/unknown/unknown_36.cpp
 //
 
 
@@ -1397,7 +1396,7 @@ void bind_unknown_unknown_36(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_37.cpp
+// File: binder/raw_output/unknown/unknown_37.cpp
 //
 
 
@@ -1476,7 +1475,7 @@ void bind_unknown_unknown_37(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_38.cpp
+// File: binder/raw_output/unknown/unknown_38.cpp
 //
 
 
@@ -1511,7 +1510,7 @@ void bind_unknown_unknown_38(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_39.cpp
+// File: binder/raw_output/unknown/unknown_39.cpp
 //
 
 
@@ -1537,7 +1536,7 @@ void bind_unknown_unknown_39(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_4.cpp
+// File: binder/raw_output/unknown/unknown_4.cpp
 //
 
 
@@ -1579,7 +1578,7 @@ void bind_unknown_unknown_4(std::function< pybind11::module &(std::string const 
 
 
 //
-// File: binder/unknown/unknown_40.cpp
+// File: binder/raw_output/unknown/unknown_40.cpp
 //
 
 
@@ -1614,7 +1613,7 @@ void bind_unknown_unknown_40(std::function< pybind11::module &(std::string const
 
 
 //
-// File: binder/unknown/unknown_5.cpp
+// File: binder/raw_output/unknown/unknown_5.cpp
 //
 
 
@@ -1656,7 +1655,7 @@ void bind_unknown_unknown_5(std::function< pybind11::module &(std::string const 
 
 
 //
-// File: binder/unknown/unknown_6.cpp
+// File: binder/raw_output/unknown/unknown_6.cpp
 //
 
 
@@ -1690,7 +1689,7 @@ void bind_unknown_unknown_6(std::function< pybind11::module &(std::string const 
 
 
 //
-// File: binder/unknown/unknown_7.cpp
+// File: binder/raw_output/unknown/unknown_7.cpp
 //
 
 
@@ -1727,7 +1726,7 @@ void bind_unknown_unknown_7(std::function< pybind11::module &(std::string const 
 
 
 //
-// File: binder/unknown/unknown_8.cpp
+// File: binder/raw_output/unknown/unknown_8.cpp
 //
 
 
@@ -1753,7 +1752,7 @@ void bind_unknown_unknown_8(std::function< pybind11::module &(std::string const 
 
 
 //
-// File: binder/unknown/unknown_9.cpp
+// File: binder/raw_output/unknown/unknown_9.cpp
 //
 
 

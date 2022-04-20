@@ -4,7 +4,7 @@
  */
 #include "log.hpp"
 
-#include "../util.hpp"
+#include "../src/util.hpp"
 
 #include <pybind11/functional.h>
 
