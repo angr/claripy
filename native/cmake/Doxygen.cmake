@@ -1,4 +1,3 @@
-# Find packages
 find_package(Doxygen REQUIRED dot)
 
 # Config
@@ -12,6 +11,15 @@ set(PROJECT_LOGO "${CMAKE_CURRENT_SOURCE_DIR}/logo.png")
 set(DOXYGEN_IN "${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in")
 set(DOXYGEN_OUT "${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile")
 default(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/docs")
+
+# Determine doc sources
+set(DOC_SOURCES "src/")
+if (BUILD_API)
+	string(APPEND DOC_SOURCES " api/")
+endif()
+if (ENABLE_TESTING)
+	string(APPEND DOC_SOURCES " tests/")
+endif()
 
 # Copy DOXYGEN_IN -> DOXYGEN_OUT but replace all strings in DOXYGEN_IN
 # surrounded with @ signs with the values of the variables they name
