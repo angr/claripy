@@ -30,7 +30,7 @@ void test(std::shared_ptr<std::ostringstream> &s, const Lvl::Lvl l) {
 UTIL_LOG_DEFINE_LOG_CLASS(Custom)
 
 /** A hack to allow unreachable code not to cause a compile error */
-static UTIL_ICCBOOL allow_unreachable { true };
+[[maybe_unused]] static UTIL_ICCBOOL allow_unreachable { true };
 
 /** Log levels lower than the set level should be no-op's */
 void lower_level_ignored() {
