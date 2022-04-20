@@ -763,20 +763,21 @@ class Claricpp(Library):
     # Docs constants
     _docs_dir = os.path.join(build_dir, "docs") # Must be in build_dir
 
-    def __init__(self, *, api, no_lib=False, docs=False, debug=False, tests=False):
+    def __init__(self, *, api, no_build=False, no_lib=False, docs=False, debug=False, tests=False):
         # Options
         self._build_lib = not no_lib
         self._enable_tests = tests
         self._build_debug = debug
         self._build_doc = docs
         self._build_api = api
+        self._no_build = no_build
         # Config
         default_chk = {i.name: i for i in [self._lib, self._api_lib]}
         default_chk["Claricpp src"] = self._out_src
         chk = {} if (self._enable_tests or self._build_doc) else  default_chk
         super().__init__({}, chk, chk, Boost(), Z3(), Pybind11(), Backward())
 
-    def _cmake_config_args(self, claricpp):
+    def _cmake_args(self):
         """
         Create arguments to pass to cmake for configuring claricpp
         """
@@ -814,30 +815,27 @@ class Claricpp(Library):
         dd = lambda key, val: "-D" + key + "=" + ("" if val is None else on_off(val))
         return [dd(*i) for i in config.items()]
 
-    def _cmake(self, native, build):
-        print("Configuring...")
-        cmake_args = self._cmake_config_args(claricpp)
-        with chdir(build):
-            run_cmd_no_fail(find_exe("cmake"), *cmake_args, native)
-
     def _build(self):
         if not os.path.exists(self.build_dir):
             os.mkdir(self.build_dir)
-        self._cmake(native, self.build_dir)
+        # CMake
+        print("Configuring...")
         with chdir(self.build_dir):
-            if self._build_lib:
-                print("Building " + claricpp + "...")
-                build_cmake_target(claricpp)
-            if self._enable_tests:
-                print("Building tests...")
-                build_cmake_target("unit_tests")
-            if self._build_doc:
-                print("Building docs...")
-                build_cmake_target("docs")
-                print("Docs built in: " + self._docs_dir)
-            if self._build_api:
-                print("Building " + self._api_target + "...")
-                build_cmake_target(self._api_target)
+            run_cmd_no_fail(find_exe("cmake"), *self._cmake_args(), native)
+        # Build
+        if not self._no_build:
+            targets = [ # Order matters (for cleaner output)
+                (self._build_lib,    claricpp),
+                (self._enable_tests, "unit_tests"),
+                (self._build_doc,    "docs"),
+                (self._build_api,    self._api_target)
+            ]
+            targets = [ i[1] for i in targets if i[0] ]
+            with chdir(self.build_dir):
+                for i in targets:
+                    build_cmake_target(i)
+                if self._build_doc:
+                    print("Docs built in: " + self._docs_dir)
 
     @classmethod
     def run_tests(cls):  # Warning: tests should be built before calling this
@@ -877,13 +875,9 @@ class Claricpp(Library):
         if level.implies(CleanLevel.BUILD):
             if os.path.exists(self.build_dir):
                 if os.path.exists(self.build_dir, "Makefile"):
-                    try:
-                        with chdir(self.build_dir):
-                            build_cmake_target("clean")
-                    except:
-                        print("Clean failed. Try removing: " + self.build_dir)
-                        raise
-                    shutil.rmtree(self.build_dir, ignore_errors=True)
+                    with chdir(self.build_dir):
+                        build_cmake_target("clean")
+                shutil.rmtree(self.build_dir, ignore_errors=True)
 
 
 ######################################################################
@@ -897,17 +891,19 @@ class SDist(SDistOriginal):
         self.execute(f, (), msg="Getting build source dependencies")
         super().run()
 
-
 class Native(Command):
     description = "Build native components"
-    docs_msg = "Build Claricpp docs. If --test builds test docs also; if not --no-api build API docs also"
+    cmake_msg = "Do not build any Claricpp objects, stop after running cmake"
+    docs_msg = "Build Claricpp docs; if --test builds test docs also; if not --no-api build API docs also"
     user_options = [
         ("no-install", None, "Do not install built libraries"),
-        ("no-lib", None, "Do not build the Claricpp library; requires --no-api"),
+        ("no-build", None, cmake_msg),
+        ("no-lib", None, "Do not build the Claricpp library"),
         ("no-api", None, "Do not build the Claricpp API"),
         ("docs", None, docs_msg),
-        ("tests", "t", "Build Claricpp unit tests; incompatible with --no-lib"),
-        ("run-tests", None, "Run Claricpp tests; requires --tests"),
+        ("override", None, "Ignore options sanity checks. Do not do this"),
+        ("tests", "t", "Build Claricpp unit tests"),
+        ("run-tests", None, "Run Claricpp tests"),
         ("debug", "d", "Prefers debug mode to release mode while building"),
         ("clean=", "c", "Runs clean at the given level first"),
     ]
@@ -928,16 +924,33 @@ class Native(Command):
         self.args = JDict(self.args)
         # Error checking + cleanup
         _ = [delattr(self, i) for i in self.args]
-        if self.args.run_tests and not self.args.tests:
-            msg = "--run-tests requires --tests"
-            raise RuntimeError(msg)
-        if self.args.no_lib and (not self.args.no_api or self.args.tests):
-            msg = "--no-lib must be used with --no-api and may not be used with --tests"
-            raise RuntimeError(msg)
+        if self.args.no_lib and not self.args.no_build:
+            print("Warning: --no-lib has no effect given --no-build")
+        msgs = []
+        if self.args.no_build and not self.args.no_install:
+            msgs.append("--no-build will likely fail without --no-install")
+        if self.args.run_test and self.args.no_build:
+            msgs.append("--run-tests will likely fail without --no-build")
+        if self.args.run_test and not self.args.tests:
+            raise RuntimeError("--run-tests will likely fail without --tests")
+        if self.args.no_lib and not self.args.no_api:
+            msg = "--no-lib will likely fail without --no-api; unless --no-build is passed"
+            msgs.append(msg)
+        if self.args.no_lib and self.args.tests:
+            msg = "--no-lib will likely fail with --tests; unless --no-build is passed"
+            msgs.append(msg)
+        if self.args.no_lib and self.args.run_tests:
+            msgs.append("--no-lib will likely fail with --run_tests")
+        # Allow sanity check override
+        msg = "Options sanity check errors:\n  - " + "\n  - ".join(msgs)
+        if len(msgs) > 0:
+            if not self.args.override:
+                raise RuntimeError(msg)
+            print("Overriding o" + msg[1:])
 
     def run(self) -> None:
         # Construct the main class and determine the function name
-        params = ["no_lib", "docs", "tests", "debug"]
+        params = ["no_lib", "docs", "tests", "debug", "no_build"]
         params = {i: k for i, k in self.args.items() if i in params}
         instance = Claricpp(**params, api=not self.args.no_api)
         fname = "build" if self.args.no_install else "install"
