@@ -1,4 +1,6 @@
+# Define a function which should be used to create every Claricpp unit test
 # Requires: SIMPLE_TEST_DIR set to the desired test directory
+# Also defines a target used to build every unit test
 
 # Error checking
 if (NOT DEFINED SIMPLE_TEST_DIR)
@@ -11,6 +13,10 @@ endif()
 if(CLANG_TIDY OR LWYU)
 	message("Turning off some static analysis for test cases.")
 endif()
+
+# Define an 'all tests' target
+set(BUILD_TESTS_TARGET "unit_tests")
+add_custom_target("${BUILD_TESTS_TARGET}" ALL COMMENT "Target which depends on all tests")
 
 # Create a function to add test cases
 # This file generates a test case from a cpp file: ./<FNAME>.cpp
@@ -60,7 +66,7 @@ function(simple_test FUNC_NAME)
 		set(TEST_PREFIX "${TEST_PREFIX}-")
 	endif()
 
-	# Create the test
+	# Create the test binary
 	set(TEST_NAME "${TEST_PREFIX}${FUNC_NAME}")
 	set(BINARY "${TEST_NAME}.test")
 	add_executable("${BINARY}" "${FUNC_NAME}.cpp" ${ARGN})
@@ -68,6 +74,7 @@ function(simple_test FUNC_NAME)
 	## Add the test
 	message(STATUS "\t${TEST_NAME}")
 	add_test("${TEST_NAME}" "./${BINARY}")
+	add_dependencies("${BUILD_TESTS_TARGET}" "${TEST_NAME}.test")
 
 	# Add compile options
 	target_compile_definitions("${BINARY}" PRIVATE "_GLIBCXX_ASSERTIONS")
@@ -93,6 +100,7 @@ function(simple_test FUNC_NAME)
 		)
 		separate_arguments(MEMCHECK)
 		add_test("${TEST_NAME}.memcheck" ${MEMCHECK} "./${BINARY}")
+		add_dependencies("${BUILD_TESTS_TARGET}" "${TEST_NAME}.memcheck.test")
 	endif()
 
 	# Link libraries and headers
