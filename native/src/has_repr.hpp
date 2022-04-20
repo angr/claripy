@@ -12,7 +12,7 @@
 /** A struct with a repr function */
 struct HasRepr {
     /** Virtual destructor */
-    virtual inline ~HasRepr() {}
+    virtual inline ~HasRepr() noexcept = default;
     // Rule of 5
     SET_IMPLICITS(HasRepr, default, noexcept);
 

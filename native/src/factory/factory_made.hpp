@@ -76,7 +76,7 @@ namespace Factory {
     };
 
     /** Default virtual destructor */
-    FactoryMade::~FactoryMade() noexcept = default;
+    inline FactoryMade::~FactoryMade() noexcept = default;
 
 } // namespace Factory
 
