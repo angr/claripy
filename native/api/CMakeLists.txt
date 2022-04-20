@@ -1,3 +1,4 @@
+message(STATUS "Configuring API target: ${API_TARGET}")
 include(gen_api_file)
 
 # Config

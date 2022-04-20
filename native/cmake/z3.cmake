@@ -13,6 +13,7 @@
 #  Z3_LINK_TARGET - The Z3 target to link to
 #  Z3_LIB         - The shared Z3 libary pointed to by the link target
 
+include(fetch)
 
 # Wrapping this in a function to create a new scope
 function(_acquire_z3_helper)

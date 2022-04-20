@@ -1,26 +1,9 @@
 cmake_minimum_required( VERSION 3.18 )
-cmake_policy(VERSION 3.18) # Just in case (should be set anyway)
 
-# Manually set newer policies to old to silence dependent project warnings
-# This override nothing; we are only explicitly disabling new policies implicitly disabled
-# We do this as otherwise dependent projects may produce 'policy not set' warnings
-set(CMAKE_POLICY_DEFAULT_CMP0127 OLD) # Silence pybind11 warnings (3.22 policy, OLD to match 3.18)
-
-# Append to the cmake search path
-# This allows for simple invoking of cmake files in this path
+# Append our ./cmake script directory to the cmake path then run includes
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
-# Functions to be used later
+include(config_cmake)
 include(default)
-include(fetch)
-
-# Common library paths
-list(APPEND CMAKE_LIBRARY_PATH
-	"/usr/lib64"
-	"/usr/lib"
-	"/lib64"
-	"/lib"
-)
 
 
 #################################################
@@ -110,13 +93,13 @@ option( ENABLE_CET "Builds with CET fcf-protection, requires ENABLE_SECURITY" OF
 # Override what the compiler says about it handling RTTI
 default(RTTI_OVERRIDE FALSE)
 
-### Backward Options
+### Backward Options ###
 
 # Require backend to use a backend lib
 # The backend lib provides a lot more information if available
 default(REQUIRE_BACKWARD_BACKEND FALSE)
 
-### Boost Options
+### Boost Options ###
 
 # If the GMP headers boost uses are not installed in the normal path, set this
 # This variable is ignored if it is empty
@@ -168,7 +151,7 @@ set( Z3_MAKE_TARGET "z3" )
 default( Z3_ACQUISITION_MODE SYSTEM )
 
 # If on, forces re-creation of Z3 links and such
-# If on and Z3_ACQUISITION_MODE is BUID, forces a rebuild of libz3
+# If on and Z3_ACQUISITION_MODE is BUILD, forces a rebuild of libz3
 # For build: Note: It is recommended that you reconfigure cmake after a libz3 build
 # otherwise libz3 may re-build every time make is invoked as it is using an old configuration
 default( Z3_FORCE_CLEAN OFF )
@@ -310,11 +293,6 @@ set(CLARICPP_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 #                                               #
 #################################################
 
-
-if (APPLE AND NOT "/opt/homebrew" IN_LIST CMAKE_SYSTEM_PREFIX_PATH)
-	# Earlier versions of cmake might not do this; homebrew's default M1 root
-	list(APPEND CMAKE_SYSTEM_PREFIX_PATH "/opt/homebrew")
-endif()
 
 # BigInt support
 include(Boost)
