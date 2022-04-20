@@ -71,54 +71,30 @@ function(simple_test FUNC_NAME)
 	set(BINARY "${TEST_NAME}.test")
 	add_executable("${BINARY}" "${FUNC_NAME}.cpp" ${ARGN})
 
-	## Add the test
+	## Add and config test
 	message(STATUS "\t${TEST_NAME}")
 	add_test("${TEST_NAME}" "./${BINARY}")
 	add_dependencies("${BUILD_TESTS_TARGET}" "${TEST_NAME}.test")
 
-	# Add compile options
+	# Config test
+	target_link_libraries("${BINARY}" PRIVATE "${TESTLIB}")
+	target_include_directories("${BINARY}" PRIVATE "${TESTLIB_SRC}")
 	target_compile_definitions("${BINARY}" PRIVATE "_GLIBCXX_ASSERTIONS")
 	target_compile_options("${BINARY}" PRIVATE
-		"-O0"
-		"-g"
 		"-fasynchronous-unwind-tables"
 		"-grecord-gcc-switches"
+		"-O0"
+		"-g"
 	)
-
-	# For debugging
 	if(CMAKE_BUILD_TYPE MATCHES Debug)
-		target_link_options("${BINARY}" PUBLIC
-			"-rdynamic"
-		)
+		target_link_options("${BINARY}" PRIVATE "-rdynamic")  # For debugging
 	endif()
 
 	# Add memcheck test
 	if(RUN_MEMCHECK_TESTS)
-		set(MEMCHECK
-			"${CMAKE_MEMORYCHECK_COMMAND}"
-			"${CMAKE_MEMORYCHECK_COMMAND_OPTIONS}"
-		)
+		set(MEMCHECK "${CMAKE_MEMORYCHECK_COMMAND}" "${CMAKE_MEMORYCHECK_COMMAND_OPTIONS}")
 		separate_arguments(MEMCHECK)
 		add_test("${TEST_NAME}.memcheck" ${MEMCHECK} "./${BINARY}")
-		add_dependencies("${BUILD_TESTS_TARGET}" "${TEST_NAME}.memcheck.test")
 	endif()
-
-	# Link libraries and headers
-	target_include_directories("${BINARY}"
-		SYSTEM BEFORE
-		PRIVATE "${Z3_INCLUDE_DIR}"
-		PRIVATE ${Boost_INCLUDE_DIRS}
-	)
-	target_include_directories("${BINARY}"
-		PRIVATE "${CLARICPP_SRC}"
-		PRIVATE "${TESTLIB_SRC}"
-	)
-	# Link the test
-	target_link_libraries("${BINARY}"
-		PRIVATE "${GMP_LIBRARIES}" # Boost multiprecision backend
-		PRIVATE "${Z3_LINK_TARGET}"
-		PRIVATE "${CLARICPP}"
-		PRIVATE "${TESTLIB}"
-	)
 
 endfunction()

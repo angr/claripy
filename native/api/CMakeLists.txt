@@ -31,6 +31,7 @@ target_sources(clari PRIVATE
     manual.cpp
     log.cpp
 )
+target_link_libraries("${API_TARGET}" PUBLIC "${CLARICPP}")
 
 # Code quality exceptions for auto-generated code
 message(STATUS "Permitting and suppressing warnings for auto-generated code...")

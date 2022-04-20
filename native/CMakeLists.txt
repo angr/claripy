@@ -567,13 +567,9 @@ target_link_libraries("${CLARICPP}"
 # API
 if (BUILD_API)
 	add_subdirectory(api)
-	# TODO: these target_ functions should be inherited from claricpp... why aren't they?
-	target_include_directories("${API_TARGET}" SYSTEM BEFORE PUBLIC "${Z3_INCLUDE_DIR}" PUBLIC ${Boost_INCLUDE_DIRS})
-	target_link_libraries("${API_TARGET}" PUBLIC "${CLARICPP}" PUBLIC "${Z3_LINK_TARGET}" PUBLIC "${GMP_LIBRARIES}")
 endif()
 
 # Create a make target for test cases
 if(ENABLE_TESTING)
-	target_link_libraries("${CLARICPP}" PUBLIC dl)
 	add_subdirectory(tests)
 endif()

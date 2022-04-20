@@ -12,13 +12,14 @@ endif()
 
 # Create the test library target that test cases link to
 # Then add headers and sources to the test library
+# Note: Visibility for things is set to public as this is for testing
 add_library("${TESTLIB}" SHARED)
-target_link_libraries("${TESTLIB}" PRIVATE "${CLARICPP}")
-target_include_directories("${TESTLIB}" PRIVATE "${CLARICPP_SRC}")
+target_link_libraries("${TESTLIB}" PUBLIC "${CLARICPP}")
+target_include_directories("${TESTLIB}" PUBLIC "${CLARICPP_SRC}")
 
 # Include additional header files
 message(STATUS "Including boost headers for target: ${TESTLIB}")
-target_include_directories("${TESTLIB}" SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
+target_include_directories("${TESTLIB}" SYSTEM PUBLIC ${Boost_INCLUDE_DIRS})
 
 # Add subdirectories
 add_subdirectory(testlib)
