@@ -757,16 +757,23 @@ class Claricpp(Library):
     build_dir = os.path.join(native, "build")
     _lib = SharedLib("libclaricpp", build_dir)
     _out_src = os.path.join(BuiltLib.install_dir, "src")
+    # API constants
+    _api_target = "clari" # TODO: install API source?
+    _api_lib = SharedLib(_api_target, os.path.join(build_dir, "api"))
+    # Docs constants
+    _docs_dir = os.path.join(build_dir, "docs") # Must be in build_dir
 
-    def __init__(self, *, no_lib=False, docs=False, debug=False, tests=False):
+    def __init__(self, *, api, no_lib=False, docs=False, debug=False, tests=False):
         # Options
         self._build_lib = not no_lib
         self._enable_tests = tests
         self._build_debug = debug
         self._build_doc = docs
+        self._build_api = api
         # Config
-        default_chk = {self._lib.name: self._lib, "Claricpp src": self._out_src}
-        chk = {} if (self._enable_tests or self._build_doc) else default_chk
+        default_chk = {i.name: i for i in [self._lib, self._api_lib]}
+        default_chk["Claricpp src"] = self._out_src
+        chk = {} if (self._enable_tests or self._build_doc) else  default_chk
         super().__init__({}, chk, chk, Boost(), Z3(), Pybind11(), Backward())
 
     def _cmake_config_args(self, claricpp):
@@ -779,6 +786,10 @@ class Claricpp(Library):
             "VERSION": version,
             "CLARICPP": claricpp,
             # Build options
+            "ENABLE_TESTING": self._enable_tests,
+            "BUILD_DOC": self._build_doc,
+            "BUILD_API": self._build_api,
+            # Debug options
             "CONSTANT_LOG_LEVEL": not self._build_debug,
             "DEFAULT_RELEASE_LOG_LEVEL": "critical",
             "CMAKE_BUILD_TYPE": "Debug" if self._build_debug else "Release",
@@ -787,12 +798,9 @@ class Claricpp(Library):
             "REQUIRE_BACKWARD_BACKEND": False,  # TODO:
             "SOURCE_ROOT_FOR_BACKTRACE": None,  # TODO: make a runtime thing config'd by python
             # Disable options
-            "ENABLE_TESTING": self._enable_tests
-            or self._build_doc,  # build_doc b/c compile_commands.json
             "CPP_CHECK": False,
             "CLANG_TIDY": False,
             "ENABLE_MEMCHECK": False,
-            "BUILD_DOC": self._build_doc,
             "LWYU": False,
             # Library config
             "GMPDIR": GMP.lib_dir,
@@ -826,7 +834,10 @@ class Claricpp(Library):
             if self._build_doc:
                 print("Building docs...")
                 build_cmake_target("docs")
-                print("Docs built in: " + os.path.join(self.build_dir, "docs"))
+                print("Docs built in: " + self._docs_dir)
+            if self._build_api:
+                print("Building " + self._api_target + "...")
+                build_cmake_target(self._api_target)
 
     @classmethod
     def run_tests(cls):  # Warning: tests should be built before calling this
@@ -843,64 +854,36 @@ class Claricpp(Library):
 
     @classmethod
     def _install_ignore(cls, d, fs):
-        d = os.path.abspath(d)
-        skip = os.path.realpath(os.path.join(cls.build_dir, "docs"))
         paths = {os.path.realpath(os.path.join(d, i)): i for i in fs}
-        return [k for i, k in paths.items() if i == skip]
+        return [k for i, k in paths.items() if i == os.path.realpath(cls._docs_dir)]
 
     def _install(self):
         if self._build_lib:
             self._lib.install()
+        if self._build_api:
+            self._api_lib.install()
         if not os.path.exists(self._out_src):
             src = os.path.join(native, "src")
-            shutil.copytree(src, self._out_src, ignore=self._install_ignore)
+            shutil.copytree(src, self._out_src, ignore=self._install_ignore) # TODO: pretty sure ignore is not needed
 
     def _clean(self, level):
         if level.implies(CleanLevel.INSTALL):
+            self._api_lib.clean_install()
             self._lib.clean_install()
             shutil.rmtree(self._out_src, ignore_errors=True)
         if level.implies(CleanLevel.BUILT_LIBS):
+            self._api_lib.clean_build()
             self._lib.clean_build()
         if level.implies(CleanLevel.BUILD):
-            try:  # No clue if this stuff even exists
-                with chdir(self.build_dir):
-                    build_cmake_target("clean")
-            except:  # Ignore errors during the above
-                pass
-            shutil.rmtree(self.build_dir, ignore_errors=True)
-
-
-class ClaricppAPI(Library):
-    """
-    A class to manage ClaricppAPI
-    """
-
-    _api_target = "clari"
-    _build_dir = os.path.join(Claricpp.build_dir, "api")
-    _lib = SharedLib(_api_target, _build_dir)
-
-    def __init__(self, **kwargs):
-        chk = {self._lib.name: self._lib}
-        super().__init__({}, chk, chk, Claricpp(**kwargs))
-
-    def _build(self):
-        print("Building " + self._api_target + "...")
-        with chdir(self._build_dir):
-            build_cmake_target(self._api_target)
-
-    def _license(self):
-        pass  # Same as main project
-
-    def _install(self):
-        self._lib.install()
-
-    def _clean(self, level):
-        if level.implies(CleanLevel.INSTALL):
-            self._lib.clean_install()
-        if level.implies(CleanLevel.BUILT_LIBS):
-            self._lib.clean_build()
-        if level.implies(CleanLevel.BUILD):
-            shutil.rmtree(self._build_dir, ignore_errors=True)
+            if os.path.exists(self.build_dir):
+                if os.path.exists(self.build_dir, "Makefile"):
+                    try:
+                        with chdir(self.build_dir):
+                            build_cmake_target("clean")
+                    except:
+                        print("Clean failed. Try removing: " + self.build_dir)
+                        raise
+                    shutil.rmtree(self.build_dir, ignore_errors=True)
 
 
 ######################################################################
@@ -910,18 +893,19 @@ class ClaricppAPI(Library):
 
 class SDist(SDistOriginal):
     def run(self):
-        f = lambda: ClaricppAPI().get()
+        f = lambda: Claricpp(api=True).get()
         self.execute(f, (), msg="Getting build source dependencies")
         super().run()
 
 
 class Native(Command):
     description = "Build native components"
+    docs_msg = "Build Claricpp docs. If --test builds test docs also; if not --no-api build API docs also"
     user_options = [
         ("no-install", None, "Do not install built libraries"),
         ("no-lib", None, "Do not build the Claricpp library; requires --no-api"),
         ("no-api", None, "Do not build the Claricpp API"),
-        ("docs", None, "Build Claricpp docs"),
+        ("docs", None, docs_msg),
         ("tests", "t", "Build Claricpp unit tests; incompatible with --no-lib"),
         ("run-tests", None, "Run Claricpp tests; requires --tests"),
         ("debug", "d", "Prefers debug mode to release mode while building"),
@@ -953,9 +937,9 @@ class Native(Command):
 
     def run(self) -> None:
         # Construct the main class and determine the function name
-        cls = Claricpp if self.args.no_api else ClaricppAPI
         params = ["no_lib", "docs", "tests", "debug"]
-        instance = cls(**{i: k for i, k in self.args.items() if i in params})
+        params = {i: k for i, k in self.args.items() if i in params}
+        instance = Claricpp(**params, api=not self.args.no_api)
         fname = "build" if self.args.no_install else "install"
         # Message
         msg = "Building native components"
@@ -968,7 +952,7 @@ class Native(Command):
             self.execute(lambda: instance.clean(self.args.clean), (), msg=msg)
         self.execute(lambda: getattr(instance, fname)(), (), msg=msg)
         if self.args.run_tests:
-            self.execute(Claricpp.run_tests, (), msg="Running native tests")
+            self.execute(instance.run_tests, (), msg="Running native tests")
 
 
 class Build(BuildOriginal):
@@ -987,7 +971,7 @@ class Clean(Command):
         self.level = to_clean_lvl(self.level)
 
     def run(self):
-        f = lambda: ClaricppAPI().clean(self.level)
+        f = lambda: Claricpp(api=True).clean(self.level)
         self.execute(f, (), msg="Cleaning Claricpp at level: " + self.level.name)
 
 

@@ -31,6 +31,7 @@ list(APPEND CMAKE_LIBRARY_PATH
 
 
 # Config options
+option( BUILD_API "Create a make target for the python API"  ON )
 option( BUILD_DOC "Create a make target for documentation"   ON )
 option( ENABLE_TESTING "Create a make target for test cases" ON )
 option( OPTIMIZE_FOR_NATIVE "Build with -march=native etc"   OFF )
@@ -55,6 +56,9 @@ default(SOURCE_ROOT_FOR_BACKTRACE "${CMAKE_CURRENT_SOURCE_DIR}")
 # Shared library name
 default( CLARICPP "claricpp" )
 message("Library name: ${CLARICPP}")
+
+# API name
+default( API_TARGET "clari" )
 
 # Run make <DOC_MAKE_TARGET> to build documentation if BUILD_DOC is ON
 # Running make <DOC_MAKE_TARGET> generates html, latex, and man pages
@@ -583,11 +587,12 @@ target_link_libraries("${CLARICPP}"
 )
 
 # API
-set(API_TARGET clari)
-add_subdirectory(api)
-# TODO: these target_ functions should be inherited from claricpp... why aren't they?
-target_include_directories("${API_TARGET}" SYSTEM BEFORE PUBLIC "${Z3_INCLUDE_DIR}" PUBLIC ${Boost_INCLUDE_DIRS})
-target_link_libraries("${API_TARGET}" PUBLIC "${CLARICPP}" PUBLIC "${Z3_LINK_TARGET}" PUBLIC "${GMP_LIBRARIES}")
+if (BUILD_API)
+	add_subdirectory(api)
+	# TODO: these target_ functions should be inherited from claricpp... why aren't they?
+	target_include_directories("${API_TARGET}" SYSTEM BEFORE PUBLIC "${Z3_INCLUDE_DIR}" PUBLIC ${Boost_INCLUDE_DIRS})
+	target_link_libraries("${API_TARGET}" PUBLIC "${CLARICPP}" PUBLIC "${Z3_LINK_TARGET}" PUBLIC "${GMP_LIBRARIES}")
+endif()
 
 # Create a make target for test cases
 if(ENABLE_TESTING)
