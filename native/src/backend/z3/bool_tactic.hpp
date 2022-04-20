@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the tactics used to simplify z3 bools
  */
-#ifndef R_BACKEND_Z3_BOOLTACTIC_HPP_
-#define R_BACKEND_Z3_BOOLTACTIC_HPP_
+#ifndef R_SRC_BACKEND_Z3_BOOLTACTIC_HPP_
+#define R_SRC_BACKEND_Z3_BOOLTACTIC_HPP_
 
 #include <z3++.h>
 

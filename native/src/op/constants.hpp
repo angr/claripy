@@ -2,8 +2,8 @@
  * @file
  * @brief Constants OPs can use
  */
-#ifndef R_OP_CONSTANTS_HPP_
-#define R_OP_CONSTANTS_HPP_
+#ifndef R_SRC_OP_CONSTANTS_HPP_
+#define R_SRC_OP_CONSTANTS_HPP_
 
 #include "../big_int.hpp"
 #include "../expr.hpp"

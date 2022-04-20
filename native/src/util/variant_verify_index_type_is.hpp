@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines a macro to verify the type of a variant index
  */
-#ifndef R_UTIL_VARIANTVERIFYINDEXTYPEIS_HPP_
-#define R_UTIL_VARIANTVERIFYINDEXTYPEIS_HPP_
+#ifndef R_SRC_UTIL_VARIANTVERIFYINDEXTYPEIS_HPP_
+#define R_SRC_UTIL_VARIANTVERIFYINDEXTYPEIS_HPP_
 
 #include <type_traits>
 #include <variant>

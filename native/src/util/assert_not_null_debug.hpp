@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines a macro to affirm something is not nullptr when DEBUG is defined
  */
-#ifndef R_UTIL_ASSERTNOTNULLDEBUG_HPP_
-#define R_UTIL_ASSERTNOTNULLDEBUG_HPP_
+#ifndef R_SRC_UTIL_ASSERTNOTNULLDEBUG_HPP_
+#define R_SRC_UTIL_ASSERTNOTNULLDEBUG_HPP_
 
 #include "assert.hpp"
 #include "err.hpp"

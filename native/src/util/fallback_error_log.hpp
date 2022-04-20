@@ -4,8 +4,8 @@
  * @brief This file defines an alternative to Util::Log::error and Util::Log::critical
  * This will log to standard error and should be used extremely sparingly and only Log cannot
  */
-#ifndef R_UTIL_FALLBACKERRORLOG_HPP_
-#define R_UTIL_FALLBACKERRORLOG_HPP_
+#ifndef R_SRC_UTIL_FALLBACKERRORLOG_HPP_
+#define R_SRC_UTIL_FALLBACKERRORLOG_HPP_
 
 #include "dependent_constant.hpp"
 #include "type.hpp"

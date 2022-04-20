@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines a function which preps its args then sends them to the Log Backend
  */
-#ifndef R_UTIL_LOG_PRIVATE_SENDTOBACKEND_HPP_
-#define R_UTIL_LOG_PRIVATE_SENDTOBACKEND_HPP_
+#ifndef R_SRC_UTIL_LOG_PRIVATE_SENDTOBACKEND_HPP_
+#define R_SRC_UTIL_LOG_PRIVATE_SENDTOBACKEND_HPP_
 
 #include "../backend.hpp"
 #include "../style.hpp"

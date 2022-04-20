@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a z3 solver wrapper
  */
-#ifndef R_BACKEND_Z3_SOLVER_HPP_
-#define R_BACKEND_Z3_SOLVER_HPP_
+#ifndef R_SRC_BACKEND_Z3_SOLVER_HPP_
+#define R_SRC_BACKEND_Z3_SOLVER_HPP_
 
 #include <z3++.h>
 

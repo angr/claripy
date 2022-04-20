@@ -2,8 +2,8 @@
  * @file
  * @brief An op that takes in one Expr and one integer
  */
-#ifndef R_OP_UINTBINARY_HPP_
-#define R_OP_UINTBINARY_HPP_
+#ifndef R_SRC_OP_UINTBINARY_HPP_
+#define R_SRC_OP_UINTBINARY_HPP_
 
 #include "base.hpp"
 

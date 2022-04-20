@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines concrete backend constants
  */
-#ifndef R_BACKEND_CONCRETE_CONSTANTS_HPP_
-#define R_BACKEND_CONCRETE_CONSTANTS_HPP_
+#ifndef R_SRC_BACKEND_CONCRETE_CONSTANTS_HPP_
+#define R_SRC_BACKEND_CONCRETE_CONSTANTS_HPP_
 
 #include "../generic.hpp"
 

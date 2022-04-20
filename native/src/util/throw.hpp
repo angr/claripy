@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines a macro to throw an excpetion prepended with WHOAMI
  */
-#ifndef R_UTIL_THROW_HPP_
-#define R_UTIL_THROW_HPP_
+#ifndef R_SRC_UTIL_THROW_HPP_
+#define R_SRC_UTIL_THROW_HPP_
 
 #include "to_str.hpp"
 

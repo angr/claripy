@@ -7,8 +7,8 @@
  * @brief This file includes all public pieces of util
  * \ingroup util
  */
-#ifndef R_UTIL_HPP_
-#define R_UTIL_HPP_
+#ifndef R_SRC_UTIL_HPP_
+#define R_SRC_UTIL_HPP_
 
 #include "util/ansi_color_codes.hpp"
 #include "util/assert.hpp"

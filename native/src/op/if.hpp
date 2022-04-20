@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the Op class representing an If statement
  */
-#ifndef R_OP_IF_HPP_
-#define R_OP_IF_HPP_
+#ifndef R_SRC_OP_IF_HPP_
+#define R_SRC_OP_IF_HPP_
 
 #include "base.hpp"
 

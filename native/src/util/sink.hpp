@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines Util::sink
  */
-#ifndef R_UTIL_SINK_HPP_
-#define R_UTIL_SINK_HPP_
+#ifndef R_SRC_UTIL_SINK_HPP_
+#define R_SRC_UTIL_SINK_HPP_
 
 
 namespace Util {

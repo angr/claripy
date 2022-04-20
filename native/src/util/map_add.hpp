@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines map_set
  */
-#ifndef R_UTIL_MAPADD_HPP_
-#define R_UTIL_MAPADD_HPP_
+#ifndef R_SRC_UTIL_MAPADD_HPP_
+#define R_SRC_UTIL_MAPADD_HPP_
 
 #include <map>
 

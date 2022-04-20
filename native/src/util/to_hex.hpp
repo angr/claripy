@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines a noexcept method to convert an integer type to a string hex.
  */
-#ifndef R_UTIL_TOHEX_HPP_
-#define R_UTIL_TOHEX_HPP_
+#ifndef R_SRC_UTIL_TOHEX_HPP_
+#define R_SRC_UTIL_TOHEX_HPP_
 
 #include <climits>
 #include <string>

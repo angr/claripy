@@ -4,8 +4,8 @@
  * @brief This file defines a way to check if a type T can accepts Args... args.
  * Note: unlike std::is_constructible, this can be friended to allow private constructor access
  */
-#ifndef R_UTIL_TYPE_HAS_CONSTRUCTOR_HPP_
-#define R_UTIL_TYPE_HAS_CONSTRUCTOR_HPP_
+#ifndef R_SRC_UTIL_TYPE_HAS_CONSTRUCTOR_HPP_
+#define R_SRC_UTIL_TYPE_HAS_CONSTRUCTOR_HPP_
 
 #include "../sfinae_test.hpp"
 

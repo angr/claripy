@@ -2,8 +2,8 @@
  * @file
  * @brief Define the simplify and cache methods
  */
-#ifndef R_SIMPLIFY_SIMPLIFY_HPP_
-#define R_SIMPLIFY_SIMPLIFY_HPP_
+#ifndef R_SRC_SIMPLIFY_SIMPLIFY_HPP_
+#define R_SRC_SIMPLIFY_SIMPLIFY_HPP_
 
 #include "manager.hpp"
 

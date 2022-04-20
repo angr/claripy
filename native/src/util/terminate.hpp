@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines a method to end the program
  */
-#ifndef R_UTIL_TERMINATE_HPP_
-#define R_UTIL_TERMINATE_HPP_
+#ifndef R_SRC_UTIL_TERMINATE_HPP_
+#define R_SRC_UTIL_TERMINATE_HPP_
 
 #include "../constants.hpp"
 

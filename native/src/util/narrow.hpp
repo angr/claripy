@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines narrow, a function that narrows an integer
  */
-#ifndef R_UTIL_NARROW_HPP_
-#define R_UTIL_NARROW_HPP_
+#ifndef R_SRC_UTIL_NARROW_HPP_
+#define R_SRC_UTIL_NARROW_HPP_
 
 #include <type_traits>
 

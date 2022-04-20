@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines modes for how Expr sizes are computed
  */
-#ifndef R_CREATE_PRIVATE_SIZEMODE_HPP_
-#define R_CREATE_PRIVATE_SIZEMODE_HPP_
+#ifndef R_SRC_CREATE_PRIVATE_SIZEMODE_HPP_
+#define R_SRC_CREATE_PRIVATE_SIZEMODE_HPP_
 
 #include "../../expr.hpp"
 

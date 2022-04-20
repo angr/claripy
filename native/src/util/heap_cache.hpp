@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief A cached way of copying data to the heap
  */
-#ifndef R_UTIL_HEAPCACHE_HPP_
-#define R_UTIL_HEAPCACHE_HPP_
+#ifndef R_SRC_UTIL_HEAPCACHE_HPP_
+#define R_SRC_UTIL_HEAPCACHE_HPP_
 
 #include "log.hpp"
 #include "safe_alloc.hpp"

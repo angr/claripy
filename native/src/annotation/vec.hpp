@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the Annotation::Vec class
  */
-#ifndef R_ANNOTATION_VEC_HPP_
-#define R_ANNOTATION_VEC_HPP_
+#ifndef R_SRC_ANNOTATION_VEC_HPP_
+#define R_SRC_ANNOTATION_VEC_HPP_
 
 #include "base.hpp"
 

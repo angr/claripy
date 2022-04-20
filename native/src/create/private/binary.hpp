@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a method to create Exprs with standard binary ops
  */
-#ifndef R_CREATE_PRIVATE_BINARY_HPP_
-#define R_CREATE_PRIVATE_BINARY_HPP_
+#ifndef R_SRC_CREATE_PRIVATE_BINARY_HPP_
+#define R_SRC_CREATE_PRIVATE_BINARY_HPP_
 
 #include "size_mode.hpp"
 

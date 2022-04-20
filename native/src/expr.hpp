@@ -2,8 +2,8 @@
  * @file
  * @brief This file exposes all relevant public members of Expr
  */
-#ifndef R_EXPR_HPP_
-#define R_EXPR_HPP_
+#ifndef R_SRC_EXPR_HPP_
+#define R_SRC_EXPR_HPP_
 
 #include "expr/are_same_type.hpp"
 #include "expr/base.hpp"

@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a floating point width class
  */
-#ifndef R_MODE_FP_WIDTH_HPP_
-#define R_MODE_FP_WIDTH_HPP_
+#ifndef R_SRC_MODE_FP_WIDTH_HPP_
+#define R_SRC_MODE_FP_WIDTH_HPP_
 
 #include "../../constants.hpp"
 

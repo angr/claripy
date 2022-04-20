@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines a method for determining if T is in a type list Args...
  */
-#ifndef R_UTIL_TYPE_IS_IN_HPP_
-#define R_UTIL_TYPE_IS_IN_HPP_
+#ifndef R_SRC_UTIL_TYPE_IS_IN_HPP_
+#define R_SRC_UTIL_TYPE_IS_IN_HPP_
 
 #include "ancestor.hpp"
 #include "same.hpp"

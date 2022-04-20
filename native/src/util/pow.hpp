@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines Util::pow
  */
-#ifndef R_UTIL_POW_HPP_
-#define R_UTIL_POW_HPP_
+#ifndef R_SRC_UTIL_POW_HPP_
+#define R_SRC_UTIL_POW_HPP_
 
 #include <cstdint>
 #include <type_traits>

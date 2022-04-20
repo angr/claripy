@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines Util::range_to_str
  */
-#ifndef R_UTIL_RANGETOSTR_HPP_
-#define R_UTIL_RANGETOSTR_HPP_
+#ifndef R_SRC_UTIL_RANGETOSTR_HPP_
+#define R_SRC_UTIL_RANGETOSTR_HPP_
 
 #include "ref.hpp"
 

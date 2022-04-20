@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines Shift mask
  */
-#ifndef R_MODE_SHIFT_HPP_
-#define R_MODE_SHIFT_HPP_
+#ifndef R_SRC_MODE_SHIFT_HPP_
+#define R_SRC_MODE_SHIFT_HPP_
 
 namespace Mode {
 

@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a creation method for an expr containing String::SubString
  */
-#ifndef R_CREATE_STRING_SUBSTRING_HPP_
-#define R_CREATE_STRING_SUBSTRING_HPP_
+#ifndef R_SRC_CREATE_STRING_SUBSTRING_HPP_
+#define R_SRC_CREATE_STRING_SUBSTRING_HPP_
 
 #include "../constants.hpp"
 

@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file determines a function which checks if T has a << stream op
  */
-#ifndef R_UTIL_TYPE_HAS_OSTREAMOP_HPP_
-#define R_UTIL_TYPE_HAS_OSTREAMOP_HPP_
+#ifndef R_SRC_UTIL_TYPE_HAS_OSTREAMOP_HPP_
+#define R_SRC_UTIL_TYPE_HAS_OSTREAMOP_HPP_
 
 #include "../sfinae_test.hpp"
 

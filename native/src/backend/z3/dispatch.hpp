@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the Z3 backend's dispatch functions
  */
-#ifndef R_BACKEND_Z3_DISPATCH_HPP_
-#define R_BACKEND_Z3_DISPATCH_HPP_
+#ifndef R_SRC_BACKEND_Z3_DISPATCH_HPP_
+#define R_SRC_BACKEND_Z3_DISPATCH_HPP_
 
 #include "abstract.hpp"
 #include "constants.hpp"

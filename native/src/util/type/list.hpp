@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines type list type
  */
-#ifndef R_UTIL_TYPE_LIST_HPP_
-#define R_UTIL_TYPE_LIST_HPP_
+#ifndef R_SRC_UTIL_TYPE_LIST_HPP_
+#define R_SRC_UTIL_TYPE_LIST_HPP_
 
 #include "unconstructable.hpp"
 

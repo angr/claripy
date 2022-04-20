@@ -2,8 +2,8 @@
  * @file
  * @brief This file exposes all relevant public members of Op
  */
-#ifndef R_OP_HPP_
-#define R_OP_HPP_
+#ifndef R_SRC_OP_HPP_
+#define R_SRC_OP_HPP_
 
 #include "op/base.hpp"
 #include "op/binary.hpp"

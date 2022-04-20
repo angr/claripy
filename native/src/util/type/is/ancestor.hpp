@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines a method to determine if Derived derives from or is Base
  */
-#ifndef R_UTIL_TYPE_IS_ANCESTOR_HPP_
-#define R_UTIL_TYPE_IS_ANCESTOR_HPP_
+#ifndef R_SRC_UTIL_TYPE_IS_ANCESTOR_HPP_
+#define R_SRC_UTIL_TYPE_IS_ANCESTOR_HPP_
 
 #include "../transfer_const.hpp"
 

@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a class that has a repr function
  */
-#ifndef R_HASREPR_HPP_
-#define R_HASREPR_HPP_
+#ifndef R_SRC_HASREPR_HPP_
+#define R_SRC_HASREPR_HPP_
 
 #include "macros.hpp"
 

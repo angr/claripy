@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines to_u_ref which tries to coerce objects into a U64 reference
  */
-#ifndef R_UTIL_TOUPTR_HPP_
-#define R_UTIL_TOUPTR_HPP_
+#ifndef R_SRC_UTIL_TOUPTR_HPP_
+#define R_SRC_UTIL_TOUPTR_HPP_
 
 #include "dependent_constant.hpp"
 #include "ref.hpp"

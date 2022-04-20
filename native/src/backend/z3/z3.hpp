@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the Z3 backend
  */
-#ifndef R_BACKEND_Z3_Z3_HPP_
-#define R_BACKEND_Z3_Z3_HPP_
+#ifndef R_SRC_BACKEND_Z3_Z3_HPP_
+#define R_SRC_BACKEND_Z3_Z3_HPP_
 
 #include "bool_tactic.hpp"
 #include "dispatch.hpp"

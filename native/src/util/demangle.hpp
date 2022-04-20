@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines a method of demangling C++ name-mangled symbols
  */
-#ifndef R_UTIL_DEMANGLE_HPP_
-#define R_UTIL_DEMANGLE_HPP_
+#ifndef R_SRC_UTIL_DEMANGLE_HPP_
+#define R_SRC_UTIL_DEMANGLE_HPP_
 
 #include "assert.hpp"
 #include "err.hpp"

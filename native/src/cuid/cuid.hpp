@@ -4,8 +4,8 @@
  * This also defined a type that has a unique class id
  * This file also defines macros to create a static_cuid
  */
-#ifndef R_CUID_CUID_HPP_
-#define R_CUID_CUID_HPP_
+#ifndef R_SRC_CUID_CUID_HPP_
+#define R_SRC_CUID_CUID_HPP_
 
 #include "../constants.hpp"
 #include "../macros.hpp"

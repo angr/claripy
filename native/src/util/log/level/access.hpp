@@ -4,8 +4,8 @@
  * @brief This file methods for accessing the Log Level
  * The methods within this file are threadsafe
  */
-#ifndef R_UTIL_LOG_LEVEL_ACCESS_HPP_
-#define R_UTIL_LOG_LEVEL_ACCESS_HPP_
+#ifndef R_SRC_UTIL_LOG_LEVEL_ACCESS_HPP_
+#define R_SRC_UTIL_LOG_LEVEL_ACCESS_HPP_
 
 #include "level.hpp"
 

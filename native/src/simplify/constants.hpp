@@ -2,8 +2,8 @@
  * @file
  * @brief This file contains constants used within the simplifications directory
  */
-#ifndef R_SIMPLIFY_CONSTANTS_HPP_
-#define R_SIMPLIFY_CONSTANTS_HPP_
+#ifndef R_SRC_SIMPLIFY_CONSTANTS_HPP_
+#define R_SRC_SIMPLIFY_CONSTANTS_HPP_
 
 #include "../expr.hpp"
 

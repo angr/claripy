@@ -4,8 +4,8 @@
  * @brief This file defines a method to compile-time select a variable
  * Like std::conditional but with values
  */
-#ifndef R_UTIL_TYPE_SELECT_HPP_
-#define R_UTIL_TYPE_SELECT_HPP_
+#ifndef R_SRC_UTIL_TYPE_SELECT_HPP_
+#define R_SRC_UTIL_TYPE_SELECT_HPP_
 
 
 namespace Util::Type {

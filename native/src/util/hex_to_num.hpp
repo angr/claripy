@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines hex_to_int
  */
-#ifndef R_UTIL_HEXTONUM_HPP_
-#define R_UTIL_HEXTONUM_HPP_
+#ifndef R_SRC_UTIL_HEXTONUM_HPP_
+#define R_SRC_UTIL_HEXTONUM_HPP_
 
 #include <cstdint>
 #include <limits>

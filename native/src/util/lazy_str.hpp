@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines LazyStr which lazily converts Args && ... args to an std::string
  */
-#ifndef R_UTIL_LAZYSTR_HPP_
-#define R_UTIL_LAZYSTR_HPP_
+#ifndef R_SRC_UTIL_LAZYSTR_HPP_
+#define R_SRC_UTIL_LAZYSTR_HPP_
 
 #include "assert.hpp"
 #include "err.hpp"

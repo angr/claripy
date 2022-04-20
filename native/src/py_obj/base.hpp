@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines PyObj
  */
-#ifndef R_PYOBJ_BASE_HPP_
-#define R_PYOBJ_BASE_HPP_
+#ifndef R_SRC_PYOBJ_BASE_HPP_
+#define R_SRC_PYOBJ_BASE_HPP_
 
 #include "../hash.hpp"
 #include "../macros.hpp"

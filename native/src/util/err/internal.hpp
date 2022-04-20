@@ -4,8 +4,8 @@
  * @brief This file contains the possible exceptions that indicate an internal claricpp failure
  * These exceptions are not expected to be raised if claricpp is operating as intended
  */
-#ifndef R_UTIL_ERR_INTERNAL_HPP_
-#define R_UTIL_ERR_INTERNAL_HPP_
+#ifndef R_SRC_UTIL_ERR_INTERNAL_HPP_
+#define R_SRC_UTIL_ERR_INTERNAL_HPP_
 
 #include "claricpp.hpp"
 

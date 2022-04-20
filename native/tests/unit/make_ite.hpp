@@ -3,8 +3,8 @@
  * @brief Define a function used to construct an ITE Expr
  * \ingroup unittest
  */
-#ifndef R_UNIT_MAKEITE_HPP_
-#define R_UNIT_MAKEITE_HPP_
+#ifndef R_TESTS_UNIT_MAKEITE_HPP_
+#define R_TESTS_UNIT_MAKEITE_HPP_
 
 #include "create.hpp"
 

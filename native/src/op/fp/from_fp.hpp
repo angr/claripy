@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the Op class FP::FromFP
  */
-#ifndef R_OP_FP_FROMFP_HPP_
-#define R_OP_FP_FROMFP_HPP_
+#ifndef R_SRC_OP_FP_FROMFP_HPP_
+#define R_SRC_OP_FP_FROMFP_HPP_
 
 #include "../../mode.hpp"
 #include "../base.hpp"

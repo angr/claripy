@@ -4,8 +4,8 @@
  * @brief This file defines underlying
  * We use the word affirm since C libraries like to define assert as a macro
  */
-#ifndef R_UTIL_TOUNDERLYING_HPP_
-#define R_UTIL_TOUNDERLYING_HPP_
+#ifndef R_SRC_UTIL_TOUNDERLYING_HPP_
+#define R_SRC_UTIL_TOUNDERLYING_HPP_
 
 #include "type.hpp"
 

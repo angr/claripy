@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a method to copy an expr but change the annotations
  */
-#ifndef R_EXPR_MAKELIKE_HPP_
-#define R_EXPR_MAKELIKE_HPP_
+#ifndef R_SRC_EXPR_MAKELIKE_HPP_
+#define R_SRC_EXPR_MAKELIKE_HPP_
 
 #include "base.hpp"
 

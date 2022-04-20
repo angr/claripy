@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines a generic hash cache type
  */
-#ifndef R_UTIL_WEAKCACHE_HPP_
-#define R_UTIL_WEAKCACHE_HPP_
+#ifndef R_SRC_UTIL_WEAKCACHE_HPP_
+#define R_SRC_UTIL_WEAKCACHE_HPP_
 
 #include "err.hpp"
 #include "log.hpp"

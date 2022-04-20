@@ -3,8 +3,8 @@
  * @brief A shim of the z3 backend which exposes private members
  * \ingroup unittest
  */
-#ifndef R_UNIT_BACKEND_Z3_SHIMZ3_HPP_
-#define R_UNIT_BACKEND_Z3_SHIMZ3_HPP_
+#ifndef R_TESTS_UNIT_BACKEND_Z3_SHIMZ3_HPP_
+#define R_TESTS_UNIT_BACKEND_Z3_SHIMZ3_HPP_
 
 #include "testlib.hpp"
 

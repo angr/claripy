@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a method to create Exprs with standard ternary ops
  */
-#ifndef R_CREATE_PRIVATE_TERNARY_HPP_
-#define R_CREATE_PRIVATE_TERNARY_HPP_
+#ifndef R_SRC_CREATE_PRIVATE_TERNARY_HPP_
+#define R_SRC_CREATE_PRIVATE_TERNARY_HPP_
 
 #include "../constants.hpp"
 

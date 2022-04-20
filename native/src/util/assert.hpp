@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines a macro which asserts a condition, and if false throws an exception
  */
-#ifndef R_UTIL_ASSERT_HPP_
-#define R_UTIL_ASSERT_HPP_
+#ifndef R_SRC_UTIL_ASSERT_HPP_
+#define R_SRC_UTIL_ASSERT_HPP_
 
 #include "throw.hpp"
 

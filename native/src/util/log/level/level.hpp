@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines log level modes
  */
-#ifndef R_UTIL_LOG_LEVEL_LEVELS_HPP_
-#define R_UTIL_LOG_LEVEL_LEVELS_HPP_
+#ifndef R_SRC_UTIL_LOG_LEVEL_LEVEL_HPP_
+#define R_SRC_UTIL_LOG_LEVEL_LEVEL_HPP_
 
 #include "../../../constants.hpp"
 #include "../../../macros.hpp"

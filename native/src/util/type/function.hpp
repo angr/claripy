@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file define type traits for functions
  */
-#ifndef R_UTIL_TYPE_FUNCTION_HPP_
-#define R_UTIL_TYPE_FUNCTION_HPP_
+#ifndef R_SRC_UTIL_TYPE_FUNCTION_HPP_
+#define R_SRC_UTIL_TYPE_FUNCTION_HPP_
 
 #include <tuple>
 

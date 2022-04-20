@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the base op class
  */
-#ifndef R_OP_BASE_HPP_
-#define R_OP_BASE_HPP_
+#ifndef R_SRC_OP_BASE_HPP_
+#define R_SRC_OP_BASE_HPP_
 
 #include "constants.hpp"
 #include "macros.hpp"

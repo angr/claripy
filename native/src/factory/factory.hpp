@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a generic factory function
  */
-#ifndef R_FACTORY_FACTORY_HPP_
-#define R_FACTORY_FACTORY_HPP_
+#ifndef R_SRC_FACTORY_FACTORY_HPP_
+#define R_SRC_FACTORY_FACTORY_HPP_
 
 #include "factory_made.hpp"
 

@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines various min functions
  */
-#ifndef R_UTIL_MIN_HPP_
-#define R_UTIL_MIN_HPP_
+#ifndef R_SRC_UTIL_MIN_HPP_
+#define R_SRC_UTIL_MIN_HPP_
 
 
 namespace Util::Min {

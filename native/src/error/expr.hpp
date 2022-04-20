@@ -4,8 +4,8 @@
  * These exceptions have python analogs and must be caught and set to python
  * via a different method.
  */
-#ifndef R_ERROR_EXPR_HPP_
-#define R_ERROR_EXPR_HPP_
+#ifndef R_SRC_ERROR_EXPR_HPP_
+#define R_SRC_ERROR_EXPR_HPP_
 
 #include "../util.hpp"
 

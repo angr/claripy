@@ -2,8 +2,8 @@
  * @file
  * @brief Define trivial string subclass ops
  */
-#ifndef R_OP_STRING_TRIVIAL_HPP_
-#define R_OP_STRING_TRIVIAL_HPP_
+#ifndef R_SRC_OP_STRING_TRIVIAL_HPP_
+#define R_SRC_OP_STRING_TRIVIAL_HPP_
 
 #include "../binary.hpp"
 #include "../ternary.hpp"

@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines const_eval
  */
-#ifndef R_UTIL_TYPE_CONSTEVAL_HPP_
-#define R_UTIL_TYPE_CONSTEVAL_HPP_
+#ifndef R_SRC_UTIL_TYPE_CONSTEVAL_HPP_
+#define R_SRC_UTIL_TYPE_CONSTEVAL_HPP_
 
 namespace Util::Type {
 

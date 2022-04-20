@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines templated method and variables backends should rely on for consistency
  */
-#ifndef R_BACKEND_GENERIC_HPP_
-#define R_BACKEND_GENERIC_HPP_
+#ifndef R_SRC_BACKEND_GENERIC_HPP_
+#define R_SRC_BACKEND_GENERIC_HPP_
 
 #include "base.hpp"
 

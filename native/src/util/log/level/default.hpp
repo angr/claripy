@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This default log level
  */
-#ifndef R_UTIL_LOG_LEVEL_DEFAULT_HPP_
-#define R_UTIL_LOG_LEVEL_DEFAULT_HPP_
+#ifndef R_SRC_UTIL_LOG_LEVEL_DEFAULT_HPP_
+#define R_SRC_UTIL_LOG_LEVEL_DEFAULT_HPP_
 
 #include "level.hpp"
 

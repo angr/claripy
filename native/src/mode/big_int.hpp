@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines BigInt modes
  */
-#ifndef R_MODE_BIGINT_HPP_
-#define R_MODE_BIGINT_HPP_
+#ifndef R_SRC_MODE_BIGINT_HPP_
+#define R_SRC_MODE_BIGINT_HPP_
 
 #include <ostream>
 

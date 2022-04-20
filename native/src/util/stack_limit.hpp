@@ -5,8 +5,8 @@
  * Note that we do not inline these functions since they require
  * C headers which would pollute the global namespace
  */
-#ifndef R_UTIL_STACKLIMIT_HPP_
-#define R_UTIL_STACKLIMIT_HPP_
+#ifndef R_SRC_UTIL_STACKLIMIT_HPP_
+#define R_SRC_UTIL_STACKLIMIT_HPP_
 
 #include "macros.hpp"
 

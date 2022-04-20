@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines equality comparison methods for exprs
  */
-#ifndef R_EXPR_ARESAMETYPE_HPP_
-#define R_EXPR_ARESAMETYPE_HPP_
+#ifndef R_SRC_EXPR_ARESAMETYPE_HPP_
+#define R_SRC_EXPR_ARESAMETYPE_HPP_
 
 #include "bits.hpp"
 

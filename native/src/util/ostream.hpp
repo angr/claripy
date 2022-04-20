@@ -4,8 +4,8 @@
  * @brief This file defines an ostream operator wrapper that can be passed to Util::apply
  * Additionally, this function statically casts strong enums to their underlying types
  */
-#ifndef R_UTIL_OSTREAM_HPP_
-#define R_UTIL_OSTREAM_HPP_
+#ifndef R_SRC_UTIL_OSTREAM_HPP_
+#define R_SRC_UTIL_OSTREAM_HPP_
 
 #include "to_underlying.hpp"
 #include "type.hpp"

@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines Util::to_str
  */
-#ifndef R_UTIL_TOSTR_HPP_
-#define R_UTIL_TOSTR_HPP_
+#ifndef R_SRC_UTIL_TOSTR_HPP_
+#define R_SRC_UTIL_TOSTR_HPP_
 
 #include "ostream.hpp"
 #include "type.hpp"

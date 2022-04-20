@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines way to transfer the const-ness of one type onto another
  */
-#ifndef R_UTIL_TYPE_TRANSFERCONST_HPP_
-#define R_UTIL_TYPE_TRANSFERCONST_HPP_
+#ifndef R_SRC_UTIL_TYPE_TRANSFERCONST_HPP_
+#define R_SRC_UTIL_TYPE_TRANSFERCONST_HPP_
 
 #include <type_traits>
 

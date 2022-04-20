@@ -2,8 +2,8 @@
  * @file
  * @brief The OP representing a Literal
  */
-#ifndef R_OP_LITERAL_HPP_
-#define R_OP_LITERAL_HPP_
+#ifndef R_SRC_OP_LITERAL_HPP_
+#define R_SRC_OP_LITERAL_HPP_
 
 #include "base.hpp"
 #include "constants.hpp"

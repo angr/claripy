@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines a thread-safe recurrence guard
  */
-#ifndef R_UTIL_RECURRENCEGUARD_HPP_
-#define R_UTIL_RECURRENCEGUARD_HPP_
+#ifndef R_SRC_UTIL_RECURRENCEGUARD_HPP_
+#define R_SRC_UTIL_RECURRENCEGUARD_HPP_
 
 #include "assert.hpp"
 #include "err.hpp"

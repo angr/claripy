@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines a method which returns U given T<U>
  */
-#ifndef R_UTIL_TYPE_INTERNAL_HPP_
-#define R_UTIL_TYPE_INTERNAL_HPP_
+#ifndef R_SRC_UTIL_TYPE_INTERNAL_HPP_
+#define R_SRC_UTIL_TYPE_INTERNAL_HPP_
 
 #include "to_type.hpp"
 

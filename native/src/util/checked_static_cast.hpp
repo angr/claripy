@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines a static_cast that is type-safe in debug mode
  */
-#ifndef R_UTIL_CHECKEDSTATICCAST_HPP_
-#define R_UTIL_CHECKEDSTATICCAST_HPP_
+#ifndef R_SRC_UTIL_CHECKEDSTATICCAST_HPP_
+#define R_SRC_UTIL_CHECKEDSTATICCAST_HPP_
 
 #include "assert.hpp"
 #include "err.hpp"

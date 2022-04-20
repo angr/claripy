@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the Op class FP::From2sComplementBV
  */
-#ifndef R_OP_FP_FROM2SCOMPLEMENTBV_HPP_
-#define R_OP_FP_FROM2SCOMPLEMENTBV_HPP_
+#ifndef R_SRC_OP_FP_FROM2SCOMPLEMENTBV_HPP_
+#define R_SRC_OP_FP_FROM2SCOMPLEMENTBV_HPP_
 
 #include "../../mode.hpp"
 #include "../base.hpp"

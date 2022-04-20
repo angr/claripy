@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines type map type
  */
-#ifndef R_UTIL_TYPE_MAP_HPP_
-#define R_UTIL_TYPE_MAP_HPP_
+#ifndef R_SRC_UTIL_TYPE_MAP_HPP_
+#define R_SRC_UTIL_TYPE_MAP_HPP_
 
 #include "is.hpp"
 #include "list.hpp"

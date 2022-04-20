@@ -2,8 +2,8 @@
  * @file
  * @brief This file contains macros used across claricpp
  */
-#ifndef R_MACROS_HPP_
-#define R_MACROS_HPP_
+#ifndef R_SRC_MACROS_HPP_
+#define R_SRC_MACROS_HPP_
 
 
 /** A macro that contains the information about the current line

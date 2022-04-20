@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines multiple constexpr FNV hash methods
  */
-#ifndef R_UTIL_FNV1A_HPP_
-#define R_UTIL_FNV1A_HPP_
+#ifndef R_SRC_UTIL_FNV1A_HPP_
+#define R_SRC_UTIL_FNV1A_HPP_
 
 #include "dependent_constant.hpp"
 #include "pow.hpp"

@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a quick way to verify that a shared_ptr is pointing to a T
  */
-#ifndef R_CUID_IST_HPP_
-#define R_CUID_IST_HPP_
+#ifndef R_SRC_CUID_IST_HPP_
+#define R_SRC_CUID_IST_HPP_
 
 #include "cuid.hpp"
 

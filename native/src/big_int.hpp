@@ -2,8 +2,8 @@
  * @file
  * @brief This defines big integer types
  */
-#ifndef R_BIGINT_HPP_
-#define R_BIGINT_HPP_
+#ifndef R_SRC_BIGINT_HPP_
+#define R_SRC_BIGINT_HPP_
 
 #include "mode.hpp"
 

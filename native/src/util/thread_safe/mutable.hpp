@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines a thread-safe mutable wrapper class
  */
-#ifndef R_UTIL_THREADSAFE_MUTABLE_HPP_
-#define R_UTIL_THREADSAFE_MUTABLE_HPP_
+#ifndef R_SRC_UTIL_THREADSAFE_MUTABLE_HPP_
+#define R_SRC_UTIL_THREADSAFE_MUTABLE_HPP_
 
 #include "base.hpp"
 #include "move_lock.hpp"

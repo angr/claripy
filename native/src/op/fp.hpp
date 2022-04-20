@@ -2,8 +2,8 @@
  * @file
  * @brief This file exposes all relevant public members of fp
  */
-#ifndef R_OP_FP_HPP_
-#define R_OP_FP_HPP_
+#ifndef R_SRC_OP_FP_HPP_
+#define R_SRC_OP_FP_HPP_
 
 #include "fp/from_2s_complement_bv.hpp"
 #include "fp/from_fp.hpp"

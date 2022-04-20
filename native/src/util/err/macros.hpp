@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines macros used across Util
  */
-#ifndef R_UTIL_ERR_MACROS_HPP_
-#define R_UTIL_ERR_MACROS_HPP_
+#ifndef R_SRC_UTIL_ERR_MACROS_HPP_
+#define R_SRC_UTIL_ERR_MACROS_HPP_
 
 #include "../../macros.hpp"
 

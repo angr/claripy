@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the generic Extract Op class
  */
-#ifndef R_OP_EXTRACT_HPP_
-#define R_OP_EXTRACT_HPP_
+#ifndef R_SRC_OP_EXTRACT_HPP_
+#define R_SRC_OP_EXTRACT_HPP_
 
 #include "base.hpp"
 

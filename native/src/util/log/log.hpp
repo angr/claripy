@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines public logging functions
  */
-#ifndef R_UTIL_LOG_LOG_HPP_
-#define R_UTIL_LOG_LOG_HPP_
+#ifndef R_SRC_UTIL_LOG_LOG_HPP_
+#define R_SRC_UTIL_LOG_LOG_HPP_
 
 #include "level.hpp"
 #include "macros.hpp"

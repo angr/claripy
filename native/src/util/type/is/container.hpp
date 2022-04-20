@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief Defines container and related functions
  */
-#ifndef R_UTIL_TYPE_IS_CONTAINER_HPP_
-#define R_UTIL_TYPE_IS_CONTAINER_HPP_
+#ifndef R_SRC_UTIL_TYPE_IS_CONTAINER_HPP_
+#define R_SRC_UTIL_TYPE_IS_CONTAINER_HPP_
 
 #include <memory>
 #include <type_traits>

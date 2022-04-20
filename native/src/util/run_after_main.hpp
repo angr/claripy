@@ -4,8 +4,8 @@
  * @brief This file defines a class that will run the function it is passed after main
  * Warning: This uses the __COUNTER__ macro
  */
-#ifndef R_UTIL_RUNAFTERMAIN_HPP_
-#define R_UTIL_RUNAFTERMAIN_HPP_
+#ifndef R_SRC_UTIL_RUNAFTERMAIN_HPP_
+#define R_SRC_UTIL_RUNAFTERMAIN_HPP_
 
 #include "../macros.hpp"
 

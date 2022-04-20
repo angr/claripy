@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines constants useful for Backtrace
  */
-#ifndef R_UTIL_BACKTRACE_CONSTANTS_HPP_
-#define R_UTIL_BACKTRACE_CONSTANTS_HPP_
+#ifndef R_SRC_UTIL_BACKTRACE_CONSTANTS_HPP_
+#define R_SRC_UTIL_BACKTRACE_CONSTANTS_HPP_
 
 #include "../type.hpp"
 

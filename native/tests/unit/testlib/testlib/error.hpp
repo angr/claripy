@@ -3,8 +3,8 @@
  * \ingroup testlib
  * @brief This defines a UnitTest error and wrapping macros
  */
-#ifndef R_UNIT_TESTLIB_TESTLIB_ERROR_HPP_
-#define R_UNIT_TESTLIB_TESTLIB_ERROR_HPP_
+#ifndef R_TESTS_UNIT_TESTLIB_TESTLIB_ERROR_HPP_
+#define R_TESTS_UNIT_TESTLIB_TESTLIB_ERROR_HPP_
 
 #include "util.hpp"
 

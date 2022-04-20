@@ -3,8 +3,8 @@
  * @brief A 'flat' Op. I.e. An op that takes a vector<Expr::BasePtr> of inputs
  * For example, Add(a,b) can become A({a, b, c, d, ... }) if flattened
  */
-#ifndef R_OP_FLAT_HPP_
-#define R_OP_FLAT_HPP_
+#ifndef R_SRC_OP_FLAT_HPP_
+#define R_SRC_OP_FLAT_HPP_
 
 #include "base.hpp"
 

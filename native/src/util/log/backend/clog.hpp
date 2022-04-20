@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines the clog logging backend
  */
-#ifndef R_UTIL_LOG_BACKEND_CLOG_HPP_
-#define R_UTIL_LOG_BACKEND_CLOG_HPP_
+#ifndef R_SRC_UTIL_LOG_BACKEND_CLOG_HPP_
+#define R_SRC_UTIL_LOG_BACKEND_CLOG_HPP_
 
 #include "ostream.hpp"
 

@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the underling hash function for Exprs
  */
-#ifndef R_HASH_SINGULAR_HPP_
-#define R_HASH_SINGULAR_HPP_
+#ifndef R_SRC_HASH_SINGULAR_HPP_
+#define R_SRC_HASH_SINGULAR_HPP_
 
 #include "hashed.hpp"
 #include "type.hpp"

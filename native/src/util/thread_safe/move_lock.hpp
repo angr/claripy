@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines a move-able lock
  */
-#ifndef R_UTIL_THREADSAFE_MOVELOCK_HPP_
-#define R_UTIL_THREADSAFE_MOVELOCK_HPP_
+#ifndef R_SRC_UTIL_THREADSAFE_MOVELOCK_HPP_
+#define R_SRC_UTIL_THREADSAFE_MOVELOCK_HPP_
 
 #include "../../macros.hpp"
 #include "../fallback_error_log.hpp"

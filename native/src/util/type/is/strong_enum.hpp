@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief An implementation of C++23's std::is_scoped_enum
  */
-#ifndef R_UTIL_TYPE_IS_STRONGENUM_HPP_
-#define R_UTIL_TYPE_IS_STRONGENUM_HPP_
+#ifndef R_SRC_UTIL_TYPE_IS_STRONGENUM_HPP_
+#define R_SRC_UTIL_TYPE_IS_STRONGENUM_HPP_
 
 #include "../../macros.hpp"
 

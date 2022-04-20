@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief Verifies the syscall return code, raises an informative exception if it is invalid
  */
-#ifndef R_UTIL_VERIFYSYSCALL_HPP_
-#define R_UTIL_VERIFYSYSCALL_HPP_
+#ifndef R_SRC_UTIL_VERIFYSYSCALL_HPP_
+#define R_SRC_UTIL_VERIFYSYSCALL_HPP_
 
 #include "assert.hpp"
 #include "err.hpp"

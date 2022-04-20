@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines an abstract multiplexable log backend
  */
-#ifndef R_UTIL_LOG_BACKEND_MULTIPLEXABLE_HPP_
-#define R_UTIL_LOG_BACKEND_MULTIPLEXABLE_HPP_
+#ifndef R_SRC_UTIL_LOG_BACKEND_MULTIPLEXABLE_HPP_
+#define R_SRC_UTIL_LOG_BACKEND_MULTIPLEXABLE_HPP_
 
 #include "base.hpp"
 

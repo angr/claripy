@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines type-dependent constants
  */
-#ifndef R_UTIL_DEPENDENTCONSTANT_HPP_
-#define R_UTIL_DEPENDENTCONSTANT_HPP_
+#ifndef R_SRC_UTIL_DEPENDENTCONSTANT_HPP_
+#define R_SRC_UTIL_DEPENDENTCONSTANT_HPP_
 
 #include "macros.hpp"
 

@@ -3,8 +3,8 @@
  * @brief This file defines a group of create methods that are trivial passthrough methods
  * For example: Functions which just shell out to unary, binary, or flat
  */
-#ifndef R_CREATE_TRIVIAL_HPP_
-#define R_CREATE_TRIVIAL_HPP_
+#ifndef R_SRC_CREATE_TRIVIAL_HPP_
+#define R_SRC_CREATE_TRIVIAL_HPP_
 
 #include "private/binary.hpp"
 #include "private/flat.hpp"

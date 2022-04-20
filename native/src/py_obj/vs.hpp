@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines PyObj::VS
  */
-#ifndef R_PYOBJ_VS_HPP_
-#define R_PYOBJ_VS_HPP_
+#ifndef R_SRC_PYOBJ_VS_HPP_
+#define R_SRC_PYOBJ_VS_HPP_
 
 #include "base.hpp"
 

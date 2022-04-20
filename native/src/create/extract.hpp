@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a method to create an Expr with an Eq Op
  */
-#ifndef R_CREATE_EXTRACT_HPP_
-#define R_CREATE_EXTRACT_HPP_
+#ifndef R_SRC_CREATE_EXTRACT_HPP_
+#define R_SRC_CREATE_EXTRACT_HPP_
 
 #include "constants.hpp"
 

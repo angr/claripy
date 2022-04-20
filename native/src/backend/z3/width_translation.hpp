@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines items related to fpa width in z3
  */
-#ifndef R_BACKEND_Z3_WIDTHTRANSLATION_HPP_
-#define R_BACKEND_Z3_WIDTHTRANSLATION_HPP_
+#ifndef R_SRC_BACKEND_Z3_WIDTHTRANSLATION_HPP_
+#define R_SRC_BACKEND_Z3_WIDTHTRANSLATION_HPP_
 
 #include "constants.hpp"
 

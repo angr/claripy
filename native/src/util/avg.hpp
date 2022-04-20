@@ -4,8 +4,8 @@
  * @brief This file defines a method which asserts a condition, and if false throws an exception
  * We use the word affirm since C libraries like to define assert as a macro
  */
-#ifndef R_UTIL_AVG_HPP_
-#define R_UTIL_AVG_HPP_
+#ifndef R_SRC_UTIL_AVG_HPP_
+#define R_SRC_UTIL_AVG_HPP_
 
 
 namespace Util {

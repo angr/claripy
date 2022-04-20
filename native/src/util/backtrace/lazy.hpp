@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief Define a lazy traceback type
  */
-#ifndef R_UTIL_BACKTRACE_LAZY_HPP_
-#define R_UTIL_BACKTRACE_LAZY_HPP_
+#ifndef R_SRC_UTIL_BACKTRACE_LAZY_HPP_
+#define R_SRC_UTIL_BACKTRACE_LAZY_HPP_
 
 #include "constants.hpp"
 

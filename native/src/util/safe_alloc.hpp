@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines safe allocation functions
  */
-#ifndef R_UTIL_SAFEALLOC_HPP_
-#define R_UTIL_SAFEALLOC_HPP_
+#ifndef R_SRC_UTIL_SAFEALLOC_HPP_
+#define R_SRC_UTIL_SAFEALLOC_HPP_
 
 #include "assert.hpp"
 #include "log.hpp"

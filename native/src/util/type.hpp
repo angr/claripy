@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file exposes public members of type
  */
-#ifndef R_UTIL_TYPE_HPP_
-#define R_UTIL_TYPE_HPP_
+#ifndef R_SRC_UTIL_TYPE_HPP_
+#define R_SRC_UTIL_TYPE_HPP_
 
 #include "type/const_eval.hpp"
 #include "type/function.hpp"

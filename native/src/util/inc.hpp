@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file contains declares the Util:inc() function
  */
-#ifndef R_UTIL_INC_HPP_
-#define R_UTIL_INC_HPP_
+#ifndef R_SRC_UTIL_INC_HPP_
+#define R_SRC_UTIL_INC_HPP_
 
 #include "type.hpp"
 

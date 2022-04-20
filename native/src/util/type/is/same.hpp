@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines a methods like std::is_same but that can unqualify their inputs
  */
-#ifndef R_UTIL_TYPE_IS_SAME_HPP_
-#define R_UTIL_TYPE_IS_SAME_HPP_
+#ifndef R_SRC_UTIL_TYPE_IS_SAME_HPP_
+#define R_SRC_UTIL_TYPE_IS_SAME_HPP_
 
 #include "../../macros.hpp"
 

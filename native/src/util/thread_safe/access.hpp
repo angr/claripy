@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines the thread-safe Access class similar but different from std::atomic
  */
-#ifndef R_UTIL_THREADSAFE_ACCESS_HPP_
-#define R_UTIL_THREADSAFE_ACCESS_HPP_
+#ifndef R_SRC_UTIL_THREADSAFE_ACCESS_HPP_
+#define R_SRC_UTIL_THREADSAFE_ACCESS_HPP_
 
 #include "base.hpp"
 

@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines Expr factory functions
  */
-#ifndef R_EXPR_FACTORY_HPP_
-#define R_EXPR_FACTORY_HPP_
+#ifndef R_SRC_EXPR_FACTORY_HPP_
+#define R_SRC_EXPR_FACTORY_HPP_
 
 #include "base.hpp"
 #include "instantiables.hpp"
