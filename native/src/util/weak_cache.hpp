@@ -52,28 +52,22 @@ namespace Util {
         /** Return true if the object is within the cache, else false
          *  This function is thread-safe
          */
-        bool exists(const Hash &h) {
-            std::shared_lock<decltype(s_m)> r(s_m);
-            return unsafe_find(h) != nullptr;
-        }
+        bool exists(const Hash &h) { return find(h) != nullptr; }
 
         /** If h is in the cache, return a shared pointer to it
          *  Otherwise return a shared pointer to nullptr
          *  This function is thread-safe
          */
         Ptr find(const Hash &h) {
-            std::shared_lock<decltype(s_m)> r(s_m);
-            if (auto lookup { unsafe_find(h) }; full(lookup)) {
-                return lookup;
-            }
-            return { nullptr };
+            std::unique_lock<decltype(m)> rw(m);
+            return unsafe_find(h);
         }
 
         /** Insert a new entry into the cache
          *  This function is thread-safe
          */
         void insert(const Hash &h, const std::shared_ptr<const Cached> &c) {
-            std::unique_lock<decltype(s_m)> rw(s_m);
+            std::unique_lock<decltype(m)> rw(m);
             cache.insert(h, c);
         }
 
@@ -81,7 +75,7 @@ namespace Util {
          *  This function is thread-safe
          */
         void put(const Hash &h, const std::shared_ptr<const Cached> &c) {
-            std::unique_lock<decltype(s_m)> rw(s_m);
+            std::unique_lock<decltype(m)> rw(m);
             cache[h] = c;
         }
 
@@ -105,7 +99,7 @@ namespace Util {
                           "Derived must derive from Cached or be a Cached");
 
             // Initial cache lookup
-            if (auto lookup { find(h) }; full(lookup)) {
+            if (const auto lookup { find(h) }; lookup) {
                 return lookup;
             }
 
@@ -123,9 +117,9 @@ namespace Util {
 
             // Create locked scope
             {
-                std::unique_lock<decltype(s_m)> rw(s_m);
+                std::unique_lock<decltype(m)> rw(m);
                 // Second lookup
-                if (auto lookup { unsafe_find(h) }; full(lookup)) {
+                if (const auto lookup { unsafe_find(h) }; lookup) {
                     return lookup;
                 }
                 // Add to cache
@@ -154,17 +148,16 @@ namespace Util {
          */
         Ptr unsafe_find(const Hash &h) {
             if (auto lookup { cache.find(h) }; lookup != cache.end()) {
+                const auto &weak { lookup->second };
                 // If the weak_ptr is valid, return it
-                if (auto locked { lookup->second.lock() }; full(locked)) {
-                    return locked;
+                if (not weak.expired()) { // Do not waste cycles with .lock() if not needed
+                    if (auto locked { weak.lock() }; locked) {
+                        return locked;
+                    }
                 }
-                // Otherwise remove it from the cache
-                else {
-                    cache.erase(lookup);
-                    return { nullptr };
-                }
+                // Else remove it from the cache
+                cache.erase(lookup);
             }
-
             // If it does not exist, return a pointer to null
             return { nullptr };
         }
@@ -196,7 +189,7 @@ namespace Util {
         /************************************************/
 
         /** A mutex used to protect the internal representation */
-        std::shared_mutex s_m;
+        std::mutex m;
 
         /** The cache representation */
         CacheMap cache {};

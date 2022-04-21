@@ -17,6 +17,9 @@
 #include <sstream>
 
 
+// Enabling this requires linking to dl
+#if 0
+
 /** A private helper function used to print a backtrace line */
 static void print_bt_line(std::ostream &o, const int lg_i, const U64 line_num, const U64 addr,
                           CCSC mangled, const std::uintptr_t offset) {
@@ -33,10 +36,10 @@ static void print_raw_bt_line(std::ostream &o, const int lg_i, const U64 line_nu
 /** Save a backtrace to o */
 inline void Util::Backtrace::native(std::ostream &o, const unsigned ignore_frames,
                                     const int16_t max_frames) noexcept {
-#ifdef DEBUG
+    #ifdef DEBUG
     // Prevent infinite recursion if something goes wrong
     const auto old { Util::Err::Claricpp::toggle_backtrace(false) };
-#endif
+    #endif
     o << "Backtrace:\n";
     // Dummy variables
     int _ignore_int;   // NOLINT
@@ -93,7 +96,9 @@ inline void Util::Backtrace::native(std::ostream &o, const unsigned ignore_frame
     }
     // Cleanup
     std::free(callstack); // NOLINT
-#ifdef DEBUG
+    #ifdef DEBUG
     Util::Err::Claricpp::toggle_backtrace(old);
-#endif
+    #endif
 }
+
+#endif

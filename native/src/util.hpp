@@ -24,7 +24,6 @@
 #include "util/fallback_error_log.hpp"
 #include "util/file_line_hash.hpp"
 #include "util/fnv1a.hpp"
-#include "util/full.hpp"
 #include "util/heap_cache.hpp"
 #include "util/hex_to_num.hpp"
 #include "util/inc.hpp"

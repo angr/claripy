@@ -10,7 +10,6 @@
 #include "assert.hpp"
 #include "assert_not_null_debug.hpp"
 #include "err.hpp"
-#include "full.hpp"
 #include "private/pointer_cast.hpp"
 #include "type.hpp"
 
@@ -55,7 +54,7 @@ namespace Util::PCast {
         constexpr auto down_throw_on_fail(const std::shared_ptr<In> &in) {
             UTIL_ASSERT_NOT_NULL_DEBUG(in);
             auto ret { down<Out>(in) }; // Not const for possible move ret
-            UTIL_ASSERT(E, full(ret), "Dynamic down-cast failed");
+            UTIL_ASSERT(E, ret, "Dynamic down-cast failed");
             return ret;
         }
 
@@ -64,7 +63,7 @@ namespace Util::PCast {
         constexpr auto side_throw_on_fail(const std::shared_ptr<In> &in) {
             UTIL_ASSERT_NOT_NULL_DEBUG(in);
             auto ret { side<Out>(in) }; // Not const for possible move ret
-            UTIL_ASSERT(E, full(ret), "Dynamic pointer cast failed");
+            UTIL_ASSERT(E, ret, "Dynamic pointer cast failed");
             return ret;
         }
 
