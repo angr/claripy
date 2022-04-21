@@ -9,13 +9,14 @@ OUTD="${4}"
 # Bindings
 API_D="${NATIVE}/api/"
 /usr/local/bin/binder \
-	--config="${API_D}/clari.conf"  \
+	--config="${API_D}/binder/clari.conf"  \
 	\
 	-v \
 	--root-module clari \
 	--prefix "${OUTD}"  \
 	"${API_D}/headers.hpp" \
 	-- \
+	-I "${NATIVE}" \
 	-isystem "${Z3_HEADERS}" \
 	-isystem "${NATIVE}/boost/" \
 	-isystem "${NATIVE}/gmp/include/" \

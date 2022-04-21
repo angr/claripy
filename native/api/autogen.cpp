@@ -249,8 +249,8 @@ void bind_unknown_unknown_1(std::function< pybind11::module &(std::string const 
 namespace API::Binder {
 void bind_unknown_unknown_10(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
-	{ // Factory::FactoryMade file: line:42
-		pybind11::class_<Factory::FactoryMade, Factory::FactoryMade*, Hash::Hashed, CUID::HasCUID> cl(M("Factory"), "FactoryMade", "A type that can be constructed by the factory\n  All factory constructable types must subclass this\n  All subclasses that are or have an instantiable subclass constructed via factory\n	  1. Must include the FACTORY_ENABLE_CONSTRUCTION_FROM_BASE method. Note that\n		 this also defines a static_cuid");
+	{ // Factory::FactoryMade file: line:43
+		pybind11::class_<Factory::FactoryMade, Factory::FactoryMade*, Hash::Hashed, CUID::HasCUID> cl(M("Factory"), "FactoryMade", "A type that can be constructed by the factory\n  All factory constructable types must subclass this\n  All subclasses that are or have an instantiable subclass constructed via factory\n	  1. Must include the FACTORY_ENABLE_CONSTRUCTION_FROM_BASE method. Note that\n		 this also defines a static_cuid\n  Warning: No virtual destructor; do *not* delete by base class pointer; avoid slicing!");
 	}
 }
 } // namespace API::Binder
@@ -271,10 +271,25 @@ void bind_unknown_unknown_10(std::function< pybind11::module &(std::string const
 namespace API::Binder {
 void bind_unknown_unknown_11(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
-	{ // HasRepr file: line:13
-		pybind11::class_<HasRepr, std::shared_ptr<HasRepr>> cl(M(""), "HasRepr", "A struct with a repr function ");
-		cl.def("assign", (struct HasRepr & (HasRepr::*)(const struct HasRepr &)) &HasRepr::operator=, "C++: HasRepr::operator=(const struct HasRepr &) --> struct HasRepr &", pybind11::return_value_policy::automatic, pybind11::arg(""));
-		cl.def("repr", (std::string (HasRepr::*)() const) &HasRepr::repr, "Return the repr as a string \n\nC++: HasRepr::repr() const --> std::string");
+	{ // HasRepr file: line:16
+		pybind11::class_<HasRepr<Annotation::Base>, HasRepr<Annotation::Base>*> cl(M(""), "HasRepr_Annotation_Base_t", "");
+		cl.def("repr", (std::string (HasRepr<Annotation::Base>::*)() const) &HasRepr<Annotation::Base>::repr, "C++: HasRepr<Annotation::Base>::repr() const --> std::string");
+		cl.def("assign", (struct HasRepr<struct Annotation::Base> & (HasRepr<Annotation::Base>::*)(const struct HasRepr<struct Annotation::Base> &)) &HasRepr<Annotation::Base>::operator=, "C++: HasRepr<Annotation::Base>::operator=(const struct HasRepr<struct Annotation::Base> &) --> struct HasRepr<struct Annotation::Base> &", pybind11::return_value_policy::automatic, pybind11::arg(""));
+	}
+	{ // HasRepr file: line:16
+		pybind11::class_<HasRepr<Annotation::Vec>, HasRepr<Annotation::Vec>*> cl(M(""), "HasRepr_Annotation_Vec_t", "");
+		cl.def("repr", (std::string (HasRepr<Annotation::Vec>::*)() const) &HasRepr<Annotation::Vec>::repr, "C++: HasRepr<Annotation::Vec>::repr() const --> std::string");
+		cl.def("assign", (struct HasRepr<struct Annotation::Vec> & (HasRepr<Annotation::Vec>::*)(const struct HasRepr<struct Annotation::Vec> &)) &HasRepr<Annotation::Vec>::operator=, "C++: HasRepr<Annotation::Vec>::operator=(const struct HasRepr<struct Annotation::Vec> &) --> struct HasRepr<struct Annotation::Vec> &", pybind11::return_value_policy::automatic, pybind11::arg(""));
+	}
+	{ // HasRepr file: line:16
+		pybind11::class_<HasRepr<Expr::Base>, HasRepr<Expr::Base>*> cl(M(""), "HasRepr_Expr_Base_t", "");
+		cl.def("repr", (std::string (HasRepr<Expr::Base>::*)() const) &HasRepr<Expr::Base>::repr, "C++: HasRepr<Expr::Base>::repr() const --> std::string");
+		cl.def("assign", (struct HasRepr<class Expr::Base> & (HasRepr<Expr::Base>::*)(const struct HasRepr<class Expr::Base> &)) &HasRepr<Expr::Base>::operator=, "C++: HasRepr<Expr::Base>::operator=(const struct HasRepr<class Expr::Base> &) --> struct HasRepr<class Expr::Base> &", pybind11::return_value_policy::automatic, pybind11::arg(""));
+	}
+	{ // HasRepr file: line:16
+		pybind11::class_<HasRepr<Op::Base>, HasRepr<Op::Base>*> cl(M(""), "HasRepr_Op_Base_t", "");
+		cl.def("repr", (std::string (HasRepr<Op::Base>::*)() const) &HasRepr<Op::Base>::repr, "C++: HasRepr<Op::Base>::repr() const --> std::string");
+		cl.def("assign", (struct HasRepr<class Op::Base> & (HasRepr<Op::Base>::*)(const struct HasRepr<class Op::Base> &)) &HasRepr<Op::Base>::operator=, "C++: HasRepr<Op::Base>::operator=(const struct HasRepr<class Op::Base> &) --> struct HasRepr<class Op::Base> &", pybind11::return_value_policy::automatic, pybind11::arg(""));
 	}
 }
 } // namespace API::Binder
@@ -341,7 +356,7 @@ namespace API::Binder {
 void bind_unknown_unknown_12(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	{ // Annotation::Base file: line:21
-		pybind11::class_<Annotation::Base, std::shared_ptr<Annotation::Base>, PyCallBack_Annotation_Base, HasRepr, Factory::FactoryMade> cl(M("Annotation"), "Base", "Annotations are used to achieve claripy's goal of being an arithmetic instrumentation\n engine. They provide a means to pass extra information to the claripy backends.");
+		pybind11::class_<Annotation::Base, std::shared_ptr<Annotation::Base>, PyCallBack_Annotation_Base, HasRepr<Annotation::Base>, Factory::FactoryMade> cl(M("Annotation"), "Base", "Annotations are used to achieve claripy's goal of being an arithmetic instrumentation\n engine. They provide a means to pass extra information to the claripy backends.");
 		cl.def( pybind11::init( [](const unsigned long long & a0){ return new Annotation::Base(a0); }, [](const unsigned long long & a0){ return new PyCallBack_Annotation_Base(a0); } ), "doc");
 		cl.def( pybind11::init<const unsigned long long &, const unsigned long long>(), pybind11::arg("h"), pybind11::arg("c") );
 
@@ -361,7 +376,7 @@ void bind_unknown_unknown_12(std::function< pybind11::module &(std::string const
 		cl.def("name", (const char * (Annotation::SimplificationAvoidance::*)() const) &Annotation::SimplificationAvoidance::name, "name \n\nC++: Annotation::SimplificationAvoidance::name() const --> const char *", pybind11::return_value_policy::automatic);
 	}
 	{ // Annotation::Vec file: line:16
-		pybind11::class_<Annotation::Vec, std::shared_ptr<Annotation::Vec>, HasRepr, Hash::Hashed> cl(M("Annotation"), "Vec", "");
+		pybind11::class_<Annotation::Vec, std::shared_ptr<Annotation::Vec>, HasRepr<Annotation::Vec>, Hash::Hashed> cl(M("Annotation"), "Vec", "");
 		cl.def( pybind11::init( [](Annotation::Vec const &o){ return new Annotation::Vec(o); } ) );
 		cl.def_readonly("vec", &Annotation::Vec::vec);
 	}
@@ -381,11 +396,30 @@ void bind_unknown_unknown_12(std::function< pybind11::module &(std::string const
 	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
 #endif
 
+// Expr::Base file: line:28
+struct PyCallBack_Expr_Base : public Expr::Base {
+	using Expr::Base::Base;
+
+	const char * type_name() const throw() override {
+		pybind11::gil_scoped_acquire gil;
+		pybind11::function overload = pybind11::get_overload(static_cast<const Expr::Base *>(this), "type_name");
+		if (overload) {
+			auto o = overload.operator()<pybind11::return_value_policy::reference>();
+			if (pybind11::detail::cast_is_temporary_value_reference<const char *>::value) {
+				static pybind11::detail::override_caster_t<const char *> caster;
+				return pybind11::detail::cast_ref<const char *>(std::move(o), caster);
+			}
+			else return pybind11::detail::cast_safe<const char *>(std::move(o));
+		}
+		pybind11::pybind11_fail("Tried to call pure virtual function \"Base::type_name\"");
+	}
+};
+
 namespace API::Binder {
 void bind_unknown_unknown_13(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
-	{ // Expr::Base file: line:27
-		pybind11::class_<Expr::Base, Expr::Base*, HasRepr, Factory::FactoryMade> cl(M("Expr"), "Base", "The base Expr type\n  All exprs must subclass this");
+	{ // Expr::Base file: line:28
+		pybind11::class_<Expr::Base, Expr::Base*, PyCallBack_Expr_Base, HasRepr<Expr::Base>, Factory::FactoryMade> cl(M("Expr"), "Base", "The base Expr type\n  All exprs must subclass this\n  TODO: make quite a bit smaller by killing vtables; Hashed, HasCUID, and HasRepr all have one");
 		cl.def_readonly("symbolic", &Expr::Base::symbolic);
 		cl.def_readonly("op", &Expr::Base::op);
 		cl.def_readonly("annotations", &Expr::Base::annotations);
@@ -430,11 +464,30 @@ void bind_unknown_unknown_14(std::function< pybind11::module &(std::string const
 	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
 #endif
 
+// Expr::Bits file: line:16
+struct PyCallBack_Expr_Bits : public Expr::Bits {
+	using Expr::Bits::Bits;
+
+	const char * type_name() const throw() override {
+		pybind11::gil_scoped_acquire gil;
+		pybind11::function overload = pybind11::get_overload(static_cast<const Expr::Bits *>(this), "type_name");
+		if (overload) {
+			auto o = overload.operator()<pybind11::return_value_policy::reference>();
+			if (pybind11::detail::cast_is_temporary_value_reference<const char *>::value) {
+				static pybind11::detail::override_caster_t<const char *> caster;
+				return pybind11::detail::cast_ref<const char *>(std::move(o), caster);
+			}
+			else return pybind11::detail::cast_safe<const char *>(std::move(o));
+		}
+		pybind11::pybind11_fail("Tried to call pure virtual function \"Base::type_name\"");
+	}
+};
+
 namespace API::Binder {
 void bind_unknown_unknown_15(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	{ // Expr::Bits file: line:16
-		pybind11::class_<Expr::Bits, Expr::Bits*, Expr::Base, BitLength> cl(M("Expr"), "Bits", "This class represents an Expr of Bits ");
+		pybind11::class_<Expr::Bits, Expr::Bits*, PyCallBack_Expr_Bits, Expr::Base, BitLength> cl(M("Expr"), "Bits", "This class represents an Expr of Bits ");
 	}
 	// Expr::get_bit_length(const class Expr::Base *const) file: line:40
 	M("Expr").def("get_bit_length", (unsigned long long (*)(const class Expr::Base *const)) &Expr::get_bit_length, "Static casts T to Expr::Bits' raw pointer, then returns the bit_length\n  p may not be nullptr\n  Warning: This static casts, the user must ensure that p is a Bits\n\nC++: Expr::get_bit_length(const class Expr::Base *const) --> unsigned long long", pybind11::arg("p"));
@@ -563,7 +616,7 @@ namespace API::Binder {
 void bind_unknown_unknown_19(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
 	{ // Op::Base file: line:20
-		pybind11::class_<Op::Base, std::shared_ptr<Op::Base>, HasRepr, Factory::FactoryMade> cl(M("Op"), "Base", "Base operation expr\n  All op exprs must subclass this");
+		pybind11::class_<Op::Base, std::shared_ptr<Op::Base>, HasRepr<Op::Base>, Factory::FactoryMade> cl(M("Op"), "Base", "Base operation expr\n  All op exprs must subclass this");
 		cl.def("op_name", (const char * (Op::Base::*)() const) &Op::Base::op_name, "The name of the op \n\nC++: Op::Base::op_name() const --> const char *", pybind11::return_value_policy::automatic);
 		cl.def("unsafe_add_reversed_children", (void (Op::Base::*)(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const) &Op::Base::unsafe_add_reversed_children, "Adds the raw expr children of the expr to the given stack in reverse\n  Warning: This does *not* give ownership, it transfers raw pointers\n  Be careful to ensure 'this' does not destruct while using said pointers\n\nC++: Op::Base::unsafe_add_reversed_children(class std::stack<const class Expr::Base *, class std::vector<const class Expr::Base *> > &) const --> void", pybind11::arg(""));
 		cl.def("python_children", (class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> > (Op::Base::*)() const) &Op::Base::python_children, "Appends the expr children of the expr to the given vector\n  Note: This should only be used when returning children to python\n\nC++: Op::Base::python_children() const --> class std::vector<class std::variant<bool, std::string, float, double, class std::shared_ptr<const struct PyObj::VS>, unsigned char, unsigned short, unsigned int, unsigned long long, struct BigInt, class std::shared_ptr<const class Expr::Base>, enum Mode::FP::Rounding, struct Mode::FP::Width> >");
@@ -630,8 +683,11 @@ void bind_unknown_unknown_19(std::function< pybind11::module &(std::string const
 namespace API::Binder {
 void bind_unknown_unknown_2(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
-	{ // CUID::HasCUID file: line:37
-		pybind11::class_<CUID::HasCUID, CUID::HasCUID*> cl(M("CUID"), "HasCUID", "A type that has a class unique id\n  This has the benefits of a virtual function as inherited classes\n  can have different CUIDs than their ancestors, while also avoiding\n  the overhead of a vtabel call to invoke virtual cuid() const;");
+	{ // CUID::HasCUID file: line:38
+		pybind11::class_<CUID::HasCUID, std::shared_ptr<CUID::HasCUID>> cl(M("CUID"), "HasCUID", "A type that has a class unique id\n  This has the benefits of a virtual function as inherited classes\n  can have different CUIDs than their ancestors, while also avoiding\n  the overhead of a vtabel call to invoke virtual cuid() const;\n  Warning: No virtual destructor; do *not* delete by base class pointer; avoid slicing!");
+		cl.def( pybind11::init<const unsigned long long &>(), pybind11::arg("c") );
+
+		cl.def( pybind11::init( [](CUID::HasCUID const &o){ return new CUID::HasCUID(o); } ) );
 		cl.def_readonly("cuid", &CUID::HasCUID::cuid);
 	}
 }
@@ -1054,8 +1110,8 @@ void bind_unknown_unknown_29(std::function< pybind11::module &(std::string const
 namespace API::Binder {
 void bind_unknown_unknown_3(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
-	{ // Hash::Hashed file: line:16
-		pybind11::class_<Hash::Hashed, Hash::Hashed*> cl(M("Hash"), "Hashed", "A type that has a precomputed hash value ");
+	{ // Hash::Hashed file: line:18
+		pybind11::class_<Hash::Hashed, Hash::Hashed*> cl(M("Hash"), "Hashed", "A type that has a precomputed hash value\n  Warning: No virtual destructor; do *not* delete by base class pointer; avoid slicing!");
 		cl.def_readonly("hash", &Hash::Hashed::hash);
 	}
 }
