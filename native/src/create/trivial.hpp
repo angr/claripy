@@ -107,7 +107,7 @@ namespace Create {
     template <Mode::Compare M>
     inline Expr::BasePtr compare(const Expr::BasePtr &left, const Expr::BasePtr &right,
                                  Annotation::SPAV &&sp) {
-        UTIL_ASSERT(Util::Err::Usage, Mode::is_signed(M) || !CUID::is_t<Expr::FP>(left),
+        UTIL_ASSERT(Util::Err::Usage, Mode::is_signed(M) || not CUID::is_t<Expr::FP>(left),
                     "FP comparisons must be signed");
         return Private::binary_explicit<Expr::Bool, Op::Compare<M>, Private::SizeMode::NA, Expr::FP,
                                         Expr::BV>(left, right, std::move(sp));

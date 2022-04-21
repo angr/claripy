@@ -47,35 +47,35 @@ void big_int() {
 
     // Basic diff len
     same = check_same(m1, l1, m1, l2);
-    UNITTEST_ASSERT(!same);
+    UNITTEST_ASSERT(not same);
     same = check_same(m1, l2, m1, l1);
-    UNITTEST_ASSERT(!same);
+    UNITTEST_ASSERT(not same);
     same = check_same(m2, l2, m2, l1);
-    UNITTEST_ASSERT(!same);
+    UNITTEST_ASSERT(not same);
     same = check_same(m3, l2, m3, l1);
-    UNITTEST_ASSERT(!same);
+    UNITTEST_ASSERT(not same);
     same = check_same(m4, l2, m4, l1);
-    UNITTEST_ASSERT(!same);
+    UNITTEST_ASSERT(not same);
     same = check_same(m5, l2, m5, l1);
-    UNITTEST_ASSERT(!same);
+    UNITTEST_ASSERT(not same);
     same = check_same(m5, l1, m5, l2);
-    UNITTEST_ASSERT(!same);
+    UNITTEST_ASSERT(not same);
 
     // Basic diff size
     same = check_same(m1, l1, m2, l1);
-    UNITTEST_ASSERT(!same);
+    UNITTEST_ASSERT(not same);
     same = check_same(m1, l2, m2, l2);
-    UNITTEST_ASSERT(!same);
+    UNITTEST_ASSERT(not same);
     same = check_same(m2, l2, m3, l2);
-    UNITTEST_ASSERT(!same);
+    UNITTEST_ASSERT(not same);
     same = check_same(m3, l2, m4, l2);
-    UNITTEST_ASSERT(!same);
+    UNITTEST_ASSERT(not same);
     same = check_same(m4, l2, m5, l2);
-    UNITTEST_ASSERT(!same);
+    UNITTEST_ASSERT(not same);
     same = check_same(m5, l2, m1, l2);
-    UNITTEST_ASSERT(!same);
+    UNITTEST_ASSERT(not same);
     same = check_same(m4, l1, m5, l1);
-    UNITTEST_ASSERT(!same);
+    UNITTEST_ASSERT(not same);
 }
 
 // Define the test

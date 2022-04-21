@@ -35,7 +35,7 @@ namespace Util::Log::Backend {
             : stream { std::move(stream_) },
               should_flush { should_flush_ },
               flush_on_exit { flush_on_exit_ } {
-            UTIL_ASSERT(Err::Null, stream != nullptr, "stream should not be nullptr");
+            UTIL_ASSERT(Err::Null, stream, "stream should not be nullptr");
         }
 
         /** A virtual destructor */

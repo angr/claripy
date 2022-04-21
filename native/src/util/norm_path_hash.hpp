@@ -105,7 +105,7 @@ namespace Util {
         // Construct norm path
         std::array<char, Len + 3> norm {};
         U64 n_len { 0 };
-        if (!absolute) {
+        if (not absolute) {
             norm[n_len++] = '.';
         }
         norm[n_len++] = '/';

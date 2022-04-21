@@ -39,7 +39,7 @@ namespace Backend::Z3 {
         static z3::expr abs(const z3::expr &e) { return z3::abs(e); }
 
         /** Not converter */
-        static z3::expr not_(const z3::expr &e) { return !e; }
+        static z3::expr not_(const z3::expr &e) { return not e; }
 
         /** Invert converter */
         static z3::expr invert(const z3::expr &e) { return ~e; }
@@ -349,12 +349,12 @@ namespace Backend::Z3 {
                     using BVP = CTSC<Expr::BV>;
 #ifdef DEBUG // @todo Double check if I am strill right
                     UTIL_ASSERT(Util::Err::Unknown,
-                                Factory::Private::gcache<Expr::Base>().find(expr->hash) != nullptr,
+                                Factory::Private::gcache<Expr::Base>().find(expr->hash),
                                 "cache lookup failed for existing object");
 #endif
                     // Update annotations for translocation
                     const U64 name_hash { Util::FNV1a<char>::hash(name.c_str(), name.size()) };
-                    if (expr->annotations != nullptr) {
+                    if (expr->annotations) {
                         Util::map_emplace(satd, name_hash, expr->annotations);
                     }
                     else {

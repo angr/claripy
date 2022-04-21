@@ -51,7 +51,7 @@ namespace Expr {
             op { std::move(op_) },
             annotations { std::move(sp) } {
 #ifdef DEBUG
-            UTIL_ASSERT(Util::Err::Usage, op != nullptr, "op may not be nullptr");
+            UTIL_ASSERT(Util::Err::Usage, op, "op may not be nullptr");
             ctor_debug_checks();
 #endif
         }

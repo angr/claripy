@@ -37,7 +37,7 @@ namespace Annotation {
                 vec[i]->repr_stream(o);
                 o << delim;
             }
-            if (vec.size() != 0) {
+            if (not vec.empty()) {
                 o.seekp(Util::strlen(delim), o.cur); // Pop off last ", ";
             }
             o << " ] }";

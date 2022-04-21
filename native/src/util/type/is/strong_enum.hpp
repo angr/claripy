@@ -26,7 +26,7 @@ namespace Util::Type::Is {
          */
         template <typename T>
         struct StrongEnum<T, true> final :
-            std::bool_constant<!std::is_convertible_v<T, std::underlying_type_t<T>>> {};
+            std::bool_constant<not std::is_convertible_v<T, std::underlying_type_t<T>>> {};
 
     } // namespace Private
 

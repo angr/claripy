@@ -20,15 +20,15 @@ void satisfiable() {
     // Statements
     const auto true_ { Create::or_({ x, t }) };
     const auto false_ { Create::and_({ x, f }) };
-    const auto maybe_true { Create::and_({ x, t }) };
-    const auto maybe_false { Create::or_({ x, f }) };
+    const auto and_true { Create::and_({ x, t }) };
+    const auto or_false { Create::or_({ x, f }) };
 
     // Create a solver
     auto is_sat = [&x, &z3, &solver](const Expr::BasePtr &e,
                                      const Expr::BasePtr ec = nullptr) { // NOLINT
         solver->push();
         bool ret; // NOLINT
-        if (ec != nullptr) {
+        if (ec) {
             std::vector<Expr::RawPtr> ecs;
             const auto c { Create::eq(x, ec) };
             ecs.emplace_back(c.get());
@@ -45,15 +45,15 @@ void satisfiable() {
 
     // Test sat
     UNITTEST_ASSERT(is_sat(true_));
-    UNITTEST_ASSERT(!is_sat(false_));
-    UNITTEST_ASSERT(is_sat(maybe_true));
-    UNITTEST_ASSERT(is_sat(maybe_false));
+    UNITTEST_ASSERT(not is_sat(false_));
+    UNITTEST_ASSERT(is_sat(and_true));
+    UNITTEST_ASSERT(is_sat(or_false));
 
     // Test sat with extra constraints
     UNITTEST_ASSERT(is_sat(true_, f));
-    UNITTEST_ASSERT(!is_sat(false_, f));
-    UNITTEST_ASSERT(!is_sat(maybe_true, f));
-    UNITTEST_ASSERT(is_sat(maybe_false, t));
+    UNITTEST_ASSERT(is_sat(or_false, t));
+    UNITTEST_ASSERT(not is_sat(false_, f));
+    UNITTEST_ASSERT(not is_sat(and_true, f));
 }
 
 // Define the test

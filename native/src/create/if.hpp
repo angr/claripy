@@ -16,8 +16,7 @@ namespace Create {
     inline Expr::BasePtr if_(const Expr::BasePtr &cond, const Expr::BasePtr &left,
                              const Expr::BasePtr &right, Annotation::SPAV sp = empty_spav) {
         using namespace Simplify;
-        UTIL_ASSERT(Error::Expr::Usage, cond != nullptr && left != nullptr && right != nullptr,
-                    "arguments may not be nullptr");
+        UTIL_ASSERT(Error::Expr::Usage, cond && left && right, "arguments may not be nullptr");
         const bool sym { cond->symbolic || left->symbolic || right->symbolic };
         if (CUID::is_t<Expr::Bool>(left)) {
             return simplify(Expr::factory<Expr::Bool>(sym, Op::factory<Op::If>(cond, left, right),

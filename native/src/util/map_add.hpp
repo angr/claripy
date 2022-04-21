@@ -20,23 +20,19 @@ namespace Util {
         auto map_add(std::map<std::remove_cv_t<std::remove_reference_t<Key>>, Value> &map,
                      Key &&key, Args &&...args) {
             constexpr const bool val_const { std::is_const_v<Value> };
-            static_assert(!val_const || ErrIfEmplaceFails,
+            static_assert(not val_const || ErrIfEmplaceFails,
                           "ErrIfEmplaceFails must be true for maps with constant value types");
-            // First try emplacing.
-            // Normally this forward would plunder args, but try_emplace will only plunder if the
-            // item doesn't already exist, so if success is false we should be able to use args
-            // again
+            // First try emplacing. try_emplace will only plunder args if the item doesn't already
+            // exist, so if success is false we should be able to use args again
             const auto [iter, success] { map.try_emplace(std::forward<Key>(key),
                                                          std::forward<Args...>(args)...) };
-            if (!success) {
-                // This is an if instead of just an affirm because this must not be compiled if
-                // false
-                if constexpr (!val_const && !ErrIfEmplaceFails) {
-                    iter->second = std::move(Value { std::forward<Args...>(args)... });
+            if (not success) {
+                // This is an if instead of an affirm because else must not be compiled if true
+                if constexpr (val_const || ErrIfEmplaceFails) {
+                    UTIL_THROW(Util::Err::Collision, "Key collision during addition to map");
                 }
                 else {
-                    UTIL_THROW(Util::Err::Collision,
-                               "Key collision during addition to map with const value type");
+                    iter->second = std::move(Value { std::forward<Args...>(args)... });
                 }
             }
             return iter;

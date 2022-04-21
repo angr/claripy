@@ -20,7 +20,7 @@ void same() {
     const constexpr bool false3 {
         Util::Type::Is::wrap_same<int, const int, std::remove_volatile_t>
     };
-    UNITTEST_ASSERT(!false3);
+    UNITTEST_ASSERT(not false3);
 
     // Const
     const constexpr bool true5 { Util::Type::Is::same_ignore_const<const int, int> };

@@ -48,8 +48,7 @@ namespace Create::Private {
         static_assert(Op::is_binary<OpT>, "Create::Private::binary requires a binary OpT");
 
         // Dynamic checks
-        UTIL_ASSERT(Err::Usage, left != nullptr && right != nullptr,
-                    "Expr pointer arguments may not be nullptr");
+        UTIL_ASSERT(Err::Usage, left && right, "Expr pointer arguments may not be nullptr");
         const bool type_ok { CUID::is_any_t<const Expr::Base, Allowed...>(left) };
         UTIL_ASSERT(Err::Type, type_ok, "left operand of invalid type; allowed types: ", allowed);
 
@@ -83,8 +82,7 @@ namespace Create::Private {
         }
 
         // Dynamic checks
-        UTIL_ASSERT(Err::Usage, left != nullptr && right != nullptr,
-                    "Expr pointer arguments may not be nullptr");
+        UTIL_ASSERT(Err::Usage, left && right, "Expr pointer arguments may not be nullptr");
         const bool type_ok { CUID::is_any_t<const Expr::Base, Allowed...>(left) };
         UTIL_ASSERT(Err::Type, type_ok, "left operand of incorrect type");
 

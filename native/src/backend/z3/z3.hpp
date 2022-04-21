@@ -63,9 +63,10 @@ namespace Backend::Z3 {
                     return abstract(b_obj);
                 }
                 default: {
-                    Util::Log::info("Z3 Backend cannot simplify expr of type: ",
-                                    Util::LazyFunc { [](const auto e) { return e->type_name(); },
-                                                     std::move(expr) });
+                    Util::Log::info(
+                        "Z3 Backend cannot simplify expr of type: ",
+                        Util::LazyFunc { [](const auto e) noexcept { return e->type_name(); },
+                                         std::move(expr) });
 #ifdef DEBUG
                     auto ret { Expr::find(expr->hash) };
                     UTIL_ASSERT_EMPTY(Util::Err::HashCollision, ret.get() == expr);
@@ -94,7 +95,7 @@ namespace Backend::Z3 {
         template <bool ForceNew = false>
         [[nodiscard]] inline std::shared_ptr<Solver> tls_solver(const unsigned timeout = 0) {
             auto ret { get_tls_solver<ForceNew>() };
-            if (timeout != 0) {
+            if (timeout) {
                 auto slv { *ret };
                 if (slv->get_param_descrs().to_string().find("soft_timeout") != std::string::npos) {
                     slv->set("soft_timeout", timeout);
@@ -193,7 +194,7 @@ namespace Backend::Z3 {
                 // Skip untracked / non-core assertions
                 if (tracked && cores.find(hash) != cores.end()) {
                     // Get the object either by a hash lookup or by constructing it if that fails
-                    if (auto lookup { Expr::find(hash) }; lookup != nullptr) {
+                    if (auto lookup { Expr::find(hash) }; lookup) {
                         ret.emplace_back(std::move(lookup));
                     }
                     else {
@@ -224,7 +225,7 @@ namespace Backend::Z3 {
             }
             // Repeat for each new solution
             for (U64 iter { 0 }; iter < n_sol; ++iter) {
-                if (!satisfiable(solver)) {
+                if (not satisfiable(solver)) {
                     // No point in search further, return what we have
                     break;
                 }
@@ -338,7 +339,7 @@ namespace Backend::Z3 {
         inline std::pair<Hash::Hash, bool> extract_hash(const z3::expr &expr) const {
             // Note that we use the lower level API to avoid a string allocation for speed
             const char *str { Z3_ast_to_string(expr.ctx(), expr) };
-            if (std::strncmp(str, "H0x", 3) != 0) { // Prefix test
+            if (std::strncmp(str, "H0x", 3)) { // Prefix test
                 return { 0, false };
             }
             Hash::Hash ret { 0 };
@@ -364,7 +365,7 @@ namespace Backend::Z3 {
                 if (tracked) {
 #ifdef DEBUG
                     const auto [_, success] { ret.emplace(hash) };
-                    if (!success) {
+                    if (not success) {
                         Util::Log::warning(WHOAMI " potential hash collision detected.");
                         (void) _;
                     }
@@ -382,7 +383,7 @@ namespace Backend::Z3 {
          */
         template <bool Track>
         void add_helper(Solver &solver, CTSC<Expr::RawPtr> constraints, const U64 c_len) {
-            if constexpr (!Track) {
+            if constexpr (not Track) {
                 for (U64 i { 0 }; i < c_len; ++i) {
                     solver->add(convert(constraints[i]));
                 }
@@ -418,13 +419,13 @@ namespace Backend::Z3 {
             // Repeat for each new solution
             std::vector<z3::expr> z3_sol;
             for (U64 iter { 0 }; iter < n_sol; ++iter) {
-                if (!satisfiable(solver)) {
+                if (not satisfiable(solver)) {
                     // No point in search further, return what we have
                     break;
                 }
 
                 // Prep loop body
-                if (iter != 0) {
+                if (iter) {
                     z3_sol.clear();
                 }
                 z3_sol.reserve(exprs.size());
@@ -443,7 +444,7 @@ namespace Backend::Z3 {
                     for (U64 i { 1 }; i < exprs.size(); ++i) {
                         current_sol = current_sol && (exprs[i] == z3_sol[i]);
                     }
-                    solver->add(!current_sol);
+                    solver->add(not current_sol);
                 }
             }
             // Cleanup
@@ -548,7 +549,7 @@ namespace Backend::Z3 {
             bool pushed { false };
             while (hi > lo + 1) { // Difference of 1 instead of 0 to prevent infinite loop
                 // Protect the current solver->ate
-                if (!pushed) {
+                if (not pushed) {
                     solver->push();
                     pushed = true;
                 }
@@ -560,14 +561,14 @@ namespace Backend::Z3 {
                 const bool sat { satisfiable(solver) };
                 (sat == Minimize ? hi : lo) = middle;
                 // If the constraints need to be removed for the next step do so
-                if (!sat) {
+                if (not sat) {
                     solver->pop();
                     pushed = false;
                 }
             }
 
             // Last step of binary search
-            if (!pushed) {
+            if (not pushed) {
                 solver->push();
             }
             solver->add(expr == to_z3(Minimize ? lo : hi));

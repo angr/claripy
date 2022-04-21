@@ -25,7 +25,7 @@ void test(std::vector<std::shared_ptr<std::ostringstream>> &v, Lvl l) {
         UNITTEST_ASSERT(v.size() == 2)
         for (auto &s : v) {
             const auto str { s->str() };
-            UNITTEST_ASSERT(!str.empty())
+            UNITTEST_ASSERT(not str.empty())
             UNITTEST_ASSERT(str.back() == '\n')
             s->str(""); // clear the log for the next test
         }

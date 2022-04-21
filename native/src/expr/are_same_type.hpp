@@ -26,7 +26,7 @@ namespace Expr {
         }
         // Size check, skip if unsized
         if constexpr (ConsiderSize) {
-            if (dynamic_cast<CTSC<Expr::Bits>>(x.get()) != nullptr) {
+            if (dynamic_cast<CTSC<Expr::Bits>>(x.get())) {
                 if (Expr::get_bit_length(x) != Expr::get_bit_length(y)) {
                     Util::Log::warning(WHOAMI "failed due to size difference: ",
                                        Expr::get_bit_length(x), " vs ", Expr::get_bit_length(y));

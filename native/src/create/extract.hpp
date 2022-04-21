@@ -19,7 +19,7 @@ namespace Create {
         using namespace Simplify;
 
         // Checks
-        UTIL_ASSERT(E::Usage, from != nullptr, "from may not be nullptr");
+        UTIL_ASSERT(E::Usage, from, "from may not be nullptr");
         UTIL_ASSERT(E::Type, CUID::is_t<Expr::BV>(from), "from operands must be an Expr::BV");
         UTIL_ASSERT(E::Type, high >= low, "high must be >= low");
 

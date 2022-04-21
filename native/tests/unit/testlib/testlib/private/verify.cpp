@@ -12,12 +12,12 @@ static bool ran { false };
 
 
 void UnitTest::TestLib::Private::verify() {
-    UNITTEST_ASSERT_MSG(!ran, "UnitTest::TestLib::Private::verify() ran more than once");
+    UNITTEST_ASSERT_MSG(not ran, "UnitTest::TestLib::Private::verify() ran more than once");
     ran = true;
 }
 
 
-/** If ! ran, throw an exception */
+/** If not ran, throw an exception */
 void fail_if_unverified() {
     UNITTEST_ASSERT_MSG(ran, "No test case ran via testlib");
 }

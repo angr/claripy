@@ -27,7 +27,7 @@ namespace Util::Backtrace {
                                                const uint16_t ignore_frames,
                                                const int16_t max_frames = 0x1000) noexcept {
             try {
-                if (LIKELY(gen != nullptr)) {
+                if (LIKELY(gen)) {
                     std::ostringstream o;
                     gen(o, static_cast<uint32_t>(ignore_frames) + 1, max_frames);
                     return Ptr { new Lazy { std::move(o) } }; // no make_shared b/c priv ctor

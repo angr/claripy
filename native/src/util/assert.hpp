@@ -14,7 +14,7 @@
  */
 #define UTIL_ASSERT_EMPTY(E_TYPE, COND)                                                            \
     {                                                                                              \
-        if (UNLIKELY(!(COND))) {                                                                   \
+        if (UNLIKELY(not(COND))) {                                                                 \
             UTIL_THROW_EMPTY(E_TYPE);                                                              \
         }                                                                                          \
     }
@@ -24,7 +24,7 @@
  */
 #define UTIL_ASSERT(E_TYPE, COND, ...)                                                             \
     {                                                                                              \
-        if (UNLIKELY(!(COND))) {                                                                   \
+        if (UNLIKELY(not(COND))) {                                                                 \
             UTIL_THROW(E_TYPE, __VA_ARGS__);                                                       \
         }                                                                                          \
     }

@@ -619,7 +619,7 @@ namespace Backend::Z3 {
                     UTIL_THROW(Util::Err::NotSupported, "Unsupported fp primitive width");
                     // @todo: Fill in
 #if 0
-                    UTIL_ASSERT(Error::Backend::Abstraction, !Z3::rhfpu,
+                    UTIL_ASSERT(Error::Backend::Abstraction, not Z3::rhfpu,
                             "rewriter.hi_fp_unspecified is set to false, this should not be triggered");
                         const auto n { b_obj.num_args() };
                         U64 res = 0; // @todo wrong
@@ -691,7 +691,7 @@ namespace Backend::Z3 {
         template <typename T>
         static constexpr void debug_assert_dcast(const Expr::RawPtr e, CCSC msg) {
 #ifdef DEBUG
-            UTIL_ASSERT(Util::Err::Type, dynamic_cast<CTSC<T>>(e) != nullptr, msg);
+            UTIL_ASSERT(Util::Err::Type, dynamic_cast<CTSC<T>>(e), msg);
 #else
             (void) e;
             (void) msg;
@@ -709,8 +709,7 @@ namespace Backend::Z3 {
             if (n > 0) {
                 const auto last { c.size() - 1 };
                 for (U64 i { 0 }; i < n; ++i) {
-                    UTIL_ASSERT(Err::Null, c[last - i] != nullptr,
-                                "container element cannot be nullptr");
+                    UTIL_ASSERT(Err::Null, c[last - i], "container element cannot be nullptr");
                 }
             }
 #endif

@@ -21,8 +21,7 @@ namespace Create::String {
         namespace Err = Error::Expr;
 
         // Checks
-        UTIL_ASSERT(Err::Usage, full != nullptr && search != nullptr && replacement != nullptr,
-                    "Expr pointers cannot be nullptr");
+        UTIL_ASSERT(Err::Usage, full && search && replacement, "Expr pointers cannot be nullptr");
         UTIL_ASSERT(Err::Type,
                     CUID::is_t<Expr::String>(full) && CUID::is_t<Expr::String>(search) &&
                         CUID::is_t<Expr::String>(replacement),

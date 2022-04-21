@@ -95,12 +95,12 @@ namespace Backend {
             std::vector<BORCPtr> arg_stack; // Converted backend objects
 
             // For the next element in our expr_stack
-            for (const auto *expr = expr_stack.top(); !expr_stack.empty();) {
+            for (const auto *expr = expr_stack.top(); not expr_stack.empty();) {
                 expr = expr_stack.top();
                 expr_stack.pop();
 
                 // If the expr does not represent the end of a list
-                if (expr != nullptr) {
+                if (expr) {
                     const auto *const op { expr->op.get() };
                     UTIL_ASSERT_NOT_NULL_DEBUG(op);
 
@@ -124,7 +124,7 @@ namespace Backend {
 
                 // If the expr represents the end of a list
                 // All arguments of expr_stack.top() have been converted
-                else if (!expr_stack.empty()) {
+                else if (not expr_stack.empty()) {
                     expr = op_stack.top();
                     op_stack.pop();
 

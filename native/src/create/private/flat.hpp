@@ -15,7 +15,7 @@ namespace Create::Private {
         bool sym { false };
         for (const Expr::BasePtr &i : o) {
 #ifdef DEBUG
-            UTIL_ASSERT(Error::Expr::Usage, i != nullptr, "Null operand detected");
+            UTIL_ASSERT(Error::Expr::Usage, i, "Null operand detected");
 #endif
             sym |= i->symbolic;
         }

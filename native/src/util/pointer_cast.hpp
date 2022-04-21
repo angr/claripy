@@ -46,7 +46,7 @@ namespace Util::PCast {
         template <typename Out, typename In> constexpr bool test(const std::shared_ptr<In> &in) {
             UTIL_ASSERT_NOT_NULL_DEBUG(in);
             using Ptr = CTSC<Type::TransferConst<Out, In>>;
-            return dynamic_cast<Ptr>(in.get()) != nullptr;
+            return dynamic_cast<Ptr>(in.get());
         }
 
         /** Dynamic down-cast that throws on failure; in may not be nullptr */
@@ -128,7 +128,7 @@ namespace Util::PCast {
         constexpr auto from_void(const std::shared_ptr<In> &in) {
             UTIL_ASSERT_NOT_NULL_DEBUG(in);
             static_assert(Type::Is::in_ignore_const<In, void>, "Will only cast from void type");
-            static_assert(!Type::Is::same_ignore_cv<Out, void>, "Cannot cast to void");
+            static_assert(not Type::Is::same_ignore_cv<Out, void>, "Cannot cast to void");
             return Private::static_pointer_cast<Out>(in);
         }
     } // namespace Static

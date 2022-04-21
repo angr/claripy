@@ -30,7 +30,7 @@ namespace Util {
 
     /** This function applies range_to_str to a container's elements */
     template <typename T> std::string container_to_str(const T &c, CCSC delim = ", ") {
-        if (LIKELY(c.size() != 0)) {
+        if (LIKELY(not c.empty())) {
             return range_to_str(c.begin(), c.end(), delim);
         }
         return "{empty container}";

@@ -18,7 +18,7 @@ namespace Util {
     template <typename Out, typename In>
     [[gnu::always_inline]] constexpr Out checked_static_cast(const In i) NOEXCEPT_UNLESS_DEBUG {
 #ifdef DEBUG
-        UTIL_ASSERT(Err::BadCast, dynamic_cast<Out>(i) != nullptr, "static cast failed.");
+        UTIL_ASSERT(Err::BadCast, dynamic_cast<Out>(i), "static cast failed.");
         return dynamic_cast<Out>(i);
 #else
         return static_cast<Out>(i);

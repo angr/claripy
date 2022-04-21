@@ -31,7 +31,7 @@ namespace PyObj {
         /** If not DEBUG, returns ret; else if ret and not cond report user error detected */
         inline bool eq(const bool ret, const bool cond) {
 #ifdef DEBUG
-            UTIL_ASSERT(Util::Err::HashCollision, ret && !cond,
+            UTIL_ASSERT(Util::Err::HashCollision, ret && not cond,
                         "PyObjects equate but are different; this is probably due to user error");
 #else
             (void) cond;
@@ -44,9 +44,9 @@ namespace PyObj {
     inline bool operator==(const Base &a, const Base &b) {
         return Private::eq(a.hash == b.hash, a.ref == b.ref);
     }
-    /** Anti-equality operator */
+    /** Not-equality operator */
     inline bool operator!=(const Base &a, const Base &b) {
-        return !(a == b);
+        return not(a == b);
     }
 
 } // namespace PyObj

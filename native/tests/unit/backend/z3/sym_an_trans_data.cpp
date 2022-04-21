@@ -47,7 +47,7 @@ void sym_an_trans_data() {
     const auto bptr { abs->annotations->vec[0] };
     UNITTEST_ASSERT(sym->annotations->vec[0] == bptr);
     const auto *const cast { dynamic_cast<const TestAnnotation *>(bptr.get()) };
-    UNITTEST_ASSERT(cast != nullptr);
+    UNITTEST_ASSERT(cast);
     UNITTEST_ASSERT(cast->str == "Hello");
 
     // Verify data can be cleared

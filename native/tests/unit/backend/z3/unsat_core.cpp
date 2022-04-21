@@ -32,7 +32,7 @@ void unsat_core() {
 
     // Verify unsatisfiability
     // Note: this should call solver.check(), which *must* be done before calling unsat_core
-    UNITTEST_ASSERT(!z3.satisfiable(solver));
+    UNITTEST_ASSERT(not z3.satisfiable(solver));
 
     // Test unsat core
     auto vec { z3.unsat_core(solver) }; // Should also reconstruct xeq1 via abstraction
@@ -44,7 +44,7 @@ void unsat_core() {
     solver->reset();
     z3.add<true>(solver, xeq1.get());
     z3.add<false>(solver, tmp_xeq2.get()); // xgeq2
-    UNITTEST_ASSERT(!z3.satisfiable(solver));
+    UNITTEST_ASSERT(not z3.satisfiable(solver));
     vec = z3.unsat_core(solver);
     UNITTEST_ASSERT(vec.size() == 1);
     UNITTEST_ASSERT(vec[0] = xeq1);

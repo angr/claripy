@@ -18,8 +18,8 @@ void solution() {
     const auto f { Create::literal(false) };
 
     // Statements
-    const auto maybe_true { Create::and_({ x, t }) };
-    const auto maybe_false { Create::or_({ x, f }) };
+    const auto and_true { Create::and_({ x, t }) };
+    const auto or_false { Create::or_({ x, f }) };
 
     // Create a solver
     auto is_sol = [&x, &z3, &solver](const Expr::BasePtr &start, const Expr::BasePtr &x_s) {
@@ -31,10 +31,10 @@ void solution() {
     };
 
     // Test sat
-    UNITTEST_ASSERT(is_sol(maybe_true, t));
-    UNITTEST_ASSERT(!is_sol(maybe_true, f));
-    UNITTEST_ASSERT(is_sol(maybe_false, t));
-    UNITTEST_ASSERT(!is_sol(maybe_false, f));
+    UNITTEST_ASSERT(is_sol(and_true, t));
+    UNITTEST_ASSERT(is_sol(or_false, t));
+    UNITTEST_ASSERT(not is_sol(and_true, f));
+    UNITTEST_ASSERT(not is_sol(or_false, f));
 }
 
 // Define the test

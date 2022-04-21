@@ -52,7 +52,7 @@ namespace Util {
         /** Return true if the object is within the cache, else false
          *  This function is thread-safe
          */
-        bool exists(const Hash &h) { return find(h) != nullptr; }
+        bool exists(const Hash &h) { return find(h); }
 
         /** If h is in the cache, return a shared pointer to it
          *  Otherwise return a shared pointer to nullptr

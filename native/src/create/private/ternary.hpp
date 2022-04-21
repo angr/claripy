@@ -26,8 +26,8 @@ namespace Create::Private {
         static_assert(Op::is_ternary<OpT>, "Create::Private::ternary requires a ternary OpT");
 
         // Dynamic checks
-        UTIL_ASSERT(Err::Usage, first != nullptr, second != nullptr && third != nullptr,
-                    " Expr pointer arguments may not be nullptr");
+        UTIL_ASSERT(Err::Usage, first, second && third,
+                    "Expr pointer arguments may not be nullptr");
         const bool type_ok { CUID::is_any_t<const Expr::Base, Allowed...>(first) };
         UTIL_ASSERT(Err::Type, type_ok, "first operand of invalid type; allowed types: ", allowed);
 

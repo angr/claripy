@@ -58,7 +58,7 @@ namespace Util::Log::Level {
     constexpr bool operator==(const Lvl &a, const Lvl &b) noexcept {
         return a.lvl == b.lvl;
     }
-    /** Log level anti-equality */
+    /** Log level not-equality */
     constexpr bool operator!=(const Lvl &a, const Lvl &b) noexcept {
         return a.lvl != b.lvl;
     }

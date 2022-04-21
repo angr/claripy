@@ -25,8 +25,7 @@ namespace Create::Private {
         // Checks
         static_assert(Op::FP::is_mode_binary<OpT>,
                       "Create::Private::mode_binary requires OpT to be Op::FP::ModeBinary");
-        UTIL_ASSERT(Err::Usage, left != nullptr && right != nullptr,
-                    "Expr pointers cannot be nullptr");
+        UTIL_ASSERT(Err::Usage, left && right, "Expr pointers cannot be nullptr");
         UTIL_ASSERT(Err::Type, CUID::is_t<Expr::FP>(left), "left operand must be of type Expr::FP");
 
         // Create expr

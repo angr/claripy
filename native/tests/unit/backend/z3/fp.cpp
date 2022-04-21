@@ -68,22 +68,22 @@ void fp() {
         const auto s { is_double ? C::literal(NLD::signaling_NaN())
                                  : C::literal(NLF::signaling_NaN()) };
         const auto *const op_s { dynamic_cast<CTSC<Op::Literal>>(s->op.get()) };
-        UNITTEST_ASSERT(op_s != nullptr);
+        UNITTEST_ASSERT(op_s);
         // Verify cycled expr
         const auto cycled { z3.abstract(z3.convert(s.get())) };
         UNITTEST_ASSERT(Expr::are_same_type<true>(cycled, s));
         // Verify cycled op
         const auto *const op { dynamic_cast<CTSC<Op::Literal>>(cycled->op.get()) };
-        UNITTEST_ASSERT(op != nullptr);
+        UNITTEST_ASSERT(op);
         // Verify cycled value
         if (is_double) {
             const auto *const d_ptr { std::get_if<double>(&(op->value)) };
-            UNITTEST_ASSERT(d_ptr != nullptr);
+            UNITTEST_ASSERT(d_ptr);
             UNITTEST_ASSERT(std::isnan(*d_ptr));
         }
         else {
             const auto *const f_ptr { std::get_if<float>(&(op->value)) };
-            UNITTEST_ASSERT(f_ptr != nullptr);
+            UNITTEST_ASSERT(f_ptr);
             UNITTEST_ASSERT(std::isnan(*f_ptr));
         }
         return true;

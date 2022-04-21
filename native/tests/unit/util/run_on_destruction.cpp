@@ -8,7 +8,7 @@
 /** A function to to be run before main */
 int f(int a = 0) {
     static int ret { 0 };
-    if (a != 0) {
+    if (a) {
         return (ret = a);
     }
     else {

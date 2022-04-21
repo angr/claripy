@@ -89,7 +89,7 @@ namespace Util::Type {
                 UTIL_CCBOOL is_value { Values::template contains<T> };
                 // Safety
                 static_assert(is_key || is_value, "T is not anywhere in this map");
-                static_assert(!is_key || !is_value,
+                static_assert(not(is_key && is_value),
                               "T is both a key and a value; use either GetKey or GetValue");
                 // Return desired type
                 if constexpr (is_key) {

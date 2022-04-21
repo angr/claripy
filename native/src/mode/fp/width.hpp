@@ -37,9 +37,9 @@ namespace Mode::FP {
     constexpr bool operator==(const Width &a, const Width &b) noexcept {
         return (a.exp == b.exp) && (a.mantissa == b.mantissa);
     }
-    /** Anti-equality operator */
+    /** Not-equals operator */
     constexpr bool operator!=(const Width &a, const Width &b) noexcept {
-        return !(a == b);
+        return not(a == b);
     }
 
     /** Width stream operator */

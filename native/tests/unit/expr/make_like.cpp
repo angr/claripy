@@ -24,7 +24,7 @@ void make_like() {
 
     // Test
     UNITTEST_ASSERT(e->hash != ml->hash);
-    UNITTEST_ASSERT(ml->annotations != nullptr);
+    UNITTEST_ASSERT(ml->annotations);
     UNITTEST_ASSERT(ml->cuid == Expr::BV::static_cuid);
 
     UNITTEST_ASSERT(e->op->hash == ml->op->hash);

@@ -14,13 +14,13 @@
 
 /** A unittest assertion macro */
 #define UNITTEST_ASSERT(B)                                                                         \
-    if (!(B)) {                                                                                    \
+    if (not(B)) {                                                                                  \
         UnitTest::TestLib::ut_fail(Util::to_str(WHOAMI "UnitTest Assertion failed."));             \
     }
 
 /** A unittest assertion macro */
 #define UNITTEST_ASSERT_MSG(B, ...)                                                                \
-    if (!(B)) {                                                                                    \
+    if (not(B)) {                                                                                  \
         UnitTest::TestLib::ut_fail(                                                                \
             Util::to_str(WHOAMI "UnitTest Assertion failed.", __VA_ARGS__));                       \
     }

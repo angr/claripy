@@ -82,7 +82,7 @@ void to_heap_cache() {
 
     // Make cache larger than reserve size
     dsize = cache.data.size() + heap.size();
-    while (!heap.empty()) {
+    while (not heap.empty()) {
         cache.c.free(heap.back());
         heap.pop_back();
     }

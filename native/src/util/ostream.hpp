@@ -17,7 +17,7 @@ namespace Util {
      *  If the strong enum already has a << operator defined, this is a passthrough
      */
     template <typename T, typename U> inline void OStream(T &left, const U &right) {
-        if constexpr (Type::Is::strong_enum<U> && !Type::Has::ostream_op<U>) {
+        if constexpr (Type::Is::strong_enum<U> && not Type::Has::ostream_op<U>) {
             left << to_underlying(right);
         }
         else {

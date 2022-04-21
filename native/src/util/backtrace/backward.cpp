@@ -56,7 +56,7 @@ void Util::Backtrace::backward(std::ostream &o, const unsigned ignore_frames,
 void Util::Backtrace::backward_handle_signals() {
     static std::unique_ptr<backward::SignalHandling> sh { nullptr };
     static std::atomic_bool installed { false };
-    if (!installed.exchange(true)) {
+    if (not installed.exchange(true)) {
         Util::Log::debug("Installing backward signal handler");
         sh = std::make_unique<backward::SignalHandling>();
         Util::Log::info("Signal handler installed.");

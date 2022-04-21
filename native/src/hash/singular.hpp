@@ -189,19 +189,19 @@ namespace Hash {
 
     /** A specialization for shared pointers of strict subclasses of Hashed types */
     template <
-        typename Internal,
+        typename Inner,
         // Require to prevent infinite recursion
-        std::enable_if_t<!Util::Type::Is::wrap_same<Hashed, Internal, std::remove_cv_t>, int> = 0,
-        // Ensure Internal derives from Hashed
-        std::enable_if_t<Util::Type::Is::ancestor<Hashed, Internal>, int> = 0> // Allows prims
-    inline Hash singular(const std::shared_ptr<const Internal> &h) noexcept {
+        std::enable_if_t<not Util::Type::Is::wrap_same<Hashed, Inner, std::remove_cv_t>, int> = 0,
+        // Ensure Inner derives from Hashed
+        std::enable_if_t<Util::Type::Is::ancestor<Hashed, Inner>, int> = 0> // Allows prims
+    inline Hash singular(const std::shared_ptr<const Inner> &h) noexcept {
         // Will warn if types are different or implicit conversion is dangerous / impossible
         return singular(Util::PCast::Static::up<Hashed>(h));
     }
 
-    /** A specialization for T = std::vector<Internal> */
-    template <typename Internal>
-    inline Hash singular(const std::vector<Internal> &v) NOEXCEPT_UNLESS_DEBUG {
+    /** A specialization for T = std::vector<Inner> */
+    template <typename Inner>
+    inline Hash singular(const std::vector<Inner> &v) NOEXCEPT_UNLESS_DEBUG {
         U64 hashes[v.size()]; // NOLINT
         U64 i { -1_ui };
         for (const auto &p : v) {

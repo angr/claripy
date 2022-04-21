@@ -25,7 +25,7 @@ namespace Create::Private {
         static_assert(Op::is_unary<OpT>, "Create::Private::unary requires OpT to be unary");
 
         // Dynamic checks
-        UTIL_ASSERT(Err::Usage, x != nullptr, "x cannot be nullptr");
+        UTIL_ASSERT(Err::Usage, x, "x cannot be nullptr");
         const bool type_ok { CUID::is_any_t<const Expr::Base, Allowed...>(x) };
         UTIL_ASSERT(Err::Type, type_ok, "operand of invalid type; allowed types: ", allowed);
 
@@ -55,7 +55,7 @@ namespace Create::Private {
         }
 
         // Dynamic checks
-        UTIL_ASSERT(Err::Usage, x != nullptr, "x cannot be nullptr");
+        UTIL_ASSERT(Err::Usage, x, "x cannot be nullptr");
         const bool type_ok { CUID::is_any_t<const Expr::Base, Allowed...>(x) };
         UTIL_ASSERT(Err::Type, type_ok, "operand of wrong type");
 
