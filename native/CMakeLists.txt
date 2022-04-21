@@ -14,11 +14,11 @@ include(default)
 
 
 # Config options
-option( BUILD_API "Create a make target for the python API"  ON )
-option( BUILD_DOC "Create a make target for documentation"   ON )
-option( ENABLE_TESTING "Create a make target for test cases" ON )
-option( OPTIMIZE_FOR_NATIVE "Build with -march=native etc"   OFF )
-option( ENABLE_ANSI_COLOR_CODES "Enable ansi color codes"    ON )
+option( BUILD_API "Create a make target for the python API" ON )
+option( BUILD_DOC "Create a make target for documentation"  ON )
+option( BUILD_TESTS "Create a make targets for test cases"  ON )
+option( OPTIMIZE_FOR_NATIVE "Build with -march=native etc"  OFF )
+option( ENABLE_ANSI_COLOR_CODES "Enable ansi color codes"   ON )
 
 
 # Where the claricpp source will be installed
@@ -469,13 +469,8 @@ else()
 endif()
 
 # Enable testing
-if(ENABLE_TESTING)
-    message("Testing enabled!")
-	include(CTest)
-	enable_testing()
+if(BUILD_TESTS)
 	target_compile_definitions("${CLARICPP}" PUBLIC "ENABLE_TESTING") # Export this macro
-else()
-    message("Testing disabled!")
 endif()
 
 # Build type
@@ -570,6 +565,13 @@ if (BUILD_API)
 endif()
 
 # Create a make target for test cases
-if(ENABLE_TESTING)
+if(BUILD_TESTS)
+endif()
+
+# Enable testing
+if(BUILD_TESTS)
+	message("Testing enabled!")
 	add_subdirectory(tests)
+else()
+	message("Testing disabled!")
 endif()

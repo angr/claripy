@@ -1,4 +1,7 @@
-# Define testlib constants
+include(CTest)
+enable_testing()
+
+# Config
 set(TESTLIB_SRC "${CMAKE_CURRENT_SOURCE_DIR}/testlib")
 set(TESTLIB "testlib")
 

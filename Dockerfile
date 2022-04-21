@@ -171,6 +171,10 @@ FROM build as bdist_wheel
 LABEL stage=bdist_wheel
 RUN python setup.py bdist_wheel
 
+FROM sdist as build_debug
+LABEL stage=build_debug
+RUN python setup.py native --debug
+
 FROM sdist as build_tests
 LABEL stage=build_tests
 RUN python setup.py native --tests --debug --no-api

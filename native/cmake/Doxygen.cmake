@@ -17,7 +17,7 @@ set(DOC_SOURCES "src/")
 if (BUILD_API)
 	string(APPEND DOC_SOURCES " api/")
 endif()
-if (ENABLE_TESTING)
+if (BUILD_TESTS)
 	string(APPEND DOC_SOURCES " tests/")
 endif()
 

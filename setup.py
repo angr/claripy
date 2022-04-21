@@ -766,7 +766,7 @@ class Claricpp(Library):
     def __init__(self, *, api, no_build=False, no_lib=False, docs=False, debug=False, tests=False):
         # Options
         self._build_lib = not no_lib
-        self._enable_tests = tests
+        self._build_tests = tests
         self._build_debug = debug
         self._build_doc = docs
         self._build_api = api
@@ -774,7 +774,7 @@ class Claricpp(Library):
         # Config
         default_chk = {i.name: i for i in [self._lib, self._api_lib]}
         default_chk["Claricpp src"] = self._out_src
-        chk = {} if (self._enable_tests or self._build_doc) else  default_chk
+        chk = {} if (self._build_tests or self._build_doc) else  default_chk
         super().__init__({}, chk, chk, Boost(), Z3(), Pybind11(), Backward())
 
     def _cmake_args(self):
@@ -787,7 +787,7 @@ class Claricpp(Library):
             "VERSION": version,
             "CLARICPP": claricpp,
             # Build options
-            "ENABLE_TESTING": self._enable_tests,
+            "BUILD_TESTS": self._build_tests,
             "BUILD_DOC": self._build_doc,
             "BUILD_API": self._build_api,
             # Debug options
@@ -826,7 +826,7 @@ class Claricpp(Library):
         if not self._no_build:
             targets = [ # Order matters (for cleaner output)
                 (self._build_lib,    claricpp),
-                (self._enable_tests, "unit_tests"),
+                (self._build_tests, "unit_tests"),
                 (self._build_doc,    "docs"),
                 (self._build_api,    self._api_target)
             ]
@@ -874,7 +874,7 @@ class Claricpp(Library):
             self._lib.clean_build()
         if level.implies(CleanLevel.BUILD):
             if os.path.exists(self.build_dir):
-                if os.path.exists(self.build_dir, "Makefile"):
+                if os.path.exists(os.path.join(self.build_dir, "Makefile")):
                     with chdir(self.build_dir):
                         build_cmake_target("clean")
                 shutil.rmtree(self.build_dir, ignore_errors=True)
