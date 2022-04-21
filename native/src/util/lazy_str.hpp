@@ -37,7 +37,7 @@ namespace Util {
         /** Destructor */
         inline ~ConcreteLazyStr() noexcept {}
         /** Output as a string */
-        inline std::string operator()() { return lazy(); }
+        inline std::string operator()() final { return lazy(); }
     };
 
 } // namespace Util
