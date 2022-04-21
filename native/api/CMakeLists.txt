@@ -21,7 +21,7 @@ gen_api_file(
 # Configure target
 message(STATUS "Configuring API target...")
 pybind11_add_module("${API_TARGET}")
-target_include_directories("${API_TARGET}" PRIVATE "${CLARICPP_SRC}/..")
+target_include_directories("${API_TARGET}" SYSTEM PRIVATE "${CLARICPP_SRC}/..")
 target_sources(clari PRIVATE
 	"${AUTOGEN_CPP}"
     signal_handler.cpp

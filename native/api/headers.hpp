@@ -6,14 +6,14 @@
 #ifndef R_API_HEADERS_HPP_
 #define R_API_HEADERS_HPP_
 
-#include "../src/annotation.hpp"
-#include "../src/backend.hpp"
-#include "../src/create.hpp"
-#include "../src/error.hpp"
-#include "../src/expr.hpp"
-#include "../src/mode.hpp"
-#include "../src/op.hpp"
-#include "../src/py_obj.hpp"
+#include <src/annotation.hpp>
+#include <src/backend.hpp>
+#include <src/create.hpp>
+#include <src/error.hpp>
+#include <src/expr.hpp>
+#include <src/mode.hpp>
+#include <src/op.hpp>
+#include <src/py_obj.hpp>
 
 /*
  TODO: use pyrosetta stl bindings ?

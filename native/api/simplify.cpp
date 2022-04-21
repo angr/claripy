@@ -4,9 +4,8 @@
  */
 #include "simplify.hpp"
 
-#include "../src/simplify.hpp"
-
 #include <pybind11/functional.h>
+#include <src/simplify.hpp>
 
 
 /** Clear the stored python simplifier */

@@ -4,9 +4,8 @@
  */
 #include "log.hpp"
 
-#include "../src/util.hpp"
-
 #include <pybind11/functional.h>
+#include <src/util.hpp>
 
 
 /** The python log backend */

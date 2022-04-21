@@ -10,10 +10,9 @@
 #ifndef R_API_CONSTANTS_HPP_
 #define R_API_CONSTANTS_HPP_
 
-#include "../src/constants.hpp"
-
 #include <functional>
 #include <pybind11/pybind11.h>
+#include <src/constants.hpp>
 
 namespace API {
 

@@ -4,7 +4,7 @@
  */
 #include "signal_handler.hpp"
 
-#include "../src/util.hpp"
+#include <src/util.hpp>
 
 void API::signal_handler(API::Binder::ModuleGetter &m) {
     m("API").def(
