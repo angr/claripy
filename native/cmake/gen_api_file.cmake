@@ -1,4 +1,5 @@
 # This file defines gen_api_file
+# TODO: bindings that take time should disengage the GIL. This is really an autogen thing though
 include(read_lines)
 include(is_eldest)
 include(hash_dir)
