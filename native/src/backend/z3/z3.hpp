@@ -63,7 +63,9 @@ namespace Backend::Z3 {
                     return abstract(b_obj);
                 }
                 default: {
-                    Util::Log::info("Z3 Backend cannot simplify expr of type: ", expr->type_name());
+                    Util::Log::info("Z3 Backend cannot simplify expr of type: ",
+                                    Util::LazyFunc { [](const auto e) { return e->type_name(); },
+                                                     std::move(expr) });
 #ifdef DEBUG
                     auto ret { Expr::find(expr->hash) };
                     UTIL_ASSERT_EMPTY(Util::Err::HashCollision, ret.get() == expr);

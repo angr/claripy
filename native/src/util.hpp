@@ -28,6 +28,7 @@
 #include "util/heap_cache.hpp"
 #include "util/hex_to_num.hpp"
 #include "util/inc.hpp"
+#include "util/lazy_func.hpp"
 #include "util/lazy_str.hpp"
 #include "util/log.hpp"
 #include "util/macros.hpp"
