@@ -17,8 +17,8 @@ namespace Op {
     /** Base operation expr
      *  All op exprs must subclass this
      */
-    class Base : public HasRepr, public Factory::FactoryMade {
-        OP_PURE_INIT(Base);
+    class Base : public HasRepr<Base>, public Factory::FactoryMade {
+        OP_PURE_INIT_BASE(Base);
 
       public:
         /** The name of the op */
@@ -33,6 +33,9 @@ namespace Op {
          *  Note: This should only be used when returning children to python
          */
         virtual inline std::vector<ArgVar> python_children() const = 0;
+
+        /** A python repr function analog */
+        virtual void repr_stream(std::ostream &o) const = 0;
 
       protected:
         /** Protected constructor */

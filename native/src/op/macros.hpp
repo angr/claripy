@@ -15,15 +15,26 @@
  *  Note: The constructors for these classes are declared, but not defined
  *  The user must define the destructor as noexcept = default after the class definition
  */
-#define OP_PURE_INIT(CLASS)                                                                        \
+#define OP_PURE_INIT_HELPER(CLASS)                                                                 \
   public:                                                                                          \
-    /* Delete implicits */                                                                         \
     SET_IMPLICITS_CONST_MEMBERS(CLASS, delete);                                                    \
-    /** Default destructor */                                                                      \
-    inline ~CLASS() noexcept override = 0;                                                         \
                                                                                                    \
   private:                                                                                         \
     ENABLE_UNITTEST_FRIEND_ACCESS;
+
+/** OP_PURE_INIT_HELPER for the base op class */
+#define OP_PURE_INIT_BASE(CLASS)                                                                   \
+  public:                                                                                          \
+    /** Default destructor */                                                                      \
+    virtual inline ~CLASS() noexcept = 0;                                                          \
+    OP_PURE_INIT_HELPER(CLASS)
+
+/** OP_PURE_INIT_HELPER for derived op classes */
+#define OP_PURE_INIT(CLASS)                                                                        \
+  public:                                                                                          \
+    /** Default destructor */                                                                      \
+    inline ~CLASS() noexcept override = 0;                                                         \
+    OP_PURE_INIT_HELPER(CLASS)
 
 namespace Op::Private {
     /** A helper for OP_FINAL_INIT */

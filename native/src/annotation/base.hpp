@@ -18,7 +18,7 @@ namespace Annotation {
     /** Annotations are used to achieve claripy's goal of being an arithmetic instrumentation
      * engine. They provide a means to pass extra information to the claripy backends.
      */
-    struct Base : public HasRepr, public Factory::FactoryMade {
+    struct Base : public HasRepr<Base>, public Factory::FactoryMade {
         FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base, 0)
       public:
         /** Constructor
@@ -28,15 +28,13 @@ namespace Annotation {
             : FactoryMade { h, c } {}
 
         /** Virtual destructor */
-        ~Base() noexcept override = default;
+        virtual inline ~Base() noexcept = default;
 
         // Rule of 5
         DEFINE_IMPLICITS_NONDEFAULT_CTORS_ALL_NOEXCEPT(Base);
 
         /** Get the annotation's repr */
-        virtual inline void repr_stream(std::ostream &out) const override {
-            out << R"({"Annotation Type":"Base"})";
-        }
+        inline void repr_stream(std::ostream &out) const { out << R"({"Annotation Type":"Base"})"; }
 
         /** Returns whether this annotation can be eliminated in a simplification.
          * True if eliminatable, False otherwise

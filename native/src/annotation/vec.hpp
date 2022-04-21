@@ -13,7 +13,7 @@
 namespace Annotation {
 
     /* A class that represents a constant vector of annotations with a pre-computed hash */
-    struct Vec final : public HasRepr, public Hash::Hashed {
+    struct Vec final : public HasRepr<Vec>, public Hash::Hashed {
       public:
         /** The raw vector type Vec holds */
         using RawVec = std::vector<BasePtr>;
@@ -30,7 +30,7 @@ namespace Annotation {
         /** Internal vector */
         const RawVec vec;
         /** Fast repr append */
-        virtual inline void repr_stream(std::ostream &o) const override {
+        inline void repr_stream(std::ostream &o) const {
             o << R"|({"size":)|" << vec.size() << R"|(, "values": [)|";
             static constexpr CCSC delim { ", " };
             for (U64 i { 0 }; i < vec.size(); ++i) {

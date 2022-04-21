@@ -9,22 +9,21 @@
 
 #include <sstream>
 
-/** A struct with a repr function */
-struct HasRepr {
-    /** Virtual destructor */
-    virtual inline ~HasRepr() noexcept = default;
-    // Rule of 5
-    SET_IMPLICITS(HasRepr, default, noexcept);
-
-    /** Add the repr to the stream */
-    virtual void repr_stream(std::ostream &) const = 0;
-
+/** A struct with a repr function; subclasses must define repr_stream
+ *  This function follows the design pattern: CRTP
+ *  Warning: No virtual destructor; do *not* delete by base class pointer; avoid slicing!
+ */
+template <typename T> struct HasRepr {
     /** Return the repr as a string */
     inline std::string repr() const {
         std::ostringstream o;
-        repr_stream(o);
+        static_cast<const T &>(*this).repr_stream(o);
         return o.str();
     }
+
+  protected:
+    /** Prevent most slicing */
+    ~HasRepr() noexcept = default;
 };
 
 #endif

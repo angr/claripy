@@ -33,25 +33,14 @@ namespace CUID {
      *  This has the benefits of a virtual function as inherited classes
      *  can have different CUIDs than their ancestors, while also avoiding
      *  the overhead of a vtabel call to invoke virtual cuid() const;
+     *  Warning: No virtual destructor; do *not* delete by base class pointer; avoid slicing!
      */
     struct HasCUID {
-
+        /** Constructor */
+        inline HasCUID(const CUID &c) noexcept : cuid { c } {}
         /** The class unique id */
         const CUID cuid;
-
-      protected:
-        /** Constructor */
-        explicit constexpr HasCUID(const CUID &c) noexcept : cuid { c } {}
-
-        /** Pure virtual destructor */
-        virtual inline ~HasCUID() noexcept = 0;
-
-        // Rule of 5
-        DEFINE_IMPLICITS_CONST_MEMBERS_ALL_NOEXCEPT(HasCUID);
     };
-
-    /** Default virtual destructor */
-    HasCUID::~HasCUID() noexcept = default;
 
 } // namespace CUID
 

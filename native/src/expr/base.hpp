@@ -25,7 +25,7 @@ namespace Expr {
      *  All exprs must subclass this
      *  TODO: make quite a bit smaller by killing vtables; Hashed, HasCUID, and HasRepr all have one
      */
-    class Base : public HasRepr, public Factory::FactoryMade {
+    class Base : public HasRepr<Base>, public Factory::FactoryMade {
         FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base, 0)
       public:
         /** Return true if and only if this expr is symbolic */
@@ -40,7 +40,7 @@ namespace Expr {
         /** Get the type name */
         virtual inline const char *type_name() const noexcept = 0;
         /** Get the Expr's repr */
-        virtual void repr_stream(std::ostream &out) const override;
+        void repr_stream(std::ostream &out) const;
 
       protected:
         /** Protected Constructor */
@@ -57,7 +57,7 @@ namespace Expr {
         }
 
         /** Pure virtual destructor */
-        inline ~Base() noexcept override = 0;
+        virtual inline ~Base() noexcept = 0;
 
       private:
         /** Used during debugging for extra checks

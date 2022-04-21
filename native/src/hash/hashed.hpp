@@ -12,25 +12,19 @@
 
 namespace Hash {
 
-    /** A type that has a precomputed hash value */
+    /** A type that has a precomputed hash value
+     *  Warning: No virtual destructor; do *not* delete by base class pointer; avoid slicing!
+     */
     struct Hashed {
-
+        /** Constructor */
+        inline Hashed(const Hash &h) noexcept : hash { h } {}
         /** A hash for this object */
         const Hash hash;
 
       protected:
-        /** Constructor */
-        explicit constexpr Hashed(const Hash &h) noexcept : hash { h } {}
-
-        /** Pure virtual destructor */
-        virtual inline ~Hashed() noexcept = 0;
-
-        // Rule of 5
-        DEFINE_IMPLICITS_CONST_MEMBERS_ALL_NOEXCEPT(Hashed);
+        /** Prevent most slicing */
+        ~Hashed() noexcept = default;
     };
-
-    /** Default virtual destructor */
-    Hashed::~Hashed() noexcept = default;
 
 } // namespace Hash
 

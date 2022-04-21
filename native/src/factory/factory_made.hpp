@@ -38,13 +38,12 @@ namespace Factory {
      *  All subclasses that are or have an instantiable subclass constructed via factory
      *	  1. Must include the FACTORY_ENABLE_CONSTRUCTION_FROM_BASE method. Note that
      *		 this also defines a static_cuid
+     *  Warning: No virtual destructor; do *not* delete by base class pointer; avoid slicing!
      */
     struct FactoryMade : public Hash::Hashed, public CUID::HasCUID {
-
-        /** Constructor */
+        /** Constructor; allows passing h & c without constructing temporary supers */
         explicit inline FactoryMade(const Hash::Hash &h, const CUID::CUID &c) noexcept
             : Hashed { h }, HasCUID { c } {}
-
         /** Statically check if Base and T can be factor constructed
          *  Warning: This is not a guarantee that these types can be factory constructed
          *  It just does a few useful static checks to help with the compiler error messages
@@ -68,15 +67,9 @@ namespace Factory {
         }
 
       protected:
-        /** Pure virtual destructor */
-        inline ~FactoryMade() noexcept override = 0;
-
-        // Rule of 5
-        DEFINE_IMPLICITS_CONST_MEMBERS_ALL_NOEXCEPT(FactoryMade);
+        /** Prevent most slicing */
+        inline ~FactoryMade() noexcept = default;
     };
-
-    /** Default virtual destructor */
-    inline FactoryMade::~FactoryMade() noexcept = default;
 
 } // namespace Factory
 
