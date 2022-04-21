@@ -6,9 +6,9 @@
 
 #include "error.hpp"
 #include "private/verify.hpp"
-#include "util.hpp"
 
 #include <exception>
+#include <src/util.hpp>
 
 
 /** Catch and print an error before exiting */

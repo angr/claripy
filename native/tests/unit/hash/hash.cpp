@@ -2,9 +2,8 @@
  * @file
  * \ingroup unittest
  */
-#include "testlib.hpp"
-
 #include <set>
+#include <testlib/testlib.hpp>
 
 
 /** A hashed struct */

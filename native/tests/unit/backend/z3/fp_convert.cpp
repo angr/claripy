@@ -3,9 +3,9 @@
  * \ingroup unittest
  */
 #include "shim_z3.hpp"
-#include "testlib.hpp"
 
 #include <cmath>
+#include <testlib/testlib.hpp>
 
 
 /** Return true iff p evaluates to true */

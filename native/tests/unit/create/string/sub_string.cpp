@@ -2,9 +2,9 @@
  * @file
  * \ingroup unittest
  */
-#include "testlib.hpp"
-
 #include "../dcast.hpp"
+
+#include <testlib/testlib.hpp>
 
 
 /** Create a BV using either name or val depending on Literal */

@@ -2,9 +2,8 @@
  * @file
  * \ingroup unittest
  */
-#include "testlib.hpp"
-
 #include <cstring>
+#include <testlib/testlib.hpp>
 
 
 /** Verify the file line hash macros work */

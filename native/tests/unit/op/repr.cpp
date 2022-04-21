@@ -2,11 +2,10 @@
  * @file
  * \ingroup unittest
  */
-#include "testlib.hpp"
-
 #include "../make_ite.hpp"
 
 #include <string>
+#include <testlib/testlib.hpp>
 
 
 /** Print the desired repr of the expr: if (4 == (x * 3)) then "Hello" else y */

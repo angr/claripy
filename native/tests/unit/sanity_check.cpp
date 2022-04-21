@@ -3,7 +3,7 @@
  * @brief Sanity checks that should pass
  * \ingroup unittest
  */
-#include "testlib.hpp"
+#include <testlib/testlib.hpp>
 
 
 /** Returns the passed argument by reference */

@@ -2,7 +2,7 @@
  * @file
  * \ingroup unittest
  */
-#include "testlib.hpp"
+#include <testlib/testlib.hpp>
 
 
 /** Test is_true and is_false */

@@ -2,9 +2,9 @@
  * @file
  * \ingroup unittest
  */
-#include "testlib.hpp"
-
 #include "../dcast.hpp"
+
+#include <testlib/testlib.hpp>
 
 
 /** Verify that the from_fp function compiles and can be run without issue */

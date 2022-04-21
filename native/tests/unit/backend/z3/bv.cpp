@@ -2,7 +2,7 @@
  * @file
  * \ingroup unittest
  */
-#include "testlib.hpp"
+#include <testlib/testlib.hpp>
 
 
 /** Test a BV created from x */

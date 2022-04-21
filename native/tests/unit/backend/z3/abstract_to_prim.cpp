@@ -2,7 +2,7 @@
  * @file
  * \ingroup unittest
  */
-#include "testlib.hpp"
+#include <testlib/testlib.hpp>
 
 
 /** Return true if x is a T equal to sol */

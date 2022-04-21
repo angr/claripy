@@ -7,7 +7,7 @@
  * @brief Tests the Claricpp Unit Test tester
  * \ingroup unittest
  */
-#include "testlib.hpp"
+#include <testlib/testlib.hpp>
 
 
 /** Verify that the simple_test function works */

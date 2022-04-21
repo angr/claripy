@@ -2,10 +2,9 @@
  * @file
  * \ingroup unittest
  */
-#include "testlib.hpp"
-
 #include <iostream>
 #include <sstream>
+#include <testlib/testlib.hpp>
 
 /** A custom log type */
 UTIL_LOG_DEFINE_LOG_CLASS(Custom)

@@ -3,10 +3,10 @@
  * \ingroup unittest
  */
 #include "test_each_level.hpp"
-#include "testlib.hpp"
 
 #include <iostream>
 #include <sstream>
+#include <testlib/testlib.hpp>
 
 
 namespace L = Util::Log;

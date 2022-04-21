@@ -6,7 +6,7 @@
 #ifndef R_TESTS_UNIT_BACKEND_Z3_SHIMZ3_HPP_
 #define R_TESTS_UNIT_BACKEND_Z3_SHIMZ3_HPP_
 
-#include "testlib.hpp"
+#include <testlib/testlib.hpp>
 
 
 struct UnitTest::Friend {

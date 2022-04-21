@@ -2,9 +2,8 @@
  * @file
  * \ingroup unittest
  */
-#include "testlib.hpp"
-
 #include <iostream>
+#include <testlib/testlib.hpp>
 
 
 namespace L = Util::Log;

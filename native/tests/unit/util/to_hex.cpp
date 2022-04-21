@@ -2,9 +2,8 @@
  * @file
  * \ingroup unittest
  */
-#include "testlib.hpp"
-
 #include <limits>
+#include <testlib/testlib.hpp>
 
 
 /** Returns true if to_hex worked for the chosen value */

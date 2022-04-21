@@ -2,9 +2,9 @@
  * @file
  * \ingroup unittest
  */
-#include "testlib.hpp"
-
 #include "../dcast.hpp"
+
+#include <testlib/testlib.hpp>
 
 
 /** Test the from_int create functions */

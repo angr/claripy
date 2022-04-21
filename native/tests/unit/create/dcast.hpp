@@ -6,7 +6,7 @@
 #ifndef R_TESTS_UNIT_CREATE_DCAST_HPP_
 #define R_TESTS_UNIT_CREATE_DCAST_HPP_
 
-#include "util.hpp"
+#include <src/util.hpp>
 
 
 /** A dynamic down-cast alias */

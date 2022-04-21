@@ -2,9 +2,9 @@
  * @file
  * \ingroup unittest
  */
-#include "testlib.hpp"
-
 #include "../dcast.hpp"
+
+#include <testlib/testlib.hpp>
 
 
 /** Test the index_of create functions */

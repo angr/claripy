@@ -2,9 +2,8 @@
  * @file
  * \ingroup unittest
  */
-#include "testlib.hpp"
-
 #include <cmath>
+#include <testlib/testlib.hpp>
 
 
 /** Try to create a new solver */

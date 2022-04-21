@@ -3,7 +3,8 @@
  * \ingroup unittest
  */
 #include "shim_z3.hpp"
-#include "testlib.hpp"
+
+#include <testlib/testlib.hpp>
 
 
 /** Try to abstract a claricpp expression from z3 */

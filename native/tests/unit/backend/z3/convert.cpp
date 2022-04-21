@@ -3,9 +3,10 @@
  * \ingroup unittest
  */
 #include "shim_z3.hpp"
-#include "testlib.hpp"
 
 #include "../../make_ite.hpp"
+
+#include <testlib/testlib.hpp>
 
 
 /** Try to convert a claricpp expr to z3 */

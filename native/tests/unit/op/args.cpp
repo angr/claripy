@@ -2,9 +2,8 @@
  * @file
  * \ingroup unittest
  */
-#include "testlib.hpp"
-
 #include <algorithm>
+#include <testlib/testlib.hpp>
 
 
 /** Verify the two arg getter functions of o do not contradict */

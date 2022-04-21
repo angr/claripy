@@ -2,9 +2,8 @@
  * @file
  * \ingroup unittest
  */
-#include "testlib.hpp"
-
 #include <set>
+#include <testlib/testlib.hpp>
 
 
 /** Verify that BigInts hash properly */

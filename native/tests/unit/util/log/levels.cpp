@@ -3,12 +3,12 @@
  * \ingroup unittest
  */
 #include "test_each_level.hpp"
-#include "testlib.hpp"
 
 #include <iostream>
 #include <memory>
 #include <ostream>
 #include <sstream>
+#include <testlib/testlib.hpp>
 
 
 using Lvl = Level::Lvl;

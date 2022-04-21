@@ -3,7 +3,8 @@
  * \ingroup unittest
  */
 #include "dcast.hpp"
-#include "testlib.hpp"
+
+#include <testlib/testlib.hpp>
 
 
 /** Verify that the if_<T> function works */

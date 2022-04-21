@@ -6,10 +6,9 @@
 #ifndef R_TESTS_UNIT_CREATE_FP_MODEBINARY_HPP_
 #define R_TESTS_UNIT_CREATE_FP_MODEBINARY_HPP_
 
-#include "create.hpp"
-#include "testlib.hpp"
-
 #include "../dcast.hpp"
+
+#include <testlib/testlib.hpp>
 
 
 /** Test a binary op */

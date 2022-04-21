@@ -15,7 +15,7 @@ endif()
 # Note: Visibility for things is set to public as this is for testing
 add_library("${TESTLIB}" SHARED)
 target_link_libraries("${TESTLIB}" PUBLIC "${CLARICPP}")
-target_include_directories("${TESTLIB}" PUBLIC "${CLARICPP_SRC}")
+target_include_directories("${TESTLIB}" SYSTEM PUBLIC "${CLARICPP_SRC}/..")
 
 # Include additional header files
 message(STATUS "Including boost headers for target: ${TESTLIB}")

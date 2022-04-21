@@ -3,7 +3,8 @@
  * \ingroup unittest
  */
 #include "dcast.hpp"
-#include "testlib.hpp"
+
+#include <testlib/testlib.hpp>
 
 
 /** Test the literal create function with type T */

@@ -6,7 +6,7 @@
 #ifndef R_TESTS_UNIT_TESTLIB_TESTLIB_ERROR_HPP_
 #define R_TESTS_UNIT_TESTLIB_TESTLIB_ERROR_HPP_
 
-#include "util.hpp"
+#include <src/util.hpp>
 
 
 /** A unittest macro used to throw an error */

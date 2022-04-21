@@ -1,5 +1,6 @@
 # Define a function which should be used to create every Claricpp unit test
 # Requires: SIMPLE_TEST_DIR set to the desired test directory
+# Requires: Unit testing be enabled and CTest be included before this
 # Also defines a target used to build every unit test
 
 # Error checking
@@ -78,7 +79,7 @@ function(simple_test FUNC_NAME)
 
 	# Config test
 	target_link_libraries("${BINARY}" PRIVATE "${TESTLIB}")
-	target_include_directories("${BINARY}" PRIVATE "${TESTLIB_SRC}")
+	target_include_directories("${BINARY}" SYSTEM PRIVATE "${TESTLIB_SRC}/..")
 	target_compile_definitions("${BINARY}" PRIVATE "_GLIBCXX_ASSERTIONS")
 	target_compile_options("${BINARY}" PRIVATE
 		"-fasynchronous-unwind-tables"

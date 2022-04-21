@@ -3,9 +3,9 @@
  * \ingroup unittest
  */
 #include "shim_z3.hpp"
-#include "testlib.hpp"
 
 #include <limits>
+#include <testlib/testlib.hpp>
 
 
 /** Test normal ops in claricpp

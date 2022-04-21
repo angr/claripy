@@ -6,9 +6,9 @@
 #ifndef R_TESTS_UNIT_CREATE_UNARY_HPP_
 #define R_TESTS_UNIT_CREATE_UNARY_HPP_
 
-#include "create.hpp"
 #include "dcast.hpp"
-#include "testlib.hpp"
+
+#include <testlib/testlib.hpp>
 
 
 /** Test a unary op */

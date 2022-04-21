@@ -3,7 +3,7 @@
  * @brief A second distinct file from file_line_hash to test the hash
  * \ingroup unittest
  */
-#include "testlib.hpp"
+#include <testlib/testlib.hpp>
 
 
 // The file line hash *must* be on line 10 for test purposes

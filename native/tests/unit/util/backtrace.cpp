@@ -2,9 +2,8 @@
  * @file
  * \ingroup unittest
  */
-#include "testlib.hpp"
-
 #include <sstream>
+#include <testlib/testlib.hpp>
 
 
 /** A non-static function which generates a backtrace */
