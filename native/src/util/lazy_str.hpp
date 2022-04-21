@@ -16,7 +16,7 @@ namespace Util {
         /** The string functor */
         virtual std::string operator()() = 0;
         /** Constructor */
-        inline LazyStr() noexcept = default;
+        constexpr LazyStr() noexcept = default;
         /** Destructor */
         virtual inline ~LazyStr() noexcept {}
         // Disable other implicits
@@ -32,7 +32,7 @@ namespace Util {
 
       public:
         /** Constructor */
-        explicit inline ConcreteLazyStr(std::tuple<Args...> &&tup) noexcept
+        explicit constexpr ConcreteLazyStr(std::tuple<Args...> &&tup) noexcept
             : lazy { std::move(to_str), std::move(tup) } {}
         /** Destructor */
         inline ~ConcreteLazyStr() noexcept {}

@@ -29,6 +29,7 @@ namespace Util {
         /** Constructor */
         constexpr LazyFunc(Func &&f, Args &&...args) noexcept
             : data { Pair { std::move(f), Tuple { std::forward<Args>(args)... } } } {}
+
         /** Evaluate func(std::forward<Args>(args)...) */
         constexpr inline Ret operator()() const {
             if (std::holds_alternative<Pair>(data)) {
