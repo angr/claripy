@@ -288,7 +288,7 @@ def SignExt(num, o):
     return BVV(o.signed, o.bits + num)
 
 def Extract(f, t, o):
-    return BVV((o.value >> t) & ((1 << (f + 1)) - 1), f + 1 - t)
+    return BVV((o.value >> t) & ((1 << (f + 2 - t)) - 1), f + 1 - t)
 
 def Concat(*args):
     total_bits = 0
