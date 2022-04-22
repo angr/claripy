@@ -55,28 +55,24 @@ void trivial() {
     binary<Expr::Bool, Expr::Bool, Op::Eq, SM::First, Cr::eq>();
     binary<Expr::Bool, Expr::String, Op::Eq, SM::First, Cr::eq>();
 
-/** A local macro used to test a comparison function */
-#define TEST_COMPARE(T_, MASK)                                                                     \
+#define M_TEST_COMPARE(T_, MASK)                                                                   \
     binary<Expr::Bool, T_, Op::Compare<MASK>, SM::First, Cr::compare<MASK>>();
 
-/** A local macro used for brevity */
-#define TEST_COMPARE_DUO(MASK)                                                                     \
-    TEST_COMPARE(Expr::FP, Mode::Compare::MASK);                                                   \
-    TEST_COMPARE(Expr::BV, Mode::Compare::MASK);
+#define M_TEST_COMPARE_DUO(MASK)                                                                   \
+    M_TEST_COMPARE(Expr::FP, Mode::Compare::MASK);                                                 \
+    M_TEST_COMPARE(Expr::BV, Mode::Compare::MASK);
 
     Log::debug("Testing compare...");
-    TEST_COMPARE(Expr::BV, Mode::Compare::UGE); // BV can be either
-    TEST_COMPARE(Expr::BV, Mode::Compare::UGT);
-    TEST_COMPARE(Expr::BV, Mode::Compare::ULE);
-    TEST_COMPARE(Expr::BV, Mode::Compare::ULT);
-    TEST_COMPARE_DUO(SGE); // FP comparisons must be signed
-    TEST_COMPARE_DUO(SGT);
-    TEST_COMPARE_DUO(SLE);
-    TEST_COMPARE_DUO(SLT);
-
-// Cleanup
-#undef TEST_COMPARE
-#undef TEST_COMPARE_MULTI
+    M_TEST_COMPARE(Expr::BV, Mode::Compare::UGE); // BV can be either
+    M_TEST_COMPARE(Expr::BV, Mode::Compare::UGT);
+    M_TEST_COMPARE(Expr::BV, Mode::Compare::ULE);
+    M_TEST_COMPARE(Expr::BV, Mode::Compare::ULT);
+    M_TEST_COMPARE_DUO(SGE); // FP comparisons must be signed
+    M_TEST_COMPARE_DUO(SGT);
+    M_TEST_COMPARE_DUO(SLE);
+    M_TEST_COMPARE_DUO(SLT);
+#undef M_TEST_COMPARE
+#undef M_TEST_COMPARE_MULTI
 
     // Math
 
@@ -94,19 +90,15 @@ void trivial() {
 
     // Bitwise
 
-/** A local macro used for testing a shift function */
-#define TEST_SHIFT(MASK) binary<Expr::BV, Op::Shift<MASK>, SM::First, Cr::shift<MASK>>();
-
     Log::debug("Testing shift...");
     {
         using S = Mode::Shift;
-        TEST_SHIFT(S::Left);
-        TEST_SHIFT(S::ArithmeticRight);
-        TEST_SHIFT(S::LogicalRight);
+#define M_TEST_SHIFT(MASK) binary<Expr::BV, Op::Shift<MASK>, SM::First, Cr::shift<MASK>>();
+        M_TEST_SHIFT(S::Left);
+        M_TEST_SHIFT(S::ArithmeticRight);
+        M_TEST_SHIFT(S::LogicalRight);
+#undef M_TEST_SHIFT
     }
-
-// Cleanup
-#undef TEST_SHIFT
 
     Log::debug("Testing rotate...");
     binary<Expr::BV, Op::Rotate<Mode::LR::Left>, SM::First, Cr::rotate<Mode::LR::Left>>();

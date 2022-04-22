@@ -9,15 +9,14 @@
 #include "macros.hpp"
 
 
-/** A local macro that defines dependent constant types that depend on a METATYPE
- *  Because templates are not evaluated until use, these can safely be placed
- *  within a constexpr conditional static_assert without instantly triggering an assertion
- *  failure. Instead, the static_assert will only fail if the line of code is reached
- *  as until that point constant<bool, false, T> is an unevaluated expr, for example.
- *  This also has the nice side effect that, if a static_assert fails, the compiler will
- *  likely print out the passed types which can help with debugging
- */
-#define DEPCONST(METATYPE)                                                                         \
+// A local macro that defines dependent constant types that depend on a METATYPE
+// Because templates are not evaluated until use, these can safely be placed
+// within a constexpr conditional static_assert without instantly triggering an assertion
+// failure. Instead, the static_assert will only fail if the line of code is reached
+// as until that point constant<bool, false, T> is an unevaluated expr, for example.
+// This also has the nice side effect that, if a static_assert fails, the compiler will
+// likely print out the passed types which can help with debugging
+#define M_DEPCONST(METATYPE)                                                                       \
     /** A dependent constant variable */                                                           \
     template <typename T, T value, METATYPE...> inline const constexpr T constant { value };       \
                                                                                                    \
@@ -37,15 +36,14 @@
 
 // Type dependent constants
 namespace Util::TD {
-    DEPCONST(typename);
+    M_DEPCONST(typename);
 } // namespace Util::TD
 
 // Constant dependent constants
 namespace Util::CD {
-    DEPCONST(auto);
+    M_DEPCONST(auto);
 } // namespace Util::CD
 
-// Cleanup
-#undef DEPCONST
+#undef M_DEPCONST
 
 #endif

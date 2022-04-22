@@ -29,8 +29,7 @@ namespace Create::FP {
     /*                 ModeBinary Passthrough Functions                 */
     /********************************************************************/
 
-/** A local macro used for fp mode binary math ops with size mode first */
-#define FP_MB_SMF_ARITH(FN, OP)                                                                    \
+#define M_FP_MB_SMF_ARITH(FN, OP)                                                                  \
     inline Expr::BasePtr FN(const Expr::BasePtr &left, const Expr::BasePtr &right,                 \
                             const Mode::FP::Rounding mode, Annotation::SPAV sp = empty_spav) {     \
         return Private::mode_binary<Op::FP::OP>(left, right, mode, std::move(sp));                 \
@@ -39,22 +38,21 @@ namespace Create::FP {
     /** Create a Expr with an FP::Add op
      *  Expr pointers may not be nullptr
      */
-    FP_MB_SMF_ARITH(add, Add);
+    M_FP_MB_SMF_ARITH(add, Add);
     /** Create a Expr with an FP::Sub op
      *  Expr pointers may not be nullptr
      */
-    FP_MB_SMF_ARITH(sub, Sub);
+    M_FP_MB_SMF_ARITH(sub, Sub);
     /** Create a Expr with an FP::Mul op
      *  Expr pointers may not be nullptr
      */
-    FP_MB_SMF_ARITH(mul, Mul);
+    M_FP_MB_SMF_ARITH(mul, Mul);
     /** Create a Expr with an FP::Div op
      *  Expr pointers may not be nullptr
      */
-    FP_MB_SMF_ARITH(div, Div);
+    M_FP_MB_SMF_ARITH(div, Div);
 
-    // Cleanup
-#undef FP_MB_SMF_ARITH
+#undef M_FP_MB_SMF_ARITH
 
     /********************************************************************/
     /*                  Ternary Passthrough Functions                   */

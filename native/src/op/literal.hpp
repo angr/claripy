@@ -34,61 +34,55 @@ namespace Op {
 
         /** repr */
         inline void repr_stream(std::ostream &out) const final {
+            out << R"|({ "name":")|" << op_name() << R"|(", "value":)|";
+            switch (value.index()) {
 
-/** A local macro used for consistency */
-#define VCASE_PRE(INDEX, TYPE)                                                                     \
+#define M_VCASE_PRE(INDEX, TYPE)                                                                   \
     case (INDEX): {                                                                                \
         UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(value, INDEX, TYPE)                            \
         const auto &got { std::get<TYPE>(value) };
 
-/** A local macro used for consistency */
-#define VCASE_POST                                                                                 \
+#define M_VCASE_POST                                                                               \
     break;                                                                                         \
     }
 
-/** A local macro used for consistency */
-#define VCASE(INDEX, TYPE)                                                                         \
-    VCASE_PRE(INDEX, TYPE);                                                                        \
+#define M_VCASE(INDEX, TYPE)                                                                       \
+    M_VCASE_PRE(INDEX, TYPE);                                                                      \
     out << got;                                                                                    \
-    VCASE_POST;
+    M_VCASE_POST;
 
-            // Repr depending on type
-            out << R"|({ "name":")|" << op_name() << R"|(", "value":)|";
-            switch (value.index()) {
                 // Bool
-                VCASE_PRE(0, bool);
+                M_VCASE_PRE(0, bool);
                 out << std::boolalpha << got;
-                VCASE_POST;
+                M_VCASE_POST;
                 // String
-                VCASE_PRE(1, std::string);
+                M_VCASE_PRE(1, std::string);
                 out << std::quoted(got);
-                VCASE_POST;
+                M_VCASE_POST;
                 // FP
-                VCASE(2, float);
-                VCASE(3, double);
+                M_VCASE(2, float);
+                M_VCASE(3, double);
                 // VS
-                VCASE(4, PyObj::VSPtr);
+                M_VCASE(4, PyObj::VSPtr);
                 // BV
-                VCASE_PRE(5, uint8_t);
+                M_VCASE_PRE(5, uint8_t);
                 out << uint16_t { got }; // To avoid printing as a char
-                VCASE_POST;
-                VCASE(6, uint16_t);
-                VCASE(7, uint32_t);
-                VCASE(8, U64);
-                VCASE_PRE(9, BigInt);
+                M_VCASE_POST;
+                M_VCASE(6, uint16_t);
+                M_VCASE(7, uint32_t);
+                M_VCASE(8, U64);
+                M_VCASE_PRE(9, BigInt);
                 got.write_value(out);
                 out << R"|(, "Bit length":)|" << got.bit_length;
-                VCASE_POST;
-                    // Bad variant
+                M_VCASE_POST;
+#undef M_VCASE_PRE
+#undef M_VCASE_POST
+#undef M_VCASE
+                // Bad variant
                 default:
                     UTIL_THROW(Util::Err::Unknown, "unknown type in variant");
             }
             out << " }";
-
-// Cleanup
-#undef VCASE_PRE
-#undef VCASE_POST
-#undef VCASE
         }
 
         /** Adds the raw expr children of the expr to the given stack in reverse
@@ -100,33 +94,29 @@ namespace Op {
          *  Note: This should only be used when returning children to python
          */
         inline std::vector<ArgVar> python_children() const final {
-/** A local macro used for consistency */
-#define CASE(INDEX)                                                                                \
-    case (INDEX):                                                                                  \
-        return { std::get<INDEX>(value) };                                                         \
-        break
             static_assert(std::variant_size_v<decltype(value)> == 10);
             switch (value.index()) {
-                CASE(0);
-                CASE(1);
-                CASE(2);
-                CASE(3);
-                CASE(4);
-                CASE(5);
-                CASE(6);
-                CASE(7);
-                CASE(8);
-                CASE(9);
+#define M_CASE(INDEX)                                                                              \
+    case (INDEX):                                                                                  \
+        return { std::get<INDEX>(value) }
+                M_CASE(0);
+                M_CASE(1);
+                M_CASE(2);
+                M_CASE(3);
+                M_CASE(4);
+                M_CASE(5);
+                M_CASE(6);
+                M_CASE(7);
+                M_CASE(8);
+                M_CASE(9);
+#undef M_CASE
                 default:
                     UTIL_THROW(Util::Err::Unknown, "Broken variant detected");
             }
-// Cleanup
-#undef CASE
         }
 
       private:
-/** A local macro used to define a private constructor for Literal */
-#define P_CTOR(TYPE)                                                                               \
+#define M_P_CTOR(TYPE)                                                                             \
     /** Private constructor                                                                        \
      *  Literal constructors should never be given shared pointers to nulllptr                     \
      */                                                                                            \
@@ -135,22 +125,20 @@ namespace Op {
 
         // The different private constructors we allow
         // There should be one for each variant type
-        P_CTOR(bool) {};
-        P_CTOR(std::string) {};
-        P_CTOR(float) {};
-        P_CTOR(double) {};
-        P_CTOR(PyObj::VSPtr) {
+        M_P_CTOR(bool) {};
+        M_P_CTOR(std::string) {};
+        M_P_CTOR(float) {};
+        M_P_CTOR(double) {};
+        M_P_CTOR(PyObj::VSPtr) {
             UTIL_ASSERT_NOT_NULL_DEBUG(std::get<PyObj::VSPtr>(value));
         }
         // BV constructors
-        P_CTOR(uint8_t) {};
-        P_CTOR(uint16_t) {};
-        P_CTOR(uint32_t) {};
-        P_CTOR(U64) {};
-        P_CTOR(BigInt) {};
-
-// Cleanup
-#undef P_CTOR
+        M_P_CTOR(uint8_t) {};
+        M_P_CTOR(uint16_t) {};
+        M_P_CTOR(uint32_t) {};
+        M_P_CTOR(U64) {};
+        M_P_CTOR(BigInt) {};
+#undef M_P_CTOR
 
         /** Returns the byte_length of the value stored in Data
          *  If Data contains a type that doesn't correspond to an Expr that is a subclass
@@ -159,44 +147,44 @@ namespace Op {
          *  This function may not be called on a BigInt
          */
         constexpr U64 byte_length() const {
+            switch (value.index()) {
 
-/** A local macro used for consistency */
-#define VCASE_PRE(INDEX, TYPE)                                                                     \
+#define M_VCASE_PRE(INDEX, TYPE)                                                                   \
     case (INDEX): {                                                                                \
         UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(value, INDEX, TYPE)                            \
         const auto &got { std::get<TYPE>(value) };
 
-/** A local macro used for consistency */
-#define RET(X)                                                                                     \
+#define M_RET(X)                                                                                   \
     return (X);                                                                                    \
     }
 
-/** A local macro used for consistency */
-#define VCASE(INDEX, TYPE)                                                                         \
-    VCASE_PRE(INDEX, TYPE);                                                                        \
-    RET(sizeof(got));
+#define M_VCASE(INDEX, TYPE)                                                                       \
+    M_VCASE_PRE(INDEX, TYPE);                                                                      \
+    M_RET(sizeof(got));
 
-            switch (value.index()) {
                 // String
-                VCASE_PRE(1, std::string);
-                RET(got.size());
+                M_VCASE_PRE(1, std::string);
+                M_RET(got.size());
                 // FP
-                VCASE(2, float);
-                VCASE(3, double);
+                M_VCASE(2, float);
+                M_VCASE(3, double);
                 // VS
-                VCASE_PRE(4, PyObj::VSPtr);
+                M_VCASE_PRE(4, PyObj::VSPtr);
 #ifdef DEBUG
                 UTIL_ASSERT_NOT_NULL_DEBUG(std::get<PyObj::VSPtr>(value));
                 const auto bl { std::get<PyObj::VSPtr>(value)->bit_length };
                 UTIL_ASSERT(Util::Err::Size, bl % CHAR_BIT == 0, "VS of bit length ", bl,
                             " which is not divisible by ", CHAR_BIT, " aka CHAR_BIT");
 #endif
-                RET(got->bit_length / CHAR_BIT);
+                M_RET(got->bit_length / CHAR_BIT);
                 // BV
-                VCASE(5, uint8_t);
-                VCASE(6, uint16_t);
-                VCASE(7, uint32_t);
-                VCASE(8, U64);
+                M_VCASE(5, uint8_t);
+                M_VCASE(6, uint16_t);
+                M_VCASE(7, uint32_t);
+                M_VCASE(8, U64);
+#undef M_VCASE_PRE
+#undef M_RET
+#undef M_VCASE
                 // Bool
                 default: {
                     UTIL_THROW(Util::Err::Usage,
@@ -205,11 +193,6 @@ namespace Op {
                                value.index());
                 };
             }
-
-// Cleanup
-#undef VCASE_PRE
-#undef RET
-#undef VCASE
         }
     };
 

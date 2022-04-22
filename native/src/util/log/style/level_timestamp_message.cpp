@@ -24,7 +24,7 @@ static auto get_time() {
     static std::mutex m;
     const auto t { std::time(nullptr) };
     std::unique_lock<decltype(m)> rw { m };
-    return *std::localtime(&t); // NOLINT (this is a thread-unsafe function)
+    return *std::localtime(&t); // NOLINT (not threadsafe, hence lock)
 }
 
 // Return "<level>: <timestamp>: <raw>"
@@ -32,18 +32,17 @@ std::string LevelTimestampMessage::str(CCSC, const Level::Lvl l, std::string &&r
     // Color label
     const char *color { nullptr };
     switch (l.lvl) {
-#define CASE(LVL, COLOR)                                                                           \
+#define M_CASE(LVL, COLOR)                                                                         \
     case Level::LVL.lvl:                                                                           \
         color = ANSIColorCodes::COLOR;                                                             \
         break
-        CASE(verbose, wht);
-        CASE(debug, blk);
-        CASE(info, blu);
-        CASE(warning, yel);
-        CASE(error, Bold::mag);
-        CASE(critical, HighIntensity::Bold::red);
-// Cleanup
-#undef CASE
+        M_CASE(verbose, wht);
+        M_CASE(debug, blk);
+        M_CASE(info, blu);
+        M_CASE(warning, yel);
+        M_CASE(error, Bold::mag);
+        M_CASE(critical, HighIntensity::Bold::red);
+#undef M_CASE
         case Level::disabled.lvl: // Should not be possible
             UTIL_THROW(Err::Usage, "Log backend given disabled level");
         default: // Should not be possible

@@ -33,8 +33,7 @@ namespace Util {
             return 0;
         }
 
-/** A local macro used to advance s */
-#define ADVANCE(X)                                                                                 \
+#define M_ADVANCE(X)                                                                               \
     {                                                                                              \
         s += (X);                                                                                  \
         len -= (X);                                                                                \
@@ -44,7 +43,7 @@ namespace Util {
         const bool absolute { s[0] == '/' };
         if (absolute) {
             while (len && s[0] == '/') {
-                ADVANCE(1);
+                M_ADVANCE(1);
             };
         }
 
@@ -61,7 +60,7 @@ namespace Util {
         while (len) {
             // Handle './' and '//'
             if (str_prefix(s, "./") || str_prefix(s, "//")) {
-                ADVANCE(1);
+                M_ADVANCE(1);
                 ++offset;
             }
             // Segment update
@@ -75,12 +74,12 @@ namespace Util {
                 // Reset current segment data
                 current_seg_length = 0;
                 offset = 0;
-                ADVANCE(1);
+                M_ADVANCE(1);
                 continue;
             }
             // Handle '../'
             if (str_prefix(s, "../")) {
-                ADVANCE(3)
+                M_ADVANCE(3)
                 // Rewinding segments
                 if (n_seg <= 0) {
                     Util::Log::critical(WHOAMI, "given path that goes outside of / or ./");
@@ -90,12 +89,11 @@ namespace Util {
                 continue;
             }
             // Normal character
-            ADVANCE(1)
+            M_ADVANCE(1)
             ++current_seg_length;
         }
 
-// Cleanup
-#undef ADVANCE
+#undef M_ADVANCE
 
         // Record last segment
         segments[n_seg] = s - current_seg_length;

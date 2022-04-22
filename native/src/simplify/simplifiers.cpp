@@ -191,9 +191,9 @@ Simplify::Map Simplify::builtin_map() {
     Util::sink(concat, BV::reverse, Shift::r, Shift::l, Shift::lshr, eq, ne, Boolean::and_,
                Boolean::or_, Boolean::not_, Bitwise::add, Bitwise::mul, Bitwise::sub,
                Bitwise::xor_minmax, Bitwise::or_, Bitwise::and_, Bitwise::xor_);
-/** A local macro for consistency */
-#define ENTRY(OPT, FUNC_POINTER) ret[::Op::OPT::static_cuid].emplace_back(FUNC_POINTER);
+#define M_ENTRY(OPT, FUNC_POINTER) ret[::Op::OPT::static_cuid].emplace_back(FUNC_POINTER);
     Map ret;
-    ENTRY(If, if_);
+    M_ENTRY(If, if_);
+#undef M_ENTRY
     return ret;
 }

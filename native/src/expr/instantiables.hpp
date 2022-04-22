@@ -8,8 +8,7 @@
 #include "bits.hpp"
 
 
-/** Local: A macro to declare trivial subclasses of Bits */
-#define BITS_SUBCLASS(CLASS)                                                                       \
+#define M_BITS_SUBCLASS(CLASS)                                                                     \
     /** An Expr::Bits subclass */                                                                  \
     class CLASS final : public Bits {                                                              \
         FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(::Expr::Base, 0)                                     \
@@ -54,16 +53,13 @@ namespace Expr {
     };
 
     // Bits subclasses
-    BITS_SUBCLASS(String)
-    BITS_SUBCLASS(VS)
-    BITS_SUBCLASS(BV)
-    BITS_SUBCLASS(FP)
+    M_BITS_SUBCLASS(String)
+    M_BITS_SUBCLASS(VS)
+    M_BITS_SUBCLASS(BV)
+    M_BITS_SUBCLASS(FP)
+#undef M_BITS_SUBCLASS
 
 } // namespace Expr
-
-
-// Cleanup
-#undef BITS_SUBCLASS
 
 
 #endif

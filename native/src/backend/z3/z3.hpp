@@ -482,17 +482,16 @@ namespace Backend::Z3 {
         template <typename T> static T coerce_to(Op::PrimVar &&p) {
             using Usage = Util::Err::Usage;
             switch (p.index()) {
-                /** A local macro used for consistency */
-#define CASE_B(INDEX, TYPE)                                                                        \
+#define M_CASE_B(INDEX, TYPE)                                                                      \
     case INDEX: {                                                                                  \
         UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(p, INDEX, TYPE);                               \
         return static_cast<T>(std::get<TYPE>(p));                                                  \
     }
-                CASE_B(5, uint8_t)
-                CASE_B(6, uint16_t)
-                CASE_B(7, uint32_t)
-                CASE_B(8, U64)
-#undef CASE_B
+                M_CASE_B(5, uint8_t)
+                M_CASE_B(6, uint16_t)
+                M_CASE_B(7, uint32_t)
+                M_CASE_B(8, U64)
+#undef M_CASE_B
                 case 9: {
                     UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(p, 9, BigInt);
                     const auto &bi = std::get<BigInt>(p);
@@ -528,11 +527,10 @@ namespace Backend::Z3 {
             // Starting interval and comparators
             using Integer = std::conditional_t<Signed, I64, U64>;
             using Z3Integer = std::conditional_t<Signed, int64_t, uint64_t>;
-/** A local macro for brevity */
-#define MAX_S(S) ((Integer { 1 } << (len - S)) - 1 + (Integer { 1 } << (len - S)))
-            Integer hi { Signed ? MAX_S(2) : MAX_S(1) };
+#define M_MAX_S(S) ((Integer { 1 } << (len - S)) - 1 + (Integer { 1 } << (len - S)))
+            Integer hi { Signed ? M_MAX_S(2) : M_MAX_S(1) };
             Integer lo { Signed ? (-hi - 1) : 0 };
-#undef MAX_S
+#undef M_MAX_S
 
             // Inline-able lambdas to for clarity
             const auto to_z3 { [&len](const Integer i) {

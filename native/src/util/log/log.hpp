@@ -16,8 +16,7 @@
 #include <tuple>
 
 
-/** A local macro used to define standard log functions */
-#define DEFINE_LOG_LEVEL(LEVEL)                                                                    \
+#define M_DEFINE_LOG_LEVEL(LEVEL)                                                                  \
     /** Log to a given log with given log level */                                                 \
     template <typename Log, typename... Args> inline void LEVEL(Args &&...args) {                  \
         if UTIL_LOG_LEVEL_CONSTEXPR (Level::enabled(Level::LEVEL)) {                               \
@@ -42,16 +41,15 @@ namespace Util::Log {
     UTIL_LOG_DEFINE_LOG_CLASS(Claricpp)
 
     // Define all log functions
-    DEFINE_LOG_LEVEL(verbose)
-    DEFINE_LOG_LEVEL(debug)
-    DEFINE_LOG_LEVEL(info)
-    DEFINE_LOG_LEVEL(warning)
-    DEFINE_LOG_LEVEL(error)
-    DEFINE_LOG_LEVEL(critical)
+    M_DEFINE_LOG_LEVEL(verbose)
+    M_DEFINE_LOG_LEVEL(debug)
+    M_DEFINE_LOG_LEVEL(info)
+    M_DEFINE_LOG_LEVEL(warning)
+    M_DEFINE_LOG_LEVEL(error)
+    M_DEFINE_LOG_LEVEL(critical)
 
 } // namespace Util::Log
 
-// Cleanup local macros
-#undef DEFINE_LOG_LEVEL
+#undef M_DEFINE_LOG_LEVEL
 
 #endif

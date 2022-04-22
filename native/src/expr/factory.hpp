@@ -34,24 +34,22 @@ namespace Expr {
      *  you won't need to call it; i.e. in the case the code has bugs or something.
      */
     template <typename... Args> BasePtr factory_cuid(const CUID::CUID cuid, Args &&...args) {
-/** A local macro used for consistency */
-#define CASE(T)                                                                                    \
+#define M_CASE(T)                                                                                  \
     case T::static_cuid: /* This static_assert is why we disallow Bools */                         \
         static_assert(Util::Type::Has::constructor<T, Hash::Hash, Args...>,                        \
                       "Cannot construct " #T);                                                     \
         return ::Expr::factory<T, Args...>(std::forward<Args>(args)...)
         switch (cuid) {
-            CASE(String);
-            CASE(FP);
-            CASE(VS);
-            CASE(BV);
+            M_CASE(String);
+            M_CASE(FP);
+            M_CASE(VS);
+            M_CASE(BV);
             case Bool::static_cuid:
                 UTIL_THROW(Util::Err::Usage,
                            "Cannot construct a Bool; use factory<Expr::Bool instead");
             default:
                 UTIL_THROW(Util::Err::Usage, "Unknown cuid: ", cuid);
-// Cleanup
-#undef CASE
+#undef M_CASE
         }
     }
 

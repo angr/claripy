@@ -286,19 +286,17 @@ namespace Backend::Z3 {
                         UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 4, PyObj::VSPtr);
                         UTIL_THROW(Error::Backend::Unsupported,
                                    "VSA is not supported by the Z3 backend");
-/** A local macro used for consistency */
-#define STD_INT(INDEX, TYPE, BL)                                                                   \
+#define M_STD_INT(INDEX, TYPE, BL)                                                                 \
     case INDEX:                                                                                    \
         UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, INDEX, TYPE);                            \
         return ctx.bv_val(std::get<TYPE>(data), BL);
-                        STD_INT(5, uint8_t, 8);
-                        STD_INT(6, uint16_t, 16);
-                        STD_INT(7, uint32_t, 32);
+                        M_STD_INT(5, uint8_t, 8);
+                        M_STD_INT(6, uint16_t, 16);
+                        M_STD_INT(7, uint32_t, 32);
                     case 8:
                         UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 8, U64);
                         return ctx.bv_val(static_cast<uint64_t>(std::get<U64>(data)), 64); // cast
-// Cleanup
-#undef STD_INT
+#undef M_STD_INT
                     case 9: {
                         UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 9, BigInt);
                         const auto &big { std::get<BigInt>(data) };

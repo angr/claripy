@@ -33,7 +33,7 @@ namespace Backend::Z3 {
             // We define local macros below to enforce consistency
             // across 'trivial' ops to reduce copy-paste errors.
 
-#define UNARY_CASE(OP, FN)                                                                         \
+#define M_UNARY_CASE(OP, FN)                                                                       \
     case Op::OP::static_cuid: {                                                                    \
         check_vec_usage(args, 1_ui);                                                               \
         auto ret { (FN) (*args.back()) };                                                          \
@@ -41,27 +41,27 @@ namespace Backend::Z3 {
         return ret;                                                                                \
     }
 
-#define BINARY_DISPATCH(FN)                                                                        \
+#define M_BINARY_DISPATCH(FN)                                                                      \
     check_vec_usage(args, 2_ui);                                                                   \
     const auto size { args.size() };                                                               \
     auto ret { (FN) (*args[size - 2], *args[size - 1]) };                                          \
     args.resize(size - 2);                                                                         \
     return ret;
 
-#define BINARY_CASE(OP, FN)                                                                        \
+#define M_BINARY_CASE(OP, FN)                                                                      \
     case Op::OP::static_cuid: {                                                                    \
-        BINARY_DISPATCH((FN));                                                                     \
+        M_BINARY_DISPATCH((FN));                                                                   \
     }
 
 // Passing templated objects to macros can be messy since ','s are in both
 // For simplicity and consistency we define a binary op macro for this case
-#define BINARY_TEMPLATE_CASE(OP, FN, ...)                                                          \
+#define M_BINARY_TEMPLATE_CASE(OP, FN, ...)                                                        \
     case Op::OP<__VA_ARGS__>::static_cuid: {                                                       \
         const constexpr auto func { FN<__VA_ARGS__> };                                             \
-        BINARY_DISPATCH(func);                                                                     \
+        M_BINARY_DISPATCH(func);                                                                   \
     }
 
-#define UINT_BINARY_CASE(OP, FN)                                                                   \
+#define M_UINT_BINARY_CASE(OP, FN)                                                                 \
     case Op::OP::static_cuid: {                                                                    \
         static_assert(Op::is_uint_binary<Op::OP>, "Op::" #OP " is not UIntBinary");                \
         using To = CTSC<Op::UIntBinary>;                                                           \
@@ -71,7 +71,7 @@ namespace Backend::Z3 {
         return ret;                                                                                \
     }
 
-#define MODE_BINARY_CASE(OP, FN)                                                                   \
+#define M_MODE_BINARY_CASE(OP, FN)                                                                 \
     case Op::OP::static_cuid: {                                                                    \
         static_assert(Op::FP::is_mode_binary<Op::OP>, "Op::" #OP " is not ModeBinary");            \
         using To = CTSC<Op::FP::ModeBinary>;                                                       \
@@ -83,7 +83,7 @@ namespace Backend::Z3 {
         return ret;                                                                                \
     }
 
-#define TERNARY_CASE(OP, FN)                                                                       \
+#define M_TERNARY_CASE(OP, FN)                                                                     \
     case Op::OP::static_cuid: {                                                                    \
         const auto size { args.size() };                                                           \
         check_vec_usage(args, 3_ui);                                                               \
@@ -92,7 +92,7 @@ namespace Backend::Z3 {
         return ret;                                                                                \
     }
 
-#define FLAT_CASE(OP, FN)                                                                          \
+#define M_FLAT_CASE(OP, FN)                                                                        \
     case Op::OP::static_cuid: {                                                                    \
         static_assert(Op::is_flat<Op::OP>, "Op::" #OP " is not Flat");                             \
         using To = CTSC<Op::AbstractFlat>;                                                         \
@@ -134,60 +134,60 @@ namespace Backend::Z3 {
 
                     // Unary
 
-                    UNARY_CASE(Neg, Conv::neg);
-                    UNARY_CASE(Abs, Conv::abs);
-                    UNARY_CASE(Not, Conv::not_);
-                    UNARY_CASE(Invert, Conv::invert);
-                    UNARY_CASE(Reverse, Conv::reverse);
+                    M_UNARY_CASE(Neg, Conv::neg);
+                    M_UNARY_CASE(Abs, Conv::abs);
+                    M_UNARY_CASE(Not, Conv::not_);
+                    M_UNARY_CASE(Invert, Conv::invert);
+                    M_UNARY_CASE(Reverse, Conv::reverse);
 
                     // UIntBinary
 
-                    UINT_BINARY_CASE(SignExt, Conv::signext);
-                    UINT_BINARY_CASE(ZeroExt, Conv::zeroext);
+                    M_UINT_BINARY_CASE(SignExt, Conv::signext);
+                    M_UINT_BINARY_CASE(ZeroExt, Conv::zeroext);
 
                     // Binary
 
-                    BINARY_CASE(Eq, Conv::eq);
+                    M_BINARY_CASE(Eq, Conv::eq);
 
-                    BINARY_CASE(Neq, Conv::neq);
+                    M_BINARY_CASE(Neq, Conv::neq);
 
-                    BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::SGE);
-                    BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::SGT);
-                    BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::SLE);
-                    BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::SLT);
-                    BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::UGE);
-                    BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::UGT);
-                    BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::ULE);
-                    BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::ULT);
+                    M_BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::SGE);
+                    M_BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::SGT);
+                    M_BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::SLE);
+                    M_BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::SLT);
+                    M_BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::UGE);
+                    M_BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::UGT);
+                    M_BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::ULE);
+                    M_BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::ULT);
 
-                    BINARY_CASE(Sub, Conv::sub);
+                    M_BINARY_CASE(Sub, Conv::sub);
 
-                    BINARY_TEMPLATE_CASE(Div, Conv::template div, Sgn::Signed);
-                    BINARY_TEMPLATE_CASE(Div, Conv::template div, Sgn::Unsigned);
+                    M_BINARY_TEMPLATE_CASE(Div, Conv::template div, Sgn::Signed);
+                    M_BINARY_TEMPLATE_CASE(Div, Conv::template div, Sgn::Unsigned);
 
-                    BINARY_TEMPLATE_CASE(Mod, Conv::template mod, Sgn::Signed);
-                    BINARY_TEMPLATE_CASE(Mod, Conv::template mod, Sgn::Unsigned);
+                    M_BINARY_TEMPLATE_CASE(Mod, Conv::template mod, Sgn::Signed);
+                    M_BINARY_TEMPLATE_CASE(Mod, Conv::template mod, Sgn::Unsigned);
 
-                    BINARY_TEMPLATE_CASE(Shift, Conv::template shift, Shift::Left);
-                    BINARY_TEMPLATE_CASE(Shift, Conv::template shift, Shift::ArithmeticRight);
-                    BINARY_TEMPLATE_CASE(Shift, Conv::template shift, Shift::LogicalRight);
+                    M_BINARY_TEMPLATE_CASE(Shift, Conv::template shift, Shift::Left);
+                    M_BINARY_TEMPLATE_CASE(Shift, Conv::template shift, Shift::ArithmeticRight);
+                    M_BINARY_TEMPLATE_CASE(Shift, Conv::template shift, Shift::LogicalRight);
 
-                    BINARY_TEMPLATE_CASE(Rotate, Conv::template rotate, Mode::LR::Left);
-                    BINARY_TEMPLATE_CASE(Rotate, Conv::template rotate, Mode::LR::Right);
+                    M_BINARY_TEMPLATE_CASE(Rotate, Conv::template rotate, Mode::LR::Left);
+                    M_BINARY_TEMPLATE_CASE(Rotate, Conv::template rotate, Mode::LR::Right);
 
-                    BINARY_CASE(Concat, Conv::concat);
+                    M_BINARY_CASE(Concat, Conv::concat);
 
                     // Flat
 
-                    FLAT_CASE(Add, Conv::add);
-                    FLAT_CASE(Mul, Conv::mul);
-                    FLAT_CASE(Or, Conv::or_);
-                    FLAT_CASE(And, Conv::and_);
-                    FLAT_CASE(Xor, Conv::xor_);
+                    M_FLAT_CASE(Add, Conv::add);
+                    M_FLAT_CASE(Mul, Conv::mul);
+                    M_FLAT_CASE(Or, Conv::or_);
+                    M_FLAT_CASE(And, Conv::and_);
+                    M_FLAT_CASE(Xor, Conv::xor_);
 
                     // Other
 
-                    TERNARY_CASE(If, Conv::if_);
+                    M_TERNARY_CASE(If, Conv::if_);
 
                 case Op::Extract::static_cuid: {
                     using To = CTSC<Op::Extract>;
@@ -210,19 +210,18 @@ namespace Backend::Z3 {
 
                     // Unary
 
-                    UNARY_CASE(FP::ToIEEEBV, Conv::FP::to_ieee_bv);
+                    M_UNARY_CASE(FP::ToIEEEBV, Conv::FP::to_ieee_bv);
 
                     // Mode Binary
 
-                    MODE_BINARY_CASE(FP::Add, Conv::FP::add);
-                    MODE_BINARY_CASE(FP::Sub, Conv::FP::sub);
-                    MODE_BINARY_CASE(FP::Mul, Conv::FP::mul);
-                    MODE_BINARY_CASE(FP::Div, Conv::FP::div);
+                    M_MODE_BINARY_CASE(FP::Add, Conv::FP::add);
+                    M_MODE_BINARY_CASE(FP::Sub, Conv::FP::sub);
+                    M_MODE_BINARY_CASE(FP::Mul, Conv::FP::mul);
+                    M_MODE_BINARY_CASE(FP::Div, Conv::FP::div);
 
                     // Other
 
-                    /** A local macro used for consistency */
-#define TO_BV_CASE(TF)                                                                             \
+#define M_TO_BV_CASE(TF)                                                                           \
     case Op::FP::ToBV<TF>::static_cuid: {                                                          \
         debug_assert_dcast<Expr::Bits>(expr, "FP::ToBV has no length");                            \
         using ToBV = CTSC<Op::FP::ToBV<TF>>;                                                       \
@@ -233,9 +232,12 @@ namespace Backend::Z3 {
         args.pop_back();                                                                           \
         return ret;                                                                                \
     }
+                    // ToBV
+                    M_TO_BV_CASE(Sgn::Signed);
+                    M_TO_BV_CASE(Sgn::Unsigned);
+#undef M_TO_BV_CASE
 
-                    /** A local macro used for consistency */
-#define FROM_2CBV_CASE(TF)                                                                         \
+#define M_FROM_2CBV_CASE(TF)                                                                       \
     case Op::FP::From2sComplementBV<TF>::static_cuid: {                                            \
         check_vec_usage(args, 1);                                                                  \
         using OpT = CTSC<Op::FP::From2sComplementBV<TF>>;                                          \
@@ -245,18 +247,10 @@ namespace Backend::Z3 {
         args.pop_back();                                                                           \
         return ret;                                                                                \
     }
-
-                    // ToBV
-                    TO_BV_CASE(Sgn::Signed);
-                    TO_BV_CASE(Sgn::Unsigned);
-
                     // From2sComplementBV
-                    FROM_2CBV_CASE(Sgn::Signed);
-                    FROM_2CBV_CASE(Sgn::Unsigned);
-
-                    // Cleanup
-#undef TO_BV_CASE
-#undef FROM_2CBV_CASE
+                    M_FROM_2CBV_CASE(Sgn::Signed);
+                    M_FROM_2CBV_CASE(Sgn::Unsigned);
+#undef M_FROM_2CBV_CASE
 
                     // FromFP
                 case Op::FP::FromFP::static_cuid: {
@@ -284,26 +278,26 @@ namespace Backend::Z3 {
 
                     // Unary
 
-                    UNARY_CASE(String::FromInt, Conv::String::from_int);
+                    M_UNARY_CASE(String::FromInt, Conv::String::from_int);
 
                     // Int Binary
 
-                    UINT_BINARY_CASE(String::ToInt, Conv::String::to_int);
-                    UINT_BINARY_CASE(String::Len, Conv::String::len);
+                    M_UINT_BINARY_CASE(String::ToInt, Conv::String::to_int);
+                    M_UINT_BINARY_CASE(String::Len, Conv::String::len);
 
                     // Binary
 
-                    BINARY_CASE(String::Contains, Conv::String::contains);
-                    BINARY_CASE(String::PrefixOf, Conv::String::prefix_of);
-                    BINARY_CASE(String::SuffixOf, Conv::String::suffix_of);
+                    M_BINARY_CASE(String::Contains, Conv::String::contains);
+                    M_BINARY_CASE(String::PrefixOf, Conv::String::prefix_of);
+                    M_BINARY_CASE(String::SuffixOf, Conv::String::suffix_of);
 
                     // Ternary
 
-                    TERNARY_CASE(String::Replace, Conv::String::replace);
+                    M_TERNARY_CASE(String::Replace, Conv::String::replace);
 
                     // Other
 
-                    TERNARY_CASE(String::SubString, Conv::String::substring);
+                    M_TERNARY_CASE(String::SubString, Conv::String::substring);
 
                 case Op::String::IndexOf::static_cuid: {
                     check_vec_usage(args, 2);
@@ -317,15 +311,14 @@ namespace Backend::Z3 {
                 };
             }
 
-// Cleanup
-#undef UNARY_CASE
-#undef BINARY_DISPATCH
-#undef BINARY_CASE
-#undef BINARY_TEMPLATE_CASE
-#undef UINT_BINARY_CASE
-#undef MODE_BINARY_CASE
-#undef TERNARY_CASE
-#undef FLAT_CASE
+#undef M_UNARY_CASE
+#undef M_BINARY_DISPATCH
+#undef M_BINARY_CASE
+#undef M_BINARY_TEMPLATE_CASE
+#undef M_UINT_BINARY_CASE
+#undef M_MODE_BINARY_CASE
+#undef M_TERNARY_CASE
+#undef M_FLAT_CASE
         }
 
         /** Abstract a backend object into a claricpp expr */
@@ -344,8 +337,8 @@ namespace Backend::Z3 {
             const auto decl { b_obj.decl() };
             const auto decl_kind { decl.decl_kind() };
 
-            /** A local macro used for error checking */
-#define ASSERT_ARG_EMPTY(X) UTIL_ASSERT(Util::Err::Size, (X).empty(), "Op should have no children");
+#define M_ASSERT_ARG_EMPTY(X)                                                                      \
+    UTIL_ASSERT(Util::Err::Size, (X).empty(), "Op should have no children");
 
             // Switch on expr type
             switch (decl_kind) {
@@ -359,7 +352,7 @@ namespace Backend::Z3 {
 
                     // Misc
                 case Z3_OP_INTERNAL:
-                    ASSERT_ARG_EMPTY(args);
+                    M_ASSERT_ARG_EMPTY(args);
                     return Abs::internal(b_obj, decl);
                 case Z3_OP_UNINTERPRETED: {
                     return Abs::uninterpreted(b_obj, decl, args, satd);
@@ -367,10 +360,10 @@ namespace Backend::Z3 {
 
                     // Boolean
                 case Z3_OP_TRUE:
-                    ASSERT_ARG_EMPTY(args);
+                    M_ASSERT_ARG_EMPTY(args);
                     return Abs::template bool_<true>();
                 case Z3_OP_FALSE:
-                    ASSERT_ARG_EMPTY(args);
+                    M_ASSERT_ARG_EMPTY(args);
                     return Abs::template bool_<false>();
 
                     // Boolean logic
@@ -411,7 +404,7 @@ namespace Backend::Z3 {
 
                     // Bit-vectors
                 case Z3_OP_BNUM:
-                    ASSERT_ARG_EMPTY(args);
+                    M_ASSERT_ARG_EMPTY(args);
                     return Abs::BV::num(b_obj);
                 case Z3_OP_BNEG:
                     return Abs::neg(args);
@@ -484,19 +477,19 @@ namespace Backend::Z3 {
 
                     // FP Constants
                 case Z3_OP_FPA_MINUS_ZERO:
-                    ASSERT_ARG_EMPTY(args);
+                    M_ASSERT_ARG_EMPTY(args);
                     return Abs::FP::template zero<Sign::Minus>(b_obj);
                 case Z3_OP_FPA_MINUS_INF:
-                    ASSERT_ARG_EMPTY(args);
+                    M_ASSERT_ARG_EMPTY(args);
                     return Abs::FP::template inf<Sign::Minus>(b_obj);
                 case Z3_OP_FPA_PLUS_ZERO:
-                    ASSERT_ARG_EMPTY(args);
+                    M_ASSERT_ARG_EMPTY(args);
                     return Abs::FP::template zero<Sign::Plus>(b_obj);
                 case Z3_OP_FPA_PLUS_INF:
-                    ASSERT_ARG_EMPTY(args);
+                    M_ASSERT_ARG_EMPTY(args);
                     return Abs::FP::template inf<Sign::Plus>(b_obj);
                 case Z3_OP_FPA_NAN:
-                    ASSERT_ARG_EMPTY(args);
+                    M_ASSERT_ARG_EMPTY(args);
                     return Abs::FP::nan(b_obj);
 
                     // FP Comparisons
@@ -537,7 +530,7 @@ namespace Backend::Z3 {
                 case Z3_OP_FPA_RM_TOWARD_NEGATIVE:
                     return Mode::FP::Rounding::TowardsNegativeInf;
                     // Cleanup
-#undef ASSERT_ARG_EMPTY
+#undef M_ASSERT_ARG_EMPTY
             }
         }
 
@@ -566,20 +559,19 @@ namespace Backend::Z3 {
                     // Conversions
                 case Z3_OP_BNUM: {
                     const auto x { Abs::BV::num_primtive(b_obj) };
-                    /** A local helper macro */
-#define G_CASE(INDEX)                                                                              \
+#define M_G_CASE(INDEX)                                                                            \
     case INDEX:                                                                                    \
         return std::get<INDEX>(x);
                     switch (x.index()) {
-                        G_CASE(0)
-                        G_CASE(1)
-                        G_CASE(2)
-                        G_CASE(3)
-                        G_CASE(4)
+                        M_G_CASE(0)
+                        M_G_CASE(1)
+                        M_G_CASE(2)
+                        M_G_CASE(3)
+                        M_G_CASE(4)
                         default:
                             UTIL_THROW(Util::Err::Unknown, "Bad variant");
                     }
-#undef G_CASE
+#undef M_G_CASE
                     static_assert(std::variant_size_v<decltype(x)> == 5,
                                   "Switch-case statement needs to be modified");
                 }

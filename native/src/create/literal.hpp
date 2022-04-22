@@ -16,52 +16,49 @@ namespace Create {
                                      "you mean to use std::string?");
     }
 
-/** A local macro used for consistency */
-#define TRIVIAL_BUILTIN_TYPE(EXP, INPUT)                                                           \
+#define M_TRIVIAL_BUILTIN_TYPE(EXP, INPUT)                                                         \
     inline Expr::BasePtr literal(const INPUT data, Annotation::SPAV sp = empty_spav) {             \
         return Private::literal<Expr::EXP, INPUT>(INPUT { data }, std::move(sp));                  \
     }
 
-/** A local macro used for consistency */
-#define TRIVIAL_TYPE(EXP, INPUT)                                                                   \
+#define M_TRIVIAL_TYPE(EXP, INPUT)                                                                 \
     inline Expr::BasePtr literal(INPUT data, Annotation::SPAV sp = empty_spav) {                   \
         return Private::literal<Expr::EXP, INPUT>(std::move(data), std::move(sp));                 \
     }
 
     /** Create a Bool Expr with a Literal op */
-    TRIVIAL_BUILTIN_TYPE(Bool, bool);
+    M_TRIVIAL_BUILTIN_TYPE(Bool, bool);
 
     /** Create a String Expr with a Literal op */
-    TRIVIAL_TYPE(String, std::string);
+    M_TRIVIAL_TYPE(String, std::string);
 
     /** Create a FP Expr with a Literal op containing a double precision float */
-    TRIVIAL_BUILTIN_TYPE(FP, double);
+    M_TRIVIAL_BUILTIN_TYPE(FP, double);
 
     /** Create a FP Expr with a Literal op containing a single precision float */
-    TRIVIAL_BUILTIN_TYPE(FP, float);
+    M_TRIVIAL_BUILTIN_TYPE(FP, float);
 
     /** Create a FP Expr with a Literal op containing a single precision float
      *  data may not be nullptr
      */
-    TRIVIAL_TYPE(VS, PyObj::VSPtr);
+    M_TRIVIAL_TYPE(VS, PyObj::VSPtr);
 
     // BV creation methods
 
     /** Create a BV Expr with a Literal op containing an 8-bit unsigned int */
-    TRIVIAL_BUILTIN_TYPE(BV, uint8_t);
+    M_TRIVIAL_BUILTIN_TYPE(BV, uint8_t);
     /** Create a BV Expr with a Literal op containing an 16-bit unsigned int */
-    TRIVIAL_BUILTIN_TYPE(BV, uint16_t);
+    M_TRIVIAL_BUILTIN_TYPE(BV, uint16_t);
     /** Create a BV Expr with a Literal op containing an 32-bit unsigned int */
-    TRIVIAL_BUILTIN_TYPE(BV, uint32_t);
+    M_TRIVIAL_BUILTIN_TYPE(BV, uint32_t);
     /** Create a BV Expr with a Literal op containing an 64-bit unsigned int */
-    TRIVIAL_BUILTIN_TYPE(BV, U64);
+    M_TRIVIAL_BUILTIN_TYPE(BV, U64);
 
     /** Create a BV Expr with a Literal op containing an arbitrary length int */
-    TRIVIAL_TYPE(BV, BigInt);
+    M_TRIVIAL_TYPE(BV, BigInt);
 
-// Cleanup
-#undef TRIVIAL_BUILTIN_TYPE
-#undef TRIVIAL_TYPE
+#undef M_TRIVIAL_BUILTIN_TYPE
+#undef M_TRIVIAL_TYPE
 
 } // namespace Create
 
