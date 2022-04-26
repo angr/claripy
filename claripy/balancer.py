@@ -272,6 +272,9 @@ class Balancer:
         elif t.args[0].cardinality > 1 and t.args[1].cardinality > 1:
             l.debug("can't do anything because we have multiple multivalued guys")
             return False
+        elif t.op == "If":
+            l.debug("can't handle If")
+            return False
         else:
             return True
 

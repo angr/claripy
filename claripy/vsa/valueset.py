@@ -432,6 +432,12 @@ class ValueSet(BackendObject):
 
             return new_vs
 
+    def LShR(self, other):
+        if BoolResult.is_true(other == 0):
+            # a >> 0 == a
+            return self
+        return StridedInterval(bits=self.bits, stride=1, lower_bound=0, upper_bound=(2 << self.bits) - 1)
+
     def __eq__(self, other):
         """
         Binary operation: ==
