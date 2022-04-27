@@ -15,7 +15,7 @@ ARG CONFIG_STAGE=config
 
 
 ##################################################
-#                   Base Stage                   #
+#                   Base Stages                  #
 ##################################################
 
 
@@ -29,11 +29,6 @@ ARG CXX="g++"
 # Prep apt
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
-RUN apt-get install -yq \
-	python3 \
-	gnupg2 \
-	wget \
-	git
 
 # Install pip and prep python
 RUN apt-get install -yq python3-pip python3.8-venv
@@ -42,24 +37,10 @@ RUN python3 -m venv "${VIRTUAL_ENV}"
 ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
 RUN pip3 install --upgrade pip
 
-# Install required dependencies
-
 # Native dependencies
-RUN apt-get install -yq "${CXX}" make
+RUN apt-get install make "${CXX}"
 
-# TODO: until a new z3 release
-RUN git clone --depth 1 https://github.com/Z3Prover/z3 /z3-src \
-    && cd /z3-src/src/api/python \
-	&& python setup.py sdist \
-	&& cd dist \
-	&& tar -xvf * \
-	&& rm *.gz \
-	&& cd * \
-	&& pip install . \
-	&& cd / \
-	&& rm -rf /z3-src
-
-
+# Dev mode stage
 FROM base as base_dev
 LABEL stage=base_dev
 ENV DEV_MODE=1
@@ -69,16 +50,16 @@ RUN apt-get install -yq libdw-dev
 
 # Python dependencies
 RUN pip3 install \
+	'z3-solver>=4.8.15.0' \
 	'setuptools>=39.6.0' \
 	requests \
 	wheel \
 	cmake \
 	tqdm
-	# TODO: Once new z3 comes out 'z3-solver>=4.8.15.0' \
 
+# Extras stage
 FROM base_dev as base_dev_extras
 LABEL stage=base_dev_extras
-
 RUN pip3 install clang-format
 RUN apt-get install -yq \
     \
@@ -131,15 +112,7 @@ ENV VERBOSE=1
 
 FROM "${CONFIG_STAGE}" as install
 LABEL stage=install
-# TODO: remove once new z3 comes out
-RUN pip3 install \
-	'setuptools>=39.6.0' \
-	requests \
-	wheel \
-	cmake \
-	tqdm
-RUN pip3 install --no-build-isolation --verbose .
-# TODO: once new z3 comes out. RUN pip3 install --verbose .
+RUN pip3 install --verbose .
 
 
 ##################################################
