@@ -570,6 +570,8 @@ endif()
 
 # Enable testing
 if(BUILD_TESTS)
+	include(CTest)
+	enable_testing()
 	message("Testing enabled!")
 	add_subdirectory(tests)
 else()
