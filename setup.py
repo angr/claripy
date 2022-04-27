@@ -796,8 +796,7 @@ class Claricpp(Library):
             "CMAKE_BUILD_TYPE": "Debug" if self._build_debug else "Release",
             # Backtrace options
             "WARN_BACKWARD_LIMITATIONS": True,
-            "REQUIRE_BACKWARD_BACKEND": False,  # TODO:
-            "SOURCE_ROOT_FOR_BACKTRACE": None,  # TODO: make a runtime thing config'd by python
+            "REQUIRE_BACKWARD_BACKEND": False,
             # Disable options
             "CPP_CHECK": False,
             "CLANG_TIDY": False,
