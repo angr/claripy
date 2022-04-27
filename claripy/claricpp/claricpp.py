@@ -46,6 +46,7 @@ del _init_logging  # Cleanup
 clari.Util.Err.Claricpp.toggle_backtrace(claricpp_debug)
 if claricpp_debug:
     clari.API.enable_signal_traces()
+clari.API.add_source_root(os.path.join(os.path.dirname(clari.__file__))) # TODO: make this better
 log.info("Native backtraces " + ("en" if claricpp_debug else "dis") + "abled")
 
 
