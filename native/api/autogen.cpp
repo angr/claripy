@@ -520,27 +520,27 @@ void bind_unknown_unknown_16(std::function< pybind11::module &(std::string const
 	// Expr::are_same_type(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &) file: line:19
 	M("Expr").def("are_same_type", (bool (*)(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &)) &Expr::are_same_type<false>, "C++: Expr::are_same_type(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &) --> bool", pybind11::arg("x"), pybind11::arg("y"));
 
-	{ // Expr::Bool file: line:37
+	{ // Expr::Bool file: line:36
 		pybind11::class_<Expr::Bool, std::shared_ptr<Expr::Bool>, Expr::Base> cl(M("Expr"), "Bool", "An Expr::Base subclass representing a bool ");
 		cl.def("type_name", (const char * (Expr::Bool::*)() const) &Expr::Bool::type_name, "Get the type name \n\nC++: Expr::Bool::type_name() const --> const char *", pybind11::return_value_policy::automatic);
 	}
-	{ // Expr::String file: line:57
+	{ // Expr::String file: line:56
 		pybind11::class_<Expr::String, std::shared_ptr<Expr::String>, Expr::Bits> cl(M("Expr"), "String", "");
 		cl.def("type_name", (const char * (Expr::String::*)() const) &Expr::String::type_name, "C++: Expr::String::type_name() const --> const char *", pybind11::return_value_policy::automatic);
 	}
-	{ // Expr::VS file: line:58
+	{ // Expr::VS file: line:57
 		pybind11::class_<Expr::VS, std::shared_ptr<Expr::VS>, Expr::Bits> cl(M("Expr"), "VS", "");
 		cl.def("type_name", (const char * (Expr::VS::*)() const) &Expr::VS::type_name, "C++: Expr::VS::type_name() const --> const char *", pybind11::return_value_policy::automatic);
 	}
-	{ // Expr::BV file: line:59
+	{ // Expr::BV file: line:58
 		pybind11::class_<Expr::BV, std::shared_ptr<Expr::BV>, Expr::Bits> cl(M("Expr"), "BV", "");
 		cl.def("type_name", (const char * (Expr::BV::*)() const) &Expr::BV::type_name, "C++: Expr::BV::type_name() const --> const char *", pybind11::return_value_policy::automatic);
 	}
-	{ // Expr::FP file: line:60
+	{ // Expr::FP file: line:59
 		pybind11::class_<Expr::FP, std::shared_ptr<Expr::FP>, Expr::Bits> cl(M("Expr"), "FP", "");
 		cl.def("type_name", (const char * (Expr::FP::*)() const) &Expr::FP::type_name, "C++: Expr::FP::type_name() const --> const char *", pybind11::return_value_policy::automatic);
 	}
-	// Expr::find(const unsigned long long) file: line:61
+	// Expr::find(const unsigned long long) file: line:59
 	M("Expr").def("find", (class std::shared_ptr<const class Expr::Base> (*)(const unsigned long long)) &Expr::find, "Get a shared pointer from a hash\n  If the object does not exist it returns a shared pointer to nullptr\n\nC++: Expr::find(const unsigned long long) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("h"));
 
 }
@@ -1137,23 +1137,23 @@ void bind_unknown_unknown_30(std::function< pybind11::module &(std::string const
 	M("Create::FP").def("to_ieee_bv", [](const class std::shared_ptr<const class Expr::Base> & a0) -> std::shared_ptr<const class Expr::Base> { return Create::FP::to_ieee_bv(a0); }, "", pybind11::arg("x"));
 	M("Create::FP").def("to_ieee_bv", (class std::shared_ptr<const class Expr::Base> (*)(const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>)) &Create::FP::to_ieee_bv, "Create a Expr with an FP::ToIEEEBV op\n  Expr pointers may not be nullptr\n\nC++: Create::FP::to_ieee_bv(const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("x"), pybind11::arg("sp"));
 
-	// Create::FP::add(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, const enum Mode::FP::Rounding, class std::shared_ptr<const struct Annotation::Vec>) file: line:42
+	// Create::FP::add(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, const enum Mode::FP::Rounding, class std::shared_ptr<const struct Annotation::Vec>) file: line:41
 	M("Create::FP").def("add", [](const class std::shared_ptr<const class Expr::Base> & a0, const class std::shared_ptr<const class Expr::Base> & a1, const enum Mode::FP::Rounding & a2) -> std::shared_ptr<const class Expr::Base> { return Create::FP::add(a0, a1, a2); }, "", pybind11::arg("left"), pybind11::arg("right"), pybind11::arg("mode"));
 	M("Create::FP").def("add", (class std::shared_ptr<const class Expr::Base> (*)(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, const enum Mode::FP::Rounding, class std::shared_ptr<const struct Annotation::Vec>)) &Create::FP::add, "C++: Create::FP::add(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, const enum Mode::FP::Rounding, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("left"), pybind11::arg("right"), pybind11::arg("mode"), pybind11::arg("sp"));
 
-	// Create::FP::sub(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, const enum Mode::FP::Rounding, class std::shared_ptr<const struct Annotation::Vec>) file: line:46
+	// Create::FP::sub(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, const enum Mode::FP::Rounding, class std::shared_ptr<const struct Annotation::Vec>) file: line:45
 	M("Create::FP").def("sub", [](const class std::shared_ptr<const class Expr::Base> & a0, const class std::shared_ptr<const class Expr::Base> & a1, const enum Mode::FP::Rounding & a2) -> std::shared_ptr<const class Expr::Base> { return Create::FP::sub(a0, a1, a2); }, "", pybind11::arg("left"), pybind11::arg("right"), pybind11::arg("mode"));
 	M("Create::FP").def("sub", (class std::shared_ptr<const class Expr::Base> (*)(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, const enum Mode::FP::Rounding, class std::shared_ptr<const struct Annotation::Vec>)) &Create::FP::sub, "C++: Create::FP::sub(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, const enum Mode::FP::Rounding, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("left"), pybind11::arg("right"), pybind11::arg("mode"), pybind11::arg("sp"));
 
-	// Create::FP::mul(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, const enum Mode::FP::Rounding, class std::shared_ptr<const struct Annotation::Vec>) file: line:50
+	// Create::FP::mul(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, const enum Mode::FP::Rounding, class std::shared_ptr<const struct Annotation::Vec>) file: line:49
 	M("Create::FP").def("mul", [](const class std::shared_ptr<const class Expr::Base> & a0, const class std::shared_ptr<const class Expr::Base> & a1, const enum Mode::FP::Rounding & a2) -> std::shared_ptr<const class Expr::Base> { return Create::FP::mul(a0, a1, a2); }, "", pybind11::arg("left"), pybind11::arg("right"), pybind11::arg("mode"));
 	M("Create::FP").def("mul", (class std::shared_ptr<const class Expr::Base> (*)(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, const enum Mode::FP::Rounding, class std::shared_ptr<const struct Annotation::Vec>)) &Create::FP::mul, "C++: Create::FP::mul(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, const enum Mode::FP::Rounding, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("left"), pybind11::arg("right"), pybind11::arg("mode"), pybind11::arg("sp"));
 
-	// Create::FP::div(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, const enum Mode::FP::Rounding, class std::shared_ptr<const struct Annotation::Vec>) file: line:54
+	// Create::FP::div(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, const enum Mode::FP::Rounding, class std::shared_ptr<const struct Annotation::Vec>) file: line:53
 	M("Create::FP").def("div", [](const class std::shared_ptr<const class Expr::Base> & a0, const class std::shared_ptr<const class Expr::Base> & a1, const enum Mode::FP::Rounding & a2) -> std::shared_ptr<const class Expr::Base> { return Create::FP::div(a0, a1, a2); }, "", pybind11::arg("left"), pybind11::arg("right"), pybind11::arg("mode"));
 	M("Create::FP").def("div", (class std::shared_ptr<const class Expr::Base> (*)(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, const enum Mode::FP::Rounding, class std::shared_ptr<const struct Annotation::Vec>)) &Create::FP::div, "C++: Create::FP::div(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, const enum Mode::FP::Rounding, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("left"), pybind11::arg("right"), pybind11::arg("mode"), pybind11::arg("sp"));
 
-	// Create::FP::fp(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>) file: line:66
+	// Create::FP::fp(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>) file: line:64
 	M("Create::FP").def("fp", [](const class std::shared_ptr<const class Expr::Base> & a0, const class std::shared_ptr<const class Expr::Base> & a1, const class std::shared_ptr<const class Expr::Base> & a2) -> std::shared_ptr<const class Expr::Base> { return Create::FP::fp(a0, a1, a2); }, "", pybind11::arg("first"), pybind11::arg("second"), pybind11::arg("third"));
 	M("Create::FP").def("fp", (class std::shared_ptr<const class Expr::Base> (*)(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>)) &Create::FP::fp, "Create an Expr with an FP::FP op\n  Expr pointers may not be nullptr\n\nC++: Create::FP::fp(const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, const class std::shared_ptr<const class Expr::Base> &, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("first"), pybind11::arg("second"), pybind11::arg("third"), pybind11::arg("sp"));
 
@@ -1184,43 +1184,43 @@ void bind_unknown_unknown_31(std::function< pybind11::module &(std::string const
 	M("Create").def("literal", [](const char *const a0) -> std::shared_ptr<const class Expr::Base> { return Create::literal(a0); }, "", pybind11::arg(""));
 	M("Create").def("literal", (class std::shared_ptr<const class Expr::Base> (*)(const char *const, class std::shared_ptr<const struct Annotation::Vec>)) &Create::literal, "This function exists to prevent accidental use by explicit rejection \n\nC++: Create::literal(const char *const, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg(""), pybind11::arg(""));
 
-	// Create::literal(const bool, class std::shared_ptr<const struct Annotation::Vec>) file: line:21
+	// Create::literal(const bool, class std::shared_ptr<const struct Annotation::Vec>) file: line:20
 	M("Create").def("literal", [](const bool & a0) -> std::shared_ptr<const class Expr::Base> { return Create::literal(a0); }, "", pybind11::arg("data"));
 	M("Create").def("literal", (class std::shared_ptr<const class Expr::Base> (*)(const bool, class std::shared_ptr<const struct Annotation::Vec>)) &Create::literal, "C++: Create::literal(const bool, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("data"), pybind11::arg("sp"));
 
-	// Create::literal(std::string, class std::shared_ptr<const struct Annotation::Vec>) file: line:27
+	// Create::literal(std::string, class std::shared_ptr<const struct Annotation::Vec>) file: line:25
 	M("Create").def("literal", [](std::string const & a0) -> std::shared_ptr<const class Expr::Base> { return Create::literal(a0); }, "", pybind11::arg("data"));
 	M("Create").def("literal", (class std::shared_ptr<const class Expr::Base> (*)(std::string, class std::shared_ptr<const struct Annotation::Vec>)) &Create::literal, "C++: Create::literal(std::string, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("data"), pybind11::arg("sp"));
 
-	// Create::literal(const double, class std::shared_ptr<const struct Annotation::Vec>) file: line:21
+	// Create::literal(const double, class std::shared_ptr<const struct Annotation::Vec>) file: line:20
 	M("Create").def("literal", [](const double & a0) -> std::shared_ptr<const class Expr::Base> { return Create::literal(a0); }, "", pybind11::arg("data"));
 	M("Create").def("literal", (class std::shared_ptr<const class Expr::Base> (*)(const double, class std::shared_ptr<const struct Annotation::Vec>)) &Create::literal, "C++: Create::literal(const double, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("data"), pybind11::arg("sp"));
 
-	// Create::literal(const float, class std::shared_ptr<const struct Annotation::Vec>) file: line:21
+	// Create::literal(const float, class std::shared_ptr<const struct Annotation::Vec>) file: line:20
 	M("Create").def("literal", [](const float & a0) -> std::shared_ptr<const class Expr::Base> { return Create::literal(a0); }, "", pybind11::arg("data"));
 	M("Create").def("literal", (class std::shared_ptr<const class Expr::Base> (*)(const float, class std::shared_ptr<const struct Annotation::Vec>)) &Create::literal, "C++: Create::literal(const float, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("data"), pybind11::arg("sp"));
 
-	// Create::literal(class std::shared_ptr<const struct PyObj::VS>, class std::shared_ptr<const struct Annotation::Vec>) file: line:27
+	// Create::literal(class std::shared_ptr<const struct PyObj::VS>, class std::shared_ptr<const struct Annotation::Vec>) file: line:25
 	M("Create").def("literal", [](class std::shared_ptr<const struct PyObj::VS> const & a0) -> std::shared_ptr<const class Expr::Base> { return Create::literal(a0); }, "", pybind11::arg("data"));
 	M("Create").def("literal", (class std::shared_ptr<const class Expr::Base> (*)(class std::shared_ptr<const struct PyObj::VS>, class std::shared_ptr<const struct Annotation::Vec>)) &Create::literal, "C++: Create::literal(class std::shared_ptr<const struct PyObj::VS>, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("data"), pybind11::arg("sp"));
 
-	// Create::literal(const unsigned char, class std::shared_ptr<const struct Annotation::Vec>) file: line:21
+	// Create::literal(const unsigned char, class std::shared_ptr<const struct Annotation::Vec>) file: line:20
 	M("Create").def("literal", [](const unsigned char & a0) -> std::shared_ptr<const class Expr::Base> { return Create::literal(a0); }, "", pybind11::arg("data"));
 	M("Create").def("literal", (class std::shared_ptr<const class Expr::Base> (*)(const unsigned char, class std::shared_ptr<const struct Annotation::Vec>)) &Create::literal, "C++: Create::literal(const unsigned char, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("data"), pybind11::arg("sp"));
 
-	// Create::literal(const unsigned short, class std::shared_ptr<const struct Annotation::Vec>) file: line:21
+	// Create::literal(const unsigned short, class std::shared_ptr<const struct Annotation::Vec>) file: line:20
 	M("Create").def("literal", [](const unsigned short & a0) -> std::shared_ptr<const class Expr::Base> { return Create::literal(a0); }, "", pybind11::arg("data"));
 	M("Create").def("literal", (class std::shared_ptr<const class Expr::Base> (*)(const unsigned short, class std::shared_ptr<const struct Annotation::Vec>)) &Create::literal, "C++: Create::literal(const unsigned short, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("data"), pybind11::arg("sp"));
 
-	// Create::literal(const unsigned int, class std::shared_ptr<const struct Annotation::Vec>) file: line:21
+	// Create::literal(const unsigned int, class std::shared_ptr<const struct Annotation::Vec>) file: line:20
 	M("Create").def("literal", [](const unsigned int & a0) -> std::shared_ptr<const class Expr::Base> { return Create::literal(a0); }, "", pybind11::arg("data"));
 	M("Create").def("literal", (class std::shared_ptr<const class Expr::Base> (*)(const unsigned int, class std::shared_ptr<const struct Annotation::Vec>)) &Create::literal, "C++: Create::literal(const unsigned int, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("data"), pybind11::arg("sp"));
 
-	// Create::literal(const unsigned long long, class std::shared_ptr<const struct Annotation::Vec>) file: line:21
+	// Create::literal(const unsigned long long, class std::shared_ptr<const struct Annotation::Vec>) file: line:20
 	M("Create").def("literal", [](const unsigned long long & a0) -> std::shared_ptr<const class Expr::Base> { return Create::literal(a0); }, "", pybind11::arg("data"));
 	M("Create").def("literal", (class std::shared_ptr<const class Expr::Base> (*)(const unsigned long long, class std::shared_ptr<const struct Annotation::Vec>)) &Create::literal, "C++: Create::literal(const unsigned long long, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("data"), pybind11::arg("sp"));
 
-	// Create::literal(struct BigInt, class std::shared_ptr<const struct Annotation::Vec>) file: line:27
+	// Create::literal(struct BigInt, class std::shared_ptr<const struct Annotation::Vec>) file: line:25
 	M("Create").def("literal", [](struct BigInt const & a0) -> std::shared_ptr<const class Expr::Base> { return Create::literal(a0); }, "", pybind11::arg("data"));
 	M("Create").def("literal", (class std::shared_ptr<const class Expr::Base> (*)(struct BigInt, class std::shared_ptr<const struct Annotation::Vec>)) &Create::literal, "C++: Create::literal(struct BigInt, class std::shared_ptr<const struct Annotation::Vec>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("data"), pybind11::arg("sp"));
 

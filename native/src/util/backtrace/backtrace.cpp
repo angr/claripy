@@ -34,7 +34,8 @@ void Util::Backtrace::backward(std::ostream &o, const unsigned ignore_frames,
 #ifdef ENABLE_ANSI_COLOR_CODES
         ::backward::ColorMode::always;
 #else
-        ::backward::ColorMode::automatic;
+        //    ::backward::ColorMode::automatic;
+        ::backward::ColorMode::never;
 #endif
     // Output
     p.print(st, o);
