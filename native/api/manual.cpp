@@ -4,6 +4,7 @@
  */
 #include "manual.hpp"
 
+#include "backtrace.hpp"
 #include "exceptions.hpp"
 #include "log.hpp"
 #include "signal_handler.hpp"
@@ -21,6 +22,7 @@ void API::bind_manual(pybind11::module_ &root_module, Binder::ModuleGetter &m) {
     register_at_exit([]() noexcept { slog("C++/python decoupled; finalizers now safe to run"); });
     // Custom bindings
     exceptions(root_module);
+    backtrace(m);
     simplify(m);
     signal_handler(m);
     logger(m);

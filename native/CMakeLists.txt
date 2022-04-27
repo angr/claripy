@@ -539,10 +539,6 @@ add_subdirectory("${CLARICPP_SRC}")
 
 # Backtrace config
 add_backward("${CLARICPP}" TRUE)
-if (NOT SOURCE_ROOT_FOR_BACKTRACE STREQUAL "")
-	message(STATUS "Backtrace generators will look for source files in: ${SOURCE_ROOT_FOR_BACKTRACE}")
-	target_compile_definitions("${CLARICPP}" PUBLIC "SOURCE_ROOT_FOR_BACKTRACE=\"${SOURCE_ROOT_FOR_BACKTRACE}\"")
-endif()
 
 # Z3 config
 target_include_directories("${CLARICPP}"

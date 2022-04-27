@@ -6,7 +6,7 @@
 #ifndef R_SRC_UTIL_BACKTRACE_LAZY_HPP_
 #define R_SRC_UTIL_BACKTRACE_LAZY_HPP_
 
-#include "constants.hpp"
+#include "backtrace.hpp"
 
 #include "../fallback_error_log.hpp"
 
@@ -23,27 +23,17 @@ namespace Util::Backtrace {
         /** For brevity */
         using Ptr = std::shared_ptr<const Lazy>;
         /** Generate and store an unevaluated backtrace */
-        [[nodiscard]] static inline Ptr create(GeneratorFunc *const gen,
-                                               const uint16_t ignore_frames,
+        [[nodiscard]] static inline Ptr create(const uint16_t ignore_frames,
                                                const int16_t max_frames = 0x1000) noexcept {
             try {
-                if (LIKELY(gen)) {
-                    std::ostringstream o;
-                    gen(o, static_cast<uint32_t>(ignore_frames) + 1, max_frames);
-                    return Ptr { new Lazy { std::move(o) } }; // no make_shared b/c priv ctor
-                }
-                UTIL_NEW_FALLBACK_ERROR_LOG(
-                    "Failed to generate trace because generator function pointer is null");
+                std::ostringstream o;
+                backward(o, static_cast<uint32_t>(ignore_frames) + 1, max_frames);
+                return Ptr { new Lazy { std::move(o) } }; // no make_shared b/c priv ctor
             }
-            catch (std::exception &e) {
-                UTIL_NEW_FALLBACK_ERROR_LOG("Failed to generate trace because: ", e.what());
-            }
-            catch (...) {
-                UTIL_NEW_FALLBACK_ERROR_LOG("Failed to generate trace because"
-                                            "a non-exception exception was thrown");
-            }
+            UTIL_FALLBACKLOG_CATCH("failed");
             return {};
         }
+
         /** As string */
         inline std::string str() const {
             if (std::holds_alternative<std::ostringstream>(o)) {

@@ -27,7 +27,8 @@ target_sources(clari PRIVATE
     signal_handler.cpp
     py_shim_code.cpp
     exceptions.cpp
-    simplify.cpp
+	backtrace.cpp
+	simplify.cpp
     manual.cpp
     log.cpp
 )

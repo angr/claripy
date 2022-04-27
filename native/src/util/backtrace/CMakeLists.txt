@@ -1,5 +1,5 @@
 # Add current directory's source files
 target_sources("${CLARICPP}" PRIVATE
-    backward.cpp
-    native.cpp
+    handle_signals.cpp
+    backtrace.cpp
 )

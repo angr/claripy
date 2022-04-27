@@ -35,8 +35,6 @@ namespace Util::Err {
     class Claricpp : public std::exception {
         /** Allow all error factories friend access */
         template <typename T, typename S> friend T factory(const S msg);
-        /** Backtrace generator function */
-        static inline constexpr auto &generator { ::Util::Backtrace::backward };
 
       public:
         /** Backtrace holder type */

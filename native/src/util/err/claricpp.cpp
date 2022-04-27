@@ -42,7 +42,7 @@ void Util::Err::Claricpp::warn_backtrace_slow() noexcept {
 }
 
 void Util::Err::Claricpp::save_backtrace() noexcept try {
-    backtraces.emplace_front(LazyTrace::create(generator, frame_offset));
+    backtraces.emplace_front(LazyTrace::create(frame_offset));
     if (backtraces.size() > n_backtraces) {
         backtraces.pop_back();
     }
