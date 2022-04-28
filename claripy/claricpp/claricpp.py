@@ -1,3 +1,4 @@
+import weakref
 from enum import Enum
 import functools
 import logging
@@ -15,7 +16,14 @@ log = logging.getLogger(__name__)
 claricpp_debug = "CLARICPP_DEBUG" in os.environ
 
 
-### Init Claricpp and Claripy link
+# TODO: remove clari.Create.foo from callbacks (dict lookups are costly)
+
+##################################################
+###         Link Claricpp and Claripy          ###
+##################################################
+
+
+### Logging
 
 
 def _init_logging():
@@ -78,76 +86,130 @@ clari.py_err._internal.Base.__init__ = _cls_init
 del _cls_init  # Cleanup
 
 
-### Operators ###
+### Defaults
 
 
-# Fixes
-# TODO: make this work for instance variables clari.Expr.Base.args = clari.Expr.Base.python_children
+clari.Mode.FP.Rounding.default = lambda: clari.Mode.FP.Rounding.NearestTiesEven
 
-# Define repr
+
+##################################################
+###                 Operators                  ###
+##################################################
+# TODO: reverse operators __radd__ etc
+
+
+### Fixes
+
+# Equality (bindings default to pointer equality)
+clari.Expr.Base.__eq__ = lambda a, b: clari.Create.eq(a, b)
+clari.Expr.Base.__ne__ = lambda a, b: clari.Create.neq(a, b)
+
+# Hashing
+clari.Annotation.Base.__hash__ = lambda x: x.hash
+clari.Annotation.Vec.__hash__ = lambda x: x.hash
+clari.Expr.Base.__hash__ = lambda x: x.hash
+clari.Op.Base.__hash__ = lambda x: x.hash
+
+# repr (ignore pybind11 defaults)
 clari.Annotation.Base.__repr__ = clari.Annotation.Base.repr
 clari.Annotation.Vec.__repr__ = clari.Annotation.Vec.repr
 clari.Expr.Base.__repr__ = clari.Expr.Base.repr
 clari.Op.Base.__repr__ = clari.Op.Base.repr
 
-# Fix hashing
-r_hash = lambda x: x.hash
-clari.Annotation.Base.__hash__ = r_hash
-clari.Annotation.Vec.__hash__ = r_hash
-clari.Expr.Base.__hash__ = r_hash
-clari.Op.Base.__hash__ = r_hash
-del r_hash
+### Base
 
-# Equality
-clari.Expr.Base.__eq__ = lambda a, b: clari.Create.eq(a, b)
-clari.Expr.Base.__ne__ = lambda a, b: clari.Create.neq(a, b)
+# TODO: ask fish __sizeof__ base.py # z3 backend uses getsizeof
+# TODO: ask fish __reduce__ base.py
+clari.Expr.Base.__pos__ = lambda x: x # TODO: ask fish
 
-# Define new operators
+### Bits
+
+clari.Expr.Bits.__len__ = lambda x: x.bit_length
+
+### Bool
+
+clari.Expr.Bool.__invert__ = lambda x: clari.Create.invert(x)
+clari.Expr.Bool.__not__ = lambda x: clari.Create.invert(x) # TODO: ask fish
+clari.Expr.Bool.__and__ = lambda x: clari.Create.and_(x)
+clari.Expr.Bool.__xor__ = lambda x: clari.Create.xor_(x) # TODO: ask fish
+clari.Expr.Bool.__or__ = lambda x: clari.Create.or_(x)
+
+### BV
 
 # Comparisons
-clari.Expr.Base.__le__ = lambda x, y: clari.Create.ule(x, y)
-clari.Expr.Base.__lt__ = lambda x, y: clari.Create.ult(x, y)
-clari.Expr.Base.__ge__ = lambda x, y: clari.Create.uge(x, y)
-clari.Expr.Base.__gt__ = lambda x, y: clari.Create.ugt(x, y)
+clari.Expr.BV.__le__ = lambda x, y: clari.Create.ule(x, y)
+clari.Expr.BV.__lt__ = lambda x, y: clari.Create.ult(x, y)
+clari.Expr.BV.__ge__ = lambda x, y: clari.Create.uge(x, y)
+clari.Expr.BV.__gt__ = lambda x, y: clari.Create.ugt(x, y)
+
+# Logical
+clari.Expr.BV.__invert__ = lambda x: clari.Create.invert(x)
+clari.Expr.BV.__and__ = lambda x: clari.Create.and_(x)
+clari.Expr.BV.__xor__ = lambda x: clari.Create.xor_(x)
+clari.Expr.BV.__or__ = lambda x: clari.Create.or_(x)
+
+# +, -, *, /
+clari.Expr.BV.__neg__ = lambda x: clari.Create.neg(x)
+clari.Expr.BV.__add__ = lambda *args: clari.Create.add(args)
+clari.Expr.BV.__mul__ = lambda *args: clari.Create.mul(args)
+clari.Expr.BV.__sub__ = lambda x, y: clari.Create.sub(x, y)
+clari.Expr.BV.__floordiv__ = lambda x, y: clari.Create.div(x, y)
+clari.Expr.BV.__truediv__ = clari.Expr.BV.__floordiv__ # TODO: get this removed (should be legacy)
+
+# Other
+clari.Expr.BV.__abs__ = lambda x: clari.Create.abs(x)
+clari.Expr.BV.__pow__ = lambda a, b: clari.Create.pow(a, b)
+clari.Expr.BV.__mod__ = lambda a, b: clari.Create.mod(a, b)
+clari.Expr.BV.__lshift__ = lambda a, b: clari.Create.shift_l(a, b)
+clari.Expr.BV.__rshift__ = lambda a, b: clari.Create.shift_arithmetic_right(a, b)
+
+### FP
+
+# Comparisons
 clari.Expr.FP.__le__ = lambda x, y: clari.Create.sle(x, y)
 clari.Expr.FP.__lt__ = lambda x, y: clari.Create.slt(x, y)
 clari.Expr.FP.__ge__ = lambda x, y: clari.Create.sge(x, y)
 clari.Expr.FP.__gt__ = lambda x, y: clari.Create.sgt(x, y)
 
-# Math
+# +, -, *, /
+rm = clari.Mode.FP.Rounding.default
+clari.Expr.FP.__neg__ = lambda x: clari.Create.neg(x)
+clari.Expr.FP.__add__ = lambda x, y: clari.Create.FP.add(x, y, rm)
+clari.Expr.FP.__sub__ = lambda x, y: clari.Create.FP.sub(x, y, rm)
+clari.Expr.FP.__mul__ = lambda x, y: clari.Create.FP.mul(x, y, rm)
+clari.Expr.FP.__truediv__ = lambda x, y: clari.Create.FP.div(x, y, rm)
+del rm
 
-#
+# Other
+clari.Expr.FP.__abs__ = lambda x: clari.Create.abs(x)
 
-# Base: +, -, *, /
-clari.Expr.Base.__pos__ = lambda x: x
-clari.Expr.Base.__add__ = lambda *args: clari.Create.add(args)
-clari.Expr.Base.__neg__ = lambda x: clari.Create.neg(x)
-clari.Expr.Base.__sub__ = lambda x, y: clari.Create.sub(x, y)
-clari.Expr.Base.__mul__ = lambda *args: clari.Create.mul(args)
-# TODO: div
+### String
 
-# Other: +, -, *, /
-# TODO: these are not all __x__ methods?
-# clari.Expr.FP.__add__ = lambda x,y: clari.Create.FP.add(x,y)
 clari.Expr.String.__add__ = lambda x, y: clari.Create.concat(x, y)
-# clari.Expr.FP.__sub__ = lambda x,y: clari.Create.FP.sub(x,y)
-# clari.Expr.FP.__mul__ = lambda x,y: clari.Create.FP.mul(x,y) TODO: rounding mode
-# clari.Expr.FP.__truediv__ = lambda x,y: clari.Create.FP.div(x,y) TODO: rounding mode
-# TODO: sub = concat???
 
-# TODO: div
-
-clari.Expr.Base.__invert__ = lambda x: clari.Create.invert(x)
+### Useful functions
 
 
-# Logical
 
-# TODO: make segfault handler optional
+### Legacy support
 
-# TODO: existing: format, new, reduce, reduce_ex, sizeof, str,
 
-# TODO: __not__, is, is_not
-# TODO: reverse operators?
+# Claricpp objects are generally readonly
+# This is a internal mapping from weak references to cached args
+clari.Expr.Base._args_dict = weakref.WeakKeyDictionary()
+
+# Define .args for claricpp objects
+def _args(self):
+    if self not in self._args_dict:
+        lst = self.op.python_children()
+        print(type(self.op))
+        if self.op.is_leaf:
+            lst.append(len(self))
+        self._args_dict[self] = tuple(lst)
+    return self._args_dict[self]
+clari.Expr.Base.args = property(_args)
+del _args
+
 
 
 if False:
