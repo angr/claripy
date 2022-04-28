@@ -32,6 +32,9 @@ namespace Op {
          */
         inline std::vector<ArgVar> python_children() const final { return { name }; }
 
+        /** Return true iff the op is a leaf op */
+        inline bool is_leaf() const noexcept final { return true; }
+
       private:
         /** A protected constructor to disallow public creation */
         explicit inline Symbol(const Hash::Hash &h, const std::string &n)

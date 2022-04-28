@@ -115,6 +115,11 @@ namespace Op {
             }
         }
 
+        /** Return true iff the op is a leaf op */
+        inline bool is_leaf() const noexcept final {
+            return true;
+        }
+
       private:
 #define M_P_CTOR(TYPE)                                                                             \
     /** Private constructor                                                                        \

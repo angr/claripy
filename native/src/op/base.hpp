@@ -35,7 +35,10 @@ namespace Op {
         virtual inline std::vector<ArgVar> python_children() const = 0;
 
         /** A python repr function analog */
-        virtual void repr_stream(std::ostream &o) const = 0;
+        virtual inline void repr_stream(std::ostream &o) const = 0;
+
+        /** Return true iff the op is a leaf op */
+        virtual inline bool is_leaf() const noexcept { return false; }
 
       protected:
         /** Protected constructor */
