@@ -174,6 +174,20 @@ class BV(Bits):
         result = ast.func_op(*args)
         return result
 
+    @staticmethod
+    def _from_MemoryLoad(like, ast):
+        args = []
+        for arg in ast.args:
+            arg_bv = arg
+            if not isinstance(arg, BV):
+                if hasattr(BV, '_from_' + type(arg).__name__):
+                    convert = getattr(BV, '_from_' + type(arg).__name__)
+                    arg_bv = convert(BV, arg)
+            args.append(arg_bv)
+
+        result = ast.func_op(*args)
+        return result
+
     def val_to_fp(self, sort, signed=True, rm=None):
         """
         Interpret this bitvector as an integer, and return the floating-point representation of that integer.

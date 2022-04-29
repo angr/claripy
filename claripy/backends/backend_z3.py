@@ -113,7 +113,8 @@ class BackendZ3(Backend):
         all_ops = backend_fp_operations | backend_operations
         all_ops |= backend_strings_operations - {'StrIsDigit'}
         all_ops |= {'FuncDecl'}
-        for o in all_ops - {'BVV', 'BoolV', 'FPV', 'FPS', 'BitVec', 'StringV', 'FuncDecl'}:
+        all_ops |= {'MemoryLoad'}
+        for o in all_ops - {'BVV', 'BoolV', 'FPV', 'FPS', 'BitVec', 'StringV', 'FuncDecl', 'MemoryLoad'}:
             self._op_raw[o] = getattr(self, '_op_raw_' + o)
         self._op_raw['Xor'] = self._op_raw_Xor
 
@@ -135,6 +136,7 @@ class BackendZ3(Backend):
         self._op_expr['StringV'] = self.StringV
         self._op_expr['StringS'] = self.StringS
         self._op_expr['FuncDecl'] = self.FuncDecl
+        self._op_expr['MemoryLoad'] = self.MemoryLoad
 
         self._op_raw['__floordiv__'] = self._op_div
         self._op_raw['__mod__'] = self._op_mod
@@ -345,6 +347,18 @@ class BackendZ3(Backend):
         func = z3.Function(func_name, *func_sig)
         func_result = func(*func_args_z3)
         return func_result
+
+    @condom
+    def MemoryLoad(self, ast):
+        func_name = ast.op
+        func_args = ast.args
+        func_args_z3 = self.convert_list(func_args)
+        func_sig = [arg.sort() for arg in func_args_z3]
+        func_sig.append(z3.BitVecSort(ast.length, self._context))
+        func = z3.Function(func_name, *func_sig)
+        func_result = func(*func_args_z3)
+        return func_result
+
     # Conversions
     #
 
@@ -465,6 +479,12 @@ class BackendZ3(Backend):
             if len(func_result.args) > 0 and symbol_str in str(func_result.args[0]):
                 func_result.args = func_result.args[1:]
             return func_result
+
+        elif op_name == 'UNINTERPRETED' and decl_name_str.decode() == 'MemoryLoad':
+            bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
+            MemoryLoad_decl = MemoryLoad(op='MemoryLoad', args=children, _ret_size=bv_size)
+            MemoryLoad_result = MemoryLoad_decl.op(*children)
+            return MemoryLoad_result
 
         elif op_name == 'UNINTERPRETED' and num_args == 0: # symbolic value
             symbol_name = _z3_decl_name_str(ctx, decl)
@@ -1512,7 +1532,7 @@ from ..ast.bv import BV, BVV
 from ..ast.bool import BoolV, Bool
 from ..ast.fp import FP, FPV
 from ..ast.strings import StringV, StringS
-from ..ast.func import Func
+from ..ast.func import Func, MemoryLoad
 from ..operations import backend_operations, backend_fp_operations, backend_strings_operations
 from ..fp import FSort, RM, RM_NearestTiesEven, RM_NearestTiesAwayFromZero, RM_TowardsPositiveInf, RM_TowardsNegativeInf, RM_TowardsZero
 from ..errors import ClaripyError, BackendError, ClaripyOperationError

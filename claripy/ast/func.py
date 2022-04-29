@@ -23,3 +23,9 @@ class Func(Base):
 
 
 #FUNC = operations.op('FUNC', BV, BV, bound=False)
+
+class MemoryLoad(Base):
+    def __init__(self,  *args, **kwargs):
+        self.ret_size = self._ret_size if self._ret_size is not None else 32
+        self.args = self.args
+        self.op = operations.op('MemoryLoad', BV, BV, bound=False, calc_length=lambda *a: self.ret_size)
