@@ -21,5 +21,6 @@
 #include "type/transfer_const.hpp"
 #include "type/unconstructable.hpp"
 #include "type/unique.hpp"
+#include "type/variant_index.hpp"
 
 #endif
