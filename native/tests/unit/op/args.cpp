@@ -12,7 +12,7 @@ static void test_op(const Op::BasePtr &op) {
     Util::Log::debug("Testing op: ", op->op_name());
 
     // Call functions
-    op->unsafe_add_reversed_children(stack);
+    Op::unsafe_add_reversed_children(*op, stack);
     const std::vector<Op::ArgVar> args { op->python_children() };
 
     // Filter args
