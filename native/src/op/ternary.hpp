@@ -10,11 +10,11 @@
 
 /** A macro used to define a trivial subclass of Ternary
  *  If ConsiderSize, sizes will be compared as well when type checking if applicable
- *  PREFIX and TARG are passed to OP_FINAL_INIT
+ *  PREFIX is passed to OP_FINAL_INIT
  */
-#define OP_TERNARY_TRIVIAL_SUBCLASS(CLASS, CONSIDERSIZE, PREFIX, TARG)                             \
+#define OP_TERNARY_TRIVIAL_SUBCLASS(CLASS, CONSIDERSIZE, PREFIX)                                   \
     class CLASS final : public ::Op::Ternary<(CONSIDERSIZE)> {                                     \
-        OP_FINAL_INIT(CLASS, PREFIX, TARG);                                                        \
+        OP_FINAL_INIT(CLASS, PREFIX);                                                              \
                                                                                                    \
       private:                                                                                     \
         /** Private constructor */                                                                 \

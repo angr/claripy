@@ -11,7 +11,7 @@
 #define M_BITS_SUBCLASS(CLASS)                                                                     \
     /** An Expr::Bits subclass */                                                                  \
     class CLASS final : public Bits {                                                              \
-        FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(::Expr::Base, 0)                                     \
+        FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(::Expr::Base)                                        \
       public:                                                                                      \
         /** Default destructor */                                                                  \
         inline ~CLASS() noexcept final = default;                                                  \
@@ -34,7 +34,7 @@ namespace Expr {
 
     /** An Expr::Base subclass representing a bool */
     class Bool final : public Base {
-        FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(::Expr::Base, 0)
+        FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(::Expr::Base)
       public:
         /** Default destructor */
         inline ~Bool() noexcept final = default;

@@ -12,7 +12,7 @@ namespace Op {
 
     /** The op class: Extract */
     class Extract final : public Base {
-        OP_FINAL_INIT(Extract, "", 0);
+        OP_FINAL_INIT(Extract, "");
 
       public:
         /** High index */

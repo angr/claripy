@@ -139,10 +139,11 @@ namespace Backend::Z3 {
             return ret;
         }
 
-        /** Abstraction function ofr various Z3 comparison ops */
-        template <Mode::Compare Mask> static Expr::BasePtr compare(const ArgsVec &args) {
+        /** Abstraction function for various Z3 comparison ops */
+        template <typename OpT> static Expr::BasePtr inequality(const ArgsVec &args) {
+            static_assert(std::is_base_of_v<Op::Inequality, OpT>, "Op must derive from inequality");
             M_ASSERT_ARG_LEN(args, 2);
-            return Create::compare<Mask>(M_GET_EARG(0), M_GET_EARG(1), { nullptr });
+            return Create::inequality<OpT>(M_GET_EARG(0), M_GET_EARG(1), { nullptr });
         }
 
         /**********************************************************/
@@ -207,17 +208,21 @@ namespace Backend::Z3 {
         /** Abstraction function for Z3_OP_BMUL */
         static Expr::BasePtr mul(const ArgsVec &args) { M_FLAT_BINARY(Create::mul); }
 
-        /** Abstraction function for z3 BV division */
-        template <Mode::Signed Sgn> static Expr::BasePtr div(const ArgsVec &args) {
-            M_BINARY(Create::div<Sgn>);
-        }
+        /** Abstraction function for signed z3 BV division */
+        static Expr::BasePtr div_signed(const ArgsVec &args) { M_BINARY(Create::div_signed); }
+
+        /** Abstraction function for unsigned z3 BV division */
+        static Expr::BasePtr div_unsigned(const ArgsVec &args) { M_BINARY(Create::div_unsigned); }
 
         /** Abstraction function for z3 BV remainder
          *  Note we use mod (because of the difference between C and Python % operators)
          */
-        template <Mode::Signed Sgn> static Expr::BasePtr rem(const ArgsVec &args) {
-            M_BINARY(Create::mod<Sgn>);
-        }
+        static Expr::BasePtr rem_signed(const ArgsVec &args) { M_BINARY(Create::mod_signed); }
+
+        /** Abstraction function for z3 BV remainder
+         *  Note we use mod (because of the difference between C and Python % operators)
+         */
+        static Expr::BasePtr rem_unsigned(const ArgsVec &args) { M_BINARY(Create::mod_unsigned); }
 
         /**********************************************************/
         /*                       Bit Vector                       */
@@ -285,13 +290,18 @@ namespace Backend::Z3 {
         // BV Bitwise
 
         /** Abstraction function for BV shifts */
-        template <Mode::Shift Mask> static Expr::BasePtr shift(const ArgsVec &args) {
-            M_BINARY(Create::shift<Mask>);
+        template <typename OpT> static Expr::BasePtr shift(const ArgsVec &args) {
+            M_BINARY(Create::shift<OpT>);
         }
 
-        /** Abstraction function for BV rotations */
-        template <Mode::LR LR> static Expr::BasePtr rotate(const ArgsVec &args) {
-            M_BINARY(Create::rotate<LR>);
+        /** Abstraction function for BV left rotations */
+        static Expr::BasePtr rotate_left(const ArgsVec &args) {
+            M_BINARY(Create::rotate_left);
+        }
+
+        /** Abstraction function for BV right rotations */
+        static Expr::BasePtr rotate_right(const ArgsVec &args) {
+            M_BINARY(Create::rotate_right);
         }
 
         // BV Misc
@@ -359,11 +369,17 @@ namespace Backend::Z3 {
 
             // Conversions
           public:
-            /** Abstraction function for Z3_OP_FPA_TO_SBV and Z3_OP_FPA_TO_UBV */
-            template <Mode::Signed Sgn>
-            static Expr::BasePtr to_bv(const ArgsVec &args, const z3::func_decl &decl) {
+            /** Abstraction function for Z3_OP_FPA_TO_SBV */
+            static Expr::BasePtr to_bv_signed(const ArgsVec &args, const z3::func_decl &decl) {
                 M_ASSERT_ARG_LEN(args, 2);
-                return Create::FP::to_bv<Sgn>(
+                return Create::FP::to_bv_signed(
+                    std::get<Mode::FP::Rounding>(args[0]), M_GET_EARG(1),
+                    static_cast<U64>(Z3_get_decl_int_parameter(decl.ctx(), decl, 0)), {});
+            }
+            /** Abstraction function for Z3_OP_FPA_TO_UBV */
+            static Expr::BasePtr to_bv_unsigned(const ArgsVec &args, const z3::func_decl &decl) {
+                M_ASSERT_ARG_LEN(args, 2);
+                return Create::FP::to_bv_unsigned(
                     std::get<Mode::FP::Rounding>(args[0]), M_GET_EARG(1),
                     static_cast<U64>(Z3_get_decl_int_parameter(decl.ctx(), decl, 0)), {});
             }

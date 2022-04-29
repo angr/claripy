@@ -104,11 +104,6 @@ namespace Backend::Z3 {
         return ret;                                                                                \
     }
 
-            // For brevity
-            using Cmp = Mode::Compare;
-            using Shift = Mode::Shift;
-            using Sgn = Mode::Signed;
-
             // Switch on expr type
             switch (expr->op->cuid) {
 
@@ -151,29 +146,29 @@ namespace Backend::Z3 {
 
                     M_BINARY_CASE(Neq, Conv::neq);
 
-                    M_BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::SGE);
-                    M_BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::SGT);
-                    M_BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::SLE);
-                    M_BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::SLT);
-                    M_BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::UGE);
-                    M_BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::UGT);
-                    M_BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::ULE);
-                    M_BINARY_TEMPLATE_CASE(Compare, Conv::template compare, Cmp::ULT);
+                    M_BINARY_CASE(SGE, Conv::sge);
+                    M_BINARY_CASE(SGT, Conv::sgt);
+                    M_BINARY_CASE(SLE, Conv::sle);
+                    M_BINARY_CASE(SLT, Conv::slt);
+                    M_BINARY_CASE(UGE, Conv::uge);
+                    M_BINARY_CASE(UGT, Conv::ugt);
+                    M_BINARY_CASE(ULE, Conv::ule);
+                    M_BINARY_CASE(ULT, Conv::ult);
 
                     M_BINARY_CASE(Sub, Conv::sub);
 
-                    M_BINARY_TEMPLATE_CASE(Div, Conv::template div, Sgn::Signed);
-                    M_BINARY_TEMPLATE_CASE(Div, Conv::template div, Sgn::Unsigned);
+                    M_BINARY_CASE(DivSigned, Conv::div_signed);
+                    M_BINARY_CASE(DivUnsigned, Conv::div_unsigned);
 
-                    M_BINARY_TEMPLATE_CASE(Mod, Conv::template mod, Sgn::Signed);
-                    M_BINARY_TEMPLATE_CASE(Mod, Conv::template mod, Sgn::Unsigned);
+                    M_BINARY_CASE(ModSigned, Conv::mod_signed);
+                    M_BINARY_CASE(ModUnsigned, Conv::mod_unsigned);
 
-                    M_BINARY_TEMPLATE_CASE(Shift, Conv::template shift, Shift::Left);
-                    M_BINARY_TEMPLATE_CASE(Shift, Conv::template shift, Shift::ArithmeticRight);
-                    M_BINARY_TEMPLATE_CASE(Shift, Conv::template shift, Shift::LogicalRight);
+                    M_BINARY_CASE(ShiftLeft, Conv::shift_left);
+                    M_BINARY_CASE(ShiftLogicalRight, Conv::shift_logical_right);
+                    M_BINARY_CASE(ShiftArithmeticRight, Conv::shift_arithmetic_right);
 
-                    M_BINARY_TEMPLATE_CASE(Rotate, Conv::template rotate, Mode::LR::Left);
-                    M_BINARY_TEMPLATE_CASE(Rotate, Conv::template rotate, Mode::LR::Right);
+                    M_BINARY_CASE(RotateLeft, Conv::rotate_left);
+                    M_BINARY_CASE(RotateRight, Conv::rotate_right);
 
                     M_BINARY_CASE(Concat, Conv::concat);
 
@@ -221,35 +216,33 @@ namespace Backend::Z3 {
 
                     // Other
 
-#define M_TO_BV_CASE(TF)                                                                           \
-    case Op::FP::ToBV<TF>::static_cuid: {                                                          \
+#define M_TO_BV_CASE(OPT, FUNC)                                                                    \
+    case Op::FP::OPT::static_cuid: {                                                               \
         debug_assert_dcast<Expr::Bits>(expr, "FP::ToBV has no length");                            \
-        using ToBV = CTSC<Op::FP::ToBV<TF>>;                                                       \
+        using ToBV = CTSC<Op::FP::OPT>;                                                            \
         check_vec_usage(args, 1);                                                                  \
-        auto ret { Conv::FP::template to_bv<TF>(                                                   \
-            Util::checked_static_cast<ToBV>(expr->op.get())->mode, *args.back(),                   \
-            Expr::get_bit_length(expr)) };                                                         \
+        auto ret { Conv::FP::FUNC(Util::checked_static_cast<ToBV>(expr->op.get())->mode,           \
+                                  *args.back(), Expr::get_bit_length(expr)) };                     \
         args.pop_back();                                                                           \
         return ret;                                                                                \
     }
                     // ToBV
-                    M_TO_BV_CASE(Sgn::Signed);
-                    M_TO_BV_CASE(Sgn::Unsigned);
+                    M_TO_BV_CASE(ToBVSigned, to_bv_signed);
+                    M_TO_BV_CASE(ToBVUnsigned, to_bv_unsigned);
 #undef M_TO_BV_CASE
 
-#define M_FROM_2CBV_CASE(TF)                                                                       \
-    case Op::FP::From2sComplementBV<TF>::static_cuid: {                                            \
+#define M_FROM_2CBV_CASE(OPT, FUNC)                                                                \
+    case Op::FP::OPT::static_cuid: {                                                               \
         check_vec_usage(args, 1);                                                                  \
-        using OpT = CTSC<Op::FP::From2sComplementBV<TF>>;                                          \
+        using OpT = CTSC<Op::FP::OPT>;                                                             \
         const OpT cast_op { Util::checked_static_cast<OpT>(expr->op.get()) };                      \
-        auto ret { Conv::FP::template from_2s_complement_bv<TF>(cast_op->mode, *args.back(),       \
-                                                                cast_op->width) };                 \
+        auto ret { Conv::FP::FUNC(cast_op->mode, *args.back(), cast_op->width) };                  \
         args.pop_back();                                                                           \
         return ret;                                                                                \
     }
                     // From2sComplementBV
-                    M_FROM_2CBV_CASE(Sgn::Signed);
-                    M_FROM_2CBV_CASE(Sgn::Unsigned);
+                    M_FROM_2CBV_CASE(From2sComplementBVSigned, from_2s_complement_bv_signed);
+                    M_FROM_2CBV_CASE(From2sComplementBVUnsigned, from_2s_complement_bv_unsigned);
 #undef M_FROM_2CBV_CASE
 
                     // FromFP
@@ -326,12 +319,7 @@ namespace Backend::Z3 {
         dispatch_abstraction(const z3::expr &b_obj,
                              std::vector<typename Z3::AbstractionVariant> &args,
                              SymAnTransData &satd) {
-
-            // For brevity
-            using C = Mode::Compare;
-            using Shift = Mode::Shift;
             using Sign = Mode::Sign::FP;
-            using Sgnd = Mode::Signed;
 
             // Get switching variables
             const auto decl { b_obj.decl() };
@@ -386,21 +374,21 @@ namespace Backend::Z3 {
 
                     // Comparisons
                 case Z3_OP_ULEQ:
-                    return Abs::template compare<C::ULE>(args);
+                    return Abs::template inequality<Op::ULE>(args);
                 case Z3_OP_SLEQ:
-                    return Abs::template compare<C::SLE>(args);
+                    return Abs::template inequality<Op::SLE>(args);
                 case Z3_OP_UGEQ:
-                    return Abs::template compare<C::UGE>(args);
+                    return Abs::template inequality<Op::UGE>(args);
                 case Z3_OP_SGEQ:
-                    return Abs::template compare<C::SGE>(args);
+                    return Abs::template inequality<Op::SGE>(args);
                 case Z3_OP_ULT:
-                    return Abs::template compare<C::ULT>(args);
+                    return Abs::template inequality<Op::ULT>(args);
                 case Z3_OP_SLT:
-                    return Abs::template compare<C::SLT>(args);
+                    return Abs::template inequality<Op::SLT>(args);
                 case Z3_OP_UGT:
-                    return Abs::template compare<C::UGT>(args);
+                    return Abs::template inequality<Op::UGT>(args);
                 case Z3_OP_SGT:
-                    return Abs::template compare<C::SGT>(args);
+                    return Abs::template inequality<Op::SGT>(args);
 
                     // Bit-vectors
                 case Z3_OP_BNUM:
@@ -418,18 +406,18 @@ namespace Backend::Z3 {
                     // BV Arithmetic
                 case Z3_OP_BSDIV: // fallthrough
                 case Z3_OP_BSDIV_I:
-                    return Abs::template div<Sgnd::Signed>(args);
+                    return Abs::div_signed(args);
                 case Z3_OP_BUDIV: // fallthrough:
                 case Z3_OP_BUDIV_I:
-                    return Abs::template div<Sgnd::Unsigned>(args);
+                    return Abs::div_unsigned(args);
                 case Z3_OP_BSMOD:   // fallthrough
                 case Z3_OP_BSREM:   // fallthrough
                 case Z3_OP_BSMOD_I: // fallthrough
                 case Z3_OP_BSREM_I:
-                    return Abs::template rem<Sgnd::Signed>(args);
+                    return Abs::rem_signed(args);
                 case Z3_OP_BUREM: // fallthrough
                 case Z3_OP_BUREM_I:
-                    return Abs::template rem<Sgnd::Unsigned>(args);
+                    return Abs::rem_unsigned(args);
 
                     // BV Logic
                 case Z3_OP_BAND:
@@ -443,15 +431,15 @@ namespace Backend::Z3 {
 
                     // BV Bitwise Ops
                 case Z3_OP_BSHL:
-                    return Abs::template shift<Shift::Left>(args);
+                    return Abs::template shift<Op::ShiftLeft>(args);
                 case Z3_OP_BASHR:
-                    return Abs::template shift<Shift::ArithmeticRight>(args);
+                    return Abs::template shift<Op::ShiftArithmeticRight>(args);
                 case Z3_OP_BLSHR:
-                    return Abs::template shift<Shift::LogicalRight>(args);
+                    return Abs::template shift<Op::ShiftLogicalRight>(args);
                 case Z3_OP_EXT_ROTATE_LEFT:
-                    return Abs::template rotate<Mode::LR::Left>(args);
+                    return Abs::rotate_left(args);
                 case Z3_OP_EXT_ROTATE_RIGHT:
-                    return Abs::template rotate<Mode::LR::Right>(args);
+                    return Abs::rotate_right(args);
 
                     // BV Misc
                 case Z3_OP_CONCAT:
@@ -465,9 +453,9 @@ namespace Backend::Z3 {
 
                     // FP Conversions
                 case Z3_OP_FPA_TO_SBV:
-                    return Abs::FP::template to_bv<Sgnd::Signed>(args, decl);
+                    return Abs::FP::to_bv_signed(args, decl);
                 case Z3_OP_FPA_TO_UBV:
-                    return Abs::FP::template to_bv<Sgnd::Unsigned>(args, decl);
+                    return Abs::FP::to_bv_unsigned(args, decl);
                 case Z3_OP_FPA_TO_IEEE_BV:
                     return Abs::FP::to_ieee_bv(args);
                 case Z3_OP_FPA_TO_FP:
@@ -496,13 +484,13 @@ namespace Backend::Z3 {
                 case Z3_OP_FPA_EQ:
                     return Abs::eq(args);
                 case Z3_OP_FPA_GT:
-                    return Abs::template compare<C::SGT>(args);
+                    return Abs::template inequality<Op::SGT>(args);
                 case Z3_OP_FPA_GE:
-                    return Abs::template compare<C::SGE>(args);
+                    return Abs::template inequality<Op::SGE>(args);
                 case Z3_OP_FPA_LT:
-                    return Abs::template compare<C::SLT>(args);
+                    return Abs::template inequality<Op::SLT>(args);
                 case Z3_OP_FPA_LE:
-                    return Abs::template compare<C::SLE>(args);
+                    return Abs::template inequality<Op::SLE>(args);
 
                     // FP Arithmetic
                 case Z3_OP_FPA_ABS:

@@ -34,7 +34,6 @@ static void min_max_test(UnitTest::Friend::ShimZ3 &z3) {
 
     // For brevity
     namespace C = Create;
-    using M = Mode::Compare;
     namespace E = Expr; // NOLINT (false positive)
     using EC = std::vector<E::RawPtr>;
 
@@ -49,9 +48,9 @@ static void min_max_test(UnitTest::Friend::ShimZ3 &z3) {
     const auto neq { [&x, &unsign](const T y) { return C::neq(x, C::literal(unsign(y))); } };
 
     // Exprs
-    const auto xleq10 { C::compare < Signed ? M::SLT : M::ULT > (x, num(10), {}) };
-    const auto xleq5 { C::compare < Signed ? M::SLT : M::ULT > (x, num(5), {}) };
-    const auto xgeq5 { C::compare < Signed ? M::SGT : M::UGT > (x, num(5), {}) };
+    const auto xleq10 { (Signed ? C::slt : C::ult)(x, num(10), {}) };
+    const auto xleq5 { (Signed ? C::slt : C::ult)(x, num(5), {}) };
+    const auto xgeq5 { (Signed ? C::sgt : C::ugt)(x, num(5), {}) };
 
     const auto plus1 { C::and_({ xleq5, neq(int_min) }) };
     const auto plus2 { C::and_({ xleq5, neq(int_min), neq(int_min + 1) }) };

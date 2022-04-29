@@ -12,8 +12,8 @@
 namespace Op::FP {
 
     /** The op class: Which converts a 2s complement BV into an FP */
-    template <Mode::Signed Sgn> class From2sComplementBV final : public Base {
-        OP_FINAL_INIT(From2sComplementBV, "FP::", Sgn);
+    class From2sComplementBV : public Base {
+        OP_PURE_INIT(From2sComplementBV);
 
       public:
         /** The FP mode */
@@ -36,21 +36,48 @@ namespace Op::FP {
          */
         inline std::vector<ArgVar> python_children() const final { return { mode, bv, width }; }
 
-      private:
-        /** Private constructor
+      protected:
+        /** Protected constructor
          *  Ensure that bv is a BV
          */
-        explicit inline From2sComplementBV(const Hash::Hash &h, const Mode::FP::Rounding m,
-                                           const Expr::BasePtr &b, const Mode::FP::Width w)
-            : Base { h, static_cuid }, mode { m }, bv { b }, width { w } {
+        explicit inline From2sComplementBV(const Hash::Hash &h, const CUID::CUID &cuid_,
+                                           const Mode::FP::Rounding m, const Expr::BasePtr &b,
+                                           const Mode::FP::Width w)
+            : Base { h, cuid_ }, mode { m }, bv { b }, width { w } {
             UTIL_ASSERT(Error::Expr::Type, CUID::is_t<Expr::BV>(bv),
                         "Operand fp must be an Expr::BV");
         }
 
+      private:
         /** Adds the raw expr children of the expr to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
         inline void unsafe_add_reversed_children(Stack &s) const final { s.emplace(bv.get()); }
+    };
+
+    /** Default virtual dtor */
+    inline From2sComplementBV::~From2sComplementBV() noexcept = default;
+
+    /** The op class: Which converts a signed 2s complement BV into an FP */
+    class From2sComplementBVSigned final : public From2sComplementBV {
+        OP_FINAL_INIT(From2sComplementBVSigned, "FP::");
+
+      private:
+        /** Private constructor */
+        explicit inline From2sComplementBVSigned(const Hash::Hash &h, const Mode::FP::Rounding m,
+                                                 const Expr::BasePtr &b, const Mode::FP::Width w)
+            : From2sComplementBV { h, static_cuid, m, b, w } {}
+    };
+
+    /** The op class: Which converts a signed 2s complement BV into an FP */
+    class From2sComplementBVUnsigned final : public From2sComplementBV {
+        OP_FINAL_INIT(From2sComplementBVUnsigned, "FP::");
+
+      private:
+        /** Private constructor */
+        explicit inline From2sComplementBVUnsigned(const Hash::Hash &h, const Mode::FP::Rounding m,
+                                                   const Expr::BasePtr &b, const Mode::FP::Width w)
+            : From2sComplementBV { h, static_cuid, m, b, w } {}
     };
 
 } // namespace Op::FP

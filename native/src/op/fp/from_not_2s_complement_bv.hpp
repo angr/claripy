@@ -13,7 +13,7 @@ namespace Op::FP {
 
     /** The op class which converts a non-2s-complement BV into an FP */
     class FromNot2sComplementBV final : public Base {
-        OP_FINAL_INIT(FromNot2sComplementBV, "FP::", 0);
+        OP_FINAL_INIT(FromNot2sComplementBV, "FP::");
 
       public:
         /** The expr to convert */

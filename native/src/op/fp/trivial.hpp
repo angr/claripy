@@ -19,7 +19,7 @@ namespace Op::FP {
     /**********************************************************/
 
     /** The unary fp op class: FP::ToIEEEBV */
-    OP_UNARY_TRIVIAL_SUBCLASS(ToIEEEBV, "FP::", 0);
+    OP_UNARY_TRIVIAL_SUBCLASS(ToIEEEBV, "FP::");
 
     /**********************************************************/
     /*               FP Mode Binary Subclasses                */
@@ -28,22 +28,22 @@ namespace Op::FP {
     /** The op class: FP::Add
      *  Input sizes may not differ
      */
-    OP_FP_MODEBINARY_TRIVIAL_SUBCLASS(Add, "FP::", 0);
+    OP_FP_MODEBINARY_TRIVIAL_SUBCLASS(Add, "FP::");
 
     /** The op class: FP::Sub
      *  Input sizes may not differ
      */
-    OP_FP_MODEBINARY_TRIVIAL_SUBCLASS(Sub, "FP::", 0);
+    OP_FP_MODEBINARY_TRIVIAL_SUBCLASS(Sub, "FP::");
 
     /** The op class: FP::Mul
      *  Input sizes may not differ
      */
-    OP_FP_MODEBINARY_TRIVIAL_SUBCLASS(Mul, "FP::", 0);
+    OP_FP_MODEBINARY_TRIVIAL_SUBCLASS(Mul, "FP::");
 
     /** The op class: FP::Div
      *  Input sizes may not differ
      */
-    OP_FP_MODEBINARY_TRIVIAL_SUBCLASS(Div, "FP::", 0);
+    OP_FP_MODEBINARY_TRIVIAL_SUBCLASS(Div, "FP::");
 
     /**********************************************************/
     /*                   Ternary Subclasses                   */
@@ -52,7 +52,7 @@ namespace Op::FP {
     /** The ternary op class: FP::FP
      *  Input sizes may differ
      */
-    OP_TERNARY_TRIVIAL_SUBCLASS(FP, false, "FP::", 0);
+    OP_TERNARY_TRIVIAL_SUBCLASS(FP, false, "FP::");
 
 } // namespace Op::FP
 

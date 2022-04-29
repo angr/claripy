@@ -18,12 +18,12 @@
  *  BASE is the same base class as factory's template Base argument
  *  Factory made subclasses that want to be directly constructed by factory must define this
  *  Leaves class in a private access state
- *  X can be any int, but must be different between different templates of the same class
- *  For example, Foo<int> must give a different X than Foo<bool> gives
+ *  Do *NOT* template BASE. CUID's are generated based on line number thus Base<0>
+ *  and Base<4> are defined on the same line and thus would have identical class unique IDs
  */
-#define FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(BASE, X)                                             \
+#define FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(BASE)                                                \
     /* The CUID does not need to be used in non-instantiated classes */                            \
-    CUID_DEFINE_MAYBE_UNUSED(X)                                                                    \
+    CUID_DEFINE_MAYBE_UNUSED                                                                       \
   private:                                                                                         \
     /** Allow verification to have friend access */                                                \
     friend struct ::Util::Type::Has::constructor_class;                                            \

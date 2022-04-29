@@ -12,7 +12,7 @@ namespace Op::String {
 
     /** The op class: String::SubString */
     class SubString final : public Base {
-        OP_FINAL_INIT(SubString, "String::", 0);
+        OP_FINAL_INIT(SubString, "String::");
 
       public:
         /** The start index of the substring stored as a BV

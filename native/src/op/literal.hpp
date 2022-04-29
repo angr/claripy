@@ -16,7 +16,7 @@ namespace Op {
 
     /** The op class Literal */
     class Literal final : public Base {
-        OP_FINAL_INIT(Literal, "", 0);
+        OP_FINAL_INIT(Literal, "");
 
       public:
         /** Representation */

@@ -22,14 +22,18 @@ template <Mode::Signed Sgn> void from_2s_complement_bv_v() {
         "This is not a test failure; but rather the test function itself needs to be fixed");
 
     // Test
-    const auto exp { Create::FP::from_2s_complement_bv<Sgn>(mode, bv, Mode::FP::dbl, { nullptr }) };
+    const auto exp { (Sgn == Mode::Signed::Signed ? Create::FP::from_2s_complement_bv_signed
+                                                  : Create::FP::from_2s_complement_bv_unsigned)(
+        mode, bv, Mode::FP::dbl, { nullptr }) };
 
     // Pointer checks
     UNITTEST_ASSERT(bv.use_count() == 2);
     UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check
-    const auto op_down { dcast<Op::FP::From2sComplementBV<Sgn>>(exp->op) };
+    using To = std::conditional_t<Sgn == Mode::Signed::Signed, Op::FP::From2sComplementBVSigned,
+                                  Op::FP::From2sComplementBVUnsigned>;
+    const auto op_down { dcast<To>(exp->op) };
     const auto exp_down { dcast<Expr::FP>(exp) };
 
     // Contains check

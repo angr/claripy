@@ -11,21 +11,37 @@
 #include "../error.hpp"
 
 
-/** A macro used to define a trivial subclass of Binary
+/** A macro used to define a trivial descendant of Binary
  *  If ConsiderSize, sizes will be compared as well when type checking if applicable
- *  PREFIX and TARG are passed to OP_FINAL_INIT
+ *  PREFIX is passed to OP_FINAL_INIT
+ *  May not be templated
  */
-#define OP_BINARY_TRIVIAL_SUBCLASS(CLASS, CONSIDERSIZE, PREFIX, TARG)                              \
-    class CLASS final : public ::Op::Binary<(CONSIDERSIZE)> {                                      \
-        OP_FINAL_INIT(CLASS, PREFIX, TARG);                                                        \
+#define OP_BINARY_TRIVIAL_FINAL_DESCENDANT(CLASS, SUPER, PREFIX)                                   \
+    class CLASS final : public ::Op::SUPER {                                                       \
+        OP_FINAL_INIT(CLASS, PREFIX);                                                              \
                                                                                                    \
       private:                                                                                     \
         /** Private constructor */                                                                 \
         explicit inline CLASS(const ::Hash::Hash &h, const ::Expr::BasePtr &l,                     \
                               const ::Expr::BasePtr &r)                                            \
-            : Binary { h, static_cuid, l, r } {}                                                   \
+            : SUPER { h, static_cuid, l, r } {}                                                    \
     };
 
+/** A macro used to define a trivial pure subclass of Binary
+ *  If ConsiderSize, sizes will be compared as well when type checking if applicable
+ */
+#define OP_BINARY_TRIVIAL_PURE_SUBCLASS(CLASS, CONSIDERSIZE)                                       \
+    class CLASS : public ::Op::Binary<(CONSIDERSIZE)> {                                            \
+        OP_PURE_INIT(CLASS);                                                                       \
+                                                                                                   \
+      protected:                                                                                   \
+        /** Protected constructor */                                                               \
+        explicit inline CLASS(const ::Hash::Hash &h, const CUID::CUID &cuid_,                      \
+                              const ::Expr::BasePtr &l, const ::Expr::BasePtr &r)                  \
+            : Binary { h, cuid_, l, r } {}                                                         \
+    };                                                                                             \
+    /** Default virtual destructor */                                                              \
+    inline CLASS::~CLASS() noexcept = default;
 
 namespace Op {
 

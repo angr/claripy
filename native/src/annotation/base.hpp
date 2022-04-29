@@ -19,7 +19,7 @@ namespace Annotation {
      * engine. They provide a means to pass extra information to the claripy backends.
      */
     struct Base : public HasRepr<Base>, public Factory::FactoryMade {
-        FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base, 0)
+        FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base)
       public:
         /** Constructor
          *  CUID must be passed if this is called by a subclass

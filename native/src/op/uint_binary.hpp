@@ -13,11 +13,11 @@
 
 
 /** A macro used to define a trivial subclass of Binary
- *  PREFIX and TARG are passed to OP_FINAL_INIT
+ *  PREFIX is passed to OP_FINAL_INIT
  */
-#define OP_UINTBINARY_TRIVIAL_SUBCLASS(CLASS, PREFIX, TARG)                                        \
+#define OP_UINTBINARY_TRIVIAL_SUBCLASS(CLASS, PREFIX)                                              \
     class CLASS final : public ::Op::UIntBinary {                                                  \
-        OP_FINAL_INIT(CLASS, PREFIX, TARG);                                                        \
+        OP_FINAL_INIT(CLASS, PREFIX);                                                              \
                                                                                                    \
       private:                                                                                     \
         /** Private constructor */                                                                 \

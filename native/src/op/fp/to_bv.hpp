@@ -12,8 +12,8 @@
 namespace Op::FP {
 
     /** The op class: to_bv */
-    template <Mode::Signed Sgn> class ToBV final : public Base {
-        OP_FINAL_INIT(ToBV, "FP::", Sgn);
+    class ToBV : public Base {
+        OP_PURE_INIT(ToBV);
 
       public:
         /** The FP mode */
@@ -36,23 +36,48 @@ namespace Op::FP {
          */
         inline std::vector<ArgVar> python_children() const final { return { mode, fp }; }
 
-      private:
-        /** Private constructor
+      protected:
+        /** Protected constructor
          *  Ensure that fp is an FP
          */
-        explicit inline ToBV(const Hash::Hash &h, const Mode::FP::Rounding m,
-                             const Expr::BasePtr &f)
-            : Base { h, static_cuid }, mode { m }, fp { f } {
+        explicit inline ToBV(const Hash::Hash &h, const CUID::CUID &cuid_,
+                             const Mode::FP::Rounding m, const Expr::BasePtr &f)
+            : Base { h, cuid_ }, mode { m }, fp { f } {
             UTIL_ASSERT(Error::Expr::Type, CUID::is_t<Expr::FP>(fp),
                         "Operand fp must be an Expr::FP");
         }
 
+      private:
         /** Adds the raw expr children of the expr to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
         inline void unsafe_add_reversed_children(Stack &s) const final { s.emplace(fp.get()); }
     };
 
+    /** Signed ToBV */
+    class ToBVSigned final : public ToBV {
+        OP_FINAL_INIT(ToBVSigned, "FP::");
+
+      private:
+        /** Private constructor */
+        explicit inline ToBVSigned(const Hash::Hash &h, const Mode::FP::Rounding m,
+                                   const Expr::BasePtr &f)
+            : ToBV { h, static_cuid, m, f } {}
+    };
+
+    /** Default virtual dtor */
+    inline ToBV::~ToBV() noexcept = default;
+
+    /** Unsigned ToBV */
+    class ToBVUnsigned final : public ToBV {
+        OP_FINAL_INIT(ToBVUnsigned, "FP::");
+
+      private:
+        /** Private constructor */
+        explicit inline ToBVUnsigned(const Hash::Hash &h, const Mode::FP::Rounding m,
+                                     const Expr::BasePtr &f)
+            : ToBV { h, static_cuid, m, f } {}
+    };
 } // namespace Op::FP
 
 #endif

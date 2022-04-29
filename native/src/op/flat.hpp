@@ -11,11 +11,11 @@
 
 /** A macro used to define a trivial subclass of Flat
  *  If ConsiderSize, sizes will be compared as well when type checking if applicable
- *  PREFIX and TARG are passed to OP_FINAL_INIT
+ *  PREFIX is passed to OP_FINAL_INIT
  */
-#define OP_FLAT_TRIVIAL_SUBCLASS(CLASS, CONSIDERSIZE, PREFIX, TARG)                                \
+#define OP_FLAT_TRIVIAL_SUBCLASS(CLASS, CONSIDERSIZE, PREFIX)                                      \
     class CLASS final : public ::Op::Flat<(CONSIDERSIZE)> {                                        \
-        OP_FINAL_INIT(CLASS, PREFIX, TARG);                                                        \
+        OP_FINAL_INIT(CLASS, PREFIX);                                                              \
                                                                                                    \
       private:                                                                                     \
         /** Private constructor */                                                                 \

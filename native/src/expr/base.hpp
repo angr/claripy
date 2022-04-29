@@ -26,7 +26,7 @@ namespace Expr {
      *  TODO: make quite a bit smaller by killing vtables; Hashed, HasCUID, and HasRepr all have one
      */
     class Base : public HasRepr<Base>, public Factory::FactoryMade {
-        FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base, 0)
+        FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base)
       public:
         /** Return true if and only if this expr is symbolic */
         const bool symbolic;

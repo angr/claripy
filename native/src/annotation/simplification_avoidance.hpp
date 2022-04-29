@@ -12,7 +12,7 @@ namespace Annotation {
 
     /** A built-in annotation */
     class SimplificationAvoidance final : public Base {
-        FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base, 0)
+        FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base)
       public:
         /** Constructor */
         explicit inline SimplificationAvoidance(const Hash::Hash &h) noexcept

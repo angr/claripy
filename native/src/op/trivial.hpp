@@ -22,29 +22,29 @@ namespace Op {
     /**********************************************************/
 
     /** The unary mathematical op class: Abs */
-    OP_UNARY_TRIVIAL_SUBCLASS(Abs, "", 0);
+    OP_UNARY_TRIVIAL_SUBCLASS(Abs, "");
 
     /** The unary op class: Neg */
-    OP_UNARY_TRIVIAL_SUBCLASS(Neg, "", 0);
+    OP_UNARY_TRIVIAL_SUBCLASS(Neg, "");
 
     /** The unary op class: Not */
-    OP_UNARY_TRIVIAL_SUBCLASS(Not, "", 0);
+    OP_UNARY_TRIVIAL_SUBCLASS(Not, "");
 
     /** The unary op class: Invert */
-    OP_UNARY_TRIVIAL_SUBCLASS(Invert, "", 0);
+    OP_UNARY_TRIVIAL_SUBCLASS(Invert, "");
 
     /** The unary bitwise op class: Reverse */
-    OP_UNARY_TRIVIAL_SUBCLASS(Reverse, "", 0);
+    OP_UNARY_TRIVIAL_SUBCLASS(Reverse, "");
 
     /**********************************************************/
     /*                  UIntBinary Subclasses                 */
     /**********************************************************/
 
     /** The int binary op class: SignExt */
-    OP_UINTBINARY_TRIVIAL_SUBCLASS(SignExt, "", 0);
+    OP_UINTBINARY_TRIVIAL_SUBCLASS(SignExt, "");
 
     /** The int binary op class: ZeroExt */
-    OP_UINTBINARY_TRIVIAL_SUBCLASS(ZeroExt, "", 0);
+    OP_UINTBINARY_TRIVIAL_SUBCLASS(ZeroExt, "");
 
     /**********************************************************/
     /*                   Binary Subclasses                    */
@@ -55,64 +55,98 @@ namespace Op {
     /** The binary comparison op class: Eq
      *  Requires equal sized inputs
      */
-    OP_BINARY_TRIVIAL_SUBCLASS(Eq, true, "", 0);
+    OP_BINARY_TRIVIAL_FINAL_DESCENDANT(Eq, Binary<true>, "");
 
     /** The binary comparison op class: Neq */
-    OP_BINARY_TRIVIAL_SUBCLASS(Neq, false, "", 0);
+    OP_BINARY_TRIVIAL_FINAL_DESCENDANT(Neq, Binary<false>, "");
 
-    /** The binary comparison op class: Compare */
-    template <Mode::Compare Mode> OP_BINARY_TRIVIAL_SUBCLASS(Compare, true, "", Mode);
+    /** The binary comparison op class: Inequality */
+    OP_BINARY_TRIVIAL_PURE_SUBCLASS(Inequality, true);
+    /** Unsigned >= comparison op */
+    OP_BINARY_TRIVIAL_FINAL_DESCENDANT(UGE, Inequality, "");
+    /** Unsigned > comparison op */
+    OP_BINARY_TRIVIAL_FINAL_DESCENDANT(UGT, Inequality, "");
+    /** Unsigned <= comparison op */
+    OP_BINARY_TRIVIAL_FINAL_DESCENDANT(ULE, Inequality, "");
+    /** Unsigned < comparison op */
+    OP_BINARY_TRIVIAL_FINAL_DESCENDANT(ULT, Inequality, "");
+    /** Signed >= comparison op */
+    OP_BINARY_TRIVIAL_FINAL_DESCENDANT(SGE, Inequality, "");
+    /** Signed > comparison op */
+    OP_BINARY_TRIVIAL_FINAL_DESCENDANT(SGT, Inequality, "");
+    /** Signed <= comparison op */
+    OP_BINARY_TRIVIAL_FINAL_DESCENDANT(SLE, Inequality, "");
+    /** Signed < comparison op */
+    OP_BINARY_TRIVIAL_FINAL_DESCENDANT(SLT, Inequality, "");
 
     // Math
 
     /** The mathematical binary op class: Sub
      *  Requires equal sized inputs
      */
-    OP_BINARY_TRIVIAL_SUBCLASS(Sub, true, "", 0);
+    OP_BINARY_TRIVIAL_FINAL_DESCENDANT(Sub, Binary<true>, "");
 
-    /** The mathematical binary op class: Div
+    /** The mathematical binary op: Div
      *  Requires equal sized inputs
      */
-    template <Mode::Signed Sgn> OP_BINARY_TRIVIAL_SUBCLASS(Div, true, "", Sgn);
+    OP_BINARY_TRIVIAL_PURE_SUBCLASS(Div, true);
+    /** The signed div op class */
+    OP_BINARY_TRIVIAL_FINAL_DESCENDANT(DivSigned, Div, "");
+    /** The unsigned div op class */
+    OP_BINARY_TRIVIAL_FINAL_DESCENDANT(DivUnsigned, Div, "");
 
-    /** The mathematical binary op class: Mod
+    /** The mathematical binary op: Mod
      *  Requires equal sized inputs
      */
-    template <Mode::Signed Sgn> OP_BINARY_TRIVIAL_SUBCLASS(Mod, true, "", Sgn);
+    OP_BINARY_TRIVIAL_PURE_SUBCLASS(Mod, true);
+    /** The signed mod op class */
+    OP_BINARY_TRIVIAL_FINAL_DESCENDANT(ModSigned, Div, "");
+    /** The unsigned mod op class */
+    OP_BINARY_TRIVIAL_FINAL_DESCENDANT(ModUnsigned, Div, "");
 
     // Bitwise
 
     /** The bitwise binary op class: Shift
      *  Requires equal sized inputs
      */
-    template <Mode::Shift Mask> OP_BINARY_TRIVIAL_SUBCLASS(Shift, true, "", Mask);
+    OP_BINARY_TRIVIAL_PURE_SUBCLASS(Shift, true);
+    /** The bitwise left shift op class */
+    OP_BINARY_TRIVIAL_FINAL_DESCENDANT(ShiftLeft, Shift, "");
+    /** The bitwise logical right shift op class */
+    OP_BINARY_TRIVIAL_FINAL_DESCENDANT(ShiftLogicalRight, Shift, "");
+    /** The bitwise arithmetic right shift op class */
+    OP_BINARY_TRIVIAL_FINAL_DESCENDANT(ShiftArithmeticRight, Shift, "");
 
-    /** The bitwise binary op class: Rotate
+    /** Abstract bitwise binary rotations
      *  Requires equal sized inputs
      */
-    template <Mode::LR LR> OP_BINARY_TRIVIAL_SUBCLASS(Rotate, true, "", LR);
+    OP_BINARY_TRIVIAL_PURE_SUBCLASS(Rotate, true);
+    /** The bitwise binary op class: RotateLeft */
+    OP_BINARY_TRIVIAL_FINAL_DESCENDANT(RotateLeft, Rotate, "");
+    /** The bitwise binary op class: RotateRight */
+    OP_BINARY_TRIVIAL_FINAL_DESCENDANT(RotateRight, Rotate, "");
 
     // Misc
 
     /** The set binary op class: Widen
      *  Requires equal sized inputs
      */
-    OP_BINARY_TRIVIAL_SUBCLASS(Widen, true, "", 0);
+    OP_BINARY_TRIVIAL_FINAL_DESCENDANT(Widen, Binary<true>, "");
 
     /** The set binary op class: Union
      *  Requires equal sized inputs
      */
-    OP_BINARY_TRIVIAL_SUBCLASS(Union, true, "", 0);
+    OP_BINARY_TRIVIAL_FINAL_DESCENDANT(Union, Binary<true>, "");
 
     /** The set binary op class: Intersection
      *  Requires equal sized inputs
      */
-    OP_BINARY_TRIVIAL_SUBCLASS(Intersection, true, "", 0);
+    OP_BINARY_TRIVIAL_FINAL_DESCENDANT(Intersection, Binary<true>, "");
 
     /** The binary op class: Concat
      *  Input sizes may differ
      */
-    OP_BINARY_TRIVIAL_SUBCLASS(Concat, false, "", 0);
+    OP_BINARY_TRIVIAL_FINAL_DESCENDANT(Concat, Binary<false>, "");
 
     /**********************************************************/
     /*                    Flat Subclasses                     */
@@ -123,29 +157,29 @@ namespace Op {
     /** The flat math op class: Add
      *  Requires equal sized inputs
      */
-    OP_FLAT_TRIVIAL_SUBCLASS(Add, true, "", 0);
+    OP_FLAT_TRIVIAL_SUBCLASS(Add, true, "");
 
     /** The flat op class: Mul
      *  Requires equal sized inputs
      */
-    OP_FLAT_TRIVIAL_SUBCLASS(Mul, true, "", 0);
+    OP_FLAT_TRIVIAL_SUBCLASS(Mul, true, "");
 
     // Logical
 
     /** The flat op class: Or
      *  Requires equal sized inputs
      */
-    OP_FLAT_TRIVIAL_SUBCLASS(Or, true, "", 0);
+    OP_FLAT_TRIVIAL_SUBCLASS(Or, true, "");
 
     /** The flat op class: And
      *  Requires equal sized inputs
      */
-    OP_FLAT_TRIVIAL_SUBCLASS(And, true, "", 0);
+    OP_FLAT_TRIVIAL_SUBCLASS(And, true, "");
 
     /** The flat op class: Xor
      *  Requires equal sized inputs
      */
-    OP_FLAT_TRIVIAL_SUBCLASS(Xor, true, "", 0);
+    OP_FLAT_TRIVIAL_SUBCLASS(Xor, true, "");
 
 } // namespace Op
 

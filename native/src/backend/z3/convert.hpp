@@ -87,107 +87,101 @@ namespace Backend::Z3 {
         /** Not-equals comparison converter */
         static z3::expr neq(const z3::expr &l, const z3::expr &r) { return l != r; }
 
-        /** Compare converter */
-        template <Mode::Compare M> static z3::expr compare(const z3::expr &l, const z3::expr &r) {
-            using C = Mode::Compare;
-            if constexpr (M == C::SLE) {
-                if (l.is_fpa()) {
-                    return l <= r;
-                }
-                else {
-                    return z3::sle(l, r);
-                }
-            }
-            else if constexpr (M == C::SLT) {
-                if (l.is_fpa()) {
-                    return l < r;
-                }
-                else {
-                    return z3::slt(l, r);
-                }
-            }
-            else if constexpr (M == C::SGE) {
-                if (l.is_fpa()) {
-                    return l >= r;
-                }
-                else {
-                    return z3::sge(l, r);
-                }
-            }
-            else if constexpr (M == C::SGT) {
-                if (l.is_fpa()) {
-                    return l > r;
-                }
-                else {
-                    return z3::sgt(l, r);
-                }
-            }
-            else if constexpr (M == C::ULE) {
-                return z3::ule(l, r);
-            }
-            else if constexpr (M == C::ULT) {
-                return z3::ult(l, r);
-            }
-            else if constexpr (M == C::UGE) {
-                return z3::uge(l, r);
-            }
-            else if constexpr (M == C::UGT) {
-                return z3::ugt(l, r);
+        /** SLE converter */
+        static z3::expr sle(const z3::expr &l, const z3::expr &r) {
+            if (l.is_fpa()) {
+                return l <= r;
             }
             else {
-                static_assert(Util::CD::false_<M>, "Invalid mode");
+                return z3::sle(l, r);
             }
         }
+        /** SLT converter */
+        static z3::expr slt(const z3::expr &l, const z3::expr &r) {
+            if (l.is_fpa()) {
+                return l < r;
+            }
+            else {
+                return z3::slt(l, r);
+            }
+        }
+        /** SGE converter */
+        static z3::expr sge(const z3::expr &l, const z3::expr &r) {
+            if (l.is_fpa()) {
+                return l >= r;
+            }
+            else {
+                return z3::sge(l, r);
+            }
+        }
+        /** SGT converter */
+        static z3::expr sgt(const z3::expr &l, const z3::expr &r) {
+            if (l.is_fpa()) {
+                return l > r;
+            }
+            else {
+                return z3::sgt(l, r);
+            }
+        }
+
+        /** ULE converter */
+        static z3::expr ule(const z3::expr &l, const z3::expr &r) { return z3::ule(l, r); }
+        /** ULT converter */
+        static z3::expr ult(const z3::expr &l, const z3::expr &r) { return z3::ult(l, r); }
+        /** UGE converter */
+        static z3::expr uge(const z3::expr &l, const z3::expr &r) { return z3::uge(l, r); }
+        /** UGT converter */
+        static z3::expr ugt(const z3::expr &l, const z3::expr &r) { return z3::ugt(l, r); }
 
         /** Subtraction converter */
         static z3::expr sub(const z3::expr &l, const z3::expr &r) { return l - r; }
 
-        /** Division converter */
-        template <Mode::Signed Sgn> static z3::expr div(const z3::expr &l, const z3::expr &r) {
-            if constexpr (Sgn == Mode::Signed::Signed) {
-                return l / r;
-            }
-            else {
-                return z3::udiv(l, r);
-            }
+        /** Signed Division converter */
+        static z3::expr div_signed(const z3::expr &l, const z3::expr &r) { return l / r; }
+        /** Unsigned Division converter */
+        static z3::expr div_unsigned(const z3::expr &l, const z3::expr &r) {
+            return z3::udiv(l, r);
         }
 
-        /** Mod converter
+        /** Signed Mod converter
          *  Note we use rem (because of the difference between C and Python % operators)
          */
-        template <Mode::Signed Sgn> static z3::expr mod(const z3::expr &l, const z3::expr &r) {
-            if constexpr (Sgn == Mode::Signed::Signed) {
-                return z3::srem(l, r);
-            }
-            else {
-                return z3::urem(l, r);
-            }
+        static z3::expr mod_signed(const z3::expr &l, const z3::expr &r) { return z3::srem(l, r); }
+
+        /** Unsigned Mod converter
+         *  Note we use rem (because of the difference between C and Python % operators)
+         */
+        static z3::expr mod_unsigned(const z3::expr &l, const z3::expr &r) {
+            return z3::urem(l, r);
         }
 
-        /** Shift converter */
-        template <Mode::Shift Mask> static z3::expr shift(const z3::expr &l, const z3::expr &r) {
-            using S = Mode::Shift;
-            if constexpr (Mask == S::Left) {
-                return z3::shl(l, r);
-            }
-            else if constexpr (Mask == S::ArithmeticRight) {
-                return z3::ashr(l, r);
-            }
-            else if constexpr (Mask == S::LogicalRight) {
-                return z3::lshr(l, r);
-            }
-            else {
-                static_assert(Util::CD::false_<Mask>, "Unsupported mask mode");
-            }
+        /** ShiftLeft converter */
+        static z3::expr shift_left(const z3::expr &l, const z3::expr &r) { return z3::shl(l, r); }
+
+        /** ShiftLogicalRight converter */
+        static z3::expr shift_logical_right(const z3::expr &l, const z3::expr &r) {
+            return z3::lshr(l, r);
         }
 
-        /** Rotate converter */
-        template <Mode::LR LR> static z3::expr rotate(const z3::expr &l, const z3::expr &r) {
+        /** ShiftArithmeticRight converter */
+        static z3::expr shift_arithmetic_right(const z3::expr &l, const z3::expr &r) {
+            return z3::ashr(l, r);
+        }
+
+        /** RotateLeft converter */
+        static z3::expr rotate_left(const z3::expr &l, const z3::expr &r) {
             // z3's C++ API's rotate functions are different (note the "ext" below)
             using namespace Z3;
-            z3::expr ret { l.ctx(),
-                           (LR == Mode::LR::Left ? Z3_mk_ext_rotate_left(l.ctx(), l, r)
-                                                 : Z3_mk_ext_rotate_right(l.ctx(), l, r)) };
+            z3::expr ret { l.ctx(), Z3_mk_ext_rotate_left(l.ctx(), l, r) };
+            l.ctx().check_error();
+            return ret;
+        }
+
+        /** RotateRight converter */
+        static z3::expr rotate_right(const z3::expr &l, const z3::expr &r) {
+            // z3's C++ API's rotate functions are different (note the "ext" below)
+            using namespace Z3;
+            z3::expr ret { l.ctx(), Z3_mk_ext_rotate_right(l.ctx(), l, r) };
             l.ctx().check_error();
             return ret;
         }
@@ -429,17 +423,18 @@ namespace Backend::Z3 {
 
             // Other
 
-            /** FP::ToBV converter */
-            template <Mode::Signed Sgn>
-            static z3::expr to_bv(const Mode::FP::Rounding mode, const z3::expr &e,
-                                  const U64 bit_length) {
+            /** FP::ToBVSigned converter */
+            static z3::expr to_bv_signed(const Mode::FP::Rounding mode, const z3::expr &e,
+                                         const U64 bit_length) {
                 e.ctx().set_rounding_mode(to_z3_rm(mode));
-                if constexpr (Sgn == Mode::Signed::Signed) {
-                    return z3::fpa_to_sbv(e, to_z3u(bit_length));
-                }
-                else {
-                    return z3::fpa_to_ubv(e, to_z3u(bit_length));
-                }
+                return z3::fpa_to_sbv(e, to_z3u(bit_length));
+            }
+
+            /** FP::ToBVUnsigned converter */
+            static z3::expr to_bv_unsigned(const Mode::FP::Rounding mode, const z3::expr &e,
+                                           const U64 bit_length) {
+                e.ctx().set_rounding_mode(to_z3_rm(mode));
+                return z3::fpa_to_ubv(e, to_z3u(bit_length));
             }
 
             /** FP::FromFP converter */
@@ -450,18 +445,22 @@ namespace Backend::Z3 {
                 return z3::fpa_to_fpa(e, fp_width_to_z3_sort(ctx, width));
             }
 
-            /** FP::From2sComplementBV converter */
-            template <Mode::Signed Sgn>
-            static z3::expr from_2s_complement_bv(const Mode::FP::Rounding mode, const z3::expr &e,
-                                                  const Mode::FP::Width &width) {
+            /** FP::From2sComplementBVSigned converter */
+            static z3::expr from_2s_complement_bv_signed(const Mode::FP::Rounding mode,
+                                                         const z3::expr &e,
+                                                         const Mode::FP::Width &width) {
                 auto &ctx { e.ctx() };
                 ctx.set_rounding_mode(to_z3_rm(mode));
-                if constexpr (Sgn == Mode::Signed::Signed) {
-                    return z3::sbv_to_fpa(e, fp_width_to_z3_sort(ctx, width));
-                }
-                else {
-                    return z3::ubv_to_fpa(e, fp_width_to_z3_sort(ctx, width));
-                }
+                return z3::sbv_to_fpa(e, fp_width_to_z3_sort(ctx, width));
+            }
+
+            /** FP::From2sComplementBVUnsigned converter */
+            static z3::expr from_2s_complement_bv_unsigned(const Mode::FP::Rounding mode,
+                                                           const z3::expr &e,
+                                                           const Mode::FP::Width &width) {
+                auto &ctx { e.ctx() };
+                ctx.set_rounding_mode(to_z3_rm(mode));
+                return z3::ubv_to_fpa(e, fp_width_to_z3_sort(ctx, width));
             }
 
             /** FP::FromNot2sComplementBV converter */

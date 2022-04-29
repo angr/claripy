@@ -12,7 +12,7 @@ namespace Op {
 
     /** The op class: If */
     class If final : public Base {
-        OP_FINAL_INIT(If, "", 0);
+        OP_FINAL_INIT(If, "");
 
       public:
         /** If condition: This must be an Expr::Bool pointer

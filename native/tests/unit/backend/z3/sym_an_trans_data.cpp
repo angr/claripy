@@ -9,7 +9,7 @@
 
 /** A built-in annotation */
 class TestAnnotation final : public Annotation::Base {
-    FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base, 0)
+    FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base)
   public:
     /** Constructor */
     explicit inline TestAnnotation(const Hash::Hash &h, std::string &&s) noexcept

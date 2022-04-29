@@ -16,14 +16,18 @@ template <Mode::Signed Sgn> void to_bv_b() {
     const U64 bit_length { 16 };
 
     // Test
-    const auto exp { Create::FP::to_bv<Sgn>(mode, fp, bit_length, { nullptr }) };
+    const auto exp { (Sgn == Mode::Signed::Signed
+                          ? Create::FP::to_bv_signed
+                          : Create::FP::to_bv_unsigned)(mode, fp, bit_length, { nullptr }) };
 
     // Pointer checks
     UNITTEST_ASSERT(fp.use_count() == 2);
     UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check
-    const auto op_down { dcast<Op::FP::ToBV<Sgn>>(exp->op) };
+    using To =
+        std::conditional_t<Sgn == Mode::Signed::Signed, Op::FP::ToBVSigned, Op::FP::ToBVUnsigned>;
+    const auto op_down { dcast<To>(exp->op) };
     const auto exp_down { dcast<Expr::BV>(exp) };
 
     // Contains check

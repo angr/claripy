@@ -14,7 +14,7 @@ namespace Expr {
 
     /** This class represents an Expr of Bits */
     class Bits : public Base, public BitLength {
-        FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base, 0)
+        FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base)
       protected:
         /** Protected Constructor */
         explicit inline Bits(const Hash::Hash h, const CUID::CUID &c, const bool sym,

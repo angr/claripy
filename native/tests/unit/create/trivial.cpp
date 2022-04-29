@@ -55,22 +55,23 @@ void trivial() {
     binary<Expr::Bool, Expr::Bool, Op::Eq, SM::First, Cr::eq>();
     binary<Expr::Bool, Expr::String, Op::Eq, SM::First, Cr::eq>();
 
-#define M_TEST_COMPARE(T_, MASK)                                                                   \
-    binary<Expr::Bool, T_, Op::Compare<MASK>, SM::First, Cr::compare<MASK>>();
+#define M_TEST_COMPARE(T_, OPT)                                                                    \
+    binary<Expr::Bool, T_, Op::OPT, SM::First, Cr::inequality<Op::OPT>>();
 
-#define M_TEST_COMPARE_DUO(MASK)                                                                   \
-    M_TEST_COMPARE(Expr::FP, Mode::Compare::MASK);                                                 \
-    M_TEST_COMPARE(Expr::BV, Mode::Compare::MASK);
+#define M_TEST_COMPARE_DUO(OPT)                                                                    \
+    M_TEST_COMPARE(Expr::FP, OPT);                                                                 \
+    M_TEST_COMPARE(Expr::BV, OPT);
 
     Log::debug("Testing compare...");
-    M_TEST_COMPARE(Expr::BV, Mode::Compare::UGE); // BV can be either
-    M_TEST_COMPARE(Expr::BV, Mode::Compare::UGT);
-    M_TEST_COMPARE(Expr::BV, Mode::Compare::ULE);
-    M_TEST_COMPARE(Expr::BV, Mode::Compare::ULT);
-    M_TEST_COMPARE_DUO(SGE); // FP comparisons must be signed
+    M_TEST_COMPARE_DUO(SGE);
     M_TEST_COMPARE_DUO(SGT);
     M_TEST_COMPARE_DUO(SLE);
     M_TEST_COMPARE_DUO(SLT);
+    // BV can be unsigned
+    M_TEST_COMPARE(Expr::BV, UGE);
+    M_TEST_COMPARE(Expr::BV, UGT);
+    M_TEST_COMPARE(Expr::BV, ULE);
+    M_TEST_COMPARE(Expr::BV, ULT);
 #undef M_TEST_COMPARE
 #undef M_TEST_COMPARE_MULTI
 
@@ -80,29 +81,27 @@ void trivial() {
     binary<Expr::BV, Op::Sub, SM::First, Cr::sub>();
 
     Log::debug("Testing div...");
-    using Sngd = Mode::Signed;
-    binary<Expr::BV, Op::Div<Sngd::Signed>, SM::First, Cr::div<Sngd::Signed>>();
-    binary<Expr::BV, Op::Div<Sngd::Unsigned>, SM::First, Cr::div<Sngd::Unsigned>>();
+    binary<Expr::BV, Op::DivSigned, SM::First, Cr::div_signed>();
+    binary<Expr::BV, Op::DivUnsigned, SM::First, Cr::div_unsigned>();
 
     Log::debug("Testing mod...");
-    binary<Expr::BV, Op::Mod<Sngd::Signed>, SM::First, Cr::mod<Sngd::Signed>>();
-    binary<Expr::BV, Op::Mod<Sngd::Unsigned>, SM::First, Cr::mod<Sngd::Unsigned>>();
+    binary<Expr::BV, Op::ModSigned, SM::First, Cr::mod_signed>();
+    binary<Expr::BV, Op::ModUnsigned, SM::First, Cr::mod_unsigned>();
 
     // Bitwise
 
     Log::debug("Testing shift...");
     {
-        using S = Mode::Shift;
-#define M_TEST_SHIFT(MASK) binary<Expr::BV, Op::Shift<MASK>, SM::First, Cr::shift<MASK>>();
-        M_TEST_SHIFT(S::Left);
-        M_TEST_SHIFT(S::ArithmeticRight);
-        M_TEST_SHIFT(S::LogicalRight);
+#define M_TEST_SHIFT(OPT) binary<Expr::BV, OPT, SM::First, Cr::shift<OPT>>();
+        M_TEST_SHIFT(Op::ShiftArithmeticRight);
+        M_TEST_SHIFT(Op::ShiftLogicalRight);
+        M_TEST_SHIFT(Op::ShiftLeft);
 #undef M_TEST_SHIFT
     }
 
     Log::debug("Testing rotate...");
-    binary<Expr::BV, Op::Rotate<Mode::LR::Left>, SM::First, Cr::rotate<Mode::LR::Left>>();
-    binary<Expr::BV, Op::Rotate<Mode::LR::Right>, SM::First, Cr::rotate<Mode::LR::Right>>();
+    binary<Expr::BV, Op::RotateLeft, SM::First, Cr::rotate_left>();
+    binary<Expr::BV, Op::RotateRight, SM::First, Cr::rotate_right>();
 
     // Misc
 

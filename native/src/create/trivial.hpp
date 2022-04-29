@@ -101,64 +101,67 @@ namespace Create {
                                                                             std::move(sp));
     }
 
-    /** Create an Expr with a Compare op
+    /** Create an Expr with an Inequality op
      *  Expr pointers may not be nullptr
      */
-    template <Mode::Compare M>
-    inline Expr::BasePtr compare(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                                 Annotation::SPAV &&sp) {
-        UTIL_ASSERT(Util::Err::Usage, Mode::is_signed(M) || not CUID::is_t<Expr::FP>(left),
-                    "FP comparisons must be signed");
-        return Private::binary_explicit<Expr::Bool, Op::Compare<M>, Private::SizeMode::NA, Expr::FP,
-                                        Expr::BV>(left, right, std::move(sp));
+    template <typename OpT>
+    inline Expr::BasePtr inequality(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                                    Annotation::SPAV &&sp) {
+        static_assert(std::is_base_of_v<Op::Inequality, OpT>, "Op must derive from inequality");
+        if constexpr (Util::Type::Is::in<OpT, Op::UGE, Op::UGT, Op::ULE, Op::ULT>) {
+            UTIL_ASSERT(Util::Err::Usage, not CUID::is_t<Expr::FP>(left),
+                        "FP comparisons must be signed");
+        }
+        return Private::binary_explicit<Expr::Bool, OpT, Private::SizeMode::NA, Expr::FP, Expr::BV>(
+            left, right, std::move(sp));
     }
 
-    /** A shortcut for compare<UGE>; exists for the API */
+    /** A shortcut for inequality<UGE>; exists for the API */
     inline Expr::BasePtr uge(const Expr::BasePtr &left, const Expr::BasePtr &right,
                              Annotation::SPAV sp = empty_spav) {
-        return compare<Mode::Compare::UGE>(left, right, std::move(sp));
+        return inequality<Op::UGE>(left, right, std::move(sp));
     }
 
-    /** A shortcut for compare<UGT>; exists for the API */
+    /** A shortcut for inequality<UGT>; exists for the API */
     inline Expr::BasePtr ugt(const Expr::BasePtr &left, const Expr::BasePtr &right,
                              Annotation::SPAV sp = empty_spav) {
-        return compare<Mode::Compare::UGT>(left, right, std::move(sp));
+        return inequality<Op::UGT>(left, right, std::move(sp));
     }
 
-    /** A shortcut for compare<ULE>; exists for the API */
+    /** A shortcut for inequality<ULE>; exists for the API */
     inline Expr::BasePtr ule(const Expr::BasePtr &left, const Expr::BasePtr &right,
                              Annotation::SPAV sp = empty_spav) {
-        return compare<Mode::Compare::ULE>(left, right, std::move(sp));
+        return inequality<Op::ULE>(left, right, std::move(sp));
     }
 
-    /** A shortcut for compare<ULT>; exists for the API */
+    /** A shortcut for inequality<ULT>; exists for the API */
     inline Expr::BasePtr ult(const Expr::BasePtr &left, const Expr::BasePtr &right,
                              Annotation::SPAV sp = empty_spav) {
-        return compare<Mode::Compare::ULT>(left, right, std::move(sp));
+        return inequality<Op::ULT>(left, right, std::move(sp));
     }
 
-    /** A shortcut for compare<SGE>; exists for the API */
+    /** A shortcut for inequality<SGE>; exists for the API */
     inline Expr::BasePtr sge(const Expr::BasePtr &left, const Expr::BasePtr &right,
                              Annotation::SPAV sp = empty_spav) {
-        return compare<Mode::Compare::SGE>(left, right, std::move(sp));
+        return inequality<Op::SGE>(left, right, std::move(sp));
     }
 
-    /** A shortcut for compare<SGT>; exists for the API */
+    /** A shortcut for inequality<SGT>; exists for the API */
     inline Expr::BasePtr sgt(const Expr::BasePtr &left, const Expr::BasePtr &right,
                              Annotation::SPAV sp = empty_spav) {
-        return compare<Mode::Compare::SGT>(left, right, std::move(sp));
+        return inequality<Op::SGT>(left, right, std::move(sp));
     }
 
-    /** A shortcut for compare<SLE>; exists for the API */
+    /** A shortcut for inequality<SLE>; exists for the API */
     inline Expr::BasePtr sle(const Expr::BasePtr &left, const Expr::BasePtr &right,
                              Annotation::SPAV sp = empty_spav) {
-        return compare<Mode::Compare::SLE>(left, right, std::move(sp));
+        return inequality<Op::SLE>(left, right, std::move(sp));
     }
 
-    /** A shortcut for compare<SLT>; exists for the API */
+    /** A shortcut for inequality<SLT>; exists for the API */
     inline Expr::BasePtr slt(const Expr::BasePtr &left, const Expr::BasePtr &right,
                              Annotation::SPAV sp = empty_spav) {
-        return compare<Mode::Compare::SLT>(left, right, std::move(sp));
+        return inequality<Op::SLT>(left, right, std::move(sp));
     }
 
     // Math
@@ -172,48 +175,40 @@ namespace Create {
                                                                             std::move(sp));
     }
 
-    /** Create an Expr with an Div op
+    /** Create an Expr with a DivSigned op
      *  Expr pointers may not be nullptr
      */
-    template <Mode::Signed Sgn>
-    inline Expr::BasePtr div(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                             Annotation::SPAV &&sp) {
-        return Private::binary<Op::Div<Sgn>, Private::SizeMode::First, Expr::BV>(left, right,
-                                                                                 std::move(sp));
-    }
-
-    /** A shortcut for div<Signed>; exists for the API */
     inline Expr::BasePtr div_signed(const Expr::BasePtr &left, const Expr::BasePtr &right,
                                     Annotation::SPAV sp = empty_spav) {
-        return div<Mode::Signed::Signed>(left, right, std::move(sp));
+        return Private::binary<Op::DivSigned, Private::SizeMode::First, Expr::BV>(left, right,
+                                                                                  std::move(sp));
     }
 
-    /** A shortcut for div<Unsigned>; exists for the API */
+    /** Create an Expr with a DivUnsigned op
+     *  Expr pointers may not be nullptr
+     */
     inline Expr::BasePtr div_unsigned(const Expr::BasePtr &left, const Expr::BasePtr &right,
                                       Annotation::SPAV sp = empty_spav) {
-        return div<Mode::Signed::Unsigned>(left, right, std::move(sp));
+        return Private::binary<Op::DivUnsigned, Private::SizeMode::First, Expr::BV>(left, right,
+                                                                                    std::move(sp));
     }
 
     /** Create an Expr with an Mod op
      *  Expr pointers may not be nullptr
      */
-    template <Mode::Signed Sgn>
-    inline Expr::BasePtr mod(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                             Annotation::SPAV &&sp) {
-        return Private::binary<Op::Mod<Sgn>, Private::SizeMode::First, Expr::BV>(left, right,
-                                                                                 std::move(sp));
-    }
-
-    /** A shortcut for mod<Signed>; exists for the API */
     inline Expr::BasePtr mod_signed(const Expr::BasePtr &left, const Expr::BasePtr &right,
                                     Annotation::SPAV sp = empty_spav) {
-        return mod<Mode::Signed::Signed>(left, right, std::move(sp));
+        return Private::binary<Op::ModSigned, Private::SizeMode::First, Expr::BV>(left, right,
+                                                                                  std::move(sp));
     }
 
-    /** A shortcut for mod<Unsigned>; exists for the API */
+    /** Create an Expr with an Mod op
+     *  Expr pointers may not be nullptr
+     */
     inline Expr::BasePtr mod_unsigned(const Expr::BasePtr &left, const Expr::BasePtr &right,
                                       Annotation::SPAV sp = empty_spav) {
-        return mod<Mode::Signed::Unsigned>(left, right, std::move(sp));
+        return Private::binary<Op::ModUnsigned, Private::SizeMode::First, Expr::BV>(left, right,
+                                                                                    std::move(sp));
     }
 
     // Bitwise
@@ -221,52 +216,48 @@ namespace Create {
     /** Create an Expr with a Shift op
      *  Expr pointers may not be nullptr
      */
-    template <Mode::Shift Mask>
+    template <typename OpT>
     inline Expr::BasePtr shift(const Expr::BasePtr &left, const Expr::BasePtr &right,
                                Annotation::SPAV &&sp) {
-        return Private::binary<Op::Shift<Mask>, Private::SizeMode::First, Expr::BV>(left, right,
-                                                                                    std::move(sp));
+        static_assert(std::is_base_of_v<Op::Shift, OpT>, "OpT must be a Shift op");
+        return Private::binary<OpT, Private::SizeMode::First, Expr::BV>(left, right, std::move(sp));
     }
 
-    /** A shortcut for shift<Left>; exists for the API */
+    /** A shortcut for shift<ShiftLeft>; exists for the API */
     inline Expr::BasePtr shift_l(const Expr::BasePtr &left, const Expr::BasePtr &right,
                                  Annotation::SPAV sp = empty_spav) {
-        return shift<Mode::Shift::Left>(left, right, std::move(sp));
+        return shift<Op::ShiftLeft>(left, right, std::move(sp));
     }
 
-    /** A shortcut for shift<ArithmeticRight>; exists for the API */
+    /** A shortcut for shift<ShiftArithmeticRight>; exists for the API */
     inline Expr::BasePtr shift_arithmetic_right(const Expr::BasePtr &left,
                                                 const Expr::BasePtr &right,
                                                 Annotation::SPAV sp = empty_spav) {
-        return shift<Mode::Shift::ArithmeticRight>(left, right, std::move(sp));
+        return shift<Op::ShiftArithmeticRight>(left, right, std::move(sp));
     }
 
-    /** A shortcut for shift<LogicalRight>; exists for the API */
+    /** A shortcut for shift<ShiftLogicalRight>; exists for the API */
     inline Expr::BasePtr shift_logical_right(const Expr::BasePtr &left, const Expr::BasePtr &right,
                                              Annotation::SPAV sp = empty_spav) {
-        return shift<Mode::Shift::LogicalRight>(left, right, std::move(sp));
+        return shift<Op::ShiftLogicalRight>(left, right, std::move(sp));
     }
 
-    /** Create an Expr with a Rotate op
+    /** Create an Expr with a RotateLeft op
      *  Expr pointers may not be nullptr
      */
-    template <Mode::LR LR>
-    inline Expr::BasePtr rotate(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                                Annotation::SPAV &&sp) {
-        return Private::binary<Op::Rotate<LR>, Private::SizeMode::First, Expr::BV>(left, right,
+    inline Expr::BasePtr rotate_left(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                                     Annotation::SPAV sp = empty_spav) {
+        return Private::binary<Op::RotateLeft, Private::SizeMode::First, Expr::BV>(left, right,
                                                                                    std::move(sp));
     }
 
-    /** A shortcut for rotate<Left>; exists for the API */
-    inline Expr::BasePtr rotate_left(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                                     Annotation::SPAV sp = empty_spav) {
-        return rotate<Mode::LR::Left>(left, right, std::move(sp));
-    }
-
-    /** A shortcut for rotate<Right>; exists for the API */
+    /** Create an Expr with a RotateRight op
+     *  Expr pointers may not be nullptr
+     */
     inline Expr::BasePtr rotate_right(const Expr::BasePtr &left, const Expr::BasePtr &right,
                                       Annotation::SPAV sp = empty_spav) {
-        return rotate<Mode::LR::Right>(left, right, std::move(sp));
+        return Private::binary<Op::RotateRight, Private::SizeMode::First, Expr::BV>(left, right,
+                                                                                    std::move(sp));
     }
 
 
