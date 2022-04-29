@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file declares Backtrace generators
  */
-#ifndef R_SRC_UTIL_BACKTRACE_GENERATORS_HPP_
-#define R_SRC_UTIL_BACKTRACE_GENERATORS_HPP_
+#ifndef R_SRC_UTIL_BACKTRACE_BACKTRACE_HPP_
+#define R_SRC_UTIL_BACKTRACE_BACKTRACE_HPP_
 
 #include "../../constants.hpp"
 

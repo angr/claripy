@@ -3,8 +3,8 @@
  * \ingroup util
  * @brief This file defines a way to get the index of a type template arguments
  */
-#ifndef R_SRC_UTIL_TYPE_MAWP_HPP_
-#define R_SRC_UTIL_TYPE_MAWP_HPP_
+#ifndef R_SRC_UTIL_TYPE_VARIANTINDEX_HPP_
+#define R_SRC_UTIL_TYPE_VARIANTINDEX_HPP_
 
 #include "list.hpp"
 
