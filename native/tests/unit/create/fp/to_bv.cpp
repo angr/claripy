@@ -8,7 +8,7 @@
 
 
 /** Verify that the to_bv<Sgn> function compiles and can be run without issue */
-template <Mode::Signed Sgn> void to_bv_b() {
+template <bool Signed> void to_bv_b() {
 
     // Create distinct inputs
     const Mode::FP::Rounding mode { Mode::FP::Rounding::TowardsZero };
@@ -16,17 +16,15 @@ template <Mode::Signed Sgn> void to_bv_b() {
     const U64 bit_length { 16 };
 
     // Test
-    const auto exp { (Sgn == Mode::Signed::Signed
-                          ? Create::FP::to_bv_signed
-                          : Create::FP::to_bv_unsigned)(mode, fp, bit_length, { nullptr }) };
+    const auto exp { (Signed ? Create::FP::to_bv_signed
+                             : Create::FP::to_bv_unsigned)(mode, fp, bit_length, { nullptr }) };
 
     // Pointer checks
     UNITTEST_ASSERT(fp.use_count() == 2);
     UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check
-    using To =
-        std::conditional_t<Sgn == Mode::Signed::Signed, Op::FP::ToBVSigned, Op::FP::ToBVUnsigned>;
+    using To = std::conditional_t<Signed, Op::FP::ToBVSigned, Op::FP::ToBVUnsigned>;
     const auto op_down { dcast<To>(exp->op) };
     const auto exp_down { dcast<Expr::BV>(exp) };
 
@@ -39,8 +37,8 @@ template <Mode::Signed Sgn> void to_bv_b() {
 
 /** Verify that the to_bv function compiles and can be run without issue */
 void to_bv() {
-    to_bv_b<Mode::Signed::Signed>();
-    to_bv_b<Mode::Signed::Unsigned>();
+    to_bv_b<true>();
+    to_bv_b<false>();
 }
 
 // Define the test
