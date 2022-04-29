@@ -482,18 +482,15 @@ namespace Backend::Z3 {
         template <typename T> static T coerce_to(Op::PrimVar &&p) {
             using Usage = Util::Err::Usage;
             switch (p.index()) {
-#define M_CASE_B(INDEX, TYPE)                                                                      \
-    case INDEX: {                                                                                  \
-        UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(p, INDEX, TYPE);                               \
-        return static_cast<T>(std::get<TYPE>(p));                                                  \
-    }
-                M_CASE_B(5, uint8_t)
-                M_CASE_B(6, uint16_t)
-                M_CASE_B(7, uint32_t)
-                M_CASE_B(8, U64)
-#undef M_CASE_B
-                case 9: {
-                    UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(p, 9, BigInt);
+#define M_CASE(TYPE)                                                                               \
+    case Util::Type::index<Op::PrimVar, TYPE>:                                                     \
+        return static_cast<T>(std::get<TYPE>(p));
+                M_CASE(uint8_t)
+                M_CASE(uint16_t)
+                M_CASE(uint32_t)
+                M_CASE(U64)
+#undef M_CASE
+                case Util::Type::index<Op::PrimVar, BigInt>: {
                     const auto &bi = std::get<BigInt>(p);
                     UTIL_ASSERT(Usage, bi.bit_length < 64,
                                 "Bit length of given PrimVar is too long");

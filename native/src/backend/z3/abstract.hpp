@@ -261,17 +261,16 @@ namespace Backend::Z3 {
             /** Abstraction function for Z3_OP_BNUM */
             static Expr::BasePtr num(const z3::expr &b_obj) {
                 BVVar x { num_primtive(b_obj) }; // Not const for move purposes
-#define M_G_CASE(I)                                                                                \
-    case I:                                                                                        \
-        return Create::literal(std::get<I>(x));
+#define M_G_CASE(TYPE)                                                                             \
+    case Util::Type::index<BVVar, TYPE>:                                                           \
+        return Create::literal(std::get<TYPE>(x));
                 // Switch on the type of x
                 switch (x.index()) {
-                    M_G_CASE(0)
-                    M_G_CASE(1)
-                    M_G_CASE(2)
-                    M_G_CASE(3)
-                    case 4:
-                        UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(x, 4, BigInt);
+                    M_G_CASE(uint8_t)
+                    M_G_CASE(uint16_t)
+                    M_G_CASE(uint32_t)
+                    M_G_CASE(U64)
+                    case Util::Type::index<BVVar, BigInt>:
                         return Create::literal(std::move(std::get<BigInt>(x)));
                     default:
                         UTIL_THROW(Util::Err::Unknown, "Bad variant");

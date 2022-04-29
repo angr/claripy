@@ -270,35 +270,25 @@ namespace Backend::Z3 {
             const auto &data { Util::checked_static_cast<To>(expr->op.get())->value };
             try {
                 switch (data.index()) {
-                    case 0:
-                        UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 0, bool);
-                        return ctx.bool_val(std::get<bool>(data));
-                    case 1:
-                        UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 1, std::string);
-                        return ctx.string_val(std::get<std::string>(data));
-                    case 2:
-                        UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 2, float);
-                        return ctx.fpa_val(std::get<float>(data));
-                    case 3:
-                        UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 3, double);
-                        return ctx.fpa_val(std::get<double>(data));
-                    case 4:
-                        UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 4, PyObj::VSPtr);
+#define M_CASE(TYPE, EXPR)                                                                         \
+    case Util::Type::index<decltype(data), TYPE>: {                                                \
+        const auto &got { std::get<TYPE>(data) };                                                  \
+        return (EXPR);                                                                             \
+    }
+                    M_CASE(bool, ctx.bool_val(got));
+                    M_CASE(std::string, ctx.string_val(got));
+                    M_CASE(float, ctx.fpa_val(got));
+                    M_CASE(double, ctx.fpa_val(got));
+                    case Util::Type::index<decltype(data), PyObj::VSPtr>: {
                         UTIL_THROW(Error::Backend::Unsupported,
                                    "VSA is not supported by the Z3 backend");
-#define M_STD_INT(INDEX, TYPE, BL)                                                                 \
-    case INDEX:                                                                                    \
-        UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, INDEX, TYPE);                            \
-        return ctx.bv_val(std::get<TYPE>(data), BL);
-                        M_STD_INT(5, uint8_t, 8);
-                        M_STD_INT(6, uint16_t, 16);
-                        M_STD_INT(7, uint32_t, 32);
-                    case 8:
-                        UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 8, U64);
-                        return ctx.bv_val(static_cast<uint64_t>(std::get<U64>(data)), 64); // cast
-#undef M_STD_INT
-                    case 9: {
-                        UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 9, BigInt);
+                    }
+                        M_CASE(uint8_t, ctx.bv_val(got, 8));
+                        M_CASE(uint16_t, ctx.bv_val(got, 16));
+                        M_CASE(uint32_t, ctx.bv_val(got, 32));
+                        M_CASE(uint64_t, ctx.bv_val(static_cast<uint64_t>(got), 64));
+#undef M_CASE
+                    case Util::Type::index<decltype(data), BigInt>: {
                         const auto &big { std::get<BigInt>(data) };
                         if (std::holds_alternative<BigInt::Str>(big.value)) {
                             return ctx.bv_val(std::get<BigInt::Str>(big.value).c_str(),
@@ -306,7 +296,7 @@ namespace Backend::Z3 {
                         }
                         else {
                             std::ostringstream s;
-                            big.write_value(s);
+                            s << big.value; // z3 needs this as a str :/
                             return ctx.bv_val(s.str().c_str(), to_z3u(big.bit_length));
                         }
                     }

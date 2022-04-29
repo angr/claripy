@@ -73,16 +73,6 @@ struct BigInt {
     /** Get the default mode */
     static inline Mode mode() noexcept { return mode_; }
 
-    /** Writes value to the ostream */
-    inline void write_value(std::ostream &os) const {
-        if (std::holds_alternative<BigInt::Int>(value)) {
-            os << std::get<BigInt::Int>(value);
-        }
-        else {
-            os << '"' << std::get<BigInt::Str>(value) << '"';
-        }
-    }
-
     // Modifiers
 
     /** Converts the BigInt to the given mode */
@@ -118,11 +108,21 @@ struct BigInt {
 // Checks
 static_assert(std::is_copy_constructible_v<BigInt>, "Fix me");
 
+/** Ostream overload for BigInt::Value */
+inline std::ostream &operator<<(std::ostream &os, const BigInt::Value &v) {
+    if (std::holds_alternative<BigInt::Int>(v)) {
+        return os << std::get<BigInt::Int>(v);
+    }
+    else {
+        return os << std::get<BigInt::Str>(v);
+    }
+}
+
 /** Ostream overload for BigInt */
 inline std::ostream &operator<<(std::ostream &os, const BigInt &b) {
-    os << "BigInt{";
-    b.write_value(os);
-    return os << ", " << b.bit_length << "}";
+    CCSC q { (b.mode() == BigInt::Mode::Str) ? "\"" : "" };
+    return os << R"({ "value" : )" << q << b.value << q << R"(, "bit_length" : )" << b.bit_length
+              << " }";
 }
 
 /** Equality operator */
