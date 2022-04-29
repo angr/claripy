@@ -45,6 +45,37 @@ namespace Op {
     static_assert(std::is_copy_constructible_v<ArgVar>, "Fix me");
     static_assert(std::is_copy_assignable_v<ArgVar>, "Fix me");
 
+    /** Returns the bit_length of the value stored in Data
+     *  Raise an exception if called on a size without a bitlength (like a bool)
+     */
+    inline U64 bit_length(const PrimVar &v) {
+        static_assert(std::variant_size_v<PrimVar> == 10);
+        switch (v.index()) {
+#define M_CASE(TYPE, EXPR)                                                                         \
+    case (Util::Type::index<PrimVar, TYPE>): {                                                     \
+        const auto &got { std::get<TYPE>(v) };                                                     \
+        return EXPR;                                                                               \
+    }
+            M_CASE(std::string, CHAR_BIT * got.size());
+            M_CASE(float, CHAR_BIT * sizeof(got));
+            M_CASE(double, CHAR_BIT * sizeof(got));
+            M_CASE(PyObj::VSPtr, got->bit_length);
+            M_CASE(uint8_t, CHAR_BIT * sizeof(got));
+            M_CASE(uint16_t, CHAR_BIT * sizeof(got));
+            M_CASE(uint32_t, CHAR_BIT * sizeof(got));
+            M_CASE(U64, CHAR_BIT * sizeof(got));
+            M_CASE(BigInt, got.bit_length);
+#undef M_CASE
+            // bool
+            default: {
+                UTIL_THROW(Util::Err::Usage,
+                           "invoked when internal type does not correspond to an Expr which "
+                           "subclasses BitLength. Current variant index is: ",
+                           v.index());
+            };
+        }
+    }
+
 } // namespace Op
 
 #endif

@@ -23,8 +23,9 @@ namespace Create::Private {
 
         // Construct expr
         if constexpr (Util::Type::Is::ancestor<Expr::Bits, T>) {
+            UTIL_ASSERT_NOT_NULL_DEBUG(op.get());
             using To = CTSC<Op::Literal>;
-            const auto bl { Util::checked_static_cast<To>(op.get())->bit_length() };
+            const auto bl { Op::bit_length(Util::checked_static_cast<To>(op.get())->value) };
             return Expr::factory<T>(false, std::move(op), bl, std::move(sp));
         }
         else {
