@@ -1,7 +1,7 @@
 /**
  * @file
  * \ingroup util
- * @brief This file defines type map type
+ * @brief This file defines type-map type
  */
 #ifndef R_SRC_UTIL_TYPE_MAP_HPP_
 #define R_SRC_UTIL_TYPE_MAP_HPP_

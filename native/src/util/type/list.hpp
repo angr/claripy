@@ -57,8 +57,8 @@ namespace Util::Type {
         /** Returns the index of T in Args...
          *  Requires T in Args...
          */
-        template <typename T>
-        static inline constexpr const U64 find { Private::template find<T>() };
+        template <typename T, bool ignore_cv = false>
+        static inline constexpr const U64 find { Private::template find<T, ignore_cv>() };
 
         // List generators
 
@@ -75,7 +75,8 @@ namespace Util::Type {
         template <U64 N> using Pop = typename Private::template Pop<N>;
 
         /** Return true if T in Args */
-        template <typename T> static UTIL_ICCBOOL contains { (std::is_same_v<T, Args> || ...) };
+        template <typename T, bool ignore_cv = false>
+        static UTIL_ICCBOOL contains { (Private::template is_same<T, Args, ignore_cv> || ...) };
 
         /** Return a List containing Args... set minus the types in the type list TL */
         template <typename TL> using TLDiff = decltype(Private::diff(std::declval<TL>()));
@@ -89,6 +90,12 @@ namespace Util::Type {
 
             // Note: there are much cleaner ways to do a lot of this, however this
             // way should be fully in spec and doesn't rely on a 'nice' compiler
+
+            /** Return true if T == U */
+            template <typename T, typename U, bool ignore_cv>
+            static UTIL_ICCBOOL is_same { std::is_same_v<T, U> ||
+                                          (ignore_cv &&
+                                           std::is_same_v<std::remove_cv<T>, std::remove_cv<U>>) };
 
             /** Return List<X...> */
             template <typename, typename... X> struct Split { using Tail = List<X...>; };
@@ -134,9 +141,9 @@ namespace Util::Type {
             /** Return the index of T in Args...
              *  Requires T in Args...
              */
-            template <typename T> static constexpr U64 find() {
-                static_assert(contains<T>, "T is not in X");
-                if constexpr (std::is_same_v<Get<0>, T>) {
+            template <typename T, bool ignore_cv> static constexpr U64 find() {
+                static_assert(contains<T, ignore_cv>, "T is not in X");
+                if constexpr (Private::is_same<Get<0>, T, ignore_cv>) {
                     return 0;
                 }
                 else {
