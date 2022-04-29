@@ -286,7 +286,7 @@ namespace Backend::Z3 {
                         M_CASE(uint8_t, ctx.bv_val(got, 8));
                         M_CASE(uint16_t, ctx.bv_val(got, 16));
                         M_CASE(uint32_t, ctx.bv_val(got, 32));
-                        M_CASE(uint64_t, ctx.bv_val(static_cast<uint64_t>(got), 64));
+                        M_CASE(U64, ctx.bv_val(static_cast<uint64_t>(got), 64));
 #undef M_CASE
                     case Util::Type::index<decltype(data), BigInt>: {
                         const auto &big { std::get<BigInt>(data) };
