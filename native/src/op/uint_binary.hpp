@@ -45,11 +45,6 @@ namespace Op {
             out << R"|(, "integer":)|" << integer << " }";
         }
 
-        /** Adds the raw expr children of the expr to the given stack in reverse
-         *  Warning: This does *not* give ownership, it transfers raw pointers
-         */
-        inline void unsafe_add_reversed_children(Stack &s) const final { s.emplace(expr.get()); }
-
         /** Appends the expr children of the expr to the given vector
          *  Note: This should only be used when returning children to python
          */
@@ -60,6 +55,12 @@ namespace Op {
         explicit inline UIntBinary(const Hash::Hash &h, const CUID::CUID &cuid_,
                                    const Expr::BasePtr &e, const U64 i)
             : Base { h, cuid_ }, expr { e }, integer { i } {}
+
+      private:
+        /** Adds the raw expr children of the expr to the given stack in reverse
+         *  Warning: This does *not* give ownership, it transfers raw pointers
+         */
+        inline void unsafe_add_reversed_children(Stack &s) const final { s.emplace(expr.get()); }
     };
 
     /** Default virtual destructor */

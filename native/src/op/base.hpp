@@ -23,12 +23,6 @@ namespace Op {
       public:
         /** The name of the op */
         virtual inline const char *op_name() const noexcept = 0;
-
-        /** Adds the raw expr children of the expr to the given stack in reverse
-         *  Warning: This does *not* give ownership, it transfers raw pointers
-         *  Be careful to ensure 'this' does not destruct while using said pointers
-         */
-        virtual inline void unsafe_add_reversed_children(Stack &) const = 0;
         /** Appends the expr children of the expr to the given vector
          *  Note: This should only be used when returning children to python
          */
@@ -44,7 +38,22 @@ namespace Op {
         /** Protected constructor */
         explicit inline Base(const Hash::Hash &h, const CUID::CUID &cuid_) noexcept
             : FactoryMade { h, cuid_ } {}
+
+      private:
+        /** Adds the raw expr children of the expr to the given stack in reverse
+         *  Warning: This does *not* give ownership, it transfers raw pointers
+         *  Be careful to ensure 'this' does not destruct while using said pointers
+         */
+        virtual inline void unsafe_add_reversed_children(Stack &) const = 0;
+
+        // Friend access
+        friend void unsafe_add_reversed_children(const Base &b, Stack &);
     };
+
+    /** A way to call Base.unsafe_add_reversed_children */
+    inline void unsafe_add_reversed_children(const Base &b, Stack &s) {
+        b.unsafe_add_reversed_children(s);
+    }
 
     /** An alias for Factory::Ptr<const Op::Base> */
     using BasePtr = Factory::Ptr<const Base>;

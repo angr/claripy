@@ -53,15 +53,6 @@ namespace Op {
             out << " }";
         }
 
-        /** Adds the raw expr children of the expr to the given stack in reverse
-         *  Warning: This does *not* give ownership, it transfers raw pointers
-         */
-        inline void unsafe_add_reversed_children(Stack &s) const final {
-            s.emplace(third.get());
-            s.emplace(second.get());
-            s.emplace(first.get());
-        }
-
         /** Appends the expr children of the expr to the given vector
          *  Note: This should only be used when returning children to python
          */
@@ -90,6 +81,16 @@ namespace Op {
                 UTIL_ASSERT(E, Expr::are_same_type<false>(first, third),
                             "first and third types differ");
             }
+        }
+
+      private:
+        /** Adds the raw expr children of the expr to the given stack in reverse
+         *  Warning: This does *not* give ownership, it transfers raw pointers
+         */
+        inline void unsafe_add_reversed_children(Stack &s) const final {
+            s.emplace(third.get());
+            s.emplace(second.get());
+            s.emplace(first.get());
         }
     };
 

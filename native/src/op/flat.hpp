@@ -43,16 +43,6 @@ namespace Op {
         /** Return true if this class requires each operand be of the same size */
         virtual bool consider_size() const noexcept = 0;
 
-        /** Adds the raw expr children of the expr to the given stack in reverse
-         *  Warning: This does *not* give ownership, it transfers raw pointers
-         */
-        inline void unsafe_add_reversed_children(Stack &s) const final {
-            for (auto i { operands.crbegin() }; i != operands.crend(); ++i) {
-                UTIL_ASSERT_NOT_NULL_DEBUG(i->get());
-                s.emplace(i->get());
-            }
-        }
-
         /** Appends the expr children of the expr to the given vector
          *  Note: This should only be used when returning children to python
          */
@@ -72,6 +62,17 @@ namespace Op {
          */
         explicit inline AbstractFlat(const Hash::Hash &h, const CUID::CUID &cuid_, FlatArgs &&input)
             : Base { h, cuid_ }, operands { input } {}
+
+      private:
+        /** Adds the raw expr children of the expr to the given stack in reverse
+         *  Warning: This does *not* give ownership, it transfers raw pointers
+         */
+        inline void unsafe_add_reversed_children(Stack &s) const final {
+            for (auto i { operands.crbegin() }; i != operands.crend(); ++i) {
+                UTIL_ASSERT_NOT_NULL_DEBUG(i->get());
+                s.emplace(i->get());
+            }
+        }
     };
 
     /** Default virtual destructor */
@@ -125,7 +126,6 @@ namespace Op {
 
     /** Default virtual destructor */
     template <bool B> Flat<B>::~Flat() noexcept = default;
-
 
     /** Returns true if T is flat */
     template <typename T>

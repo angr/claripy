@@ -30,21 +30,21 @@ namespace Op {
             out << " }";
         }
 
-        /** Adds the raw expr children of the expr to the given stack in reverse
-         *  Warning: This does *not* give ownership, it transfers raw pointers
-         */
-        inline void unsafe_add_reversed_children(Stack &s) const final { s.emplace(from.get()); }
-
         /** Appends the expr children of the expr to the given vector
          *  Note: This should only be used when returning children to python
          */
         inline std::vector<ArgVar> python_children() const final { return { high, low, from }; }
 
       private:
-        /** Protected constructor */
+        /** Private constructor */
         explicit inline Extract(const Hash::Hash &h, const U64 hi, const U64 lo,
                                 const Expr::BasePtr &f)
             : Base { h, static_cuid }, high { hi }, low { lo }, from { f } {}
+
+        /** Adds the raw expr children of the expr to the given stack in reverse
+         *  Warning: This does *not* give ownership, it transfers raw pointers
+         */
+        inline void unsafe_add_reversed_children(Stack &s) const final { s.emplace(from.get()); }
     };
 
 } // namespace Op

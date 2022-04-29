@@ -35,15 +35,6 @@ namespace Op {
             out << " }";
         }
 
-        /** Adds the raw expr children of the expr to the given stack in reverse
-         *  Warning: This does *not* give ownership, it transfers raw pointers
-         */
-        inline void unsafe_add_reversed_children(Stack &s) const final {
-            s.emplace(if_false.get());
-            s.emplace(if_true.get());
-            s.emplace(cond.get());
-        }
-
         /** Appends the expr children of the expr to the given vector
          *  Note: This should only be used when returning children to python
          */
@@ -52,7 +43,7 @@ namespace Op {
         }
 
       private:
-        /** Protected constructor
+        /** Private constructor
          *  Ensure that cond is a bool
          */
         explicit inline If(const Hash::Hash &h, const Expr::BasePtr &c, const Expr::BasePtr &if_tru,
@@ -62,6 +53,15 @@ namespace Op {
             UTIL_ASSERT(Err, CUID::is_t<Expr::Bool>(cond), "Condition expr must be a boolean");
             const bool same { Expr::are_same_type<true>(if_true, if_false) };
             UTIL_ASSERT(Err, same, "if_true must be of the same type and size as if_false");
+        }
+
+        /** Adds the raw expr children of the expr to the given stack in reverse
+         *  Warning: This does *not* give ownership, it transfers raw pointers
+         */
+        inline void unsafe_add_reversed_children(Stack &s) const final {
+            s.emplace(if_false.get());
+            s.emplace(if_true.get());
+            s.emplace(cond.get());
         }
     };
 

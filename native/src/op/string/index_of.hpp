@@ -39,15 +39,6 @@ namespace Op::String {
             out << " }";
         }
 
-        /** Adds the raw expr children of the expr to the given stack in reverse
-         *  Warning: This does *not* give ownership, it transfers raw pointers
-         */
-        inline void unsafe_add_reversed_children(Stack &s) const final {
-            s.emplace(start_index.get());
-            s.emplace(pattern.get());
-            s.emplace(str.get());
-        }
-
         /** Appends the expr children of the expr to the given vector
          *  Note: This should only be used when returning children to python
          */
@@ -56,7 +47,7 @@ namespace Op::String {
         }
 
       private:
-        /** Protected constructor
+        /** Private constructor
          *  Ensure that str and pattern are of type String
          */
         explicit inline IndexOf(const Hash::Hash &h, const Expr::BasePtr &s,
@@ -66,6 +57,15 @@ namespace Op::String {
             UTIL_ASSERT(E, CUID::is_t<Expr::String>(str), "str expr must be a String");
             UTIL_ASSERT(E, CUID::is_t<Expr::String>(pattern), "pattern expr must be a String");
             UTIL_ASSERT(E, CUID::is_t<Expr::BV>(start_index), "start_index expr must be a BV");
+        }
+
+        /** Adds the raw expr children of the expr to the given stack in reverse
+         *  Warning: This does *not* give ownership, it transfers raw pointers
+         */
+        inline void unsafe_add_reversed_children(Stack &s) const final {
+            s.emplace(start_index.get());
+            s.emplace(pattern.get());
+            s.emplace(str.get());
         }
     };
 

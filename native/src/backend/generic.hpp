@@ -119,7 +119,7 @@ namespace Backend {
                     // Update stacks
                     op_stack.push(expr);
                     expr_stack.push(nullptr);
-                    op->unsafe_add_reversed_children(expr_stack);
+                    Op::unsafe_add_reversed_children(*op, expr_stack);
                 }
 
                 // If the expr represents the end of a list

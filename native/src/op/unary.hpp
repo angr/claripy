@@ -41,11 +41,6 @@ namespace Op {
             out << " }";
         }
 
-        /** Adds the raw expr children of the expr to the given stack in reverse
-         *  Warning: This does *not* give ownership, it transfers raw pointers
-         */
-        inline void unsafe_add_reversed_children(Stack &s) const final { s.emplace(child.get()); }
-
         /** Appends the expr children of the expr to the given vector
          *  Note: This should only be used when returning children to python
          */
@@ -55,6 +50,12 @@ namespace Op {
         /** Protected constructor */
         explicit inline Unary(const Hash::Hash &h, const CUID::CUID &cuid_, const Expr::BasePtr &x)
             : Base { h, cuid_ }, child { x } {}
+
+      private:
+        /** Adds the raw expr children of the expr to the given stack in reverse
+         *  Warning: This does *not* give ownership, it transfers raw pointers
+         */
+        inline void unsafe_add_reversed_children(Stack &s) const final { s.emplace(child.get()); }
     };
 
     /** Default virtual destructor */

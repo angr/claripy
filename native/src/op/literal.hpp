@@ -18,53 +18,20 @@ namespace Op {
     class Literal final : public Base {
         OP_FINAL_INIT(Literal, "", 0);
 
-#define M_CASE(TYPE, EXPR)                                                                         \
-    case (Util::Type::index<decltype(value), TYPE>): {                                             \
-        const auto &got { std::get<TYPE>(value) };                                                 \
-        return EXPR;                                                                               \
-    }
-
       public:
         /** Representation */
         const PrimVar value;
-
-        /** Returns the bit_length of the value stored in Data
-         *  Raise an exception if called on a size without a bitlength (like a bool)
-         */
-        constexpr U64 bit_length() const {
-            switch (value.index()) {
-                // String
-                M_CASE(std::string, CHAR_BIT * got.size());
-                // FP
-                M_CASE(float, CHAR_BIT * sizeof(got));
-                M_CASE(double, CHAR_BIT * sizeof(got));
-                // VS
-                M_CASE(PyObj::VSPtr, got->bit_length);
-                // BV
-                M_CASE(uint8_t, CHAR_BIT * sizeof(got));
-                M_CASE(uint16_t, CHAR_BIT * sizeof(got));
-                M_CASE(uint32_t, CHAR_BIT * sizeof(got));
-                M_CASE(U64, CHAR_BIT * sizeof(got));
-                M_CASE(BigInt, got.bit_length);
-                // Bool
-                default: {
-                    UTIL_THROW(Util::Err::Usage,
-                               "invoked when internal type does not correspond to an Expr which "
-                               "subclasses BitLength. Current variant index is: ",
-                               value.index());
-                };
-            }
-        }
 
         /** repr */
         inline void repr_stream(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "value":)|" << value << " }";
         }
 
-        /** Adds the raw expr children of the expr to the given stack in reverse
-         *  Warning: This does *not* give ownership, it transfers raw pointers
-         */
-        inline void unsafe_add_reversed_children(Stack &) const noexcept final {}
+#define M_CASE(TYPE, EXPR)                                                                         \
+    case (Util::Type::index<decltype(value), TYPE>): {                                             \
+        const auto &got { std::get<TYPE>(value) };                                                 \
+        return EXPR;                                                                               \
+    }
 
         /** Appends the expr children of the expr to the given vector
          *  Note: This should only be used when returning children to python
@@ -114,6 +81,11 @@ namespace Op {
         M_P_CTOR(U64) {};
         M_P_CTOR(BigInt) {};
 #undef M_P_CTOR
+
+        /** Adds the raw expr children of the expr to the given stack in reverse
+         *  Warning: This does *not* give ownership, it transfers raw pointers
+         */
+        inline void unsafe_add_reversed_children(Stack &) const noexcept final {}
     };
 
     /** Ostream operator for PrimVar */

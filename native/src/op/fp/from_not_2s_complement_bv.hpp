@@ -28,18 +28,13 @@ namespace Op::FP {
             out << R"|(, "width":)|" << width << " }";
         }
 
-        /** Adds the raw expr children of the expr to the given stack in reverse
-         *  Warning: This does *not* give ownership, it transfers raw pointers
-         */
-        inline void unsafe_add_reversed_children(Stack &s) const final { s.emplace(bv.get()); }
-
         /** Appends the expr children of the expr to the given vector
          *  Note: This should only be used when returning children to python
          */
         inline std::vector<ArgVar> python_children() const final { return { bv, width }; }
 
       private:
-        /** Protected constructor
+        /** Private constructor
          *  Ensure that bv is a BV
          */
         explicit inline FromNot2sComplementBV(const Hash::Hash &h, const Expr::BasePtr &b,
@@ -48,6 +43,11 @@ namespace Op::FP {
             UTIL_ASSERT(Error::Expr::Type, CUID::is_t<Expr::BV>(b),
                         "Operand b must be an Expr::BV");
         }
+
+        /** Adds the raw expr children of the expr to the given stack in reverse
+         *  Warning: This does *not* give ownership, it transfers raw pointers
+         */
+        inline void unsafe_add_reversed_children(Stack &s) const final { s.emplace(bv.get()); }
     };
 
 } // namespace Op::FP

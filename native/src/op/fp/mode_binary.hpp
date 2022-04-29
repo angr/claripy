@@ -50,14 +50,6 @@ namespace Op::FP {
             out << " }";
         }
 
-        /** Adds the raw expr children of the expr to the given stack in reverse
-         *  Warning: This does *not* give ownership, it transfers raw pointers
-         */
-        inline void unsafe_add_reversed_children(Stack &s) const final {
-            s.emplace(right.get());
-            s.emplace(left.get());
-        }
-
         /** Appends the expr children of the expr to the given vector
          *  Note: This should only be used when returning children to python
          */
@@ -71,6 +63,14 @@ namespace Op::FP {
             : Base { h, cuid_ }, mode { m }, left { l }, right { r } {
             const bool same { Expr::are_same_type<true>(left, right) };
             UTIL_ASSERT(Error::Expr::Type, same, "left and right types or sizes differ");
+        }
+
+        /** Adds the raw expr children of the expr to the given stack in reverse
+         *  Warning: This does *not* give ownership, it transfers raw pointers
+         */
+        inline void unsafe_add_reversed_children(Stack &s) const final {
+            s.emplace(right.get());
+            s.emplace(left.get());
         }
     };
 

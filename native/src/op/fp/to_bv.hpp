@@ -31,18 +31,13 @@ namespace Op::FP {
             out << " }";
         }
 
-        /** Adds the raw expr children of the expr to the given stack in reverse
-         *  Warning: This does *not* give ownership, it transfers raw pointers
-         */
-        inline void unsafe_add_reversed_children(Stack &s) const final { s.emplace(fp.get()); }
-
         /** Appends the expr children of the expr to the given vector
          *  Note: This should only be used when returning children to python
          */
         inline std::vector<ArgVar> python_children() const final { return { mode, fp }; }
 
       private:
-        /** Protected constructor
+        /** Private constructor
          *  Ensure that fp is an FP
          */
         explicit inline ToBV(const Hash::Hash &h, const Mode::FP::Rounding m,
@@ -51,6 +46,11 @@ namespace Op::FP {
             UTIL_ASSERT(Error::Expr::Type, CUID::is_t<Expr::FP>(fp),
                         "Operand fp must be an Expr::FP");
         }
+
+        /** Adds the raw expr children of the expr to the given stack in reverse
+         *  Warning: This does *not* give ownership, it transfers raw pointers
+         */
+        inline void unsafe_add_reversed_children(Stack &s) const final { s.emplace(fp.get()); }
     };
 
 } // namespace Op::FP

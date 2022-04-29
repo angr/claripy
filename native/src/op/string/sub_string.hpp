@@ -39,15 +39,6 @@ namespace Op::String {
             out << " }";
         }
 
-        /** Adds the raw expr children of the expr to the given stack in reverse
-         *  Warning: This does *not* give ownership, it transfers raw pointers
-         */
-        inline void unsafe_add_reversed_children(Stack &s) const final {
-            s.emplace(full_string.get());
-            s.emplace(count.get());
-            s.emplace(start_index.get());
-        }
-
         /** Appends the expr children of the expr to the given vector
          *  Note: This should only be used when returning children to python
          */
@@ -56,7 +47,7 @@ namespace Op::String {
         }
 
       private:
-        /** Protected constructor
+        /** Private constructor
          *  Ensure that each argument is of the proper type
          */
         explicit inline SubString(const Hash::Hash &h, const Expr::BasePtr &si,
@@ -67,6 +58,15 @@ namespace Op::String {
             UTIL_ASSERT(E, CUID::is_t<Expr::BV>(count), "count expr must be a BV");
             UTIL_ASSERT(E, CUID::is_t<Expr::String>(full_string),
                         "full_string expr must be a String");
+        }
+
+        /** Adds the raw expr children of the expr to the given stack in reverse
+         *  Warning: This does *not* give ownership, it transfers raw pointers
+         */
+        inline void unsafe_add_reversed_children(Stack &s) const final {
+            s.emplace(full_string.get());
+            s.emplace(count.get());
+            s.emplace(start_index.get());
         }
     };
 

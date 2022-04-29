@@ -42,14 +42,6 @@ namespace Op {
         /** Right operand */
         const Expr::BasePtr right;
 
-        /** Adds the raw expr children of the expr to the given stack in reverse
-         *  Warning: This does *not* give ownership, it transfers raw pointers
-         */
-        inline void unsafe_add_reversed_children(Stack &s) const final {
-            s.emplace(right.get());
-            s.emplace(left.get());
-        }
-
         /** Appends the expr children of the expr to the given vector
          *  Note: This should only be used when returning children to python
          */
@@ -75,6 +67,15 @@ namespace Op {
             const bool same { Expr::are_same_type<ConsiderSize>(left, right) };
             UTIL_ASSERT(Error::Expr::Type, same, "left and right differ by type",
                         ConsiderSize ? " or size" : "");
+        }
+
+      private:
+        /** Adds the raw expr children of the expr to the given stack in reverse
+         *  Warning: This does *not* give ownership, it transfers raw pointers
+         */
+        inline void unsafe_add_reversed_children(Stack &s) const final {
+            s.emplace(right.get());
+            s.emplace(left.get());
         }
     };
 

@@ -22,11 +22,6 @@ namespace Op {
             out << R"|({ "name":")|" << op_name() << R"|(", "symbol":")|" << name << "\" }";
         }
 
-        /** Adds the raw expr children of the expr to the given stack in reverse
-         *  Warning: This does *not* give ownership, it transfers raw pointers
-         */
-        inline void unsafe_add_reversed_children(Stack &) const noexcept final {}
-
         /** Appends the expr children of the expr to the given vector
          *  Note: This should only be used when returning children to python
          */
@@ -36,9 +31,14 @@ namespace Op {
         inline bool is_leaf() const noexcept final { return true; }
 
       private:
-        /** A protected constructor to disallow public creation */
+        /** A private constructor to disallow public creation */
         explicit inline Symbol(const Hash::Hash &h, const std::string &n)
             : Base { h, static_cuid }, name { n } {}
+
+        /** Adds the raw expr children of the expr to the given stack in reverse
+         *  Warning: This does *not* give ownership, it transfers raw pointers
+         */
+        inline void unsafe_add_reversed_children(Stack &) const noexcept final {}
     };
 
 } // namespace Op
