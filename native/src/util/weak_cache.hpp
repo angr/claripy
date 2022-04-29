@@ -110,6 +110,9 @@ namespace Util {
                 Util::PCast::Static::up<const Cached>(
                     // Construct this before casting to avoid slicing
                     // It also avoids the need for a custom deleter to deal with access controls
+                    // Note: Some compilers might be ok with with shared_ptr<Base>(new Derived)
+                    // (no inner up-cast is important), but we do not know if Base has a virtual
+                    // destructor so why risk it?
                     std::shared_ptr<const Derived> {
                         // We use new because make_shared might not have access permissions
                         new Derived { std::forward<Args>(args)... } })
