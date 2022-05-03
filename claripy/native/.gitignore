@@ -1,5 +1,5 @@
 LICENSE.GMP/*
-src/*
+cpp_src/*
 old/*
 *.so
 *.dylib

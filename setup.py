@@ -94,7 +94,7 @@ class BuiltLib:
     A shared or static library
     """
 
-    install_dir = os.path.join(claripy, "claripy/claricpp")
+    install_dir = os.path.join(claripy, "claripy/native")
 
     def __init__(self, name, build_dir, *, permit_shared, permit_static):
         self.name = name
@@ -756,14 +756,16 @@ class Claricpp(Library):
     # Constants
     build_dir = os.path.join(native, "build")
     _lib = SharedLib("libclaricpp", build_dir)
-    _out_src = os.path.join(BuiltLib.install_dir, "src")
+    _out_native_src = os.path.join(BuiltLib.install_dir, "cpp_src")
     # API constants
-    _api_target = "clari" # TODO: install API source?
+    _api_target = "clari"
     _api_lib = SharedLib(_api_target, os.path.join(build_dir, "api"))
     # Docs constants
-    _docs_dir = os.path.join(build_dir, "docs") # Must be in build_dir
+    _docs_dir = os.path.join(build_dir, "docs")  # Must be in build_dir
 
-    def __init__(self, *, api, no_build=False, no_lib=False, docs=False, debug=False, tests=False):
+    def __init__(
+        self, *, api, no_build=False, no_lib=False, docs=False, debug=False, tests=False
+    ):
         # Options
         self._build_lib = not no_lib
         self._build_tests = tests
@@ -773,8 +775,8 @@ class Claricpp(Library):
         self._no_build = no_build
         # Config
         default_chk = {i.name: i for i in [self._lib, self._api_lib]}
-        default_chk["Claricpp src"] = self._out_src
-        chk = {} if (self._build_tests or self._build_doc) else  default_chk
+        default_chk["C++ Source files"] = self._out_native_src
+        chk = {} if (self._build_tests or self._build_doc) else default_chk
         super().__init__({}, chk, chk, Boost(), Z3(), Pybind11(), Backward())
 
     def _cmake_args(self):
@@ -823,13 +825,13 @@ class Claricpp(Library):
             run_cmd_no_fail(find_exe("cmake"), *self._cmake_args(), native)
         # Build
         if not self._no_build:
-            targets = [ # Order matters (for cleaner output)
-                (self._build_lib,    claricpp),
+            targets = [  # Order matters (for cleaner output)
+                (self._build_lib, claricpp),
                 (self._build_tests, "unit_tests"),
-                (self._build_doc,    "docs"),
-                (self._build_api,    self._api_target)
+                (self._build_doc, "docs"),
+                (self._build_api, self._api_target),
             ]
-            targets = [ i[1] for i in targets if i[0] ]
+            targets = [i[1] for i in targets if i[0]]
             with chdir(self.build_dir):
                 for i in targets:
                     build_cmake_target(i)
@@ -849,25 +851,30 @@ class Claricpp(Library):
     def _license(self):
         pass  # Same as main project
 
-    @classmethod
-    def _install_ignore(cls, d, fs):
-        paths = {os.path.realpath(os.path.join(d, i)): i for i in fs}
-        return [k for i, k in paths.items() if i == os.path.realpath(cls._docs_dir)]
-
     def _install(self):
         if self._build_lib:
             self._lib.install()
         if self._build_api:
             self._api_lib.install()
-        if not os.path.exists(self._out_src):
-            src = os.path.join(native, "src")
-            shutil.copytree(src, self._out_src, ignore=self._install_ignore) # TODO: pretty sure ignore is not needed
+        if not os.path.exists(self._out_native_src):
+            def ign(d, fs):
+                rv = shutil.ignore_patterns("*.cpp", "*.hpp", "*.c", "*.h")(d, fs)
+                return [ i for i in fs if i not in rv ]
+
+            tmp = tempfile.mkdtemp(dir=self.build_dir, prefix="src-copy", suffix=".tmp")
+            print("Generating output source in: " + tmp)
+            for i in ["src", "api"]:
+                src = os.path.join(native, i)
+                dst = os.path.join(tmp, i)
+                shutil.copytree(src, dst, ignore=ign)
+            print("Installing output source...")
+            os.rename(tmp, self._out_native_src)
 
     def _clean(self, level):
         if level.implies(CleanLevel.INSTALL):
             self._api_lib.clean_install()
             self._lib.clean_install()
-            shutil.rmtree(self._out_src, ignore_errors=True)
+            shutil.rmtree(self._out_native_src, ignore_errors=True)
         if level.implies(CleanLevel.BUILT_LIBS):
             self._api_lib.clean_build()
             self._lib.clean_build()
@@ -889,6 +896,7 @@ class SDist(SDistOriginal):
         f = lambda: Claricpp(api=True).get()
         self.execute(f, (), msg="Getting build source dependencies")
         super().run()
+
 
 class Native(Command):
     description = "Build native components"
