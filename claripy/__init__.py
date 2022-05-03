@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # pylint: disable=F0401,W0401,W0603,
 
+# TODO: remove me before merging into master
+import logging; logging.basicConfig(level=logging.DEBUG)
+
 __version__ = "9.0.0.dev0"
 
 if bytes is str:

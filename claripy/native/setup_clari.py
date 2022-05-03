@@ -15,20 +15,15 @@ config_log = logging.getLogger(__file__)
 
 # TODO: remove clari.Create.foo from method calls (dict lookups are costly)
 class Setup:
-    first_run = True
-
     def __init__(self, *, debug_mode: bool = False):
         self._debug_mode = debug_mode
-        if self.first_run:
-            self._fix_operators()
-            cpp_src = os.path.join(os.path.dirname(__file__), "cpp_src")
-            clari.API.add_source_root(cpp_src)
-            self.first_run = False
 
-    def link(self, *, logger):
-        """
-        Tell claricpp to link to claripy
-        """
+    def config(self, *, src_root: str = None):
+        self._fix_operators()
+        if src_root:
+            clari.API.add_source_root(src_root)
+
+    def establish_link(self, *, logger):
         self._link_logging(logger, debug_mode=self._debug_mode)
         clari.Util.Err.Claricpp.toggle_backtrace(self._debug_mode)
         if self._debug_mode:
@@ -38,8 +33,8 @@ class Setup:
         self._link_exceptions(logger)
 
     def define_members(self, *, legacy_support: bool = False):
-        default_rm = clari.Mode.FP.Rounding.NearestTiesEven
-        clari.Mode.FP.Rounding.default = default_rm
+        rm = clari.Mode.FP.Rounding
+        rm.default = rm.NearestTiesEven
         self._def_magic_ops()
         if legacy_support:
             self._enable_args()
