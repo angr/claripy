@@ -10,18 +10,24 @@
 
 namespace Create::Private {
 
+    using TypeMap = Util::Type::Map<
+        // Bool
+        bool, Expr::Bool,
+        // String
+        std::string, Expr::String,
+        // VS
+        PyObj::VS::Ptr, Expr::VS,
+        // FP
+        double, Expr::FP, float, Expr::FP,
+        // BV
+        uint8_t, Expr::BV, uint16_t, Expr::BV, uint32_t, Expr::BV, U64, Expr::BV, BigInt, Expr::BV>;
+
     /** Create a Expr with a Literal op
      *  data may not be nullptr
      */
-    template <typename T, typename Data> Expr::BasePtr literal(Data &&data, Annotation::SPAV &&sp) {
-        static_assert(Util::Type::Is::ancestor<Expr::Base, T>,
-                      "argument types must be a subclass of Expr::Base");
-        static_assert(std::is_final_v<T>, "Create::literal's T must be a final type");
-
-        // Construct op
+    template <typename Data> Expr::BasePtr literal(Data &&data, Annotation::SPAV &&sp) {
+        using T = TypeMap::template GetValue<std::remove_cv_t<std::remove_reference_t<Data>>>;
         auto op { Op::factory<Op::Literal>(std::move(data)) };
-
-        // Construct expr
         if constexpr (Util::Type::Is::ancestor<Expr::Bits, T>) {
             UTIL_ASSERT_NOT_NULL_DEBUG(op.get());
             using To = CTSC<Op::Literal>;
@@ -32,7 +38,6 @@ namespace Create::Private {
             return Expr::factory<T>(false, std::move(op), std::move(sp));
         }
     }
-
 } // namespace Create::Private
 
 #endif
