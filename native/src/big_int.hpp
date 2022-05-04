@@ -96,7 +96,7 @@ struct BigInt {
     U64 bit_length;
 
   private:
-    /** Assert that Mod is a valide Mode */
+    /** Assert that Mod is a valid Mode */
     template <Mode Mod> static inline void assert_valid() {
         static_assert(Mod == Mode::Int || Mod == Mode::Str, "Mode may only be Int or Str");
     }

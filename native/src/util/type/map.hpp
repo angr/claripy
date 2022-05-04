@@ -16,6 +16,8 @@ namespace Util::Type {
     /** An uninstantiable type bi-directional map class
      *  Warning: This map may drop type qualifiers
      *  Warning: Duplicate mappings may lead to undefined behavior
+     *  Lookups are well defined if the lookup argument is unique
+     *  Args are Key, Value, Key, Value, ...
      */
     template <typename... Args> struct Map : public Unconstructable {
         struct Private; // Forward declare
