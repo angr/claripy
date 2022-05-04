@@ -14,13 +14,20 @@ namespace PyObj {
 
     /** A Value Set PyObj */
     struct VS final : public Base, public BitLength {
+        /** Shared pointer to a const VS */
+        using Ptr = std::shared_ptr<const VS>;
+        /** A constructor for VS objects
+         *  Note: we don't template so that bindings can easily be made
+         */
+        static inline Ptr factory(const Hash::Hash &h, const Ref r, const U64 bl) {
+            return Ptr { new VS { h, r, bl } };
+        }
+
+      private:
         /** Constructor */
         explicit inline VS(const Hash::Hash &h, const Ref r, const U64 bl) noexcept
             : Base { h, r }, BitLength { bl } {}
     };
-
-    /** Shared pointer to a const VS */
-    using VSPtr = std::shared_ptr<const VS>;
 
     /** Equality operator */
     inline bool operator==(const VS &a, const VS &b) {

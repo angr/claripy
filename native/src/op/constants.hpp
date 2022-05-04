@@ -29,7 +29,7 @@ namespace Op {
     using PrimTL = BVTL::Prepend<bool,          // Bool
                                  std::string,   // String
                                  float, double, // FP
-                                 PyObj::VSPtr   // VS
+                                 PyObj::VS::Ptr // VS
                                  >;
 
     /** A variant of the types a primitive can support */
@@ -59,7 +59,7 @@ namespace Op {
             M_CASE(std::string, CHAR_BIT * got.size());
             M_CASE(float, CHAR_BIT * sizeof(got));
             M_CASE(double, CHAR_BIT * sizeof(got));
-            M_CASE(PyObj::VSPtr, got->bit_length);
+            M_CASE(PyObj::VS::Ptr, got->bit_length);
             M_CASE(uint8_t, CHAR_BIT * sizeof(got));
             M_CASE(uint16_t, CHAR_BIT * sizeof(got));
             M_CASE(uint32_t, CHAR_BIT * sizeof(got));

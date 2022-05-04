@@ -43,7 +43,7 @@ namespace Op {
                 M_CASE(std::string, { got });
                 M_CASE(float, { got });
                 M_CASE(double, { got });
-                M_CASE(PyObj::VSPtr, { got });
+                M_CASE(PyObj::VS::Ptr, { got });
                 M_CASE(uint8_t, { got });
                 M_CASE(uint16_t, { got });
                 M_CASE(uint32_t, { got });
@@ -61,24 +61,26 @@ namespace Op {
 
       private:
 #define M_P_CTOR(TYPE)                                                                             \
+    static_assert(std::is_const_v<TYPE> == std::is_fundamental_v<TYPE>,                            \
+                  "Fundamental types should be const, non-fundamental should not");                \
     /** Private constructor;  constructor should not be given shared pointers to nulllptr */       \
     explicit inline Literal(const Hash::Hash &h, TYPE &&data)                                      \
         : Base { h, static_cuid }, value { std::move(data) }
 
         // The different private constructors we allow
         // There should be one for each variant type
-        M_P_CTOR(bool) {};
+        M_P_CTOR(const bool) {};
         M_P_CTOR(std::string) {};
-        M_P_CTOR(float) {};
-        M_P_CTOR(double) {};
-        M_P_CTOR(PyObj::VSPtr) {
-            UTIL_ASSERT_NOT_NULL_DEBUG(std::get<PyObj::VSPtr>(value));
+        M_P_CTOR(const float) {};
+        M_P_CTOR(const double) {};
+        M_P_CTOR(PyObj::VS::Ptr) {
+            UTIL_ASSERT_NOT_NULL_DEBUG(std::get<PyObj::VS::Ptr>(value));
         }
         // BV constructors
-        M_P_CTOR(uint8_t) {};
-        M_P_CTOR(uint16_t) {};
-        M_P_CTOR(uint32_t) {};
-        M_P_CTOR(U64) {};
+        M_P_CTOR(const uint8_t) {};
+        M_P_CTOR(const uint16_t) {};
+        M_P_CTOR(const uint32_t) {};
+        M_P_CTOR(const U64) {};
         M_P_CTOR(BigInt) {};
 #undef M_P_CTOR
 
@@ -95,7 +97,7 @@ namespace Op {
             M_CASE(std::string, o << std::quoted(got));
             M_CASE(float, o << got);
             M_CASE(double, o << got);
-            M_CASE(PyObj::VSPtr, o << got);
+            M_CASE(PyObj::VS::Ptr, o << got);
             M_CASE(uint8_t, o << static_cast<uint16_t>(got));
             M_CASE(uint16_t, o << got);
             M_CASE(uint32_t, o << got);

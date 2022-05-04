@@ -273,7 +273,7 @@ namespace Backend::Z3 {
                     M_CASE(std::string, ctx.string_val(got));
                     M_CASE(float, ctx.fpa_val(got));
                     M_CASE(double, ctx.fpa_val(got));
-                    case Util::Type::index<decltype(data), PyObj::VSPtr>: {
+                    case Util::Type::index<decltype(data), PyObj::VS::Ptr>: {
                         UTIL_THROW(Error::Backend::Unsupported,
                                    "VSA is not supported by the Z3 backend");
                     }
