@@ -16,7 +16,7 @@ import logging
 l = logging.getLogger("claripy")
 l.addHandler(logging.NullHandler())
 
-from .native import clari as native
+from .native import clari
 
 from .errors import *
 from . import operations
