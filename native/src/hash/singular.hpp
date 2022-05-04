@@ -31,6 +31,14 @@ namespace Hash {
         return std::declval<Hash>(); // Satisfy the compiler
     }
 
+    /** A specialization for shared pointers to pre-hashed types
+     *  Do not hash a shared pointer of a non-const object
+     */
+    template <typename T> inline Hash singular(const std::shared_ptr<T> &) noexcept {
+        static_assert(Util::TD::false_<T>, "Shared pointer internals should be const");
+        return std::declval<Hash>(); // Satisfy the compiler
+    }
+
     /** The FNV1a hash function to be invoked for for size sizeof(Hash) */
     template <typename Type> constexpr auto fnv1a { Util::FNV1a<Type>::template hash<Hash> };
 
@@ -179,24 +187,16 @@ namespace Hash {
     }
 
     /** A specialization for shared pointers to pre-hashed types */
-    template <> inline Hash singular(const std::shared_ptr<const Hashed> &h) noexcept {
-        if (h == nullptr) {
-            return UTIL_FILE_LINE_HASH;
-        }
-        // Will warn if types are different or implicit conversion is dangerous / impossible
-        return h->hash;
+    inline Hash singular_helper(const Hashed &h) noexcept {
+        return h.hash;
     }
 
-    /** A specialization for shared pointers of strict subclasses of Hashed types */
-    template <
-        typename Inner,
-        // Require to prevent infinite recursion
-        std::enable_if_t<not Util::Type::Is::wrap_same<Hashed, Inner, std::remove_cv_t>, int> = 0,
-        // Ensure Inner derives from Hashed
-        std::enable_if_t<Util::Type::Is::ancestor<Hashed, Inner>, int> = 0> // Allows prims
-    inline Hash singular(const std::shared_ptr<const Inner> &h) noexcept {
-        // Will warn if types are different or implicit conversion is dangerous / impossible
-        return singular(Util::PCast::Static::up<Hashed>(h));
+    /** A specialization for shared pointers to pre-hashed types */
+    template <typename T> inline Hash singular(const std::shared_ptr<const T> &p) noexcept {
+        if (p == nullptr) {
+            return UTIL_FILE_LINE_HASH;
+        }
+        return singular_helper(*p.get()); // SFINAE reject if not a Hashed
     }
 
     /** A specialization for T = std::vector<Inner> */
