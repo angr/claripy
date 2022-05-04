@@ -1,15 +1,16 @@
-import weakref
 import logging
 import os
 
 # TODO: find a better way, pybind11 doesn't seem to play well with relative imports
 import sys
 
-old = sys.path
-sys.path = [os.path.dirname(__file__)]
-import clari
+try:
+    old = sys.path
+    sys.path = [os.path.dirname(__file__)]
+    import clari
 
-sys.path = old
+finally:
+    sys.path = old
 
 config_log = logging.getLogger(__file__)
 
@@ -32,12 +33,12 @@ class Setup:
         config_log.info(f"Native backtraces {enabled}")
         self._link_exceptions(logger)
 
-    def define_members(self, *, legacy_support: bool = False):
+    def define_members(self):
+        Create = clari.Create
         rm = clari.Mode.FP.Rounding
         rm.default = rm.NearestTiesEven
+        Create.pos = lambda x: x  # TODO: ask fish
         self._def_magic_ops()
-        if legacy_support:
-            self._enable_args()
 
     @staticmethod
     def _fix_operators():
@@ -119,7 +120,7 @@ class Setup:
         assert check, "Define a default FP rounding mode first"
         Create = clari.Create
         ### Base / Bits / String
-        clari.Expr.Base.__pos__ = lambda x: x  # TODO: ask fish
+        clari.Expr.Base.__pos__ = Create.pos
         clari.Expr.Bits.__len__ = lambda x: x.bit_length
         clari.Expr.String.__add__ = lambda x, y: Create.concat(x, y)
 
@@ -169,21 +170,6 @@ class Setup:
         clari.Expr.BV.__mod__ = lambda a, b: Create.mod(a, b)
         clari.Expr.BV.__lshift__ = lambda a, b: Create.shift_l(a, b)
         clari.Expr.BV.__rshift__ = lambda a, b: Create.shift_arithmetic_right(a, b)
-
-    @staticmethod
-    def _enable_args():
-        def _args(self):
-            if self not in self._args_dict:  # Cache check
-                lst = self.op.python_children()
-                print(type(self.op))
-                if self.op.is_leaf:
-                    lst.append(len(self))
-                self._args_dict[self] = tuple(lst)
-            return self._args_dict[self]
-
-        # Claricpp objects are generally readonly, so we map weakrefs to cached vars
-        clari.Expr.Base._args_dict = weakref.WeakKeyDictionary()
-        clari.Expr.Base.args = property(_args)
 
 
 __all__ = ("Config", "clari")
