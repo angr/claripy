@@ -16,10 +16,12 @@ namespace Expr {
     class Bits : public Base, public BitLength {
         FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base)
       protected:
-        /** Protected Constructor */
+        /** Protected Constructor
+         *  Note: arguments are templated to allow for perfect forwarding (consts and such)
+         */
+        template <typename OpBasePtrT, typename SPAVT>
         explicit inline Bits(const Hash::Hash h, const CUID::CUID &c, const bool sym,
-                             Op::BasePtr &&op_, const U64 bit_length_,
-                             Annotation::SPAV &&sp) noexcept
+                             OpBasePtrT &&op_, const U64 bit_length_, SPAVT &&sp) noexcept
             : Base { h, c, sym, std::move(op_), std::move(sp) }, BitLength { bit_length_ } {}
 
         /** Pure virtual destructor */

@@ -43,9 +43,12 @@ namespace Expr {
         void repr_stream(std::ostream &out) const;
 
       protected:
-        /** Protected Constructor */
+        /** Protected Constructor
+         *  Note: arguments are templated to allow for perfect forwarding (consts and such)
+         */
+        template <typename OpBasePtrT, typename SPAVT>
         explicit inline Base(const Hash::Hash h, const CUID::CUID &c, const bool sym,
-                             Op::BasePtr &&op_, Annotation::SPAV &&sp) NOEXCEPT_UNLESS_DEBUG :
+                             OpBasePtrT &&op_, SPAVT &&sp) NOEXCEPT_UNLESS_DEBUG :
             FactoryMade { h, c },
             symbolic { sym },
             op { std::move(op_) },
