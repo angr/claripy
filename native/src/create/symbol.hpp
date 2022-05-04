@@ -10,55 +10,60 @@
 
 namespace Create {
 
-    /** Create a Bool Expr with an symbol op */
-    inline Expr::BasePtr symbol(std::string name, Annotation::SPAV &&sp) {
+    /** Create an Expr with a symbol op with annotations */
+    template <typename T, typename... Args>
+    Expr::BasePtr symbol(std::string &&name, const U64 bit_length, Args &&...args) {
+        static_assert(Util::Type::Is::ancestor<Expr::Bits, T>,
+                      "Create::symbol argument types must be a subclass of Base");
+        static_assert(std::is_final_v<T>, "Create::symbol's T must be a final type");
+        // Append SPAV if needed
+        if constexpr (sizeof...(Args) == 0) {
+            return Expr::factory<T>(true, Op::factory<Op::Symbol>(std::move(name)),
+                                    std::move(bit_length), std::move(empty_spav));
+        }
+        else {
+            return Expr::factory<T>(true, Op::factory<Op::Symbol>(std::move(name)),
+                                    std::move(bit_length), std::forward<Args>(args)...);
+        }
+    }
+
+    /** Create an Expr with a symbol op */
+    template <typename... Args> Expr::BasePtr symbol(std::string &&name, Args &&...args) {
+        if constexpr (sizeof...(Args) == 0) {
+            return Expr::factory<Expr::Bool>(true, Op::factory<Op::Symbol>(std::move(name)),
+                                             std::move(empty_spav));
+        }
+        else {
+            return Expr::factory<Expr::Bool>(true, Op::factory<Op::Symbol>(std::move(name)),
+                                             std::forward<Args>(args)...);
+        }
+    }
+
+    // Non-templated non-moving functions (the API can use these)
+
+    /** Create a Bool Expr with a symbol op */
+    inline Expr::BasePtr symbol_bool(std::string name, Annotation::SPAV sp = empty_spav) {
         return Expr::factory<Expr::Bool>(true, Op::factory<Op::Symbol>(std::move(name)),
                                          std::move(sp));
     }
 
-    /** Create a Expr with an symbol op
-     *  This override is for sized Expr types
-     */
-    template <typename T>
-    Expr::BasePtr symbol(std::string name, const U64 bit_length, Annotation::SPAV &&sp) {
-        // Type checks
-        static_assert(Util::Type::Is::ancestor<Expr::Bits, T>,
-                      "Create::symbol argument types must be a subclass of Bits");
-        static_assert(std::is_final_v<T>, "Create::symbol's T must be a final type");
-
-        // Construct expr
-        return Expr::factory<T>(true, Op::factory<Op::Symbol>(std::move(name)), bit_length,
-                                std::move(sp));
+#define M_BITS_TYPE(TYPE, NAME)                                                                    \
+    inline Expr::BasePtr symbol_##NAME(std::string name, const U64 bit_length,                     \
+                                       Annotation::SPAV sp = empty_spav) {                         \
+        return Expr::factory<Expr::TYPE>(true, Op::factory<Op::Symbol>(std::move(name)),           \
+                                         std::move(bit_length), std::move(sp));                    \
     }
 
-    /* A shortcut for symbol; exists for the API */
-    inline Expr::BasePtr symbol_bool(std::string name, Annotation::SPAV sp = empty_spav) {
-        return symbol(std::move(name), std::move(sp));
-    }
+    /** Create a String Expr with a symbol op */
+    M_BITS_TYPE(String, string);
+    /** Create a BV Expr with a symbol op */
+    M_BITS_TYPE(BV, bv);
+    /** Create a FP Expr with a symbol op */
+    M_BITS_TYPE(FP, fp);
+    /** Create a VS Expr with a symbol op */
+    M_BITS_TYPE(VS, vs);
 
-    /* A shortcut for symbol<BV>; exists for the API */
-    inline Expr::BasePtr symbol_bv(std::string name, const U64 bit_length,
-                                   Annotation::SPAV sp = empty_spav) {
-        return symbol<Expr::BV>(std::move(name), bit_length, std::move(sp));
-    }
-
-    /* A shortcut for symbol<FP>; exists for the API */
-    inline Expr::BasePtr symbol_fp(std::string name, const U64 bit_length,
-                                   Annotation::SPAV sp = empty_spav) {
-        return symbol<Expr::FP>(std::move(name), bit_length, std::move(sp));
-    }
-
-    /* A shortcut for symbol<String>; exists for the API */
-    inline Expr::BasePtr symbol_string(std::string name, const U64 bit_length,
-                                       Annotation::SPAV sp = empty_spav) {
-        return symbol<Expr::String>(std::move(name), bit_length, std::move(sp));
-    }
-
-    /* A shortcut for symbol<FP>; exists for the API */
-    inline Expr::BasePtr symbol_vs(std::string name, const U64 bit_length,
-                                   Annotation::SPAV sp = empty_spav) {
-        return symbol<Expr::VS>(std::move(name), bit_length, std::move(sp));
-    }
+#undef M_BITS_TYPE
 
 } // namespace Create
 
