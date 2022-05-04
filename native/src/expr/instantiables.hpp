@@ -22,9 +22,9 @@
                                                                                                    \
       private:                                                                                     \
         /** Private Constructor */                                                                 \
-        explicit inline CLASS(const Hash::Hash h, const bool sym, Op::BasePtr &&op_,               \
-                              const U64 bit_length_, Annotation::SPAV &&sp) noexcept               \
-            : Bits { h, static_cuid, sym, std::move(op_), bit_length_, std::move(sp) } {}          \
+        template <typename... Args>                                                                \
+        explicit inline CLASS(const Hash::Hash h, Args &&...args) noexcept                         \
+            : Bits { h, static_cuid, std::forward<Args>(args)... } {}                              \
         /* Disable other methods of construction */                                                \
         SET_IMPLICITS_CONST_MEMBERS(CLASS, delete);                                                \
     };
