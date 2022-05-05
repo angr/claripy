@@ -76,9 +76,10 @@ namespace Create {
             M_CASE(32, uint32_t);
             M_CASE(16, uint16_t);
             M_CASE(8, uint8_t);
+            default:
+                return Private::literal(BigInt::from_int(data, bit_length), std::move(sp));
         }
 #undef M_CASE
-        return Private::literal(BigInt::from_int(data, bit_length), std::move(sp));
     }
 
     /** Create a BV Expr with a Literal op from a BigInt */
@@ -101,8 +102,10 @@ namespace Create {
             M_CASE(32, uint32_t);
             M_CASE(16, uint16_t);
             M_CASE(8, uint8_t);
+            default:
+                return Private::literal(BigInt::from_str(std::move(data), bit_length),
+                                        std::move(sp));
         }
-        return Private::literal(BigInt::from_str(std::move(data), bit_length), std::move(sp));
 #undef M_CASE
     }
 

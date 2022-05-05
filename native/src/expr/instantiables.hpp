@@ -45,9 +45,9 @@ namespace Expr {
 
       private:
         /** Private Constructor */
-        explicit inline Bool(const Hash::Hash h, const bool sym, Op::BasePtr &&op_,
-                             Annotation::SPAV &&sp) noexcept
-            : Base { h, static_cuid, sym, std::move(op_), std::move(sp) } {}
+        template <typename... Args>
+        explicit inline Bool(const Hash::Hash h, Args &&...args) noexcept
+            : Base { h, static_cuid, std::forward<Args>(args)... } {}
         /* Disable other methods of construction */
         SET_IMPLICITS_CONST_MEMBERS(Bool, delete);
     };
