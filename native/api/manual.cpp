@@ -6,6 +6,7 @@
 
 #include "backtrace.hpp"
 #include "exceptions.hpp"
+#include "globals.hpp"
 #include "log.hpp"
 #include "signal_handler.hpp"
 #include "simplify.hpp"
@@ -26,6 +27,7 @@ void API::bind_manual(pybind11::module_ &root_module, Binder::ModuleGetter &m) {
     simplify(m);
     signal_handler(m);
     logger(m);
+    globals(m);
     // Goodbye message
     register_at_exit([]() noexcept { slog("Running C++ exit functions to decouple from python"); });
 }
