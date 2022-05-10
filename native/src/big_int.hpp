@@ -38,7 +38,7 @@ struct BigInt {
                                     : from_c_str<Mode::Int>(s, bit_length);
     }
 
-    /** Convert the input to a BigInt using the default Mod */
+    /** Convert the input to a BigInt using the mode Mod */
     template <Mode Mod> static inline BigInt from_str(Str &&s, const U64 bit_length) {
         return (Mod == Mode::Str) ? BigInt { std::move(s), bit_length }
                                   : BigInt { Int { std::move(s) }, bit_length };

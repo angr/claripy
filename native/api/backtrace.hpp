@@ -3,8 +3,8 @@
  * @brief This file defines python code used for backtrace API functions
  * \ingroup api
  */
-#ifndef R_BACKTRACE_HPP_
-#define R_BACKTRACE_HPP_
+#ifndef R_API_BACKTRACE_HPP_
+#define R_API_BACKTRACE_HPP_
 
 #include "constants.hpp"
 

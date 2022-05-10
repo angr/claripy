@@ -46,6 +46,7 @@ namespace Create {
      *  Warning: this may cast data to a smaller size (bit_length or greater)
      *  Note: bit_length instead of overrides or template b/c python bindings
      *  Specifically, only one override would ever be used
+     *  TODO: later allow Width instead of bit_length
      */
     inline Expr::BasePtr literal_fp(const double data, const U64 bit_length,
                                     Annotation::SPAV sp = empty_spav) {

@@ -58,7 +58,9 @@ namespace Create {
     M_BITS_TYPE(String, string);
     /** Create a BV Expr with a symbol op */
     M_BITS_TYPE(BV, bv);
-    /** Create a FP Expr with a symbol op */
+    /** Create a FP Expr with a symbol op
+     *  TODO: later allow Width instead of bit_length
+     */
     M_BITS_TYPE(FP, fp);
     /** Create a VS Expr with a symbol op */
     M_BITS_TYPE(VS, vs);

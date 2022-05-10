@@ -29,6 +29,7 @@ target_sources(clari PRIVATE
     exceptions.cpp
 	backtrace.cpp
 	simplify.cpp
+	globals.cpp
     manual.cpp
     log.cpp
 )
