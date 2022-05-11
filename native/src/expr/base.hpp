@@ -23,7 +23,6 @@ namespace Expr {
 
     /** The base Expr type
      *  All exprs must subclass this
-     *  TODO: make quite a bit smaller by killing vtables; Hashed, HasCUID, and HasRepr all have one
      */
     class Base : public HasRepr<Base>, public Factory::FactoryMade {
         FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base)

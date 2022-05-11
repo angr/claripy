@@ -398,7 +398,7 @@ void bind_unknown_unknown_12(std::function< pybind11::module &(std::string const
 	PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>)
 #endif
 
-// Expr::Base file: line:28
+// Expr::Base file: line:27
 struct PyCallBack_Expr_Base : public Expr::Base {
 	using Expr::Base::Base;
 
@@ -420,8 +420,8 @@ struct PyCallBack_Expr_Base : public Expr::Base {
 namespace API::Binder {
 void bind_unknown_unknown_13(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
-	{ // Expr::Base file: line:28
-		pybind11::class_<Expr::Base, Expr::Base*, PyCallBack_Expr_Base, HasRepr<Expr::Base>, Factory::FactoryMade> cl(M("Expr"), "Base", "The base Expr type\n  All exprs must subclass this\n  TODO: make quite a bit smaller by killing vtables; Hashed, HasCUID, and HasRepr all have one");
+	{ // Expr::Base file: line:27
+		pybind11::class_<Expr::Base, Expr::Base*, PyCallBack_Expr_Base, HasRepr<Expr::Base>, Factory::FactoryMade> cl(M("Expr"), "Base", "The base Expr type\n  All exprs must subclass this");
 		cl.def_readonly("symbolic", &Expr::Base::symbolic);
 		cl.def_readonly("op", &Expr::Base::op);
 		cl.def_readonly("annotations", &Expr::Base::annotations);
@@ -1903,19 +1903,19 @@ void bind_unknown_unknown_8(std::function< pybind11::module &(std::string const 
 namespace API::Binder {
 void bind_unknown_unknown_9(std::function< pybind11::module &(std::string const &namespace_) > &M)
 {
-	// Hash::Private::try_cuid() file: line:19
+	// Hash::Private::try_cuid() file: line:18
 	M("Hash::Private").def("try_cuid", (unsigned long long (*)()) &Hash::Private::try_cuid<Annotation::Base>, "C++: Hash::Private::try_cuid() --> unsigned long long");
 
-	// Hash::Private::try_cuid() file: line:19
+	// Hash::Private::try_cuid() file: line:18
 	M("Hash::Private").def("try_cuid", (unsigned long long (*)()) &Hash::Private::try_cuid<Expr::Base>, "C++: Hash::Private::try_cuid() --> unsigned long long");
 
-	// Hash::Private::try_cuid() file: line:19
+	// Hash::Private::try_cuid() file: line:18
 	M("Hash::Private").def("try_cuid", (unsigned long long (*)()) &Hash::Private::try_cuid<Annotation::Vec>, "C++: Hash::Private::try_cuid() --> unsigned long long");
 
-	// Hash::Private::try_cuid() file: line:19
+	// Hash::Private::try_cuid() file: line:18
 	M("Hash::Private").def("try_cuid", (unsigned long long (*)()) &Hash::Private::try_cuid<Op::Base>, "C++: Hash::Private::try_cuid() --> unsigned long long");
 
-	// Hash::Private::try_cuid() file: line:19
+	// Hash::Private::try_cuid() file: line:18
 	M("Hash::Private").def("try_cuid", (unsigned long long (*)()) &Hash::Private::try_cuid<PyObj::VS>, "C++: Hash::Private::try_cuid() --> unsigned long long");
 
 }
