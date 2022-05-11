@@ -7,6 +7,7 @@
 #define R_SRC_UTIL_TYPE_IS_SAME_HPP_
 
 #include "../../macros.hpp"
+#include "../remove_cvr.hpp"
 
 #include <type_traits>
 
@@ -24,6 +25,9 @@ namespace Util::Type::Is {
     /** Verifies that the cv unqualified types are the same */
     template <typename T, typename U>
     UTIL_ICCBOOL same_ignore_cv { wrap_same<T, U, std::remove_cv_t> };
+
+    /** Verifies that the cv unqualified types are the same */
+    template <typename T, typename U> UTIL_ICCBOOL same_ignore_cvr { wrap_same<T, U, RemoveCVR> };
 
 } // namespace Util::Type::Is
 

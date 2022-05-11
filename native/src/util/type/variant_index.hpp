@@ -7,6 +7,7 @@
 #define R_SRC_UTIL_TYPE_VARIANTINDEX_HPP_
 
 #include "list.hpp"
+#include "remove_cvr.hpp"
 
 #include <variant>
 
@@ -16,14 +17,12 @@ namespace Util::Type {
         template <typename... Args> constexpr List<Args...> from_var(std::variant<Args...> &&) {
             return std::declval<List<Args...>>();
         }
-        /** Clean up a type */
-        template <typename T> using Clean = std::remove_cv_t<std::remove_reference_t<T>>;
         /** Return the index of T in V's template arguments and run a static check */
         template <typename V, typename T> constexpr unsigned index() {
-            using TL = decltype(Private::from_var(std::declval<Clean<V>>()));
+            using TL = decltype(Private::from_var(std::declval<RemoveCVR<V>>()));
             const unsigned ret { TL::template find<T, true> };
             using SanityCheck = decltype(std::get<ret>(std::declval<V>()));
-            static_assert(std::is_same_v<Clean<SanityCheck>, Clean<T>>, "Sanity check failed");
+            static_assert(Util::Type::Is::same_ignore_cvr<SanityCheck, T>, "Sanity check failed");
             return ret;
         }
     } // namespace Private

@@ -15,6 +15,7 @@
 #include "type/map.hpp"
 #include "type/pair.hpp"
 #include "type/pun.hpp"
+#include "type/remove_cvr.hpp"
 #include "type/select.hpp"
 #include "type/sfinae_test.hpp"
 #include "type/to_type.hpp"

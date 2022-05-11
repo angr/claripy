@@ -26,7 +26,7 @@ namespace Create::Private {
      *  data may not be nullptr
      */
     template <typename Data> Expr::BasePtr literal(Data &&data, Annotation::SPAV &&sp) {
-        using T = TypeMap::template GetValue<std::remove_cv_t<std::remove_reference_t<Data>>>;
+        using T = TypeMap::template GetValue<Util::Type::RemoveCVR<Data>>;
         auto op { Op::factory<Op::Literal>(std::move(data)) };
         if constexpr (Util::Type::Is::ancestor<Expr::Bits, T>) {
             UTIL_ASSERT_NOT_NULL_DEBUG(op.get());

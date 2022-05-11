@@ -78,7 +78,7 @@ namespace Util {
 
         /** Logs what */
         template <typename T> inline void put(T &&what) noexcept {
-            using U = std::remove_cv_t<std::remove_reference_t<T>>;
+            using U = Util::Type::RemoveCVR<T>;
             if constexpr (Type::Is::same_ignore_cv<U, const char *>) {
                 std::fprintf(fp, "%s", what);
             }
