@@ -8,6 +8,7 @@
 
 /** A hashed struct */
 struct TestHashed : public Hash::Hashed {
+    CUID_DEFINE_MAYBE_UNUSED;
     /** Constructor */
     explicit TestHashed(const Hash::Hash h) noexcept : Hashed { h } {}
 };

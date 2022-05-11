@@ -13,28 +13,28 @@ struct TestHashed : public Hash::Hashed {
 };
 
 
-/** Verify that hash singulars work */
-void singular() {
+/** Verify that hash serializes work */
+void serialize() {
 
     // Hashed
     auto s1 = std::make_shared<const TestHashed>(0_ui);
     auto s2 = std::make_shared<const TestHashed>(0_ui);
     auto s3 = std::make_shared<const TestHashed>(1_ui);
-    UNITTEST_ASSERT(Hash::singular(s1) == Hash::singular(s2));
-    UNITTEST_ASSERT(Hash::singular(s1) != Hash::singular(s3));
+    UNITTEST_ASSERT(Hash::serialize(s1) == Hash::serialize(s2));
+    UNITTEST_ASSERT(Hash::serialize(s1) != Hash::serialize(s3));
 
     // Constexpr compilation tests
     constexpr CCSC msg { "Hello" };
-    constexpr auto c = Hash::singular(msg);
-    constexpr auto cui = Hash::singular(0_ui);
-    constexpr auto ci = Hash::singular(0_i);
+    constexpr auto c = Hash::serialize(msg);
+    constexpr auto cui = Hash::serialize(0_ui);
+    constexpr auto ci = Hash::serialize(0_i);
     Util::sink(c, cui, ci);
 
     // Non-constexpr compilation tests
-    (void) Hash::singular(std::vector<I64> { 0_i, 1_i });
+    (void) Hash::serialize(std::vector<I64> { 0_i, 1_i });
     const std::string sref { "Hello" };
-    (void) Hash::singular(sref);
+    (void) Hash::serialize(sref);
 }
 
 // Define the test
-UNITTEST_DEFINE_MAIN_TEST(singular)
+UNITTEST_DEFINE_MAIN_TEST(serialize)
