@@ -5,6 +5,7 @@
 #ifndef R_SRC_BIGINT_HPP_
 #define R_SRC_BIGINT_HPP_
 
+#include "cuid.hpp"
 #include "mode.hpp"
 
 #include <ostream>
@@ -14,6 +15,8 @@
 
 /** The arbitrary precision type claricpp uses */
 struct BigInt {
+    CUID_DEFINE_MAYBE_UNUSED;
+
     /** The type of the value when represented as an int */
     using Int = boost::multiprecision::mpz_int;
     /** The type of the value when represented as a string */

@@ -18,6 +18,7 @@ namespace Op {
      *  All op exprs must subclass this
      */
     class Base : public HasRepr<Base>, public Factory::FactoryMade {
+        CUID_DEFINE_MAYBE_UNUSED;
         OP_PURE_INIT_BASE(Base);
 
       public:

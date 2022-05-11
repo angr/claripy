@@ -14,6 +14,8 @@ namespace Annotation {
 
     /* A class that represents a constant vector of annotations with a pre-computed hash */
     struct Vec final : public HasRepr<Vec>, public Hash::Hashed {
+        CUID_DEFINE_MAYBE_UNUSED;
+
       public:
         /** The raw vector type Vec holds */
         using RawVec = std::vector<BasePtr>;

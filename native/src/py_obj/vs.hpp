@@ -14,6 +14,7 @@ namespace PyObj {
 
     /** A Value Set PyObj */
     struct VS final : public Base, public BitLength {
+        CUID_DEFINE_MAYBE_UNUSED
         /** Shared pointer to a const VS */
         using Ptr = std::shared_ptr<const VS>;
         /** A constructor for VS objects
