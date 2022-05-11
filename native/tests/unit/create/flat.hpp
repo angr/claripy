@@ -49,9 +49,20 @@ template <typename T, typename OpT, SM Mode, auto CreateF> inline void flat() {
 
     // Size test
     if constexpr (Util::Type::Is::ancestor<Expr::Bits, T>) {
-        static_assert(Mode == Util::TD::id<SM::First>, "Unsupported mode for flat");
-        const auto i0 { dcast<T>(flat->operands[0]) };
-        UNITTEST_ASSERT(exp_down->bit_length == i0->bit_length);
+        if constexpr (Mode == SM::First) {
+            const auto i0 { dcast<T>(flat->operands[0]) };
+            UNITTEST_ASSERT(exp_down->bit_length == i0->bit_length);
+        }
+        else if constexpr (Mode == SM::Add) {
+            U64 len { 0 };
+            for (const auto &i : flat->operands) {
+                len += dcast<T>(i)->bit_length;
+            }
+            UNITTEST_ASSERT(exp_down->bit_length == len);
+        }
+        else {
+            static_assert(Util::CD::false_<Mode>, "Unsupported mode for flat");
+        }
     }
 }
 

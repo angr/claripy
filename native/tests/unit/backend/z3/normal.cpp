@@ -138,11 +138,11 @@ void normal() {
     UNITTEST_ASSERT(test_id(C::rotate_left(bv_x, bv_y)));
     UNITTEST_ASSERT(test_id(C::rotate_right(bv_x, bv_y)));
 
-    Util::Log::debug("Testing concat...");
-    UNITTEST_ASSERT(test_id(C::concat(bv_x, bv_y)));
-    /* UNITTEST_ASSERT(test_id(C::concat<Expr::String>(string_x, string_y))); */
-
     // Flat
+
+    Util::Log::debug("Testing concat...");
+    UNITTEST_ASSERT(test_id(C::concat({ bv_x, bv_y })));
+    /* UNITTEST_ASSERT(test_id(C::concat<Expr::String>({string_x, string_y}))); */
 
     Util::Log::debug("Testing add...");
     UNITTEST_ASSERT(test_id(C::add({ bv_x, bv_y })));

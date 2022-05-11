@@ -117,9 +117,9 @@ void args() {
     test(C::widen(bv_sym, bv_sym));
     test(C::union_(bv_sym, bv_sym));
     test(C::intersection_(bv_sym, bv_sym));
-    test(C::concat(bv_sym, bv_sym));
 
     // Flat
+    test(C::concat({ bv_sym, bv_sym }));
     test(C::add({ bv_sym, bv_sym }));
     test(C::mul({ bv_sym, bv_sym }));
     test(C::or_({ bv_sym, bv_sym }));

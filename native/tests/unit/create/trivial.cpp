@@ -115,13 +115,13 @@ void trivial() {
     binary<Expr::BV, Op::Intersection, SM::First, Cr::intersection_>();
     binary<Expr::Bool, Op::Intersection, SM::First, Cr::intersection_>();
 
-    Log::debug("Testing concat...");
-    binary<Expr::BV, Op::Concat, SM::Add, Cr::concat>();
-    binary<Expr::String, Op::Concat, SM::Add, Cr::concat>();
-
     /********************************************************************/
     /*                               Flat                               */
     /********************************************************************/
+
+    Log::debug("Testing concat...");
+    flat<Expr::BV, Op::Concat, SM::Add, Cr::concat>();
+    flat<Expr::String, Op::Concat, SM::Add, Cr::concat>();
 
     // Math
 
