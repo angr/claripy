@@ -23,6 +23,7 @@ echo "Creating new bindings"
 DOCKER_CMD_SH="/cmd.sh"
 DOCKER_Z3_HEADERS="/z3-headers"
 docker run --rm \
+	--user "$(id -u):$(id -g)" \
 	`# Mount in everything` \
 	-v "${CMD_SH}:${DOCKER_CMD_SH}:ro" \
 	-v "${Z3_HEADERS}:/${DOCKER_Z3_HEADERS}:ro" \
@@ -33,6 +34,12 @@ docker run --rm \
 	"${DOCKER_CMD_SH}" \
 	0 "${DOCKER_Z3_HEADERS}" "${NATIVE}" "${OUTPUT}"
 echo "Bindings generated"
+
+# Permissions
+if [[ "$(uname -s)" == "Darwin" ]]; then
+	echo "Mac detected: Removing ACLs of output directory"
+	chmod -N "${OUTPUT}"
+fi
 
 # Rm old autogen
 echo "Removing outdated ${AUTOGEN}"
