@@ -60,29 +60,16 @@ namespace Op {
         }
 
       private:
-#define M_P_CTOR(TYPE)                                                                             \
-    static_assert(std::is_const_v<TYPE> == std::is_fundamental_v<TYPE>,                            \
-                  "Fundamental types should be const, non-fundamental should not");                \
-    /** Private constructor;  constructor should not be given shared pointers to nulllptr */       \
-    explicit inline Literal(const Hash::Hash &h, TYPE &&data)                                      \
-        : Base { h, static_cuid }, value { std::move(data) }
-
-        // The different private constructors we allow
-        // There should be one for each variant type
-        M_P_CTOR(const bool) {};
-        M_P_CTOR(std::string) {};
-        M_P_CTOR(const float) {};
-        M_P_CTOR(const double) {};
-        M_P_CTOR(PyObj::VS::Ptr) {
-            UTIL_ASSERT_NOT_NULL_DEBUG(std::get<PyObj::VS::Ptr>(value));
+        template <typename T>
+        explicit inline Literal(const Hash::Hash &h, T &&data)
+            : Base { h, static_cuid }, value { std::move(data) } {
+            static_assert(std::is_fundamental_v<T> || not std::is_const_v<T>,
+                          "Non-fundamental types should be non-const and moved");
+            static_assert(
+                Util::Type::Is::in_ignore_const<T, bool, std::string, float, double, PyObj::VS::Ptr,
+                                                uint8_t, uint16_t, uint32_t, U64, BigInt>,
+                "No matching Literal constructor for given type.");
         }
-        // BV constructors
-        M_P_CTOR(const uint8_t) {};
-        M_P_CTOR(const uint16_t) {};
-        M_P_CTOR(const uint32_t) {};
-        M_P_CTOR(const U64) {};
-        M_P_CTOR(BigInt) {};
-#undef M_P_CTOR
 
         /** Adds the raw expr children of the expr to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
