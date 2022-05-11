@@ -46,7 +46,7 @@ namespace Factory {
 
         // Check to see if the object to be constructed exists in the hash cache
         // Note we cast to apply const to be explicit here, just in case. We need args later!
-        const Hash::Hash hash { Hash::hash(T::static_cuid, static_cast<const Args>(args)...) };
+        const Hash::Hash hash { Hash::hash(T::static_cuid, static_cast<const Args &&>(args)...) };
 
         // Note: we have these two as distinct statements to ensure hash is done first
         // As the std::forward may move args
