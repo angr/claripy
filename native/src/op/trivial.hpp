@@ -143,14 +143,14 @@ namespace Op {
      */
     OP_BINARY_TRIVIAL_FINAL_DESCENDANT(Intersection, Binary<true>, "");
 
-    /** The binary op class: Concat
-     *  Input sizes may differ
-     */
-    OP_BINARY_TRIVIAL_FINAL_DESCENDANT(Concat, Binary<false>, "");
-
     /**********************************************************/
     /*                    Flat Subclasses                     */
     /**********************************************************/
+
+    /** The flat op class: Concat
+     *  Input sizes may differ
+     */
+    OP_FLAT_TRIVIAL_SUBCLASS(Concat, false, "");
 
     // Math
 

@@ -290,18 +290,17 @@ namespace Create {
             left, right, std::move(sp));
     }
 
-    /** Create an Expr with an Concat op
-     *  Expr pointers may not be nullptr
-     */
-    inline Expr::BasePtr concat(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                                Annotation::SPAV sp = empty_spav) {
-        return Private::binary<Op::Concat, Private::SizeMode::Add, Expr::BV, Expr::String>(
-            left, right, std::move(sp));
-    }
-
     /********************************************************************/
     /*                    Flat Passthrough Functions                    */
     /********************************************************************/
+
+    /** Create an Expr with an Concat op
+     *  Expr pointers may not be nullptr
+     */
+    inline Expr::BasePtr concat(Op::FlatArgs operands, Annotation::SPAV sp = empty_spav) {
+        return Private::flat<Op::Concat, Private::SizeMode::Add, Expr::BV, Expr::String>(
+            std::move(operands), std::move(sp));
+    }
 
     // Math
 

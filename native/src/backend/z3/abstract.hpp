@@ -25,7 +25,7 @@
 #define M_GET_EARG(I) std::get<Expr::BasePtr>(args[(I)])
 
 // Macros for each op category
-//  Assumes the arguments array is called args
+// Assumes the arguments array is called args
 // FUNC may *not* have commas in it
 
 #define M_UNARY(FUNC)                                                                              \
@@ -308,7 +308,14 @@ namespace Backend::Z3 {
 
         /** Abstraction function for Z3_OP_CONCAT */
         static Expr::BasePtr concat(const ArgsVec &args) {
-            M_BINARY(Create::concat);
+            UTIL_ASSERT(Util::Err::NotSupported, args.size() > 1,
+                        ".args should have at least 2 items, report this");
+            Op::FlatArgs a;
+            a.reserve(args.size());
+            for (const auto &i : args) {
+                a.emplace_back(std::get<Expr::BasePtr>(i));
+            }
+            return Create::concat(std::move(a));
         }
 
         /** Abstraction function for Z3_OP_SIGN_EXT */

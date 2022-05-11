@@ -170,10 +170,9 @@ namespace Backend::Z3 {
                     M_BINARY_CASE(RotateLeft, Conv::rotate_left);
                     M_BINARY_CASE(RotateRight, Conv::rotate_right);
 
-                    M_BINARY_CASE(Concat, Conv::concat);
-
                     // Flat
 
+                    M_FLAT_CASE(Concat, Conv::concat);
                     M_FLAT_CASE(Add, Conv::add);
                     M_FLAT_CASE(Mul, Conv::mul);
                     M_FLAT_CASE(Or, Conv::or_);

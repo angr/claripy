@@ -24,6 +24,7 @@ namespace Create::Private {
 
     /** Create a Expr with a flat op
      *  operands' pointers may not be nullptr
+     *  SizeMode is assumed to be First
      */
     template <typename Out, typename OpT, typename... Allowed>
     inline Expr::BasePtr flat_explicit(Op::FlatArgs &&operands, Annotation::SPAV &&sp) {
@@ -52,11 +53,28 @@ namespace Create::Private {
         }
     }
 
+    /** Using SizeMode SM determine the size of an op containing v */
+    template <SizeMode SM> U64 get_size(const Op::FlatArgs &v) {
+        if constexpr (SM == SizeMode::First) {
+            return Expr::get_bit_length(v[0]);
+        }
+        else if constexpr (SM == SizeMode::Add) {
+            U64 len { 0 };
+            for (const auto &i : v) {
+                len += Expr::get_bit_length(i);
+            }
+            return len;
+        }
+        else {
+            static_assert(Util::CD::false_<SM>, "Unsupported size mode");
+        }
+    }
+
     /** Create a Expr with a flat op
      *  Out type is the same as operands[0]
      *  Expr pointers may not be nullptr
      */
-    template <typename OpT, typename... Allowed>
+    template <typename OpT, SizeMode SM, typename... Allowed>
     inline Expr::BasePtr flat(Op::FlatArgs &&operands, Annotation::SPAV &&sp) {
         using namespace Simplify;
         namespace Err = Error::Expr;
@@ -81,9 +99,19 @@ namespace Create::Private {
                     sym, Op::factory<OpT>(std::move(operands)), std::move(sp)));
             }
         }
-        const U64 len { Expr::get_bit_length(operands[0]) }; // Before move
+        const U64 len { get_size<SM>(operands) }; // Before move
         return simplify(Expr::factory_cuid(
             operands[0]->cuid, sym, Op::factory<OpT>(std::move(operands)), len, std::move(sp)));
+    }
+
+    /** Create a Expr with a flat op
+     *  Out type is the same as operands[0]
+     *  Expr pointers may not be nullptr
+     *  SizeMode is assumed to be First
+     */
+    template <typename OpT, typename... Allowed>
+    inline Expr::BasePtr flat(Op::FlatArgs &&operands, Annotation::SPAV &&sp) {
+        return flat<OpT, SizeMode::First, Allowed...>(std::move(operands), std::move(sp));
     }
 
 } // namespace Create::Private

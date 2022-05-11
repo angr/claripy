@@ -61,7 +61,7 @@ namespace Backend::Z3 {
             auto ret { extract(CHAR_BIT - 1u, 0u, e) };
             for (U64 i = CHAR_BIT; i < size; i += CHAR_BIT) {
                 const auto tmp { extract(to_z3u(i + CHAR_BIT - 1), to_z3u(i), e) };
-                ret = concat(ret, tmp);
+                ret = z3::concat(ret, tmp);
             }
             return ret;
         }
@@ -186,24 +186,23 @@ namespace Backend::Z3 {
             return ret;
         }
 
-        /** Concat converter */
-        static z3::expr concat(const z3::expr &l, const z3::expr &r) { return z3::concat(l, r); }
-
         // Flat
 
         /** The type of argument a flat function takes in */
         using FlatArr = CTSC<z3::expr> *const;
 
       private:
-        /** Like C++20's version of std::accumulate, except it works with pointers */
+        /** Like C++20's version of std::accumulate, except it works with pointers
+         *  Consumes arr
+         */
         template <typename FunctorType>
         static z3::expr ptr_accumulate(FlatArr arr, const U64 size) {
 #ifdef DEBUG
             UTIL_ASSERT(Util::Err::Size, size >= 2,
                         "size < 2; this probably resulted from an invalid claricpp expr.");
+#endif
             UTIL_ASSERT_NOT_NULL_DEBUG(arr[0]);
             UTIL_ASSERT_NOT_NULL_DEBUG(arr[1]);
-#endif
             const FunctorType fn {};
             z3::expr ret { fn(*arr[0], *arr[1]) };
             for (U64 i { 2 }; i < size; ++i) {
@@ -214,6 +213,42 @@ namespace Backend::Z3 {
         }
 
       public:
+        /** Concat converter */
+        static z3::expr concat(FlatArr arr, const U64 size) {
+#ifdef DEBUG
+            UTIL_ASSERT(Util::Err::Size, size >= 2,
+                        "size < 2; this probably resulted from an invalid claricpp expr.");
+#endif
+            // We use the C API here for speed
+            Z3_ast r;
+            auto &ctx { arr[0]->ctx() };
+            Z3_sort sort { arr[0]->get_sort() };
+            if (Z3_is_seq_sort(ctx, sort)) {
+                Z3_ast derefed[size];
+                for (U64 i { 0 }; i < size; ++i) {
+                    derefed[i] = *arr[i]; // Invokes defined cast operator
+                }
+                r = Z3_mk_seq_concat(ctx, Util::narrow<unsigned>(size), derefed);
+            }
+            else if (Z3_is_re_sort(ctx, sort)) {
+                Z3_ast derefed[size];
+                for (U64 i { 0 }; i < size; ++i) {
+                    derefed[i] = *(arr[i]); // Invokes defined cast operator
+                }
+                r = Z3_mk_re_concat(ctx, Util::narrow<unsigned>(size), derefed);
+            }
+            else {
+                r = *arr[size - 1]; // Invokes defined cast operator
+                for (unsigned i { static_cast<unsigned>(size) - 1 }; i > 0;) {
+                    --i;
+                    r = Z3_mk_concat(ctx, *arr[i], r); // Invokes defined cast operator
+                    ctx.check_error();
+                }
+            }
+            ctx.check_error();
+            return z3::expr(ctx, r);
+        }
+
         /** Add converter */
         static z3::expr add(FlatArr arr, const U64 size) {
             return ptr_accumulate<std::plus<z3::expr>>(arr, size);
