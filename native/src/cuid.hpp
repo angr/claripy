@@ -6,6 +6,7 @@
 #define R_SRC_CUID_HPP_
 
 #include "cuid/cuid.hpp"
+#include "cuid/has.hpp"
 #include "cuid/is_t.hpp"
 
 #endif
