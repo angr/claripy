@@ -7,7 +7,5 @@
 
 #include "hash/hash.hpp"
 #include "hash/hashed.hpp"
-#include "hash/singular.hpp"
-#include "hash/type.hpp"
 
 #endif
