@@ -5,12 +5,10 @@
 #ifndef R_SRC_HASH_HASH_HPP_
 #define R_SRC_HASH_HASH_HPP_
 
-#include "singular.hpp"
-
-#include "../util.hpp"
+#include "serialize.hpp"
+#include "type.hpp"
 
 #include <sstream>
-#include <type_traits>
 #include <typeinfo>
 
 
@@ -20,20 +18,18 @@ namespace Hash {
      *  Note: types may want to pass in some sort of typeid if their hashes matter
      */
     template <typename... Args> constexpr Hash hash(Args &&...args) {
-        constexpr U64 size { sizeof...(Args) };
-        static_assert(size > 0, "hash needs arguments");
-
-        // Single item case
-        if constexpr (size == 1) {
-            return singular(std::forward<Args>(args)...);
-        }
+        constexpr U64 size { 1 + sizeof...(Args) };
+        static_assert(size > 1, "hash needs arguments");
 
         // Variables
         Hash hashes[size]; // NOLINT
-        U64 i { -1_ui };
+        U64 i { 0_ui };
+
+        // A hash for the types of Args with references removed
+        hashes[0] = type<Args...>;
 
         // Basically: hashes[i] = singular(args[i]) for each arg
-        (static_cast<void>(hashes[++i] = singular(std::forward<Args>(args))), ...);
+        (static_cast<void>(hashes[++i] = serialize(std::forward<Args>(args))), ...);
 
 #ifdef DEBUG
         // Verify no memory corruption

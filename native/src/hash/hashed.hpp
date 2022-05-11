@@ -5,7 +5,7 @@
 #ifndef R_SRC_HASH_HASHED_HPP_
 #define R_SRC_HASH_HASHED_HPP_
 
-#include "type.hpp"
+#include "constants.hpp"
 
 #include "../macros.hpp"
 
