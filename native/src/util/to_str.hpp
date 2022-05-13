@@ -6,7 +6,6 @@
 #ifndef R_SRC_UTIL_TOSTR_HPP_
 #define R_SRC_UTIL_TOSTR_HPP_
 
-#include "ostream.hpp"
 #include "type.hpp"
 
 #include <sstream>
@@ -28,7 +27,7 @@ namespace Util {
         if constexpr (Type::Is::in_ignore_const<bool, Args...>) {
             s << std::boolalpha;
         }
-        (OStream(s, std::forward<Args>(args)), ...);
+        ((s << std::forward<Args>(args)), ...);
         return s; // Copy elision or std::move (no copy ctor exists)
     }
 

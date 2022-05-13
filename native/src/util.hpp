@@ -37,7 +37,6 @@
 #include "util/min.hpp"
 #include "util/narrow.hpp"
 #include "util/norm_path_hash.hpp"
-#include "util/ostream.hpp"
 #include "util/pointer_cast.hpp"
 #include "util/pow.hpp"
 #include "util/range_to_str.hpp"
