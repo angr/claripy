@@ -8,17 +8,19 @@
 
 #include "strict_type.hpp"
 
-
 namespace Hash {
 
-    template <typename... Args> static constexpr Hash type_() noexcept {
-        unsigned i { 0 };
-        Hash arr[sizeof...(Args)];
-        (static_cast<void>(arr[i++] = strict_type<Util::Type::RemoveCVR<Args>>), ...);
-        return Util::FNV1a<Hash>::template hash<Hash>(arr, sizeof...(Args));
-    };
+    namespace Private {
+        template <typename... Args> constexpr Hash type_() noexcept {
+            unsigned i { 0 };
+            Hash arr[sizeof...(Args)] = { 0 }; // Default initialize for compiler
+            (static_cast<void>(arr[i++] = strict_type<Util::Type::RemoveCVR<Args>>), ...);
+            return Util::FNV1a<Hash>::template hash<Hash>(arr, sizeof...(Args));
+        };
+    } // namespace Private
 
-    template <typename... Args> static inline const constexpr Hash type { type_<Args...>() };
+    /** A hash of the types Args with reference and cv qualifiers removed */
+    template <typename... Args> inline const constexpr Hash type { Private::type_<Args...>() };
 
 } // namespace Hash
 
