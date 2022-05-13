@@ -21,16 +21,19 @@ namespace Hash {
         }
     } // namespace Private
 
-    template <typename T> static inline const constexpr Hash strict_type { Private::try_cuid<T>() };
+    /** A hash of exactly type T */
+    template <typename T> inline const constexpr Hash strict_type { Private::try_cuid<T>() };
 
 #define M_T_HASH(TYPE)                                                                             \
-    template <> static inline const constexpr Hash strict_type<TYPE> {                             \
+    /** A hash of exactly this type */                                                             \
+    template <> inline const constexpr Hash strict_type<TYPE> {                                    \
         UTIL_FILE_LINE_HASH                                                                        \
     }
 
 #define M_T_HASH_TEMPLATE(TEMP_TYPE)                                                               \
+    /** A hash of this container of this type */                                                   \
     template <typename T>                                                                          \
-    static inline const constexpr Hash strict_type<TEMP_TYPE<T>> { HASH_CANTOR(                    \
+    inline const constexpr Hash strict_type<TEMP_TYPE<T>> { HASH_CANTOR(                           \
         UTIL_FILE_LINE_HASH, strict_type<Util::Type::RemoveCVR<T>>) };
 
     // Containers

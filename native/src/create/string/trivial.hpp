@@ -32,22 +32,22 @@ namespace Create::String {
      *  Note: Currently Ints are taken in as BVs
      *  Expr pointers may not be nullptr
      */
-    inline Expr::BasePtr to_int(const Expr::BasePtr &expr, const U64 integer,
+    inline Expr::BasePtr to_int(const Expr::BasePtr &expr, const U64 output_bit_length,
                                 Annotation::SPAV sp = empty_spav) {
         namespace CP = ::Create::Private;
         return CP::uint_binary<U64, Op::String::ToInt, CP::SizeMode::Second, Expr::String>(
-            expr, integer, std::move(sp));
+            expr, output_bit_length, std::move(sp));
     }
 
     /** Create an Expr with an String::Len op
      *  Note: Currently Ints are output as BVs
      *  Expr pointers may not be nullptr
      */
-    inline Expr::BasePtr len(const Expr::BasePtr &expr, const U64 integer,
+    inline Expr::BasePtr len(const Expr::BasePtr &expr, const U64 output_bit_length,
                              Annotation::SPAV sp = empty_spav) {
         namespace CP = ::Create::Private;
         return CP::uint_binary<U64, Op::String::Len, CP::SizeMode::Second, Expr::String>(
-            expr, integer, std::move(sp));
+            expr, output_bit_length, std::move(sp));
     }
 
     /********************************************************************/

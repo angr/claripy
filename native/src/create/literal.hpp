@@ -33,7 +33,7 @@ namespace Create {
     /** Create a String Expr with a Literal op */
     M_TRIVIAL_TYPE(string, std::string);
 
-    /** Create a FP Expr with a Literal op containing a single precision float
+    /** Create a FP Expr with a Literal op containing a VS
      *  data may not be nullptr
      */
     M_TRIVIAL_TYPE(vs, PyObj::VS::Ptr);

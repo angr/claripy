@@ -14,7 +14,7 @@
 #include "../constants.hpp"
 
 namespace Util {
-    /** Try to coerce x to a U64 */
+    /** Try to coerce In to a U64 */
     template <auto In> constexpr const U64 *to_u_ptr() {
         using T = decltype(In);
         if constexpr (Util::Type::Is::strong_enum<T>) {

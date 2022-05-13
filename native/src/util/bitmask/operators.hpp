@@ -47,10 +47,9 @@ M_DEFINE_BINARY_EQ_OP(^=)
 
 /** Conditionally enabled ~ bitmask operator */
 template <typename Enum, std::enable_if_t<Util::BitMask::Private::enabled<Enum>, int> = 0>
-constexpr Enum operator~(const Enum e) {
-    using namespace Util;
-    static_assert(Type::Is::strong_enum<Enum>, "Enum is not a scoped enum");
-    return static_cast<Enum>(~to_underlying(e));
+constexpr Enum operator~(const Enum e) noexcept {
+    static_assert(Util::Type::Is::strong_enum<Enum>, "Enum is not a scoped enum");
+    return static_cast<Enum>(~Util::to_underlying(e));
 }
 
 #endif

@@ -35,7 +35,7 @@
      */                                                                                            \
     template <typename... Args>                                                                    \
     static UTIL_CCBOOL NAME {                                                                      \
-        !::std::is_same_v<::Util::Type::Unique, decltype(NAME##_class::test<Args...>(0))>          \
+        not ::std::is_same_v<::Util::Type::Unique, decltype(NAME##_class::test<Args...>(0))>       \
     };
 
 #endif
