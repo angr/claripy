@@ -24,7 +24,7 @@ namespace Backend::Z3 {
 
       private:
         /** The size of a float */
-        static constexpr inline const auto flt_size { 4_ui * BitLength::char_bit };
+        static constexpr inline const auto flt_size { 4_ui * CHAR_BIT };
 
         /** A function that narrows a U64 to Z3's unsigned type */
         static constexpr auto to_z3u(const U64 x) { return Util::narrow<unsigned>(x); }

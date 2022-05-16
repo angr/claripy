@@ -14,7 +14,7 @@ template <bool Literal> Expr::BasePtr create_bv(std::string name, const I64 val)
     }
     else {
         (void) val;
-        return Create::symbol_bv(std::move(name), name.size() * BitLength::char_bit);
+        return Create::symbol_bv(std::move(name), name.size() * CHAR_BIT);
     }
 }
 
