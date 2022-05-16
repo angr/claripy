@@ -41,8 +41,7 @@ static std::string make_solution(const std::string &str, const U64 len) {
                         " }" };
 
     // eq
-    const auto op_eq { R"|({ "name":"Eq", "consider_size":true, "left":)|"s + fp_4 +
-                       R"|(, "right":)|" + fp_mul + " }" };
+    const auto op_eq { R"|({ "name":"Eq", "left":)|"s + fp_4 + R"|(, "right":)|" + fp_mul + " }" };
     const auto bool_eq { R"|({ "type":"Bool", "symbolic":true, "op":)|"s + op_eq + " }" };
 
     // if
