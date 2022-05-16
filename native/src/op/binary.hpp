@@ -65,7 +65,7 @@ namespace Op {
 
         /** repr */
         inline void repr_stream(std::ostream &out) const override {
-            out << R"|({ "name":")|" << op_name() << R"|(, "left":)|";
+            out << R"|({ "name":")|" << op_name() << R"|(", "left":)|";
             left->repr_stream(out);
             out << R"|(, "right":)|";
             right->repr_stream(out);

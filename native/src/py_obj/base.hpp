@@ -13,10 +13,12 @@
 
 namespace PyObj {
 
-    /** A class containing a ref to some python object and a hash */
+    /** A class containing a ref to some python object and a hash
+     *  Warning: No virtual destructor; do *not* delete by base class pointer; avoid slicing!
+     */
     struct Base : public Hash::Hashed {
       protected:
-        /** Inherit constructors */
+        /** Inherit constructor */
         using Hashed::Hashed;
         /** Protected destructor to prevent most slicing */
         inline ~Base() noexcept = default;

@@ -34,10 +34,16 @@ namespace CUID {
      *  Warning: No virtual destructor; do *not* delete by base class pointer; avoid slicing!
      */
     struct HasCUID {
-        /** Constructor */
-        inline HasCUID(const CUID &c) noexcept : cuid { c } {}
         /** The class unique id */
         const CUID cuid;
+
+      protected:
+        /** Constructor */
+        constexpr HasCUID(const CUID &c) noexcept : cuid { c } {}
+        /** Prevent most slicing */
+        inline ~HasCUID() noexcept = default;
+        // Rule of 5
+        DEFINE_IMPLICITS_CONST_MEMBERS_ALL_NOEXCEPT(HasCUID);
     };
 
 } // namespace CUID

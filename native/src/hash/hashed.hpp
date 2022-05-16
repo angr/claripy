@@ -21,7 +21,7 @@ namespace Hash {
 
       protected:
         /** Constructor */
-        explicit inline Hashed(const Hash &h) noexcept : hash { h } {}
+        explicit constexpr Hashed(const Hash &h) noexcept : hash { h } {}
         /** Prevent most slicing */
         inline ~Hashed() noexcept = default;
         // Rule of 5

@@ -23,7 +23,7 @@ template <typename T> struct HasRepr {
 
   protected:
     /** Prevent most slicing */
-    ~HasRepr() noexcept = default;
+    inline ~HasRepr() noexcept = default;
 };
 
 #endif
