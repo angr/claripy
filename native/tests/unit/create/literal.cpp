@@ -52,7 +52,7 @@ void literal() {
     literal_t<Expr::FP>(3.4f, 32_ui); // NOLINT
 
     // VS
-    auto ptr { PyObj::VS::factory(1, 1, CHAR_BIT) };
+    auto ptr { PyObj::VS::factory(1, CHAR_BIT) };
     const auto bl { ptr->bit_length };
     literal_t<Expr::VS>(std::move(ptr), bl);
 

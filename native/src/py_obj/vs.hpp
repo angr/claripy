@@ -20,25 +20,33 @@ namespace PyObj {
         /** A constructor for VS objects
          *  Note: we don't template so that bindings can easily be made
          */
-        static inline Ptr factory(const Hash::Hash &h, const Ref r, const U64 bl) {
-            return Ptr { new VS { h, r, bl } };
+        static inline Ptr factory(const Hash::Hash &h, const U64 bl) {
+            return Ptr { new VS { h, bl } };
         }
 
       private:
         /** Constructor */
-        explicit inline VS(const Hash::Hash &h, const Ref r, const U64 bl) noexcept
-            : Base { h, r }, BitLength { bl } {}
+        explicit inline VS(const Hash::Hash &h, const U64 bl) noexcept
+            : Base { h }, BitLength { bl } {}
     };
 
     /** Equality operator */
     inline bool operator==(const VS &a, const VS &b) {
-        return Private::eq(static_cast<const Base &>(a) == b, a.bit_length == b.bit_length);
+        const bool ret { a.hash == b.hash };
+#ifdef DEBUG
+        UTIL_ASSERT(Util::Err::HashCollision, ret == (a.bit_length == b.bit_length),
+                    "PyObjects equate but are different; this is probably due to user error");
+#endif
+        return ret;
+    }
+    /** Not-equality operator */
+    inline bool operator!=(const VS &a, const VS &b) {
+        return not(a == b);
     }
 
     /** Stream operator */
     inline std::ostream &operator<<(std::ostream &os, const VS &vs) {
-        return os << "VS{hash = " << vs.hash << ", ref = " << vs.ref
-                  << ", bit_length = " << vs.bit_length << "}";
+        return os << "VS{hash = " << vs.hash << ", bit_length = " << vs.bit_length << "}";
     }
 
 } // namespace PyObj

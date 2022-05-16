@@ -12,7 +12,7 @@ void handles() {
     const auto one { Create::literal(1_ui) };
     UNITTEST_ASSERT(z3.handles(one.get()));
 
-    const auto vs { Create::literal(PyObj::VS::factory(1, 2, 8)) };
+    const auto vs { Create::literal(PyObj::VS::factory(1, 8)) };
     UNITTEST_ASSERT(not z3.handles(vs.get()));
 }
 
