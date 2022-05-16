@@ -45,8 +45,9 @@ namespace Op {
     static_assert(std::is_copy_constructible_v<ArgVar>, "Fix me");
     static_assert(std::is_copy_assignable_v<ArgVar>, "Fix me");
 
-    /** Returns the bit_length of the value stored in Data
-     *  Raise an exception if called on a size without a bitlength (like a bool)
+    /** Returns the bit_length of the value stored in Data if applicable
+     *  Note: this is a raw bit_length that does not include padding
+     *  Raise an exception if called on a size without a bit length (like a bool)
      */
     inline U64 bit_length(const PrimVar &v) {
         static_assert(std::variant_size_v<PrimVar> == 10);
@@ -56,7 +57,6 @@ namespace Op {
         const auto &got { std::get<TYPE>(v) };                                                     \
         return EXPR;                                                                               \
     }
-            M_CASE(std::string, CHAR_BIT * got.size());
             M_CASE(float, CHAR_BIT * sizeof(got));
             M_CASE(double, CHAR_BIT * sizeof(got));
             M_CASE(PyObj::VS::Ptr, got->bit_length);
@@ -66,6 +66,14 @@ namespace Op {
             M_CASE(U64, CHAR_BIT * sizeof(got));
             M_CASE(BigInt, got.bit_length);
 #undef M_CASE
+            // We support this case, but it probably was not called intentionally so we warn
+            case (Util::Type::index<PrimVar, std::string>): {
+                Util::Log::warning(
+                    WHOAMI, "The bit_length of the stored string literal may not match the "
+                            "bit length of a literal expression holding it because of possible "
+                            "implicit null-padding. Did you mean to view Expr's bit_length?");
+                return CHAR_BIT * std::get<std::string>(v).size();
+            }
             // bool
             default: {
                 UTIL_THROW(Util::Err::Usage,

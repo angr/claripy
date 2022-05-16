@@ -30,15 +30,23 @@ namespace Create {
     /** Create a Bool Expr with a Literal op */
     M_TRIVIAL_TYPE(bool, bool);
 
-    /** Create a String Expr with a Literal op */
-    M_TRIVIAL_TYPE(string, std::string);
-
     /** Create a FP Expr with a Literal op containing a VS
      *  data may not be nullptr
      */
     M_TRIVIAL_TYPE(vs, PyObj::VS::Ptr);
 
+    /** Create a FP Expr with a Literal op containing a String
+     *  data may not be nullptr
+     */
+    M_TRIVIAL_TYPE(string, std::string);
+
 #undef M_TRIVIAL_TYPE
+
+    /** Create a String Expr with a Literal op; pad right with 0s to meet length */
+    inline Expr::BasePtr literal_string(std::string data, const U64 bit_length,
+                                        Annotation::SPAV sp = empty_spav) {
+        return Private::literal(std::move(data), bit_length, std::move(sp));
+    }
 
     // Order is the order that pybind11 will try them, common first!
 
@@ -46,7 +54,7 @@ namespace Create {
      *  Warning: this may cast data to a smaller size (bit_length or greater)
      *  Note: bit_length instead of overrides or template b/c python bindings
      *  Specifically, only one override would ever be used
-     *  TODO: later allow Width instead of bit_length
+     *  TODO: later allow Width instead of bit_length (they should be the same size)
      */
     inline Expr::BasePtr literal_fp(const double data, const U64 bit_length,
                                     Annotation::SPAV sp = empty_spav) {
