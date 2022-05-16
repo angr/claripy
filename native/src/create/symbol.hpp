@@ -47,6 +47,15 @@ namespace Create {
                                          std::move(sp));
     }
 
+    /** Create a String Expr with a symbol op
+     *  Note: length is taken in as a byte length, not a bit length
+     */
+    inline Expr::BasePtr symbol_string(std::string name, const U64 byte_length,
+                                       Annotation::SPAV sp = empty_spav) {
+        return Expr::factory<Expr::String>(true, Op::factory<Op::Symbol>(std::move(name)),
+                                           CHAR_BIT * byte_length, std::move(sp));
+    }
+
 #define M_BITS_TYPE(TYPE, NAME)                                                                    \
     inline Expr::BasePtr symbol_##NAME(std::string name, const U64 bit_length,                     \
                                        Annotation::SPAV sp = empty_spav) {                         \
@@ -54,8 +63,6 @@ namespace Create {
                                          std::move(bit_length), std::move(sp));                    \
     }
 
-    /** Create a String Expr with a symbol op */
-    M_BITS_TYPE(String, string);
     /** Create a BV Expr with a symbol op */
     M_BITS_TYPE(BV, bv);
     /** Create a FP Expr with a symbol op

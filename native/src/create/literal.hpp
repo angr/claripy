@@ -42,10 +42,15 @@ namespace Create {
 
 #undef M_TRIVIAL_TYPE
 
-    /** Create a String Expr with a Literal op; pad right with 0s to meet length */
-    inline Expr::BasePtr literal_string(std::string data, const U64 bit_length,
+    /** Create a String Expr with a Literal op with a specific size
+     *  Note: data is implicitly padded with 0s on the right to meet length
+     *  Note: length is taken in as a byte length, not a bit length
+     */
+    inline Expr::BasePtr literal_string(std::string data, const U64 byte_length,
                                         Annotation::SPAV sp = empty_spav) {
-        return Private::literal(std::move(data), bit_length, std::move(sp));
+        UTIL_ASSERT(Util::Err::Usage, byte_length >= data.size(),
+                    "Byte length must be at least as long as the passed string");
+        return Private::literal(std::move(data), CHAR_BIT * byte_length, std::move(sp));
     }
 
     // Order is the order that pybind11 will try them, common first!
