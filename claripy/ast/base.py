@@ -219,6 +219,9 @@ class Base:
             if op == "FPV" and a_args[0] == 0.0 and math.copysign(1, a_args[0]) < 0:
                 # Python does not distinguish between +0.0 and -0.0 so we add sign to tuple to distinguish
                 h = (op, kwargs.get('length', None), ("-",) + a_args)
+            elif op == "FPV" and math.isnan(a_args[0]):
+                # cannot compare nans
+                h = (op, kwargs.get('length', None), ('nan',) + a_args[1:])
             else:
                 h = (op, kwargs.get('length', None), a_args)
 
@@ -1198,7 +1201,13 @@ class Base:
 
     @property
     def concrete(self):
-        # import ipdb; ipdb.set_trace()
+        # fast path
+        if self.op in {"BVV", "BoolV", "FPV"}:
+            return True
+        if self.op in {"BVS", "BoolS", "FPS"}:
+            return False
+        if self.variables:
+            return False
         return backends.concrete.handles(self)
 
     @property

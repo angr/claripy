@@ -44,8 +44,8 @@ class ReplacementFrontend(ConstrainedFrontend):
         if self._validation_frontend is not None:
             self._validation_frontend._copy(c._validation_frontend)
 
-        c._replacements = self._replacements
-        c._replacement_cache = self._replacement_cache
+        c._replacements = dict(self._replacements)
+        c._replacement_cache = weakref.WeakKeyDictionary(self._replacement_cache)
 
     #
     # Replacements
