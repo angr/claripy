@@ -12,7 +12,7 @@
 
 
 /** A macro used to define a trivial descendant of Binary
- *  If ConsiderSize, sizes will be compared as well when type checking if applicable
+ *  If ConsiderSize, sized args must all have the same size to construct the op
  *  PREFIX is passed to OP_FINAL_INIT
  *  May not be templated
  */
@@ -28,7 +28,7 @@
     };
 
 /** A macro used to define a trivial pure subclass of Binary
- *  If ConsiderSize, sizes will be compared as well when type checking if applicable
+ *  If ConsiderSize, sized args must all have the same size to construct the op
  */
 #define OP_BINARY_TRIVIAL_PURE_SUBCLASS(CLASS, CONSIDERSIZE)                                       \
     class CLASS : public ::Op::Binary<(CONSIDERSIZE)> {                                            \
@@ -47,7 +47,7 @@ namespace Op {
 
     /** A Binary Op class
      *  Operands must all be of the same type
-     *  If ConsiderSize, sizes will be compared as well when type checking if applicable
+     *  If ConsiderSize, sized args must all have the same size to construct the op
      */
     template <bool ConsiderSize> class Binary : public Base {
         OP_PURE_INIT(Binary);
@@ -65,8 +65,7 @@ namespace Op {
 
         /** repr */
         inline void repr_stream(std::ostream &out) const override {
-            out << R"|({ "name":")|" << op_name() << R"|(", "consider_size":)|" << std::boolalpha
-                << ConsiderSize << R"|(, "left":)|";
+            out << R"|({ "name":")|" << op_name() << R"|(, "left":)|";
             left->repr_stream(out);
             out << R"|(, "right":)|";
             right->repr_stream(out);

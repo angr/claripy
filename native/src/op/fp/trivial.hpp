@@ -18,6 +18,9 @@ namespace Op::FP {
     /*                    Unary Subclasses                    */
     /**********************************************************/
 
+    /** The unary fp op class: FP::IsNan */
+    OP_UNARY_TRIVIAL_SUBCLASS(IsNan, "FP::");
+
     /** The unary fp op class: FP::ToIEEEBV */
     OP_UNARY_TRIVIAL_SUBCLASS(ToIEEEBV, "FP::");
 

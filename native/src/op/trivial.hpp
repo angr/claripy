@@ -54,8 +54,9 @@ namespace Op {
 
     /** The binary comparison op class: Eq
      *  Requires equal sized inputs
+     *  TODO: tests
      */
-    OP_BINARY_TRIVIAL_FINAL_DESCENDANT(Eq, Binary<true>, "");
+    OP_BINARY_TRIVIAL_FINAL_DESCENDANT(Eq, Binary<false>, "");
 
     /** The binary comparison op class: Neq */
     OP_BINARY_TRIVIAL_FINAL_DESCENDANT(Neq, Binary<false>, "");

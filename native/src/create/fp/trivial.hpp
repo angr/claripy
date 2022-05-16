@@ -18,6 +18,13 @@ namespace Create::FP {
     /*                   Unary Passthrough Functions                    */
     /********************************************************************/
 
+    /** Create a Expr with an FP::IsNan op
+     *  Expr pointers may not be nullptr
+     */
+    inline Expr::BasePtr is_nan(const Expr::BasePtr &x, Annotation::SPAV sp = empty_spav) {
+        return Private::unary_explicit<Expr::Bool, Op::FP::IsNan, Expr::FP>(x, std::move(sp));
+    }
+
     /** Create a Expr with an FP::ToIEEEBV op
      *  Expr pointers may not be nullptr
      */
