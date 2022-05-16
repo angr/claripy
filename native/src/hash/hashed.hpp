@@ -16,14 +16,16 @@ namespace Hash {
      *  Warning: No virtual destructor; do *not* delete by base class pointer; avoid slicing!
      */
     struct Hashed {
-        /** Constructor */
-        inline Hashed(const Hash &h) noexcept : hash { h } {}
         /** A hash for this object */
         const Hash hash;
 
       protected:
+        /** Constructor */
+        explicit inline Hashed(const Hash &h) noexcept : hash { h } {}
         /** Prevent most slicing */
-        ~Hashed() noexcept = default;
+        inline ~Hashed() noexcept = default;
+        // Rule of 5
+        DEFINE_IMPLICITS_CONST_MEMBERS_ALL_NOEXCEPT(Hashed);
     };
 
 } // namespace Hash
