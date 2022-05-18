@@ -1,18 +1,15 @@
 import logging
+import sys
 import os
 
 # TODO: find a better way, pybind11 doesn't seem to play well with relative imports
-import sys
+_native_path = os.path.join(os.path.dirname(__file__), "lib")
+sys.path.append(_native_path)
+import clari
 
-try:
-    old = sys.path
-    sys.path = [os.path.dirname(__file__)]
-    import clari
-
-finally:
-    sys.path = old
 
 config_log = logging.getLogger(__file__)
+
 
 # TODO: remove clari.Create.foo from method calls (dict lookups are costly)
 class Setup:
