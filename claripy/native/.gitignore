@@ -1,7 +1,2 @@
-LICENSE.GMP/*
-cpp_src/*
+lib/*
 old/*
-*.so
-*.dylib
-*.dll
-*.a
