@@ -64,11 +64,11 @@ def chdir(new):
     old = os.getcwd()
     new = os.path.abspath(new)
     try:
-        print("cd " + new)
+        print(f"cd {new}")
         os.chdir(new)
         yield
     finally:
-        print("cd " + old)
+        print(f"cd {old}")
         os.chdir(old)
 
 
@@ -94,11 +94,11 @@ class BuiltLib:
     A shared or static library
     """
 
-    install_dir = os.path.join(claripy, "claripy/native")
+    install_dir = os.path.join(claripy, "claripy/native/lib")
 
     def __init__(self, name, build_dir, *, permit_shared, permit_static):
         self.name = name
-        self._lic = os.path.join(self.install_dir, "LICENSE." + name.replace(" ", "_"))
+        self._lic = os.path.join(self.install_dir, f"LICENSE.{name}".replace(" ", "_"))
         self.build_dir = build_dir
         # Determine extensions
         self._permit_shared = permit_shared
@@ -122,17 +122,9 @@ class BuiltLib:
         if len(files) == 1:
             return files[0]
         if len(files) > 1:
-            print("Found: " + str(files))
-            raise RuntimeError(
-                "Multiple "
-                + self.name
-                + " libraries in "
-                + where
-                + " with the same extension: "
-                + ext
-                + ": "
-                + str(files)
-            )
+            print(f"Found: {files}")
+            msg = f"Multiple {self.name} libraries in {where} with the same extension: {ext}: {files}"
+            raise RuntimeError(msg)
 
     def _find(self, where):
         """
@@ -177,6 +169,9 @@ class BuiltLib:
         assert self._licensed is not None, "Will not install without a license"
         p = self.find_built()
         assert p is not None, "Cannot install a non-built library"
+        if not os.path.exists(self.install_dir):
+            print(f"Creating install dir {self.install_dir}")
+            os.mkdir(self.install_dir)
         shutil.copy2(p, self.install_dir)
 
     def _clean(self, x):
@@ -214,7 +209,7 @@ def run_cmd_no_fail(*args, **kwargs):
     Returns subprocess.run(args, **kwargs
     """
     args = list(args)
-    print("Running command: " + str(args))
+    print(f"Running command: {args}")
     rc = subprocess.run(args, **kwargs)
     if rc.returncode != 0:
         if rc.stdout:
@@ -222,7 +217,7 @@ def run_cmd_no_fail(*args, **kwargs):
         if rc.stderr:
             print(rc.stderr, file=sys.stderr)
         what = os.path.basename(args[0])
-        raise RuntimeError(what + " failed with return code: " + str(rc.returncode))
+        raise RuntimeError(f"{what} failed with return code: {rc.returncode}")
     return rc
 
 
@@ -261,7 +256,7 @@ def download_checksum_extract(name, where, url, sha, ext):
     Download a file from url, checksum it, then extract it into a temp dir
     Return the temp dir and the files within it
     """
-    print("Downloading and hash-verifying " + name + "...")
+    print(f"Downloading and hash-verifying {name}...")
     hasher = sha256()
     prefix = re.sub(r"\s+", "_", name) + "-"
     fd, comp_f = tempfile.mkstemp(dir=where, prefix=prefix, suffix=ext)
@@ -276,10 +271,10 @@ def download_checksum_extract(name, where, url, sha, ext):
                     f.write(block)
                     prog.update(chunk_size)
     if hasher.hexdigest() != sha:
-        raise RuntimeError("Downloaded " + name + " hash failure!")
+        raise RuntimeError(f"Downloaded {name} hash failure!")
     # Extract
-    raw = tempfile.mkdtemp(dir=where, prefix=prefix + "dir-", suffix=".tmp")
-    print("Extracting " + name + " to: " + raw)
+    raw = tempfile.mkdtemp(dir=where, prefix=f"{prefix}dir-", suffix=".tmp")
+    print(f"Extracting {name} to: {raw}")
     extract(raw, comp_f, ext)
     os.remove(comp_f)
     return raw, glob(os.path.join(raw, "*"))
@@ -315,8 +310,7 @@ def to_clean_lvl(name):
     except AttributeError:
         valid = [i.name for i in CleanLevel]
         valid = "Valid clean levels: " + ", ".join(valid)
-        msg = "Invalid clean level: " + name + ". " + valid
-        raise Exception(msg)
+        raise Exception(f"Invalid clean level: {name}. {valid}")
 
 
 ######################################################################
@@ -343,9 +337,7 @@ class Library:
         """
         self._done_set = set()
         self._dependencies = dependencies
-        assert self._dep_check(type(self)), "Cyclical dependency found on: " + str(
-            type(self)
-        )
+        assert self._dep_check(type(self)), f"Cyclical dependency found on: {type(self)}"
         # Done check lists
         self._get_chk = dict(get_chk)
         self._build_chk = self._fix_chk(build_chk, "find_built")
@@ -376,23 +368,23 @@ class Library:
             path = path()
         ret = False if path is None else os.path.exists(path)
         if path in self._done_set:
-            assert ret, path + " used to exist but now does not"
+            assert ret, f"{path} used to exist but now does not"
         elif ret:
-            print("Reusing existing " + name + ": " + path)
+            print(f"Reusing existing {name}: {path}")
             self._done_set.add(path)
         return ret
 
     def _call_format(self, x, n):
-        return cname(x) + "." + n + "()"
+        return f"{cname(x)}.{n}()"
 
     def _call(self, origin, obj, fn, called):
         what = self._call_format(obj, fn)
         if what not in called:
             called.add(what)
             me = self._call_format(self, origin)
-            print(me + " invoking " + what)
+            print(f"{me} invoking {what}")
             getattr(obj, fn)(called)
-            print("Resuming " + me)
+            print(f"Resuming {me}")
 
     def _body(self, lvl, chk, called):
         """
@@ -458,9 +450,9 @@ class Library:
         """
         Cleans up after the library
         """
-        p = lambda x: x.__class__.__name__ + ".clean(" + level.name + ")"
+        p = lambda x: f"{x.__class__.__name__}.clean({level.name})"
         for i in self._dependencies:
-            print(p(self) + " invoking " + p(i))
+            print(f"{p(self)} invoking {p(i)}")
             i.clean(level)
         self._clean(level)
 
@@ -533,7 +525,7 @@ class GMP(Library):
         d, gmp = download_checksum_extract(
             "GMP source", self._root, url, sha, ".tar.xz"
         )
-        print("Moving GMP source to: " + self._source)
+        print(f"Moving GMP source to: {self._source}")
         assert len(gmp) == 1, "gmp's tarball is weird"
         os.rename(gmp[0], self._source)
         os.rmdir(d)
@@ -565,14 +557,13 @@ class GMP(Library):
         if os.path.exists(log_f):
             return self._run(name, *args, _count=_count + 1)
         with open(log_f, "w") as f:
-            print(name + "...")
-            print("  - Output file: " + log_f)
+            print(f"{name}...\n  - Output file: f{log_f}")
             sys.stdout.write("  - ")
             run_cmd_no_fail(*args, stdout=f, stderr=f)
         return log_f
 
     def _build(self):
-        print("Copying source to build dir: " + self._build_dir)
+        print(f"Copying source to build dir: {self._build_dir}")
         shutil.copytree(self._source, self._build_dir)  # Do not pollute source
         with chdir(self._build_dir):
             # GMP warnings:
@@ -590,7 +581,7 @@ class GMP(Library):
             self._set_lib_type(self._run("Configuring", "./configure", *config_args))
             # Building + Checking
             nproc = max(cpu_count() - 1, 1)
-            makej = (find_exe("make"), "-j" + str(nproc))  # GMP requires make
+            makej = (find_exe("make"), f"-j{nproc}")  # GMP requires make
             _ = self._run("Building GMP", *makej)
             _ = self._run("Checking GMP build", *makej, "check")
             # Include dir
@@ -599,12 +590,13 @@ class GMP(Library):
 
     def _license(self):
         if not os.path.exists(self._lic_d):
-            os.mkdir(self._lic_d)
+            print(f"Creating {self._lic_d}")
+            os.makedirs(self._lic_d)
 
         def cpy(src, dst):
             src = os.path.join(self._build_dir, src)
             dst = os.path.join(self._lic_d, dst)
-            print("Copying " + src + " --> " + dst)
+            print(f"Copying {src} --> {dst}")
             shutil.copy2(src, dst)
 
         cpy("COPYINGv3", "GNU-GPLv3")
@@ -813,7 +805,7 @@ class Claricpp(Library):
             "Z3_LIB": z3_built,
         }
         on_off = lambda x: ("ON" if x else "OFF") if type(x) is bool else x
-        dd = lambda key, val: "-D" + key + "=" + ("" if val is None else on_off(val))
+        dd = lambda key, val: f"-D{key}=" + ("" if val is None else on_off(val))
         return [dd(*i) for i in config.items()]
 
     def _build(self):
@@ -836,7 +828,7 @@ class Claricpp(Library):
                 for i in targets:
                     build_cmake_target(i)
                 if self._build_doc:
-                    print("Docs built in: " + self._docs_dir)
+                    print(f"Docs built in: {self._docs_dir}")
 
     @classmethod
     def run_tests(cls):  # Warning: tests should be built before calling this
@@ -844,7 +836,7 @@ class Claricpp(Library):
         with chdir(cls.build_dir):
             ctest = find_exe("ctest")
             if ctest is not None:
-                run_cmd_no_fail(ctest, "-j" + str(max(cpu_count() - 1, 1)), ".")
+                run_cmd_no_fail(ctest, f"-j{max(cpu_count() - 1, 1)}", ".")
             else:
                 build_cmake_target("test")  # This will not be parallel
 
@@ -861,12 +853,19 @@ class Claricpp(Library):
                 rv = shutil.ignore_patterns("*.cpp", "*.hpp", "*.c", "*.h")(d, fs)
                 return [ i for i in fs if i not in rv ]
 
+            # Parent dir
+            parent = os.path.dirname(self._out_native_src)
+            if not os.path.exists(parent):
+                print(f"Creating {self._lic_d}")
+                os.makedirs(self.parent)
+            # Generate output
             tmp = tempfile.mkdtemp(dir=self.build_dir, prefix="src-copy", suffix=".tmp")
-            print("Generating output source in: " + tmp)
+            print(f"Generating output source in: {tmp}")
             for i in ["src", "api"]:
                 src = os.path.join(native, i)
                 dst = os.path.join(tmp, i)
                 shutil.copytree(src, dst, ignore=ign)
+            # Install
             print("Installing output source...")
             os.rename(tmp, self._out_native_src)
 
@@ -953,7 +952,7 @@ class Native(Command):
         if len(msgs) > 0:
             if not self.args.override:
                 raise RuntimeError(msg)
-            print("Overriding o" + msg[1:])
+            print(f"Overriding o{msg[1:]}")
 
     def run(self) -> None:
         # Construct the main class and determine the function name
@@ -963,12 +962,12 @@ class Native(Command):
         fname = "build" if self.args.no_install else "install"
         # Message
         msg = "Building native components"
-        options = ["--" + i.replace("_", "-") for i, k in self.args.items() if k]
+        options = [f"--{i}".replace("_", "-") for i, k in self.args.items() if k]
         if len(options) > 0:
             msg += " with options: " + " ".join(options)
         # Run
         if self.args.clean is not None:
-            msg = "Cleaning Claricpp at level: " + self.args.clean.name
+            msg = f"Cleaning Claricpp at level: {self.args.clean.name}"
             self.execute(lambda: instance.clean(self.args.clean), (), msg=msg)
         self.execute(lambda: getattr(instance, fname)(), (), msg=msg)
         if self.args.run_tests:
@@ -992,7 +991,7 @@ class Clean(Command):
 
     def run(self):
         f = lambda: Claricpp(api=True).clean(self.level)
-        self.execute(f, (), msg="Cleaning Claricpp at level: " + self.level.name)
+        self.execute(f, (), msg=f"Cleaning Claricpp at level: {self.level.name}")
 
 
 if __name__ == "__main__":
