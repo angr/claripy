@@ -1,85 +1,130 @@
 from .clari_setup import clari
 
-from collections import defaultdict
 from enum import Enum
-import re
+
+
+class _Wrapper:
+    """
+    Wrappers for clari creation methods to bring them more inline with claripy
+    """
+    @staticmethod
+    def BVV(val, bit_length, annotations=None):
+        val %= (2**bit_length) # TODO: maybe move to C++?
+        if val >= 2**64:
+            val = str(val)
+        return clari.Create.literal_bv(val, bit_length, annotations)
+    @staticmethod
+    def StringV(s, size):
+        return clari.Create.literal_string(s.ljust(size, "\0"))
+    @staticmethod
+    def union(*args):
+        return clari.Create.union_(*(args[0] if len(args) == 1 else args))
+    # TODO: ^ check with fish
+
+
+### Helpers
+
+
+def _bimap(*x):
+    return {i: k for i, k in x}, {k: i for i, k in x},
+
+def _fix_arg(arg):
+    try:
+        return arg._native  # TODO: no hasattr check b/c @property is weird
+    except AttributeError:
+        if isinstance(arg, Enum):
+            return conv_rm(arg.value)
+        return arg
+
+def _from_py_args(op, t, py_args, length):
+    # Special cases
+    if op == "BoolS":
+        return (py_args[0],)
+    elif op in {'BVS', 'FPS', 'FPV', 'VSS', 'StringS'}:
+        assert length is not None, f"{op} should have a length"
+        return (py_args[0], length,)
+    # Fix and order args
+    args = [_fix_arg(i) for i in py_args]
+    if issubclass(t, clari.Op.AbstractFlat):
+        return (args,)
+    elif issubclass(t, clari.Op.UIntBinary) and not op.startswith("Str"):
+        return args[::-1]
+    elif issubclass(t, clari.Op.FP.ModeBinary):
+        return args[1:] + [args[0]]
+    return args
+
+
+### Generate maps
+
 
 # Note: we do not make things on import!
 # LegacySetup may change functions!
 # We instead expose an init function
 
-def _bvv_wrapper(a1, bl, *args):
-    a1 %= (2**bl) # TODO: maybe move to C++?
-    if a1 >= 2**64:
-        a1 = str(a1)
-    return clari.Create.literal_bv(a1, bl, *args)
-
-
-def _gen_ctor_type_map():
-    Create = clari.Create
-    Op = clari.Op
-    m = {  # Non trivial translations
-        "ZeroExt": (Create.zero_ext, Op.ZeroExt,),
-        "SignExt": (Create.sign_ext, Op.SignExt,),
-        "LShR": (Create.shift_logical_right, Op.ShiftLogicalRight,),
-        "__rshift__": (Create.shift_arithmetic_right, Op.ShiftArithmeticRight,),
-        "__lshift__": (Create.shift_l, Op.ShiftLeft,),
-
-        "fpToUBV": (Create.FP.to_bv_unsigned, Op.FP.ToBVUnsigned),
-        "fpToIEEEBV": (Create.FP.to_ieee_bv, Op.FP.ToIEEEBV),
-
-        "IntToStr": (Create.String.from_int, Op.String.FromInt,),
+def _gen_op_ctor_type():
+    C = clari.Create
+    O = clari.Op
+    return {
+        "BoolV": (C.literal_bool, O.Literal,),
+        "BVV": (_Wrapper.BVV, O.Literal,),
+        "Extract": (C.extract, O.Extract,),
+        "FPV": (C.literal_fp, O.Literal,),
+        "StringV": (_Wrapper.StringV, O.Literal,),
+        "StringS": (C.symbol_string, O.Symbol,),
+        "StrConcat": (C.concat, O.Concat,),
+        "__eq__": (C.eq, O.Eq,),
+        "StrContains": (C.String.contains, O.String.Contains,),
+        "StrIndexOf": (C.String.index_of, O.String.IndexOf,),
+        "BVS": (C.symbol_bv, O.Symbol,),
+        "__gt__": (C.ugt, O.UGT,),
+        "__lt__": (C.ult, O.ULT,),
+        "__ne__": (C.neq, O.Neq,),
+        "IntToStr": (C.String.from_int, O.String.FromInt,),
+        "StrIsDigit": (C.String.is_digit, O.String.IsDigit,),
+        "StrLen": (C.String.len, O.String.Len,),
+        "__le__": (C.ule, O.ULE,),
+        "__ge__": (C.uge, O.UGE,),
+        "Or": (C.or_, O.Or,),
+        "StrPrefixOf": (C.String.prefix_of, O.String.PrefixOf,),
+        "StrReplace": (C.String.replace, O.String.Replace,),
+        "StrToInt": (C.String.to_int, O.String.ToInt,),
+        "StrSubstr": (C.String.sub_string, O.String.SubString,),
+        "StrSuffixOf": (C.String.suffix_of, O.String.SuffixOf,),
+        "__add__": (C.add, O.Add,),
+        "__rshift__": (C.shift_arithmetic_right, O.ShiftArithmeticRight,),
+        "BoolS": (C.symbol_bool, O.Symbol,),
+        "And": (C.and_, O.And,),
+        "__mul__": (C.mul, O.Mul,),
+        "If": (C.if_, O.If,),
+        "union": (_Wrapper.union, O.Union,),
+        "intersection": (C.intersection_, O.Intersection,),
+        "LShR": (C.shift_logical_right, O.ShiftLogicalRight,),
+        "Reverse": (C.reverse, O.Reverse,),
+        "ZeroExt": (C.zero_ext, O.ZeroExt,),
+        "SignExt": (C.sign_ext, O.SignExt,),
+        "Concat": (C.concat, O.Concat,),
+        "__mod__": (C.mod_unsigned, O.ModUnsigned,),
+        "__sub__": (C.sub, O.Sub,),
+        "__or__": (C.or_, O.Or,),
+        "__xor__": (C.xor_, O.Xor,),
+        "__and__": (C.and_, O.And,),
+        "__floordiv__": (C.div_unsigned, O.DivUnsigned,),
+        "SDiv": (C.div_signed, O.DivSigned,),
+        "SMod": (C.mod_signed, O.ModSigned,),
+        "ULE": (C.ule, O.ULE,),
+        "Not": (C.not_, O.Not,),
+        "__lshift__": (C.shift_l, O.ShiftLeft,),
+        "fpToUBV": (C.FP.to_bv_unsigned, O.FP.ToBVUnsigned,),
+        "FPS": (C.symbol_fp, O.Symbol,),
+        "fpAdd": (C.FP.add, O.FP.Add,),
+        "fpIsNaN": (C.FP.is_nan, O.FP.IsNan,),
+        "fpToIEEEBV": (C.FP.to_ieee_bv, O.FP.ToIEEEBV,),
+        "__invert__": (C.invert, O.Invert,),
+        "SLT": (C.slt, O.SLT,),
+        "SGE": (C.sge, O.SGE,),
+        "SLE": (C.sle, O.SLE,),
+        "widen": (C.widen, O.Widen,),
     }
-    # Types
-    types = ["Bool", "BV", "FP", "String", "VS"]
-    fname = lambda p, t: f"{p}_{t}".lower()
-    get_func = lambda t, p: (getattr(Create, fname(p, t)), getattr(Op, p))
-    m.update({(i + "V"): get_func(i, "Literal") for i in types})
-    m.update({(i + "S"): get_func(i, "Symbol") for i in types})
-    m["BVV"] = (_bvv_wrapper, m["BVV"][1])
-    return m
-
-# Trivial lookups can work if the name is tweaked
-_conv_map = {
-    "__ne__": "neq",
-    "__mod__": "UMod",
-    "__floordiv__": "UDiv",
-    "__gt__": "UGT",
-    "__ge__": "UGE",
-    "__lt__": "ULT",
-    "__le__": "ULE",
-
-    "fpIsNaN": "fpIs_nan",
-
-    "StrConcat": "Concat",
-    "StrIndexOf": "StrIndex_Of",
-    "StrIsDigit": "StrIs_Digit",
-    "StrPrefixOf": "StrPrefix_Of",
-    "StrSuffixOf": "StrSuffix_Of",
-    "StrToInt": "StrTo_Int",
-    "StrSubstr": "StrSub_string",
-}
-
-def _gen_op_map():
-    def _op_try(op_t):
-        tn = op_t.op_name()
-        name = '__' + tn.lower() + '__'
-        try: # Try as magic first, fallback to name if not magic
-            _ = _gen_ctor_type_map(name)
-            return name
-        except AttributeError:
-            return tn
-    op_m = defaultdict(_op_try)
-    op_to_py_op = {
-        # TODO: populate
-        clari.Op.Neq : "__ne__",
-        clari.Op.If : "If",
-    }
-    op_m.update(op_to_py_op)
-    return op_m
-
-def _bimap(*x):
-    return {i: k for i, k in x}, {k: i for i, k in x},
 
 def _gen_rms():
     return _bimap(
@@ -90,125 +135,35 @@ def _gen_rms():
         ('RM_RTN', clari.Mode.FP.Rounding.TowardsNegativeInf,),
     )
 
-def _py_op_to_ctor_type(real_py_op):
-    if real_py_op in _ctor_map:
-        return _ctor_map[real_py_op]
-    py_op = _conv_map[real_py_op] if real_py_op in _conv_map else real_py_op
-    # Find type
-    def _t(py_op, Op):
-        cap = lambda x: x[0].upper() + x[1:]
-        re_cap = lambda m: cap(m.group()[1:])
-        opts = [cap(py_op.replace("__", "")), re.sub("_([A-Za-z])", re_cap, py_op)]
-        for k in ('Signed', 'Unsigned',):
-            if py_op.startswith(k[0]):
-                opts.append(py_op[1:] + k)
-        for op_n in opts:
-            if hasattr(Op, op_n):
-                return getattr(Op, op_n)
-    # Find ctor
-    def _f(py_op, Create):
-        guess1 = py_op.replace("__", "").lower()
-        opts = [guess1, guess1 + '_']
-        for k in ('signed', 'unsigned',):
-            if py_op.startswith(k[0].upper()):
-                opts.append(f"{py_op[1:]}_{k}".lower())
-        for fn in opts:
-            if hasattr(Create, fn):
-                return getattr(Create, fn)
-    # Wrapper
-    def _try_ns(py_op, x, ns):
-        if not py_op.startswith(x):
-            return None, None
-        c = getattr(clari.Create, ns)
-        o = getattr(clari.Op, ns)
-        r = _f(py_op, c), _t(py_op, o)
-        if not all(r):
-            r = _f(py_op[len(x):], c), _t(py_op[len(x):], o)
-        return r
-
-    # Try namespaces
-    r = _try_ns(py_op, "fp", "FP")
-    if all(r):
-        return r
-    r = _try_ns(py_op, "Str", "String")
-    # r = _try_ns(py_op, "string")
-    if all(r):
-        return r
-    r = _f(py_op, clari.Create), _t(py_op, clari.Op)
-    if not all(r):
-        raise RuntimeError(f"Could not translate op {real_py_op} to C++")
-    return r
-
-_ctor_map = None
-_op_map = None
+_op_ctor_type = None
 _rms = None
 
-# Exports
+
+### Exports
+
+
+def init():
+    global _rms
+    _rms = _gen_rms()
+    global _op_ctor_type
+    _op_ctor_type = _gen_op_ctor_type()
 
 def conv_rm(x):
     return _rms[1 if isinstance(x, clari.Mode.FP.Rounding) else 0][x]
 
-def init():
-    global _op_map
-    global _ctor_map
-    global _rms
-    _op_map = _gen_op_map()
-    _ctor_map = _gen_ctor_type_map()
-    _rms = _gen_rms()
-
-
-def expr_op_type_pair_to_py_op(expr_t, op_t):
-    is_lit = expr_t is clari.Op.Literal
-    if is_lit or expr_t is clari.Op.Symbol:
-        return expr_t.type_name() + ('V' if is_lit else 'S')
-    return _op_map[op_t]
-
-def expr_to_py_op(expr):
-    return expr_op_type_pair_to_py_op(type(expr), type(expr.op))
-
-
-def create(op, args, *, length=None):
-    # Get ctor and type
+def create(op, py_args, *, length=None):
     if op == "fpToFP":
-        if len(args) == 2:
+        if len(py_args) == 2:
             ctor = clari.Create.FP.from_not_2s_complement_bv
             t = clari.Op.FP.FromNot2sComplementBV
-        elif hasattr(args[1], 'sort'):
+        elif hasattr(py_args[1], 'sort'):
             ctor = clari.Create.FP.from_fp
             t = clari.Op.FP.FromFP
         else:
             ctor = clari.Create.FP.from_2s_complement_signed
             t = clari.Op.FP.From2sComplementSigned
     else:
-        ctor, t = _py_op_to_ctor_type(op)
+        ctor, t = _op_ctor_type[op]
+    return ctor(* _from_py_args(op, t, py_args, length))
 
-    # Fix args
-    if op == "BoolS":
-        args = (args[0],)
-    elif op in {'BVS', 'FPS', 'VSS', 'StringS'}:
-        assert length is not None, f"{op} should have a length"
-        args = (args[0], length,)
-    elif op == "FPV":
-        assert length is not None, f"{op} should have a length"
-        args = [args[0], length]
-    else:
-        def fx(arg):
-            try:
-                return arg._native # @property might create attr, no hasattr check
-            except AttributeError:
-                if isinstance(arg, Enum):
-                    return conv_rm(arg.value)
-                return arg
-
-        args = [fx(i) for i in args]
-    # Order args
-    if issubclass(t, clari.Op.AbstractFlat):
-        args = (args,)
-    elif issubclass(t, clari.Op.UIntBinary) and not op.startswith("Str"):
-        args = args[::-1]
-    elif issubclass(t, clari.Op.FP.ModeBinary):
-        args = args[1:] + [args[0]]
-    # Call ctor:
-    return ctor(*args)
-
-__all__ = ("init", "expr_op_type_pair_to_py_op", "expr_to_py_op", "conv_rm",)
+__all__ = ("init", "create", "conv_rm",)

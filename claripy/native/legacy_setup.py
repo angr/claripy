@@ -11,12 +11,6 @@ class LegacySetup(Setup):
         super().__init__(debug_mode=debug_mode)
 
     def define_members(self):
-        # Fix wonky
-        old_ls = clari.Create.literal_string
-        clari.Create.literal_string = lambda s, l: old_ls(s.ljust(l, "\0"))
-        old_u = clari.Create.union_
-        clari.Create.union_ = lambda *args: old_u(*(args[0] if len(args) == 1 else args))
-        # TODO: ^ check with fish
         super().define_members()
         clari.Legacy = legacy_module
         self._enable_args()
