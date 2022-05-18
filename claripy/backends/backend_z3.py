@@ -701,6 +701,12 @@ class BackendZ3(Backend):
                 s.set('timeout', timeout)
         return s
 
+    def clone_solver(self, s):
+        # This clones the solver.
+        # See https://github.com/Z3Prover/z3/issues/556
+        clone = s.translate(self._context)
+        return clone
+
     def _add(self, s, c, track=False):
         if track:
             already_tracked = set(str(impl.children()[0]) for impl in s.assertions())
