@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief This file defines a method to create an Expr with an literal Op
+ * @brief This file defines a method to create an Expr with a literal Op
  */
 #ifndef R_SRC_CREATE_LITERAL_HPP_
 #define R_SRC_CREATE_LITERAL_HPP_
@@ -33,7 +33,7 @@ namespace Create {
     /** Create a FP Expr with a Literal op containing a VS
      *  data may not be nullptr
      */
-    M_TRIVIAL_TYPE(vs, PyObj::VS::Ptr);
+    M_TRIVIAL_TYPE(vs, PyObj::VSVS::Ptr);
 
     /** Create a FP Expr with a Literal op containing a String
      *  data may not be nullptr
@@ -71,6 +71,10 @@ namespace Create {
         }
         UTIL_THROW(Util::Err::Usage, "Claricpp only supports 32 and 64 bit floats");
     }
+
+    // We should support every BV creation method
+    static_assert(std::variant_size_v<Op::BVVar> == 6,
+                  "There should be more / less creation methods");
 
     /** Create a BV Expr with a Literal op of a given bit length from a U64
      *  Warning: this may cast data to a smaller size (bit_length or greater)
@@ -121,6 +125,14 @@ namespace Create {
                                         std::move(sp));
         }
 #undef M_CASE
+    }
+
+    /** Create a BV Expr with a Literal op containing an arbitrary length int
+     *  Warning: this may cast data to a smaller size (bit_length or greater)
+     *  data should be a base 10 string containing
+     */
+    inline Expr::BasePtr literal_bv(PyObj::BVVS::Ptr data, Annotation::SPAV sp = empty_spav) {
+        return Private::literal(std::move(data), std::move(sp));
     }
 
     /** This function exists to prevent accidental use by explicit rejection */

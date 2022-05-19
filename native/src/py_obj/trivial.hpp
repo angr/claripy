@@ -52,10 +52,10 @@
 
 
 namespace PyObj {
-    /** A Value Set PyObj */
-    M_NEW_PYOBJ(VS);
-    /** A BV Arg PyObj */
-    M_NEW_PYOBJ(BVArg);
+    /** A VS PyObj for VSs */
+    M_NEW_PYOBJ(VSVS);
+    /** A VS PyObj for BVs */
+    M_NEW_PYOBJ(BVVS);
 } // namespace PyObj
 
 

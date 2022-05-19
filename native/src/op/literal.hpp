@@ -27,28 +27,29 @@ namespace Op {
             out << R"|({ "name":")|" << op_name() << R"|(", "value":)|" << value << " }";
         }
 
+        /** Appends the expr children of the expr to the given vector
+         *  Note: This should only be used when returning children to python
+         */
+        inline std::vector<ArgVar> python_children() const final {
 #define M_CASE(TYPE, EXPR)                                                                         \
     case (Util::Type::index<decltype(value), TYPE>): {                                             \
         const auto &got { std::get<TYPE>(value) };                                                 \
         return EXPR;                                                                               \
     }
-
-        /** Appends the expr children of the expr to the given vector
-         *  Note: This should only be used when returning children to python
-         */
-        inline std::vector<ArgVar> python_children() const final {
-            static_assert(std::variant_size_v<decltype(value)> == 10);
+            static_assert(std::variant_size_v<decltype(value)> == 11, "Fix me");
             switch (value.index()) {
                 M_CASE(bool, { got });
                 M_CASE(std::string, { got });
                 M_CASE(float, { got });
                 M_CASE(double, { got });
-                M_CASE(PyObj::VS::Ptr, { got });
+                M_CASE(PyObj::VSVS::Ptr, { got });
                 M_CASE(uint8_t, { got });
                 M_CASE(uint16_t, { got });
                 M_CASE(uint32_t, { got });
                 M_CASE(U64, { got });
                 M_CASE(BigInt, { got });
+                M_CASE(PyObj::BVVS::Ptr, { got });
+#undef M_CASE
                 default:
                     UTIL_THROW(Util::Err::Unknown, "Broken variant detected");
             }
@@ -65,10 +66,8 @@ namespace Op {
             : Base { h, static_cuid }, value { std::move(data) } {
             static_assert(std::is_fundamental_v<T> || not std::is_const_v<T>,
                           "Non-fundamental types should be non-const and moved");
-            static_assert(
-                Util::Type::Is::in_ignore_const<T, bool, std::string, float, double, PyObj::VS::Ptr,
-                                                uint8_t, uint16_t, uint32_t, U64, BigInt>,
-                "No matching Literal constructor for given type.");
+            static_assert(PrimTL::contains<Util::Type::RemoveCVR<T>>,
+                          "No matching Literal constructor for given type.");
         }
 
         /** Adds the raw expr children of the expr to the given stack in reverse
@@ -76,26 +75,6 @@ namespace Op {
          */
         inline void unsafe_add_reversed_children(Stack &) const noexcept final {}
     };
-
-    /** Ostream operator for PrimVar */
-    inline std::ostream &operator<<(std::ostream &o, const PrimVar &value) {
-        switch (value.index()) {
-            M_CASE(bool, o << std::boolalpha << got);
-            M_CASE(std::string, o << std::quoted(got));
-            M_CASE(float, o << got);
-            M_CASE(double, o << got);
-            M_CASE(PyObj::VS::Ptr, o << got);
-            M_CASE(uint8_t, o << static_cast<uint16_t>(got));
-            M_CASE(uint16_t, o << got);
-            M_CASE(uint32_t, o << got);
-            M_CASE(U64, o << got);
-            M_CASE(BigInt, o << got);
-            // Bad variant
-            default:
-                UTIL_THROW(Util::Err::Unknown, "unknown type in variant");
-        }
-    }
-#undef M_CASE
 
 } // namespace Op
 

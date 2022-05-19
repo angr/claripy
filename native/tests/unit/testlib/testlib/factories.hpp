@@ -27,7 +27,7 @@ namespace UnitTest::TestLib::Factories {
             return Create::literal(static_cast<double>(i));
         }
         else if constexpr (std::is_same_v<T, Expr::VS>) {
-            return Create::literal(PyObj::VS::factory(i, CHAR_BIT));
+            return Create::literal(PyObj::VSVS::factory(i, CHAR_BIT));
         }
         else {
             static_assert(Util::TD::false_<T>, "Unsupported type T");

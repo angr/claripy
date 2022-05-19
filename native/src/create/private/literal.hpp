@@ -30,12 +30,12 @@ namespace Create::Private {
             // String
             std::string, Expr::String,
             // VS
-            PyObj::VS::Ptr, Expr::VS,
+            PyObj::VSVS::Ptr, Expr::VS,
             // FP
             double, Expr::FP, float, Expr::FP,
             // BV
             uint8_t, Expr::BV, uint16_t, Expr::BV, uint32_t, Expr::BV, U64, Expr::BV, BigInt,
-            Expr::BV>;
+            Expr::BV, PyObj::BVVS::Ptr, Expr::BV>; // TODO: test BVVS ctor
         using ExprT = TypeMap::template GetValue<Util::Type::RemoveCVR<Data>>;
         // Construct expr
         auto op { Op::factory<Op::Literal>(std::move(data)) };
