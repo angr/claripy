@@ -25,8 +25,6 @@ namespace Backend {
      */
     template <typename Derived, typename BackendObj> class Generic : public Base {
         ENABLE_UNITTEST_FRIEND_ACCESS;
-        /** A raw pointer to a backend object */
-        using BORCPtr = const BackendObj *;
         // Disable implicits
         SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(Generic, delete);
 
@@ -89,10 +87,10 @@ namespace Backend {
             // Note prefix because we reversed the list, thus the 'end' must come first
             // Each list represents the arguments of an expr
             Op::Stack expr_stack { std::vector<Expr::RawPtr> { nullptr, input } };
-            Op::Stack op_stack;             // Exprs to give to the conversion dispatcher
-                                            // We leave this as a vector for performance
-                                            // reasons within the dispatcher
-            std::vector<BORCPtr> arg_stack; // Converted backend objects
+            Op::Stack op_stack;                        // Exprs to give to the conversion dispatcher
+                                                       // We leave this as a vector for performance
+                                                       // reasons within the dispatcher
+            std::vector<const BackendObj *> arg_stack; // Converted backend objects
 
             // For the next element in our expr_stack
             for (const auto *expr = expr_stack.top(); not expr_stack.empty();) {
@@ -184,7 +182,7 @@ namespace Backend {
          *  Note: We use a raw vector instead of a stack for efficiency
          */
         virtual BackendObj dispatch_conversion(const Expr::RawPtr expr,
-                                               std::vector<BORCPtr> &args) = 0;
+                                               std::vector<const BackendObj *> &args) = 0;
 
         /** This dynamic dispatcher converts a backend object into an expr
          *  All arguments of b_obj that are not primitives have

@@ -475,32 +475,6 @@ namespace Backend::Z3 {
 #endif
         }
 
-        /** Coerce a PrimVar into a T via static_cast-ing
-         *  This assumes the value of x will fit within T
-         *  This assumes the PrimVar is set to a BV type
-         */
-        template <typename T> static T coerce_to(Op::PrimVar &&p) {
-            using Usage = Util::Err::Usage;
-            switch (p.index()) {
-#define M_CASE(TYPE)                                                                               \
-    case Util::Type::index<Op::PrimVar, TYPE>:                                                     \
-        return static_cast<T>(std::get<TYPE>(p));
-                M_CASE(uint8_t)
-                M_CASE(uint16_t)
-                M_CASE(uint32_t)
-                M_CASE(U64)
-#undef M_CASE
-                case Util::Type::index<Op::PrimVar, BigInt>: {
-                    const auto &bi = std::get<BigInt>(p);
-                    UTIL_ASSERT(Usage, bi.bit_length < 64,
-                                "Bit length of given PrimVar is too long");
-                    return static_cast<T>(bi.value);
-                }
-                default:
-                    UTIL_THROW(Usage, "Invalid PrimVar given");
-            }
-        }
-
         /** Create a == b; neither may be nullptr */
         static inline Expr::BasePtr to_eq(const Expr::RawPtr a_raw, const Expr::RawPtr b_raw) {
             UTIL_ASSERT_NOT_NULL_DEBUG(a_raw);

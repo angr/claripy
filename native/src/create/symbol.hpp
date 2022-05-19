@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief This file defines a method to create an Expr with an symbol Op
+ * @brief This file defines a method to create an Expr with a symbol Op
  */
 #ifndef R_SRC_CREATE_SYMBOL_HPP_
 #define R_SRC_CREATE_SYMBOL_HPP_

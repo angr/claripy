@@ -104,16 +104,16 @@ namespace Backend::Z3 {
         return ret;                                                                                \
     }
 
-            // Switch on expr type
+            // Switch on op type
             switch (expr->op->cuid) {
 
-                // This should never be hit
+                // This should never be hit; it is an internal error
                 default: {
                     UTIL_THROW(Util::Err::NotSupported,
                                "Unknown expr op given.\nOp CUID: ", expr->op->cuid);
                 }
 
-                    // Unsupported ops @todo
+                // Unsupported ops @todo fix (if applicable)
                 case Op::Widen::static_cuid:           // fallthrough
                 case Op::Union::static_cuid:           // fallthrough
                 case Op::FP::FP::static_cuid:          // fallthrough
@@ -546,20 +546,23 @@ namespace Backend::Z3 {
                     // Conversions
                 case Z3_OP_BNUM: {
                     const auto x { Abs::BV::num_primtive(b_obj) };
-#define M_G_CASE(INDEX)                                                                            \
-    case INDEX:                                                                                    \
-        return std::get<INDEX>(x);
+#define M_G_CASE(TYPE)                                                                             \
+    case Util::Type::index<Op::BVVar, TYPE>:                                                       \
+        return std::get<TYPE>(x);
                     switch (x.index()) {
-                        M_G_CASE(0)
-                        M_G_CASE(1)
-                        M_G_CASE(2)
-                        M_G_CASE(3)
-                        M_G_CASE(4)
+                        M_G_CASE(uint8_t);
+                        M_G_CASE(uint16_t);
+                        M_G_CASE(uint32_t);
+                        M_G_CASE(U64);
+                        M_G_CASE(BigInt);
+                        // Will compile fail if previous indexes include this
+                        case Util::Type::index<Op::BVVar, PyObj::BVVS::Ptr>:
+                            UTIL_THROW(Util::Err::Unknown, "num_primitive should failed");
                         default:
                             UTIL_THROW(Util::Err::Unknown, "Bad variant");
                     }
 #undef M_G_CASE
-                    static_assert(std::variant_size_v<decltype(x)> == 5,
+                    static_assert(std::variant_size_v<decltype(x)> == 6,
                                   "Switch-case statement needs to be modified");
                 }
                 case Z3_OP_FPA_NUM: {

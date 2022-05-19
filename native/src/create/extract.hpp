@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief This file defines a method to create an Expr with an Eq Op
+ * @brief This file defines a method to create an Expr with an Extract Op
  */
 #ifndef R_SRC_CREATE_EXTRACT_HPP_
 #define R_SRC_CREATE_EXTRACT_HPP_

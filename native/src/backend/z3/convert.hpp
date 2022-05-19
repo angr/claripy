@@ -298,24 +298,21 @@ namespace Backend::Z3 {
             using To = CTSC<Op::Literal>;
             const auto &data { Util::checked_static_cast<To>(expr->op.get())->value };
             try {
-                switch (data.index()) {
 #define M_CASE(TYPE, EXPR)                                                                         \
     case Util::Type::index<decltype(data), TYPE>: {                                                \
         const auto &got { std::get<TYPE>(data) };                                                  \
         return (EXPR);                                                                             \
     }
+
+                switch (data.index()) {
                     M_CASE(bool, ctx.bool_val(got));
                     M_CASE(std::string, ctx.string_val(got));
                     M_CASE(float, ctx.fpa_val(got));
                     M_CASE(double, ctx.fpa_val(got));
-                    case Util::Type::index<decltype(data), PyObj::VS::Ptr>: {
-                        UTIL_THROW(Error::Backend::Unsupported,
-                                   "VSA is not supported by the Z3 backend");
-                    }
-                        M_CASE(uint8_t, ctx.bv_val(got, 8));
-                        M_CASE(uint16_t, ctx.bv_val(got, 16));
-                        M_CASE(uint32_t, ctx.bv_val(got, 32));
-                        M_CASE(U64, ctx.bv_val(static_cast<uint64_t>(got), 64));
+                    M_CASE(uint8_t, ctx.bv_val(got, 8));
+                    M_CASE(uint16_t, ctx.bv_val(got, 16));
+                    M_CASE(uint32_t, ctx.bv_val(got, 32));
+                    M_CASE(U64, ctx.bv_val(static_cast<uint64_t>(got), 64));
 #undef M_CASE
                     case Util::Type::index<decltype(data), BigInt>: {
                         const auto &big { std::get<BigInt>(data) };
@@ -329,11 +326,19 @@ namespace Backend::Z3 {
                             return ctx.bv_val(s.str().c_str(), to_z3u(big.bit_length));
                         }
                     }
-                        // Error handling
+                    // Not supported
+                    case Util::Type::index<decltype(data), PyObj::VSVS::Ptr>: // fallthrough
+                    case Util::Type::index<decltype(data), PyObj::BVVS::Ptr>: {
+                        UTIL_THROW(Error::Backend::Unsupported,
+                                   "VSA is not supported by the Z3 backend");
+                    }
+                    // Error handling
                     default:
                         UTIL_THROW(Util::Err::NotSupported,
                                    "Unknown variant type in literal op given to z3 backend");
                 }
+                static_assert(std::variant_size_v<Op::PrimVar> == 11,
+                              "Switch case needs to updated");
             }
             // Re-emit these exceptions with additional info and wrapped as a Claricpp exception
             catch (const std::bad_variant_access &ex) {
