@@ -24,6 +24,8 @@ template <typename T> struct HasRepr {
   protected:
     /** Prevent most slicing */
     inline ~HasRepr() noexcept = default;
+    // Rule of 5
+    SET_IMPLICITS(HasRepr, default, noexcept);
 };
 
 #endif

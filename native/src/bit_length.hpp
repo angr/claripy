@@ -16,7 +16,7 @@ struct BitLength {
 
   protected:
     /** Protected constructor */
-    explicit inline BitLength(const U64 bl) noexcept : bit_length { bl } {}
+    explicit constexpr BitLength(const U64 bl) noexcept : bit_length { bl } {}
     /** Protected destructor to prevent most slicing */
     inline ~BitLength() noexcept = default;
     // Rule of 5

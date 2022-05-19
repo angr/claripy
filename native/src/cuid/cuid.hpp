@@ -39,7 +39,7 @@ namespace CUID {
 
       protected:
         /** Constructor */
-        constexpr HasCUID(const CUID &c) noexcept : cuid { c } {}
+        explicit constexpr HasCUID(const CUID &c) noexcept : cuid { c } {}
         /** Prevent most slicing */
         inline ~HasCUID() noexcept = default;
         // Rule of 5
