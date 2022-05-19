@@ -117,20 +117,23 @@ void fp() {
     UNITTEST_ASSERT(test_id(C::FP::to_bv_unsigned(tz, fp_x, Expr::get_bit_length(fp_x))));
 
     Util::Log::debug("Testing from_fp...");
-    /* UNITTEST_ASSERT(test_id(C::FP::from_fp(tz, fp_x, Mode::FP::dbl))); */
+    /* TODO: UNITTEST_ASSERT(test_id(C::FP::from_fp(tz, fp_x, Mode::FP::dbl))); */
 
     Util::Log::debug("Testing from_2s_complement_bv...");
-    /* UNITTEST_ASSERT(test_id(C::FP::from_2s_complement_bv<Sgnd::Signed>(tz, bv_x,
+    /* TODO: UNITTEST_ASSERT(test_id(C::FP::from_2s_complement_bv<Sgnd::Signed>(tz, bv_x,
      * Mode::FP::dbl))); */
-    /* UNITTEST_ASSERT(test_id(C::FP::from_2s_complement_bv<Sgnd::Unsigned>(tz, bv_x,
+    /* TODO: UNITTEST_ASSERT(test_id(C::FP::from_2s_complement_bv<Sgnd::Unsigned>(tz, bv_x,
      * Mode::FP::dbl))); */
 
     Util::Log::debug("Testing from_not_2s_complement_bv...");
-    /* UNITTEST_ASSERT(test_id(C::FP::from_not_2s_complement_bv(bv_x, Mode::FP::dbl))); */
+    /* TODO: UNITTEST_ASSERT(test_id(C::FP::from_not_2s_complement_bv(bv_x, Mode::FP::dbl))); */
 
     /**************************************************/
     /*                    Trivial                     */
     /**************************************************/
+
+    Util::Log::debug("Testing is_nan...");
+    UNITTEST_ASSERT(test_id(C::FP::is_nan(fp_x)));
 
     Util::Log::debug("Testing to_ieee_bv...");
     UNITTEST_ASSERT(test_id(C::FP::to_ieee_bv(fp_x)));

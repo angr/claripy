@@ -19,7 +19,7 @@ inline bool is_false(UnitTest::Friend::ShimZ3 &z3, const Expr::BasePtr &p) {
 }
 
 
-/** Try to convert a claricpp expr to z3 */
+/** Try to convert a Claricpp FP Expr to z3 */
 void fp_convert() {
     namespace C = Create;
 

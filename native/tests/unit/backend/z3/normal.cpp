@@ -15,8 +15,8 @@ void normal() {
     // The backend
     UnitTest::Friend::ShimZ3 z3;
 
-    /* const auto string_x { C::symbol<Expr::String>("string_x", 64_ui) }; */
-    /* const auto string_y { C::symbol<Expr::String>("string_y", 64_ui) }; */
+    /* TODO: const auto string_x { C::symbol<Expr::String>("string_x", 64_ui) }; */
+    /* TODO: const auto string_y { C::symbol<Expr::String>("string_y", 64_ui) }; */
     const auto fp_x { C::symbol_fp("fp_x", Mode::FP::dbl.width()) };
     const auto fp_y { C::symbol_fp("fp_y", Mode::FP::dbl.width()) };
     const auto bv_x { C::symbol_bv("bv_x", 64_ui) };
@@ -37,7 +37,7 @@ void normal() {
     UNITTEST_ASSERT(test_id(C::if_(bool_x, bv_x, bv_y)));
     UNITTEST_ASSERT(test_id(C::if_(bool_x, fp_x, fp_y)));
     UNITTEST_ASSERT(test_id(C::if_(bool_x, bool_x, bool_y)));
-    /* UNITTEST_ASSERT(test_id(C::if_(bool_x, string_x, string_y))); */
+    /* TODO: UNITTEST_ASSERT(test_id(C::if_(bool_x, string_x, string_y))); */
 
     Util::Log::debug("Testing extract...");
     UNITTEST_ASSERT(test_id(C::extract(2, 1, bv_x)));
@@ -46,7 +46,7 @@ void normal() {
     UNITTEST_ASSERT(test_id(C::literal(true)));
     UNITTEST_ASSERT(test_id(C::literal(1.)));
     UNITTEST_ASSERT(test_id(C::literal(1.F)));
-    /* UNITTEST_ASSERT(test_id(C::literal(std::string("Hello")))); */
+    /* TODO: UNITTEST_ASSERT(test_id(C::literal(std::string("Hello")))); */
 
     UNITTEST_ASSERT(test_id(C::literal(uint8_t { 2 })));
     UNITTEST_ASSERT(test_id(C::literal(uint16_t { 2 })));
@@ -96,12 +96,12 @@ void normal() {
     Util::Log::debug("Testing eq...");
     UNITTEST_ASSERT(test_id(C::eq(fp_x, fp_y)));
     UNITTEST_ASSERT(test_id(C::eq(bool_x, bool_y)));
-    /* UNITTEST_ASSERT(test_id(C::eq<Expr::String>(string_x, string_y))); */
+    /* TODO: UNITTEST_ASSERT(test_id(C::eq<Expr::String>(string_x, string_y))); */
 
     Util::Log::debug("Testing neq...");
     UNITTEST_ASSERT(test_id(C::neq(fp_x, fp_y)));
     UNITTEST_ASSERT(test_id(C::neq(bool_x, bool_y)));
-    /* UNITTEST_ASSERT(test_id(C::neq<Expr::String>(string_x, string_y))); */
+    /* TODO: UNITTEST_ASSERT(test_id(C::neq<Expr::String>(string_x, string_y))); */
 
     Util::Log::debug("Testing compare...");
     UNITTEST_ASSERT(test_id(C::sle(fp_x, fp_y)));
@@ -142,7 +142,7 @@ void normal() {
 
     Util::Log::debug("Testing concat...");
     UNITTEST_ASSERT(test_id(C::concat({ bv_x, bv_y })));
-    /* UNITTEST_ASSERT(test_id(C::concat<Expr::String>({string_x, string_y}))); */
+    /* TODO: UNITTEST_ASSERT(test_id(C::concat<Expr::String>({string_x, string_y}))); */
 
     Util::Log::debug("Testing add...");
     UNITTEST_ASSERT(test_id(C::add({ bv_x, bv_y })));
