@@ -7,6 +7,7 @@
 #include "error.hpp"
 #include "private/verify.hpp"
 
+#include <csignal>
 #include <exception>
 #include <src/util.hpp>
 
@@ -14,9 +15,9 @@
 /** Catch and print an error before exiting */
 #define CATCH_ERROR(ERROR)                                                                         \
     catch (const ERROR &e) {                                                                       \
+        std::signal(SIGABRT, nullptr);                                                             \
         UNITTEST_ERR(e.backtrace(), "\n", #ERROR ": ", e.what());                                  \
     }
-
 
 int UnitTest::TestLib::test_func(TestFN &f) {
     // Notify verify that test_func has started running
@@ -37,6 +38,7 @@ int UnitTest::TestLib::test_func(TestFN &f) {
     CATCH_ERROR(Util::Err::Python::Base)
     CATCH_ERROR(Util::Err::Claricpp)
     catch (std::exception &e) {
+        std::signal(SIGABRT, nullptr);
         UNITTEST_ERR("std::exception: ", e.what());
     }
 }
