@@ -306,7 +306,6 @@ namespace Backend::Z3 {
 
                 switch (data.index()) {
                     M_CASE(bool, ctx.bool_val(got));
-                    M_CASE(std::string, ctx.string_val(got));
                     M_CASE(float, ctx.fpa_val(got));
                     M_CASE(double, ctx.fpa_val(got));
                     M_CASE(uint8_t, ctx.bv_val(got, 8));
@@ -314,6 +313,18 @@ namespace Backend::Z3 {
                     M_CASE(uint32_t, ctx.bv_val(got, 32));
                     M_CASE(U64, ctx.bv_val(static_cast<uint64_t>(got), 64));
 #undef M_CASE
+                    case Util::Type::index<decltype(data), std::string>: {
+                        const auto &str { std::get<std::string>(data) };
+                        if (LIKELY(str.size() * CHAR_BIT == Expr::get_bit_length(expr))) {
+                            return ctx.string_val(str);
+                        }
+                        // Pad string with null bytes
+                        Util::Log::warning(WHOAMI "Padding string literal with null bytes to match "
+                                                  "expr length; this is slow.");
+                        std::string s2 { str };
+                        s2.resize(Expr::get_bit_length(expr), '\0');
+                        return ctx.string_val(s2.c_str(), Util::narrow<unsigned>(s2.size()));
+                    }
                     case Util::Type::index<decltype(data), BigInt>: {
                         const auto &big { std::get<BigInt>(data) };
                         if (std::holds_alternative<BigInt::Str>(big.value)) {

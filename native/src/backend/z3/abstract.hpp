@@ -65,7 +65,8 @@ namespace Backend::Z3 {
         /**********************************************************/
 
         /** Abstraction function for Z3_OP_INTERNAL to a primitive */
-        static std::string internal_primitive(const z3::expr &b, const z3::func_decl &decl) {
+        static CCSC internal_primitive(const z3::expr &b, const z3::func_decl &decl) {
+#if 1
             const auto &ctx { b.ctx() };
             if (UNLIKELY((Z3_get_decl_num_parameters(ctx, decl) != 1) ||
                          (Z3_get_decl_parameter_kind(ctx, decl, 0) != Z3_PARAMETER_SYMBOL))) {
@@ -75,12 +76,20 @@ namespace Backend::Z3 {
             if (UNLIKELY(Z3_get_symbol_kind(ctx, symb) != Z3_STRING_SYMBOL)) {
                 UTIL_THROW(Error::Backend::Abstraction, "Weird Z3 model (Type 2).", b);
             }
-            return { Z3_get_symbol_string(ctx, symb) };
+            Util::Log::error(WHOAMI "String literal abstraction is incomplete.");
+            return Z3_get_symbol_string(ctx, symb);
+                // TODO: return z3_str.encode("utf-8").decode("unicode_escape")
+#else
+            // TODO: Check if this is better
+            // Return e.get_string().encode('utf-8').decode('unicode_escape')
+            std::wstring_convert < std::codecvt<utf8<char32_t>, char32_t> conv;
+            return conv.to_bytes(b.get_u32string());
+#endif
         }
 
         /** Abstraction function for Z3_OP_INTERNAL */
         static Expr::BasePtr internal(const z3::expr &b, const z3::func_decl &decl) {
-            return Create::literal(internal_primitive(b, decl));
+            return Create::literal(std::string { internal_primitive(b, decl) });
         }
 
         /** Abstraction function for Z3_OP_UNINTERPRETED */
@@ -171,13 +180,19 @@ namespace Backend::Z3 {
         }
 
         /** Abstraction function for z3 and ops */
-        static Expr::BasePtr and_(ArgsVec &args) { M_FLAT_BINARY(Create::and_); }
+        static Expr::BasePtr and_(ArgsVec &args) {
+            M_FLAT_BINARY(Create::and_);
+        }
 
         /** Abstraction function for z3 or ops */
-        static Expr::BasePtr or_(const ArgsVec &args) { M_FLAT_BINARY(Create::or_); }
+        static Expr::BasePtr or_(const ArgsVec &args) {
+            M_FLAT_BINARY(Create::or_);
+        }
 
         /** Abstraction function for z3 xor ops */
-        static Expr::BasePtr xor_(const ArgsVec &args) { M_FLAT_BINARY(Create::xor_); }
+        static Expr::BasePtr xor_(const ArgsVec &args) {
+            M_FLAT_BINARY(Create::xor_);
+        }
 
         /** Abstraction function for z3 not/inversion ops */
         template <typename T> static Expr::BasePtr not_(const ArgsVec &args) {
@@ -194,35 +209,53 @@ namespace Backend::Z3 {
         /**********************************************************/
 
         /** Abstraction function for z3 negation ops */
-        static Expr::BasePtr neg(const ArgsVec &args) { M_UNARY(Create::neg); }
+        static Expr::BasePtr neg(const ArgsVec &args) {
+            M_UNARY(Create::neg);
+        }
 
         /** Abstraction function for Z3_OP_BADD */
-        static Expr::BasePtr abs(const ArgsVec &args) { M_UNARY(Create::abs) }
+        static Expr::BasePtr abs(const ArgsVec &args) {
+            M_UNARY(Create::abs)
+        }
 
         /** Abstraction function for Z3_OP_BADD */
-        static Expr::BasePtr add(const ArgsVec &args) { M_FLAT_BINARY(Create::add); }
+        static Expr::BasePtr add(const ArgsVec &args) {
+            M_FLAT_BINARY(Create::add);
+        }
 
         /** Abstraction function for Z3_OP_BSUB */
-        static Expr::BasePtr sub(const ArgsVec &args) { M_BINARY(Create::sub); }
+        static Expr::BasePtr sub(const ArgsVec &args) {
+            M_BINARY(Create::sub);
+        }
 
         /** Abstraction function for Z3_OP_BMUL */
-        static Expr::BasePtr mul(const ArgsVec &args) { M_FLAT_BINARY(Create::mul); }
+        static Expr::BasePtr mul(const ArgsVec &args) {
+            M_FLAT_BINARY(Create::mul);
+        }
 
         /** Abstraction function for signed z3 BV division */
-        static Expr::BasePtr div_signed(const ArgsVec &args) { M_BINARY(Create::div_signed); }
+        static Expr::BasePtr div_signed(const ArgsVec &args) {
+            M_BINARY(Create::div_signed);
+        }
 
         /** Abstraction function for unsigned z3 BV division */
-        static Expr::BasePtr div_unsigned(const ArgsVec &args) { M_BINARY(Create::div_unsigned); }
+        static Expr::BasePtr div_unsigned(const ArgsVec &args) {
+            M_BINARY(Create::div_unsigned);
+        }
 
         /** Abstraction function for z3 BV remainder
          *  Note we use mod (because of the difference between C and Python % operators)
          */
-        static Expr::BasePtr rem_signed(const ArgsVec &args) { M_BINARY(Create::mod_signed); }
+        static Expr::BasePtr rem_signed(const ArgsVec &args) {
+            M_BINARY(Create::mod_signed);
+        }
 
         /** Abstraction function for z3 BV remainder
          *  Note we use mod (because of the difference between C and Python % operators)
          */
-        static Expr::BasePtr rem_unsigned(const ArgsVec &args) { M_BINARY(Create::mod_unsigned); }
+        static Expr::BasePtr rem_unsigned(const ArgsVec &args) {
+            M_BINARY(Create::mod_unsigned);
+        }
 
         /**********************************************************/
         /*                       Bit Vector                       */
