@@ -393,12 +393,15 @@ namespace Backend::Z3 {
                     static_cast<U64>(Z3_get_decl_int_parameter(decl.ctx(), decl, 0)), {});
             }
 
+            /** Abstraction function for Z3_OP_FPA_IS_NAN */
+            static Expr::BasePtr is_nan(const ArgsVec &args) { M_UNARY(Create::FP::is_nan); }
+
             /** Abstraction function for Z3_OP_FPA_TO_IEEE_BV */
             static Expr::BasePtr to_ieee_bv(const ArgsVec &args) {
                 M_UNARY(Create::FP::to_ieee_bv);
             }
 
-            /** Abstraction function for Z3_OP_FPA_TO_IEEE_BV
+            /** Abstraction function for Z3_OP_FPA_TO_FP
              *  TODO
              */
             static Expr::BasePtr to_fp(const ArgsVec &args) {

@@ -428,6 +428,11 @@ namespace Backend::Z3 {
             }
 
           public:
+            /** IsNan converter */
+            static z3::expr is_nan(const z3::expr &e) {
+                return e.mk_is_nan();
+            }
+
             /** ToIEEEBV converter */
             static z3::expr to_ieee_bv(const z3::expr &e) {
                 return e.mk_to_ieee_bv();

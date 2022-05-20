@@ -204,6 +204,7 @@ namespace Backend::Z3 {
 
                     // Unary
 
+                    M_UNARY_CASE(FP::IsNan, Conv::FP::is_nan);
                     M_UNARY_CASE(FP::ToIEEEBV, Conv::FP::to_ieee_bv);
 
                     // Mode Binary
@@ -455,6 +456,8 @@ namespace Backend::Z3 {
                     return Abs::FP::to_bv_signed(args, decl);
                 case Z3_OP_FPA_TO_UBV:
                     return Abs::FP::to_bv_unsigned(args, decl);
+                case Z3_OP_FPA_IS_NAN:
+                    return Abs::FP::is_nan(args);
                 case Z3_OP_FPA_TO_IEEE_BV:
                     return Abs::FP::to_ieee_bv(args);
                 case Z3_OP_FPA_TO_FP:
