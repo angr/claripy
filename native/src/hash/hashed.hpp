@@ -18,6 +18,8 @@ namespace Hash {
     struct Hashed {
         /** A hash for this object */
         const Hash hash;
+        /** Get the hash as a signed 64-bit value */
+        constexpr I64 py_hash() noexcept { return Util::sign(hash); }
 
       protected:
         /** Constructor */
