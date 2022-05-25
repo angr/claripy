@@ -8,6 +8,7 @@
 #include "exceptions.hpp"
 #include "globals.hpp"
 #include "log.hpp"
+#include "py_obj.hpp"
 #include "signal_handler.hpp"
 #include "simplify.hpp"
 
@@ -23,11 +24,12 @@ void API::bind_manual(pybind11::module_ &root_module, Binder::ModuleGetter &m) {
     register_at_exit([]() noexcept { slog("C++/python decoupled; finalizers now safe to run"); });
     // Custom bindings
     exceptions(root_module);
+    signal_handler(m);
     backtrace(m);
     simplify(m);
-    signal_handler(m);
-    logger(m);
     globals(m);
+    py_obj(m);
+    logger(m);
     // Goodbye message
     register_at_exit([]() noexcept { slog("Running C++ exit functions to decouple from python"); });
 }
