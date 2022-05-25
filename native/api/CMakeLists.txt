@@ -31,7 +31,8 @@ target_sources(clari PRIVATE
 	simplify.cpp
 	globals.cpp
     manual.cpp
-    log.cpp
+	py_obj.cpp
+	log.cpp
 )
 target_link_libraries("${API_TARGET}" PUBLIC "${CLARICPP}")
 
