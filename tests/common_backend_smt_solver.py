@@ -1,4 +1,4 @@
-import nose
+from unittest import skip
 from decorator import decorator
 
 import claripy
@@ -11,14 +11,15 @@ def if_installed(f, *args, **kwargs):
     try:
         return f(*args, **kwargs)
     except claripy.errors.MissingSolverError:
-        raise nose.SkipTest()
+        return skip('Missing Solver')(f)
 
 KEEP_TEST_PERFORMANT = True
 
 
 class SmtLibSolverTestBase(TestSMTLibBackend):
+    @skip
     def get_solver(self):
-        raise nose.SkipTest()
+        pass
         # raise NotImplementedError
 
     @if_installed
