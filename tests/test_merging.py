@@ -1,6 +1,5 @@
 # pylint: disable= [no-self-use,missing-class-docstring]
 import unittest
-import nose
 
 import claripy
 
@@ -27,53 +26,53 @@ class TestMerging(unittest.TestCase):
         s2.add([x == 2, z == 20, w == 5])
         _, sm = s1.merge([s2], [ m == 0, m == 1 ])
 
-        nose.tools.assert_equal(s1.eval(x, 1), (1,))
-        nose.tools.assert_equal(s2.eval(x, 1), (2,))
+        self.assertEqual(s1.eval(x, 1), (1,))
+        self.assertEqual(s2.eval(x, 1), (2,))
 
         sm1 = sm.branch()
         sm1.add(x == 1)
-        nose.tools.assert_equal(sm1.eval(x, 1), (1,))
-        nose.tools.assert_equal(sm1.eval(y, 1), (10,))
-        nose.tools.assert_equal(sm1.eval(z, 1), (0,))
-        nose.tools.assert_equal(sm1.eval(w, 1), (0,))
+        self.assertEqual(sm1.eval(x, 1), (1,))
+        self.assertEqual(sm1.eval(y, 1), (10,))
+        self.assertEqual(sm1.eval(z, 1), (0,))
+        self.assertEqual(sm1.eval(w, 1), (0,))
 
         sm2 = sm.branch()
         sm2.add(x == 2)
-        nose.tools.assert_equal(sm2.eval(x, 1), (2,))
-        nose.tools.assert_equal(sm2.eval(y, 1), (0,))
-        nose.tools.assert_equal(sm2.eval(z, 1), (20,))
-        nose.tools.assert_equal(sm2.eval(w, 1), (5,))
+        self.assertEqual(sm2.eval(x, 1), (2,))
+        self.assertEqual(sm2.eval(y, 1), (0,))
+        self.assertEqual(sm2.eval(z, 1), (20,))
+        self.assertEqual(sm2.eval(w, 1), (5,))
 
         sm1 = sm.branch()
         sm1.add(m == 0)
-        nose.tools.assert_equal(sm1.eval(x, 1), (1,))
-        nose.tools.assert_equal(sm1.eval(y, 1), (10,))
-        nose.tools.assert_equal(sm1.eval(z, 1), (0,))
-        nose.tools.assert_equal(sm1.eval(w, 1), (0,))
+        self.assertEqual(sm1.eval(x, 1), (1,))
+        self.assertEqual(sm1.eval(y, 1), (10,))
+        self.assertEqual(sm1.eval(z, 1), (0,))
+        self.assertEqual(sm1.eval(w, 1), (0,))
 
         sm2 = sm.branch()
         sm2.add(m == 1)
-        nose.tools.assert_equal(sm2.eval(x, 1), (2,))
-        nose.tools.assert_equal(sm2.eval(y, 1), (0,))
-        nose.tools.assert_equal(sm2.eval(z, 1), (20,))
-        nose.tools.assert_equal(sm2.eval(w, 1), (5,))
+        self.assertEqual(sm2.eval(x, 1), (2,))
+        self.assertEqual(sm2.eval(y, 1), (0,))
+        self.assertEqual(sm2.eval(z, 1), (20,))
+        self.assertEqual(sm2.eval(w, 1), (5,))
 
         m2 = claripy.BVS("m2", 32)
         _, smm = sm1.merge([sm2], [ m2 == 0, m2 == 1 ])
 
         smm_1 = smm.branch()
         smm_1.add(x == 1)
-        nose.tools.assert_equal(smm_1.eval(x, 1), (1,))
-        nose.tools.assert_equal(smm_1.eval(y, 1), (10,))
-        nose.tools.assert_equal(smm_1.eval(z, 1), (0,))
-        nose.tools.assert_equal(smm_1.eval(w, 1), (0,))
+        self.assertEqual(smm_1.eval(x, 1), (1,))
+        self.assertEqual(smm_1.eval(y, 1), (10,))
+        self.assertEqual(smm_1.eval(z, 1), (0,))
+        self.assertEqual(smm_1.eval(w, 1), (0,))
 
         smm_2 = smm.branch()
         smm_2.add(m == 1)
-        nose.tools.assert_equal(smm_2.eval(x, 1), (2,))
-        nose.tools.assert_equal(smm_2.eval(y, 1), (0,))
-        nose.tools.assert_equal(smm_2.eval(z, 1), (20,))
-        nose.tools.assert_equal(smm_2.eval(w, 1), (5,))
+        self.assertEqual(smm_2.eval(x, 1), (2,))
+        self.assertEqual(smm_2.eval(y, 1), (0,))
+        self.assertEqual(smm_2.eval(z, 1), (20,))
+        self.assertEqual(smm_2.eval(w, 1), (5,))
 
         so = solver_type()
         so.add(w == 0)
@@ -94,26 +93,26 @@ class TestMerging(unittest.TestCase):
 
         smm_1 = smm.branch()
         smm_1.add(wxy == 0x000103)
-        nose.tools.assert_true(smm_1.satisfiable())
+        self.assertTrue(smm_1.satisfiable())
 
         smm_1 = smm.branch()
         smm_1.add(wxy == 0x000104)
-        nose.tools.assert_true(smm_1.satisfiable())
+        self.assertTrue(smm_1.satisfiable())
 
         smm_1 = smm.branch()
         smm_1.add(wxy == 0x000203)
-        nose.tools.assert_true(smm_1.satisfiable())
+        self.assertTrue(smm_1.satisfiable())
 
         smm_1 = smm.branch()
         smm_1.add(wxy == 0x000204)
-        nose.tools.assert_true(smm_1.satisfiable())
+        self.assertTrue(smm_1.satisfiable())
 
         smm_1 = smm.branch()
         smm_1.add(wxy != 0x000103)
         smm_1.add(wxy != 0x000104)
         smm_1.add(wxy != 0x000203)
         smm_1.add(wxy != 0x000204)
-        nose.tools.assert_false(smm_1.satisfiable())
+        self.assertFalse(smm_1.satisfiable())
 
 if __name__ == '__main__':
     unittest.main()
