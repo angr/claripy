@@ -714,6 +714,7 @@ class BackendZ3(Backend):
                 name = str(hash(constraint))
                 if name not in already_tracked:
                     s.assert_and_track(constraint, name)
+                    already_tracked.add(name)
         else:
             s.add(*c)
 
