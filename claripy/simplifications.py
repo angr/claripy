@@ -790,7 +790,11 @@ class SimplificationManager:
 
         if val.op in extract_distributable:
             all_args = tuple(a[high:low] for a in val.args)
-            return reduce(getattr(operator, val.op), all_args)
+            if val.op in flattenable:
+                # directly create a flattened AST
+                return next(a for a in all_args if isinstance(a, ast.Base)).make_like(val.op, all_args)
+            else:
+                return reduce(getattr(operator, val.op), all_args)
 
     # oh gods
     @staticmethod
@@ -1008,6 +1012,15 @@ extract_distributable = {
     '__and__', '__rand__',
     '__or__', '__ror__',
     '__xor__', '__rxor__',
+}
+
+flattenable = {
+    '__and__',
+    '__or__',
+    '__xor__',
+    '__mul__',
+    'And',
+    'Or',
 }
 
 from .backend_manager import backends
