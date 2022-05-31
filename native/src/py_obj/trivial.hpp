@@ -9,6 +9,11 @@
 
 
 #define M_NEW_PYOBJ(NAME)                                                                          \
+    /** A typed Sized PyObj                                                                        \
+     *  Warning: Exactly one class should ever subclass this                                       \
+     *  We give this abstract object a CUID, it should be for the subclass                         \
+     *  We do this so that the API can subclass this to hook it with python stuff                  \
+     */                                                                                            \
     class NAME : public Sized {                                                                    \
       public:                                                                                      \
         CUID_DEFINE_MAYBE_UNUSED                                                                   \
@@ -24,18 +29,9 @@
     };
 
 namespace PyObj {
-    /** A VS PyObj for VSs
-     *  Warning: Exactly one class should ever subclass this
-     *  We give this abstract object a CUID, it should be for the subclass
-     *  We do this so that the API can subclass this to hook it with python stuff
-     */
     M_NEW_PYOBJ(VSVS);
-    /** A VS PyObj for BVs
-     *  Warning: Exactly one class should ever subclass this
-     *  We give this abstract object a CUID, it should be for the subclass
-     *  We do this so that the API can subclass this to hook it with python stuff
-     */
-    M_NEW_PYOBJ(BVVS);
+    M_NEW_PYOBJ(StridedIntervalSymbol);
+    M_NEW_PYOBJ(StridedIntervalLiteral);
 } // namespace PyObj
 
 #undef M_NEW_PYOBJ

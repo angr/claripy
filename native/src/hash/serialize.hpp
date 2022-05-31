@@ -207,6 +207,12 @@ namespace Hash {
         return serialize_helper(p.get()); // SFINAE reject if not a Hashed
     }
 
+    /** A specialization for std::optional of integral types */
+    template <typename T> inline Hash serialize(const std::optional<T> &o) noexcept {
+        static_assert(std::is_integral_v<Util::Type::RemoveCVR<T>>, "T must be integral");
+        return HASH_CANTOR(Hash { o.has_value() }, serialize(o.value_or(0)));
+    }
+
     /** A specialization for T = std::vector<Inner> */
     template <typename Inner>
     inline Hash serialize(const std::vector<Inner> &v) NOEXCEPT_UNLESS_DEBUG {

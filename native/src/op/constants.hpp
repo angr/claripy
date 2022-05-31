@@ -20,7 +20,7 @@ namespace Op {
     using Stack = std::stack<Expr::RawPtr, std::vector<Expr::RawPtr>>;
 
     /** The primitive types a claricpp BV will support */
-    using BVTL = Util::Type::List<uint8_t, uint16_t, uint32_t, U64, BigInt, PyObj::BVVS::Ptr>;
+    using BVTL = Util::Type::List<uint8_t, uint16_t, uint32_t, U64, BigInt>;
 
     /** A variant of the types a claricpp BV can hold */
     using BVVar = BVTL::Apply<std::variant>;
@@ -57,7 +57,7 @@ namespace Op {
      *  Raise an exception if called on a size without a bit length (like a bool)
      */
     inline U64 bit_length(const PrimVar &v) {
-        static_assert(std::variant_size_v<PrimVar> == 11, "Fix me");
+        static_assert(std::variant_size_v<PrimVar> == 10, "Fix me");
         switch (v.index()) {
             M_CASE(std::string, CHAR_BIT * got.size());
             M_CASE(float, CHAR_BIT * sizeof(got));
@@ -68,7 +68,6 @@ namespace Op {
             M_CASE(uint32_t, CHAR_BIT * sizeof(got));
             M_CASE(U64, CHAR_BIT * sizeof(got));
             M_CASE(BigInt, got.bit_length);
-            M_CASE(PyObj::BVVS::Ptr, got->bit_length);
             case Util::Type::index<PrimVar, bool>: {
                 UTIL_THROW(Util::Err::Usage, "Not supported for booleans");
             };
@@ -80,7 +79,7 @@ namespace Op {
 
     /** Ostream operator for PrimVar */
     inline std::ostream &operator<<(std::ostream &o, const PrimVar &v) {
-        static_assert(std::variant_size_v<PrimVar> == 11, "Fix me");
+        static_assert(std::variant_size_v<PrimVar> == 10, "Fix me");
         switch (v.index()) {
             M_CASE(bool, o << std::boolalpha << got);
             M_CASE(std::string, o << std::quoted(got));
@@ -92,7 +91,6 @@ namespace Op {
             M_CASE(uint32_t, o << got);
             M_CASE(U64, o << got);
             M_CASE(BigInt, o << got);
-            M_CASE(PyObj::BVVS::Ptr, o << got);
             default:
                 UTIL_THROW(Util::Err::Unknown, "unknown type in variant; report this");
         }

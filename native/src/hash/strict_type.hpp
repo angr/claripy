@@ -38,6 +38,7 @@ namespace Hash {
 
     // Containers
     M_T_HASH_TEMPLATE(std::shared_ptr)
+    M_T_HASH_TEMPLATE(std::optional)
     M_T_HASH_TEMPLATE(std::vector)
 
     // Types

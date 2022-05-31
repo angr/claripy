@@ -36,7 +36,7 @@ namespace Op {
         const auto &got { std::get<TYPE>(value) };                                                 \
         return EXPR;                                                                               \
     }
-            static_assert(std::variant_size_v<decltype(value)> == 11, "Fix me");
+            static_assert(std::variant_size_v<decltype(value)> == 10, "Fix me");
             switch (value.index()) {
                 M_CASE(bool, { got });
                 M_CASE(std::string, { got });
@@ -48,7 +48,6 @@ namespace Op {
                 M_CASE(uint32_t, { got });
                 M_CASE(U64, { got });
                 M_CASE(BigInt, { got });
-                M_CASE(PyObj::BVVS::Ptr, { got });
 #undef M_CASE
                 default:
                     UTIL_THROW(Util::Err::Unknown, "Broken variant detected");

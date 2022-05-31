@@ -310,13 +310,11 @@ namespace Backend::Z3 {
                     M_G_CASE(U64)
                     case Util::Type::index<BVVar, BigInt>:
                         return Create::literal(std::move(std::get<BigInt>(x)));
-                    case Util::Type::index<BVVar, PyObj::BVVS::Ptr>:
-                        UTIL_THROW(Util::Err::Unknown, "PyObj::BVVSs should not be here");
                     default:
                         UTIL_THROW(Util::Err::Unknown, "Bad variant");
                 }
 #undef M_G_CASE
-                static_assert(std::variant_size_v<BVVar> == 6,
+                static_assert(std::variant_size_v<BVVar> == 5,
                               "Switch-case statement needs to be modified");
             }
 

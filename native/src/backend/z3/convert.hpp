@@ -339,16 +339,12 @@ namespace Backend::Z3 {
                     }
                     // Not supported
                     case Util::Type::index<decltype(data), PyObj::VSVS::Ptr>: // fallthrough
-                    case Util::Type::index<decltype(data), PyObj::BVVS::Ptr>: {
-                        UTIL_THROW(Error::Backend::Unsupported,
-                                   "VSA is not supported by the Z3 backend");
-                    }
                     // Error handling
                     default:
                         UTIL_THROW(Util::Err::NotSupported,
                                    "Unknown variant type in literal op given to z3 backend");
                 }
-                static_assert(std::variant_size_v<Op::PrimVar> == 11,
+                static_assert(std::variant_size_v<Op::PrimVar> == 10,
                               "Switch case needs to updated");
             }
             // Re-emit these exceptions with additional info and wrapped as a Claricpp exception

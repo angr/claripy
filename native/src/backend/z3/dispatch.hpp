@@ -559,13 +559,11 @@ namespace Backend::Z3 {
                         M_G_CASE(U64);
                         M_G_CASE(BigInt);
                         // Will compile fail if previous indexes include this
-                        case Util::Type::index<Op::BVVar, PyObj::BVVS::Ptr>:
-                            UTIL_THROW(Util::Err::Unknown, "num_primitive should failed");
                         default:
                             UTIL_THROW(Util::Err::Unknown, "Bad variant");
                     }
 #undef M_G_CASE
-                    static_assert(std::variant_size_v<decltype(x)> == 6,
+                    static_assert(std::variant_size_v<decltype(x)> == 5,
                                   "Switch-case statement needs to be modified");
                 }
                 case Z3_OP_FPA_NUM: {
