@@ -38,6 +38,10 @@ def test_simplification():
     assert_correct(concatted[70:15], concatted[70:15])
     assert_correct(concatted[70:35], claripy.Concat(x, y)[38:3])
 
+    # test extraction of nested concats
+    concatted_nested = claripy.Concat(claripy.Reverse(claripy.Concat(x, y)), z)
+    assert_correct(concatted_nested[63:0], claripy.Concat(claripy.Reverse(x), z))
+
     # make sure the division simplification works
     assert_correct(2+x, claripy.backends.z3.simplify(1+x+1))
     assert_correct(x/y, claripy.backends.z3.simplify(x/y))

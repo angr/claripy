@@ -739,31 +739,39 @@ class SimplificationManager:
 
         if val.op == 'Concat':
             pos = val.length
-            high_i, low_i, low_loc = None, None, None
+            high_i, low_i, high_loc, low_loc = None, None, None, None
             for i, v in enumerate(val.args):
                 if pos - v.length <= high < pos:
                     high_i = i
+                    high_loc = high - (pos - v.length)
                 if pos - v.length <= low < pos:
                     low_i = i
                     low_loc = low - (pos - v.length)
                 pos -= v.length
 
-            used = val.args[high_i:low_i+1]
-            if len(used) == 1:
-                self = used[0]
-            else:
-                self = ast.all_operations.Concat(*used)
+            used = list(val.args[high_i:low_i + 1])
 
-            new_high = low_loc + high - low
-            if new_high == self.length - 1 and low_loc == 0:
-                return self
-            else:
-                if self.op != 'Concat':
-                    return self[new_high:low_loc]
-                else:
-                    # to avoid infinite recursion we only return if something was simplified
-                    if len(used) != len(val.args) or new_high != high or low_loc != low:
-                        return ast.all_operations.Extract(new_high, low_loc, self)
+            # if we have only one part, we can avoid creating a new concat
+            if len(used) == 1:
+                new_high = low_loc + high - low
+                result = used[0]
+
+                # avoid extracting if we need the full value
+                if new_high == result.length - 1 and low_loc == 0:
+                    return result
+
+                # else extract the part we need
+                return result[new_high:low_loc]
+
+            # if we have more than one part, cut the parts that we need from the start & end chunks
+            # if necessary
+            if high_loc != used[0].length:
+                used[0] = used[0][high_loc:]
+
+            if low_loc != 0:
+                used[-1] = used[-1][:low_loc]
+
+            return ast.all_operations.Concat(*used)
 
         if val.op == 'Extract':
             _, inner_low = val.args[:2]
