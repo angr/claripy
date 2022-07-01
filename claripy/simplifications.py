@@ -27,7 +27,7 @@ class SimplificationManager:
             '__xor__': self.bitwise_xor_simplifier,
             '__add__': self.bitwise_add_simplifier,
             '__sub__': self.bitwise_sub_simplifier,
-            '__mul__': self.bitwise_mul_simplifier,
+            #'__mul__': self.bitwise_mul_simplifier,
             'ZeroExt': self.zeroext_simplifier,
             'SignExt': self.signext_simplifier,
             'fpToIEEEBV': self.fptobv_simplifier,
@@ -140,8 +140,8 @@ class SimplificationManager:
                 i += 1
 
         # if any(a.op == 'Reverse' for a in args):
-        #	  simplified = True
-        #	  args = [a.reversed for a in args]
+        #     simplified = True
+        #     args = [a.reversed for a in args]
 
         if simplified:
             return ast.all_operations.Concat(*args)
@@ -204,9 +204,9 @@ class SimplificationManager:
                 # (If(c, x, y) == y, x != y) -> !c
                 return ast.all_operations.Not(a.args[0])
             # elif a._claripy.is_true(a.args[1] == b) and a._claripy.is_true(a.args[2] == b):
-            #	  return a._claripy.true
+            #     return a._claripy.true
             # elif a._claripy.is_true(a.args[1] != b) and a._claripy.is_true(a.args[2] != b):
-            #	  return a._claripy.false
+            #     return a._claripy.false
 
         if b.op == 'If':
             if b.args[1] is a and ast.all_operations.is_true(b.args[2] != b):
@@ -216,9 +216,9 @@ class SimplificationManager:
                 # (y == If(c, x, y)) -> !c
                 return ast.all_operations.Not(b.args[0])
             # elif b._claripy.is_true(b.args[1] == a) and b._claripy.is_true(b.args[2] == a):
-            #	  return b._claripy.true
+            #     return b._claripy.true
             # elif b._claripy.is_true(b.args[1] != a) and b._claripy.is_true(b.args[2] != a):
-            #	  return b._claripy.false
+            #     return b._claripy.false
 
         # Masking and comparing against a constant
         simp = SimplificationManager.and_mask_comparing_against_constant_simplifier(operator.__eq__, a, b)
@@ -264,9 +264,9 @@ class SimplificationManager:
                 # (If(c, x, y) == y, x != y) -> !c
                 return ast.all_operations.Not(a.args[0])
             # elif a._claripy.is_true(a.args[1] == b) and a._claripy.is_true(a.args[2] == b):
-            #	  return a._claripy.false
+            #     return a._claripy.false
             # elif a._claripy.is_true(a.args[1] != b) and a._claripy.is_true(a.args[2] != b):
-            #	  return a._claripy.true
+            #     return a._claripy.true
 
         if b.op == 'If':
             if b.args[2] is a and ast.all_operations.is_true(b.args[1] != a):
@@ -276,9 +276,9 @@ class SimplificationManager:
                 # (y == If(c, x, y)) -> !c
                 return ast.all_operations.Not(b.args[0])
             # elif b._claripy.is_true(b.args[1] != a) and b._claripy.is_true(b.args[2] != a):
-            #	  return b._claripy.true
+            #     return b._claripy.true
             # elif b._claripy.is_true(b.args[1] == a) and b._claripy.is_true(b.args[2] == a):
-            #	  return b._claripy.false
+            #     return b._claripy.false
 
         # Masking and comparing against a constant
         simp = SimplificationManager.and_mask_comparing_against_constant_simplifier(operator.__ne__, a, b)
@@ -354,6 +354,8 @@ class SimplificationManager:
     @staticmethod
     def boolean_and_simplifier(*args):
         if len(args) == 1:
+            return args[0]
+        if len(args) == 2 and args[0] is args[1]:
             return args[0]
 
         new_args = [None] * len(args)
@@ -781,12 +783,12 @@ class SimplificationManager:
 
         # if all else fails, convert Extract(Reverse(...)) to Reverse(Extract(...))
         # if val.op == 'Reverse' and (high + 1) % 8 == 0 and low % 8 == 0:
-        #	  print("saw reverse, converting")
-        #	  inner_length = val.args[0].length
-        #	  try:
-        #		  return val.args[0][(inner_length - 1 - low):(inner_length - 1 - low - (high - low))].reversed
-        #	  except ClaripyOperationError:
-        #		  __import__('ipdb').set_trace()
+        #     print("saw reverse, converting")
+        #     inner_length = val.args[0].length
+        #     try:
+        #         return val.args[0][(inner_length - 1 - low):(inner_length - 1 - low - (high - low))].reversed
+        #     except ClaripyOperationError:
+        #         __import__('ipdb').set_trace()
 
         if val.op in extract_distributable:
             all_args = tuple(a[high:low] for a in val.args)
