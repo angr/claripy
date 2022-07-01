@@ -73,6 +73,8 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
 def _handle_annotations(simp, args):
     if simp is None:
         return None
+    if type(simp) is str:
+        return simp
 
     #pylint:disable=isinstance-second-argument-not-valid-type
     ast_args = tuple(a for a in args if isinstance(a, ast.Base))
