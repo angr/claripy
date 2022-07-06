@@ -374,12 +374,16 @@ class SimplificationManager:
             return ast.all_operations.And(*new_args)
 
         flattened = SimplificationManager._flatten_simplifier('And', SimplificationManager._deduplicate_filter, *args)
+        if flattened.op != 'And':
+            return flattened
+
         fargs = flattened.args if flattened is not None else args
 
         # Check if we are left with one argument again
         if len(fargs) == 1:
             return fargs[0]
 
+        # what the fuck is this supposed to do?
         if any(len(arg.args) != 2 for arg in fargs):
             return flattened
 
