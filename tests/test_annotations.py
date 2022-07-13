@@ -1,4 +1,6 @@
+# pylint:disable=missing-class-docstring,multiple-statements
 import claripy
+
 
 class AnnotationA(claripy.Annotation):
     def __init__(self, letter, number):
@@ -77,7 +79,6 @@ def test_simplification_strike_2():
     x1 = claripy.BVV(24, 32)
     k = (x1 + x0).annotate(relocatable_anno)
 
-    import ipdb; ipdb.set_trace()
     x3 = claripy.simplify(k)
 
     assert len(x3.annotations) == 1
