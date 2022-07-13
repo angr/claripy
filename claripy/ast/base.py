@@ -1160,11 +1160,13 @@ def simplify(e):
         # dealing with annotations
         if e.annotations:
             ast_args = tuple(a for a in e.args if isinstance(a, Base))
-            annotations = tuple(itertools.chain(
+            annotations = tuple(set(itertools.chain(
                 itertools.chain.from_iterable(a._relocatable_annotations for a in ast_args),
                 tuple(a for a in e.annotations)
-            ))
-            s = s.annotate(*annotations)
+            )))
+            if annotations != s.annotations:
+                s = s.remove_annotations(s.annotations)
+                s = s.annotate(*annotations)
 
         return s
 

@@ -72,7 +72,7 @@ def test_simplification():
     assert y.annotations[0].number == 2
 
 
-def test_simplification_strike_2():
+def test_missing_annotations_from_simplification():
     relocatable_anno = AnnotationC('a', 2)
 
     x0 = claripy.BVS('x', 32)
