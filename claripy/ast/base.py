@@ -1157,7 +1157,19 @@ def simplify(e):
         s._uc_alloc_depth = e._uc_alloc_depth
         s._simplified = Base.FULL_SIMPLIFY
 
+        # dealing with annotations
+        if e.annotations:
+            ast_args = tuple(a for a in e.args if isinstance(a, Base))
+            annotations = tuple(set(itertools.chain(
+                itertools.chain.from_iterable(a._relocatable_annotations for a in ast_args),
+                tuple(a for a in e.annotations)
+            )))
+            if annotations != s.annotations:
+                s = s.remove_annotations(s.annotations)
+                s = s.annotate(*annotations)
+
         return s
+
 
 from ..errors import BackendError, ClaripyOperationError, ClaripyReplacementError
 from .. import operations

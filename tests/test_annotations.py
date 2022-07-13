@@ -1,4 +1,6 @@
+# pylint:disable=missing-class-docstring,multiple-statements
 import claripy
+
 
 class AnnotationA(claripy.Annotation):
     def __init__(self, letter, number):
@@ -68,6 +70,19 @@ def test_simplification():
     assert y.depth == 1
     assert len(y.annotations) == 1
     assert y.annotations[0].number == 2
+
+
+def test_missing_annotations_from_simplification():
+    relocatable_anno = AnnotationC('a', 2)
+
+    x0 = claripy.BVS('x', 32)
+    x1 = claripy.BVV(24, 32)
+    k = (x1 + x0).annotate(relocatable_anno)
+
+    x3 = claripy.simplify(k)
+
+    assert len(x3.annotations) == 1
+
 
 def test_annotations():
     x = claripy.BVS('x', 32) + 1
