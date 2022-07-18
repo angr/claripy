@@ -11,7 +11,7 @@ import z3
 
 from cachetools import LRUCache
 
-from ..errors import ClaripyZ3Error
+from ..errors import ClaripyZ3Error, ClaripySolverInterruptError
 
 l = logging.getLogger("claripy.backends.backend_z3")
 
@@ -74,6 +74,12 @@ def _z3_decl_name_str(ctx, decl):
     symbol_name = z3.Z3_get_symbol_string_bytes(ctx, decl_name)
     return symbol_name
 
+def z3_solver_sat(solver, extra_constraints, occasion):
+    l.debug("Doing a check! (%s)", occasion)
+    result = solver.check(extra_constraints)
+    if result == z3.unknown:
+        raise ClaripySolverInterruptError()
+    return result == z3.sat
 
 class SmartLRUCache(LRUCache):
     def __init__(self, maxsize, getsizeof=None, evict=None):
@@ -759,7 +765,7 @@ class BackendZ3(Backend):
         solve_count += 1
 
         l.debug("Doing a check! (satisfiable)")
-        if solver.check(extra_constraints) != z3.sat:
+        if not z3_solver_sat(solver, extra_constraints, "satisfiable"):
             return False
 
         if model_callback is not None:
@@ -786,8 +792,7 @@ class BackendZ3(Backend):
 
         for i in range(n):
             solve_count += 1
-            l.debug("Doing a check! (batch_eval)")
-            if solver.check(extra_constraints) != z3.sat:
+            if not z3_solver_sat(solver, extra_constraints, "batch_eval"):
                 break
             model = solver.model()
 
@@ -846,8 +851,7 @@ class BackendZ3(Backend):
             new_constraints.append(z3.And(GE(expr, lo), LE(expr, middle)))
 
             solve_count += 1
-            l.debug("Doing a check! (min)")
-            if solver.check(extra_constraints_converted + new_constraints) == z3.sat:
+            if z3_solver_sat(solver, extra_constraints_converted + new_constraints, "min"):
                 l.debug("... still sat")
                 if model_callback is not None:
                     model_callback(self._generic_model(solver.model()))
@@ -863,8 +867,7 @@ class BackendZ3(Backend):
         if hi == lo:
             ret = lo
         else:
-            l.debug("Doing a check! (min)")
-            if solver.check(extra_constraints_converted + [expr == lo]) == z3.sat:
+            if z3_solver_sat(solver, extra_constraints_converted + [expr == lo], "min"):
                 if model_callback is not None:
                     model_callback(self._generic_model(solver.model()))
                 ret = lo
@@ -901,8 +904,7 @@ class BackendZ3(Backend):
             new_constraints.append(z3.And(GT(expr, middle), LE(expr, hi)))
 
             solve_count += 1
-            l.debug("Doing a check! (max)")
-            if solver.check(extra_constraints_converted + new_constraints) == z3.sat:
+            if z3_solver_sat(solver, extra_constraints_converted + new_constraints, "max"):
                 l.debug("... still sat")
                 if model_callback is not None:
                     model_callback(self._generic_model(solver.model()))
@@ -917,8 +919,7 @@ class BackendZ3(Backend):
         if hi == lo:
             ret = hi
         else:
-            l.debug("Doing a check! (max)")
-            if solver.check(extra_constraints_converted + [expr == hi]) == z3.sat:
+            if z3_solver_sat(solver, extra_constraints_converted + [expr == hi], "max"):
                 if model_callback is not None:
                     model_callback(self._generic_model(solver.model()))
                 ret = hi
