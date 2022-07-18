@@ -1,6 +1,7 @@
 import logging
 import numbers
 import operator
+import math
 from functools import reduce
 
 l = logging.getLogger("claripy.backends.backend_concrete")
@@ -33,6 +34,7 @@ class BackendConcrete(Backend):
         # unary
         self._op_raw['__invert__'] = self._op_not
         self._op_raw['__neg__'] = self._op_neg
+        self._op_raw['fpSqrt'] = self._op_fpSqrt
 
         # boolean ops
         self._op_raw['And'] = self._op_and
@@ -86,6 +88,9 @@ class BackendConcrete(Backend):
     @staticmethod
     def _op_boolnot(arg):
         return not arg
+    @staticmethod
+    def _op_fpSqrt(rm, a):
+        return a.fpSqrt()
 
     def convert(self, expr):
         """

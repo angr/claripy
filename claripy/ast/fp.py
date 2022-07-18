@@ -165,6 +165,7 @@ fpSub = operations.op('fpSub', (fp.RM, FP, FP), FP, bound=False, extra_check=_fp
 fpAdd = operations.op('fpAdd', (fp.RM, FP, FP), FP, bound=False, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
 fpMul = operations.op('fpMul', (fp.RM, FP, FP), FP, bound=False, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
 fpDiv = operations.op('fpDiv', (fp.RM, FP, FP), FP, bound=False, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
+fpSqrt = operations.op('fpSqrt', (fp.RM, FP,), FP, bound=False, calc_length=lambda _, x: x.length)
 
 #
 # bound fp operations
@@ -184,6 +185,7 @@ FP.__add__ = fpAdd
 FP.__sub__ = fpSub
 FP.__mul__ = fpMul
 FP.__truediv__ = fpDiv
+FP.Sqrt = fpSqrt
 
 FP.__radd__ = operations.reversed_op(FP.__add__)
 FP.__rsub__ = operations.reversed_op(FP.__sub__)
