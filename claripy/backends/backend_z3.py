@@ -1088,6 +1088,10 @@ class BackendZ3(Backend):
         return z3.FPRef(z3.Z3_mk_fpa_div(self._context.ref(), rm.as_ast(), a.as_ast(), b.as_ast()), self._context)
 
     @condom
+    def _op_raw_fpSqrt(self, rm, a):
+        return z3.FPRef(z3.Z3_mk_fpa_sqrt(self._context.ref(), rm.as_ast(), a.as_ast()), self._context)
+
+    @condom
     def _op_raw_fpLT(self, a, b):
         return z3.BoolRef(z3.Z3_mk_fpa_lt(self._context.ref(), a.as_ast(), b.as_ast()), self._context)
 
@@ -1465,6 +1469,7 @@ op_map = {
     'Z3_OP_FPA_SUB': 'fpSub',
     'Z3_OP_FPA_MUL': 'fpMul',
     'Z3_OP_FPA_DIV': 'fpDiv',
+    'Z3_OP_FPA_SQRT': 'fpSqrt',
 
     'Z3_OP_FPA_RM_NEAREST_TIES_TO_EVEN': 'RM_RNE',
     'Z3_OP_FPA_RM_NEAREST_TIES_TO_AWAY': 'RM_RNA',
@@ -1620,6 +1625,7 @@ op_type_map = {
     'Z3_OP_FPA_SUB': FP,
     'Z3_OP_FPA_MUL': FP,
     'Z3_OP_FPA_DIV': FP,
+    'Z3_OP_FPA_SQRT': FP,
 
     'Z3_OP_INTERNAL': None,
     'Z3_OP_UNINTERPRETED': 'UNINTERPRETED'

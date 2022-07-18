@@ -1,11 +1,12 @@
+# pylint:disable=duplicate-value,missing-class-docstring,wrong-import-position
 import logging
 import numbers
 import operator
 from functools import reduce
 
-l = logging.getLogger("claripy.backends.backend_concrete")
-
 from . import BackendError, Backend
+
+l = logging.getLogger("claripy.backends.backend_concrete")
 
 
 class BackendConcrete(Backend):
@@ -33,6 +34,7 @@ class BackendConcrete(Backend):
         # unary
         self._op_raw['__invert__'] = self._op_not
         self._op_raw['__neg__'] = self._op_neg
+        self._op_raw['fpSqrt'] = self._op_fpSqrt
 
         # boolean ops
         self._op_raw['And'] = self._op_and
@@ -86,6 +88,9 @@ class BackendConcrete(Backend):
     @staticmethod
     def _op_boolnot(arg):
         return not arg
+    @staticmethod
+    def _op_fpSqrt(rm, a):  # pylint:disable=unused-argument
+        return a.fpSqrt()
 
     def convert(self, expr):
         """
@@ -216,6 +221,7 @@ class BackendConcrete(Backend):
         return e == True
     def _has_false(self, e, extra_constraints=(), solver=None, model_callback=None):
         return e == False
+
 
 from ..operations import backend_operations, backend_fp_operations, backend_strings_operations
 from .. import bv, fp, strings

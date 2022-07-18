@@ -126,6 +126,9 @@ class FPV(BackendObject):
     def __neg__(self):
         return FPV(-self.value, self.sort)
 
+    def fpSqrt(self):
+        return FPV(math.sqrt(self.value), self.sort)
+
     @normalize_types
     @compare_sorts
     def __add__(self, o):
