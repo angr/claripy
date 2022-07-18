@@ -10,29 +10,31 @@ from functools import reduce
 class SimplificationManager:
     def __init__(self):
         self._simplifiers = {
-            "Reverse": self.bv_reverse_simplifier,
-            "And": self.boolean_and_simplifier,
-            "Or": self.boolean_or_simplifier,
-            "Not": self.boolean_not_simplifier,
-            "Extract": self.extract_simplifier,
-            "Concat": self.concat_simplifier,
-            "If": self.if_simplifier,
-            "__lshift__": self.lshift_simplifier,
-            "__rshift__": self.rshift_simplifier,
-            "LShR": self.lshr_simplifier,
-            "__eq__": self.eq_simplifier,
-            "__ne__": self.ne_simplifier,
-            "__or__": self.bitwise_or_simplifier,
-            "__and__": self.bitwise_and_simplifier,
-            "__xor__": self.bitwise_xor_simplifier,
-            "__add__": self.bitwise_add_simplifier,
-            "__sub__": self.bitwise_sub_simplifier,
-            "__mul__": self.bitwise_mul_simplifier,
-            "ZeroExt": self.zeroext_simplifier,
-            "SignExt": self.signext_simplifier,
-            "fpToIEEEBV": self.fptobv_simplifier,
-            "fpToFP": self.fptofp_simplifier,
-            "StrReverse": self.str_reverse_simplifier,
+            'Reverse': self.bv_reverse_simplifier,
+            'And': self.boolean_and_simplifier,
+            'Or': self.boolean_or_simplifier,
+            'Not': self.boolean_not_simplifier,
+            'Extract': self.extract_simplifier,
+            'Concat': self.concat_simplifier,
+            'If': self.if_simplifier,
+            '__lshift__': self.lshift_simplifier,
+            '__rshift__': self.rshift_simplifier,
+            'LShR': self.lshr_simplifier,
+            '__eq__': self.eq_simplifier,
+            '__ne__': self.ne_simplifier,
+            '__ge__': self.ge_simplifier,
+            '__or__': self.bitwise_or_simplifier,
+            '__and__': self.bitwise_and_simplifier,
+            '__xor__': self.bitwise_xor_simplifier,
+            '__add__': self.bitwise_add_simplifier,
+            '__sub__': self.bitwise_sub_simplifier,
+            '__mul__': self.bitwise_mul_simplifier,
+            'ZeroExt': self.zeroext_simplifier,
+            'SignExt': self.signext_simplifier,
+            'fpToIEEEBV': self.fptobv_simplifier,
+            'fpToFP': self.fptofp_simplifier,
+            'StrReverse': self.str_reverse_simplifier,
+            '__invert__': self.invert_simplifier,
         }
 
     def simplify(self, op, args):
@@ -198,6 +200,11 @@ class SimplificationManager:
         if a.op == "BVV" and b.op != "BVV":
             return b == a
 
+        # expr - c == 0    ->   expr == c
+        if a.op == "__sub__" and a.args[1].op == "BVV" and b.op == "BVV":
+            return a.args[0] == a.args[1] + b
+
+        # 1 ^ expr == 0     ->   expr == 1
         if a.op == '__xor__' and isinstance(b.args[0], int) and b.args[0] == 0:
             if a.args[0].op == 'If' and a.args[1].args[0] == 1:
                 return a.args[0] == 1
@@ -294,6 +301,13 @@ class SimplificationManager:
             # elif b._claripy.is_true(b.args[1] == a) and b._claripy.is_true(b.args[2] == a):
             # 	  return b._claripy.false
 
+        # 1 ^ expr != 0     ->   expr == 0
+        if a.op == '__xor__' and b.args[1] == 1 and b.args[0] == 0:
+            if a.args[1].op == "BVV" and a.args[1].args[0] == 1 and a.args[0].size() == 1:
+                return a.args[0] == 0
+            elif a.args[0].op == "BVV" and a.args[0].args[0] == 1 and a.args[1].size() == 1:
+                return a.args[1] == 0
+
         # Masking and comparing against a constant
         simp = SimplificationManager.and_mask_comparing_against_constant_simplifier(operator.__ne__, a, b)
         if simp is not None:
@@ -321,6 +335,13 @@ class SimplificationManager:
 
                 if ast.all_operations.is_true(a_bit != b_bit):
                     return ast.all_operations.true
+
+    @staticmethod
+    def ge_simplifier(a, b):
+        # ZeroExt/Concat and comparing against a constant
+        simp = SimplificationManager.zeroext_comparing_against_simplifier(operator.__ge__, a, b)
+        if simp is not None:
+            return simp
 
     @staticmethod
     def bv_reverse_simplifier(body):
@@ -697,6 +718,10 @@ class SimplificationManager:
                 if (b == 2 ** (a.size() - a.args[0].size()) - 1).is_true():
                     # yes!
                     return ast.all_operations.ZeroExt(a.args[0].size(), a.args[1])
+            # if(cond0, 1, 0) & if(cond1, 1, 0)    ->    if(cond0 & cond1, 1, 0)
+            # if a.op == "If" and b.op == "If":
+            #     cond
+
 
         return SimplificationManager._flatten_simplifier(
             "__and__", SimplificationManager._deduplicate_filter, a, b, *args
@@ -856,6 +881,28 @@ class SimplificationManager:
             else:
                 return reduce(getattr(operator, val.op), all_args)
 
+        #  (if cond then 1 else 0)[0:0]  ->  if(cond then 1[0:0] else 0[0:0])
+        if val.op == "If":
+            ifcond, iftrue, iffalse = val.args
+            if iftrue.op == "BVV" and iffalse.op == "BVV":
+                # extract from iftrue and iffalse
+                return ast.bool.If(ifcond, iftrue[high: low], iffalse[high: low])
+
+        # invert(expr)[0:0]   ->   invert(expr[0:0])
+        if val.op == "__invert__":
+            # import ipdb; ipdb.set_trace()
+            return ast.BV.__invert__(val.args[0][high: low])
+
+        # # ~(0#31 .. (if cond then 1 else 0))[0:0]  ->  if cond then 0 else 1
+        # if val.op == "__invert__" and val.args[0].op == "ZeroExt":
+        #     if high == 0 and low == 0 and val.args[0].length - val.args[0].args[0] == 1 and val.args[0].args[1].op == "If":
+        #         ifcond = val.args[0].args[1]
+        #         # print("simplify")
+        #         #
+        #         return ast.bool.If(ifcond.args[0], ifcond.args[2], ifcond.args[1])
+
+
+
     # oh gods
     @staticmethod
     def fptobv_simplifier(the_fp):
@@ -930,6 +977,12 @@ class SimplificationManager:
     @staticmethod
     def str_reverse_simplifier(arg):
         return arg
+
+    @staticmethod
+    def invert_simplifier(expr):
+        # ~ if(cond then a else b)    ->    if(!cond, a,b)
+        if expr.op == "If":
+            return ast.bool.If(ast.all_operations.Not(expr.args[0]), expr.args[1], expr.args[2])
 
     @staticmethod
     def and_mask_comparing_against_constant_simplifier(op, a, b):
@@ -1046,22 +1099,27 @@ class SimplificationManager:
         If the high bits of b are all zeros (in case of __eq__) or have at least one ones (in case of __ne__), ZeroExt
         can be eliminated.
         """
-        if op in {operator.__eq__, operator.__ne__} and b.op == "BVV":
-            # check if the high bits of b are zeros
+        if op in {operator.__eq__, operator.__ne__, operator.__ge__} and b.op == "BVV":
             if a.op == "ZeroExt":
+                # check if the high bits of b are zeros
                 a_zeroext_bits = a.args[0]
-            elif a.op == "Concat" and len(a.args) == 2 and (a.args[0] == 0).is_true():
-                a_zeroext_bits = a.args[0].size()
-            else:
-                return None
+                b_highbits = b[b.size() - 1 : b.size() - a_zeroext_bits]
+                if (b_highbits == 0).is_true():
+                    # we can get rid of ZeroExt
+                    return op(a.args[1], b[b.size() - a_zeroext_bits - 1 : 0])
+                elif (b_highbits == 0).is_false():
+                    # unsat
+                    return ast.all_operations.false if op is operator.__eq__ else ast.all_operations.true
 
-            b_highbits = b[b.size() - 1 : b.size() - a_zeroext_bits]
-            if (b_highbits == 0).is_true():
-                # we can get rid of ZeroExt
-                return op(a.args[1], b[b.size() - a_zeroext_bits - 1 : 0])
-            elif (b_highbits == 0).is_false():
-                # unsat
-                return ast.all_operations.false if op is operator.__eq__ else ast.all_operations.true
+            if a.op == "Concat" and a.args[0].args[0] == 0:   # make sure high bits of a are zeros
+                a_zero_bits = a.args[0].args[1]
+                b_highbits = b[b.size() - 1 : b.size() - a_zero_bits]
+                if (b_highbits == 0).is_true():
+                    # we can get rid of Concat
+                    return op(a.args[1], b[b.size() - a_zero_bits - 1: 0])
+                elif (b_highbits == 0).is_false():
+                    # unsat
+                    return ast.all_operations.false if op is operator.__eq__ else ast.all_operations.true
 
         return None
 
