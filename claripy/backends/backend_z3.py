@@ -19,7 +19,6 @@ l = logging.getLogger("claripy.backends.backend_z3")
 #pylint:disable=unidiomatic-typecheck
 
 ALL_Z3_CONTEXTS = weakref.WeakSet()
-old_handler = None
 def handle_sigint(signals, frametype):
     if old_handler == signal.SIG_IGN:
         return
@@ -28,7 +27,7 @@ def handle_sigint(signals, frametype):
     for context in contexts:
         context.interrupt()
 
-    if old_handler is signal.default_int_handler or old_handler is signal.SIG_DFL:
+    if old_handler == signal.default_int_handler or old_handler == signal.SIG_DFL:
         raise KeyboardInterrupt()
     elif callable(old_handler):
         old_handler(signals, frametype)
@@ -36,6 +35,11 @@ def handle_sigint(signals, frametype):
         print("*** CRITICAL ERROR - THIS SHOULD NEVER HAPPEN")
         raise KeyboardInterrupt()
 
+old_handler = signal.getsignal(signal.SIGINT)
+if old_handler is None:
+    # there is a signal handler installed by someone other than python. we cannot handle this.
+    old_handler = True
+else:
     signal.signal(signal.SIGINT, handle_sigint)
 
 try:
@@ -97,9 +101,17 @@ def _z3_decl_name_str(ctx, decl):
 
 def z3_solver_sat(solver, extra_constraints, occasion):
     l.debug("Doing a check! (%s)", occasion)
+
     result = solver.check(extra_constraints)
+
     if result == z3.unknown:
-        raise ClaripySolverInterruptError()
+        reason = solver.reason_unknown()
+        if reason == ('interrupted from keyboard', 'interrupted'):
+            raise KeyboardInterrupt()
+        elif reason in ('timeout', 'max. resource limit exceeded'):
+            raise ClaripySolverInterruptError(reason)
+        else:
+            raise ClaripyZ3Error('solver unknown: ' + reason)
     return result == z3.sat
 
 class SmartLRUCache(LRUCache):
@@ -200,18 +212,9 @@ class BackendZ3(Backend):
         try:
             return self._tls.context
         except AttributeError:
-            self._tls.context = z3.Context() if threading.current_thread().name != 'MainThread' else z3.main_ctx()
+            main_thread = threading.current_thread() == threading.main_thread()
+            self._tls.context = z3.Context() if not main_thread else z3.main_ctx()
             ALL_Z3_CONTEXTS.add(self._tls.context)
-
-            # install SIGINT handler to forward ctrl-c to z3
-            global old_handler
-            if old_handler is None:
-                old_handler = signal.getsignal(signal.SIGINT)
-                if old_handler is None:
-                    # there is a signal handler installed by someone other than python. we cannot handle this.
-                    old_handler = True
-                else:
-                    signal.signal(signal.SIGINT, handle_sigint)
             return self._tls.context
 
     @property
@@ -721,7 +724,8 @@ class BackendZ3(Backend):
     def solver(self, timeout=None):
         if not self.reuse_z3_solver or getattr(self._tls, 'solver', None) is None:
             s = z3.Solver(ctx=self._context)
-            s.set(ctrl_c=False)
+            if threading.current_thread() != threading.main_thread():
+                s.set(ctrl_c=False)
             _add_memory_pressure(1024 * 1024 * 10)
             if self.reuse_z3_solver:
                 # Store the Z3 solver to a thread-local storage if the reuse-solver option is enabled
