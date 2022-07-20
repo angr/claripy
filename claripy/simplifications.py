@@ -490,7 +490,8 @@ class SimplificationManager:
             # flatten add over sub
             # (x - y) + z ==> x - (y - z)
             return args[0].args[0] - (args[0].args[1] - args[1])
-        return SimplificationManager._flatten_simplifier('__add__', lambda new_args: tuple(a for a in new_args if a.op != 'BVV' or a.args[0] != 0), *args, initial_value=ast.all_operations.BVV(0, len(args[0])))
+        #return SimplificationManager._flatten_simplifier('__add__', lambda new_args: tuple(a for a in new_args if a.op != 'BVV' or a.args[0] != 0), *args, initial_value=ast.all_operations.BVV(0, len(args[0])))
+        return None
 
     @staticmethod
     def bitwise_mul_simplifier(*args):
