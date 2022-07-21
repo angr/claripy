@@ -27,16 +27,16 @@ def handle_sigint(signals, frametype):
     for context in contexts:
         context.interrupt()
 
-    if old_handler == signal.default_int_handler or old_handler == signal.SIG_DFL:
+    if old_handler is signal.default_int_handler:
         raise KeyboardInterrupt()
-    elif callable(old_handler):
+    if callable(old_handler):
         old_handler(signals, frametype)
     else:
         print("*** CRITICAL ERROR - THIS SHOULD NEVER HAPPEN")
         raise KeyboardInterrupt()
 
 old_handler = signal.getsignal(signal.SIGINT)
-if old_handler is None:
+if old_handler is None or old_handler == signal.SIG_DFL:
     # there is a signal handler installed by someone other than python. we cannot handle this.
     old_handler = True
 else:
@@ -106,9 +106,9 @@ def z3_solver_sat(solver, extra_constraints, occasion):
 
     if result == z3.unknown:
         reason = solver.reason_unknown()
-        if reason == ('interrupted from keyboard', 'interrupted'):
+        if reason in ('interrupted from keyboard', 'interrupted'):
             raise KeyboardInterrupt()
-        elif reason in ('timeout', 'max. resource limit exceeded'):
+        elif reason in ('timeout', 'max. resource limit exceeded', 'max. memory exceeded'):
             raise ClaripySolverInterruptError(reason)
         else:
             raise ClaripyZ3Error('solver unknown: ' + reason)
@@ -721,7 +721,7 @@ class BackendZ3(Backend):
             raise BackendError("Weird Z3 model")
         return z3.Z3_get_symbol_string(ctx, symb).encode().decode('unicode_escape')
 
-    def solver(self, timeout=None):
+    def solver(self, timeout=None, max_memory=None):
         if not self.reuse_z3_solver or getattr(self._tls, 'solver', None) is None:
             s = z3.Solver(ctx=self._context)
             if threading.current_thread() != threading.main_thread():
@@ -742,6 +742,8 @@ class BackendZ3(Backend):
                 s.set('solver2_timeout', timeout)
             else:
                 s.set('timeout', timeout)
+        if max_memory is not None:
+            s.set('max_memory', max_memory)
         return s
 
     def clone_solver(self, s):
