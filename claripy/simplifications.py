@@ -458,7 +458,7 @@ class SimplificationManager:
             return None
 
         new_args = tuple(itertools.chain.from_iterable(
-            (a.args if isinstance(a, ast.Base) and a.op == op_name else (a,)) for a in args
+            (a.args if isinstance(a, ast.Base) and a.op == op_name and len(a.args) < 1000 else (a,)) for a in args
         ))
 
         # try to collapse multiple concrete args
@@ -474,7 +474,8 @@ class SimplificationManager:
             new_args = tuple(other_args) + (value_arg,)
 
         variables = frozenset(itertools.chain.from_iterable(a.variables for a in args if isinstance(a, ast.Base)))
-        if filter_func: new_args = filter_func(new_args)
+        if filter_func:
+            new_args = filter_func(new_args)
         if not new_args and 'initial_value' in kwargs:
             return kwargs['initial_value']
         # if a single arg is left, don't create an op for it
@@ -490,7 +491,7 @@ class SimplificationManager:
             # flatten add over sub
             # (x - y) + z ==> x - (y - z)
             return args[0].args[0] - (args[0].args[1] - args[1])
-        #return SimplificationManager._flatten_simplifier('__add__', lambda new_args: tuple(a for a in new_args if a.op != 'BVV' or a.args[0] != 0), *args, initial_value=ast.all_operations.BVV(0, len(args[0])))
+        return SimplificationManager._flatten_simplifier('__add__', lambda new_args: tuple(a for a in new_args if a.op != 'BVV' or a.args[0] != 0), *args, initial_value=ast.all_operations.BVV(0, len(args[0])))
         return None
 
     @staticmethod
