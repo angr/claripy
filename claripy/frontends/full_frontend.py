@@ -37,10 +37,15 @@ class FullFrontend(ConstrainedFrontend):
     #
 
     def __getstate__(self):
-        return self._solver_backend.__class__.__name__, self.timeout, self._track, super().__getstate__()
+        return (
+                self._solver_backend.__class__.__name__,
+                self.timeout,
+                self.max_memory,
+                self._track, super().__getstate__()
+        )
 
     def __setstate__(self, s):
-        backend_name, self.timeout, self._track, base_state = s
+        backend_name, self.timeout, self.max_memory, self._track, base_state = s
         self._solver_backend = backends._backends_by_type[backend_name]
         #self._tls = None
         self._tls = threading.local()
