@@ -1126,6 +1126,13 @@ class Base:
 
         return self._uc_alloc_depth
 
+    def to_claripy(self):
+        """
+        Returns itself. Provides compatibility with other classes (such as SimActionObject) which provide a similar
+        method to unwrap to an AST.
+        """
+        return self
+
     #
     # Backwards compatibility crap
     #
