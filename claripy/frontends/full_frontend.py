@@ -41,7 +41,8 @@ class FullFrontend(ConstrainedFrontend):
                 self._solver_backend.__class__.__name__,
                 self.timeout,
                 self.max_memory,
-                self._track, super().__getstate__()
+                self._track,
+                super().__getstate__(),
         )
 
     def __setstate__(self, s):
