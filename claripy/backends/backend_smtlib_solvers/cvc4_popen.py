@@ -26,9 +26,10 @@ def get_version():
 IS_INSTALLED, VERSION, ERROR = get_version()
 
 class CVC4Proxy(PopenSolverProxy):
-    def __init__(self, timeout=None):
+    def __init__(self, timeout=None, max_memory=None):
         # lazy instantiation: Here we don't spawn the subprocess
         self.timeout = timeout
+        self.max_memory = max_memory  # TODO: not used
         self.installed = False
         p = None
         super(CVC4Proxy, self).__init__(p)
@@ -45,12 +46,12 @@ class CVC4Proxy(PopenSolverProxy):
         return p
 
 class SolverBackendCVC4(SMTLibSolverBackend):
-    def solver(self, timeout=None):
+    def solver(self, timeout=None, max_memory=None):
         """
         This function should return an instance of whatever object handles
         solving for this backend. For example, in Z3, this would be z3.Solver().
         """
-        return CVC4Proxy(timeout)
+        return CVC4Proxy(timeout, max_memory)
 
 from ... import backend_manager as backend_manager
 backend_manager.backends._register_backend(SolverBackendCVC4(), 'smtlib_cvc4', False, False)

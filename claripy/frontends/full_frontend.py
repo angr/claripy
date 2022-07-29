@@ -8,11 +8,12 @@ l = logging.getLogger("claripy.frontends.full_frontend")
 class FullFrontend(ConstrainedFrontend):
     _model_hook = None
 
-    def __init__(self, solver_backend, timeout=None, track=False, **kwargs):
+    def __init__(self, solver_backend, timeout=None, max_memory=None, track=False, **kwargs):
         ConstrainedFrontend.__init__(self, **kwargs)
         self._track = track
         self._solver_backend = solver_backend
         self.timeout = timeout if timeout is not None else 300000
+        self.max_memory = max_memory
         self._tls = threading.local()
         self._to_add = [ ]
 
@@ -21,6 +22,7 @@ class FullFrontend(ConstrainedFrontend):
         c._track = self._track
         c._solver_backend = self._solver_backend
         c.timeout = self.timeout
+        c.max_memory = self.max_memory
         c._tls = threading.local()
         c._to_add = [ ]
 
@@ -35,10 +37,16 @@ class FullFrontend(ConstrainedFrontend):
     #
 
     def __getstate__(self):
-        return self._solver_backend.__class__.__name__, self.timeout, self._track, super().__getstate__()
+        return (
+                self._solver_backend.__class__.__name__,
+                self.timeout,
+                self.max_memory,
+                self._track,
+                super().__getstate__(),
+        )
 
     def __setstate__(self, s):
-        backend_name, self.timeout, self._track, base_state = s
+        backend_name, self.timeout, self.max_memory, self._track, base_state = s
         self._solver_backend = backends._backends_by_type[backend_name]
         #self._tls = None
         self._tls = threading.local()
@@ -51,11 +59,12 @@ class FullFrontend(ConstrainedFrontend):
 
     def _get_solver(self):
         if getattr(self._tls, 'solver', None) is None:
-            self._tls.solver = self._solver_backend.solver(timeout=self.timeout)
+            self._tls.solver = self._solver_backend.solver(timeout=self.timeout, max_memory=self.max_memory)
             self._add_constraints()
         elif self._finalized and len(self._to_add) > 0:
             if not hasattr(self._solver_backend, 'clone_solver') or self._solver_backend.reuse_z3_solver:
-                self._tls.solver = self._solver_backend.solver(timeout=self.timeout)
+                # this function may return a cached solver
+                self._tls.solver = self._solver_backend.solver(timeout=self.timeout, max_memory=self.max_memory)
             else:
                 self._tls.solver = self._solver_backend.clone_solver(self._tls.solver)
             self._add_constraints()

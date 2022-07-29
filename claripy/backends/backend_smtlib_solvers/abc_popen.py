@@ -39,7 +39,7 @@ class ABCProxy(PopenSolverProxy):
         return p
 
 class SolverBackendABC(SMTLibSolverBackend):
-    def solver(self, timeout=None):
+    def solver(self, timeout=None, max_memory=None):
         """
         This function should return an instance of whatever object handles
         solving for this backend. For example, in Z3, this would be z3.Solver().

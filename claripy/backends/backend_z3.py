@@ -5,17 +5,42 @@ import numbers
 import operator
 import threading
 import weakref
+import signal
 from functools import reduce
 from decimal import Decimal
 import z3
 
 from cachetools import LRUCache
 
-from ..errors import ClaripyZ3Error
+from ..errors import ClaripyZ3Error, ClaripySolverInterruptError
 
 l = logging.getLogger("claripy.backends.backend_z3")
 
 #pylint:disable=unidiomatic-typecheck
+
+ALL_Z3_CONTEXTS = weakref.WeakSet()
+def handle_sigint(signals, frametype):
+    if old_handler == signal.SIG_IGN:
+        return
+
+    contexts = list(ALL_Z3_CONTEXTS)
+    for context in contexts:
+        context.interrupt()
+
+    if old_handler is signal.default_int_handler:
+        raise KeyboardInterrupt()
+    if callable(old_handler):
+        old_handler(signals, frametype)
+    else:
+        print("*** CRITICAL ERROR - THIS SHOULD NEVER HAPPEN")
+        raise KeyboardInterrupt()
+
+old_handler = signal.getsignal(signal.SIGINT)
+if old_handler is None or old_handler == signal.SIG_DFL:
+    # there is a signal handler installed by someone other than python. we cannot handle this.
+    old_handler = True
+else:
+    signal.signal(signal.SIGINT, handle_sigint)
 
 try:
     import __pypy__
@@ -74,6 +99,20 @@ def _z3_decl_name_str(ctx, decl):
     symbol_name = z3.Z3_get_symbol_string_bytes(ctx, decl_name)
     return symbol_name
 
+def z3_solver_sat(solver, extra_constraints, occasion):
+    l.debug("Doing a check! (%s)", occasion)
+
+    result = solver.check(extra_constraints)
+
+    if result == z3.unknown:
+        reason = solver.reason_unknown()
+        if reason in ('interrupted from keyboard', 'interrupted'):
+            raise KeyboardInterrupt()
+        elif reason in ('timeout', 'max. resource limit exceeded', 'max. memory exceeded'):
+            raise ClaripySolverInterruptError(reason)
+        else:
+            raise ClaripyZ3Error('solver unknown: ' + reason)
+    return result == z3.sat
 
 class SmartLRUCache(LRUCache):
     def __init__(self, maxsize, getsizeof=None, evict=None):
@@ -173,7 +212,9 @@ class BackendZ3(Backend):
         try:
             return self._tls.context
         except AttributeError:
-            self._tls.context = z3.Context() if threading.current_thread().name != 'MainThread' else z3.main_ctx()
+            main_thread = threading.current_thread() == threading.main_thread()
+            self._tls.context = z3.Context() if not main_thread else z3.main_ctx()
+            ALL_Z3_CONTEXTS.add(self._tls.context)
             return self._tls.context
 
     @property
@@ -680,9 +721,11 @@ class BackendZ3(Backend):
             raise BackendError("Weird Z3 model")
         return z3.Z3_get_symbol_string(ctx, symb).encode().decode('unicode_escape')
 
-    def solver(self, timeout=None):
+    def solver(self, timeout=None, max_memory=None):
         if not self.reuse_z3_solver or getattr(self._tls, 'solver', None) is None:
             s = z3.Solver(ctx=self._context)
+            if threading.current_thread() != threading.main_thread():
+                s.set(ctrl_c=False)
             _add_memory_pressure(1024 * 1024 * 10)
             if self.reuse_z3_solver:
                 # Store the Z3 solver to a thread-local storage if the reuse-solver option is enabled
@@ -699,6 +742,8 @@ class BackendZ3(Backend):
                 s.set('solver2_timeout', timeout)
             else:
                 s.set('timeout', timeout)
+        if max_memory is not None:
+            s.set('max_memory', max_memory)
         return s
 
     def clone_solver(self, s):
@@ -759,7 +804,7 @@ class BackendZ3(Backend):
         solve_count += 1
 
         l.debug("Doing a check! (satisfiable)")
-        if solver.check(extra_constraints) != z3.sat:
+        if not z3_solver_sat(solver, extra_constraints, "satisfiable"):
             return False
 
         if model_callback is not None:
@@ -786,8 +831,7 @@ class BackendZ3(Backend):
 
         for i in range(n):
             solve_count += 1
-            l.debug("Doing a check! (batch_eval)")
-            if solver.check(extra_constraints) != z3.sat:
+            if not z3_solver_sat(solver, extra_constraints, "batch_eval"):
                 break
             model = solver.model()
 
@@ -846,8 +890,7 @@ class BackendZ3(Backend):
             new_constraints.append(z3.And(GE(expr, lo), LE(expr, middle)))
 
             solve_count += 1
-            l.debug("Doing a check! (min)")
-            if solver.check(extra_constraints_converted + new_constraints) == z3.sat:
+            if z3_solver_sat(solver, extra_constraints_converted + new_constraints, "min"):
                 l.debug("... still sat")
                 if model_callback is not None:
                     model_callback(self._generic_model(solver.model()))
@@ -863,8 +906,7 @@ class BackendZ3(Backend):
         if hi == lo:
             ret = lo
         else:
-            l.debug("Doing a check! (min)")
-            if solver.check(extra_constraints_converted + [expr == lo]) == z3.sat:
+            if z3_solver_sat(solver, extra_constraints_converted + [expr == lo], "min"):
                 if model_callback is not None:
                     model_callback(self._generic_model(solver.model()))
                 ret = lo
@@ -901,8 +943,7 @@ class BackendZ3(Backend):
             new_constraints.append(z3.And(GT(expr, middle), LE(expr, hi)))
 
             solve_count += 1
-            l.debug("Doing a check! (max)")
-            if solver.check(extra_constraints_converted + new_constraints) == z3.sat:
+            if z3_solver_sat(solver, extra_constraints_converted + new_constraints, "max"):
                 l.debug("... still sat")
                 if model_callback is not None:
                     model_callback(self._generic_model(solver.model()))
@@ -917,8 +958,7 @@ class BackendZ3(Backend):
         if hi == lo:
             ret = hi
         else:
-            l.debug("Doing a check! (max)")
-            if solver.check(extra_constraints_converted + [expr == hi]) == z3.sat:
+            if z3_solver_sat(solver, extra_constraints_converted + [expr == hi], "max"):
                 if model_callback is not None:
                     model_callback(self._generic_model(solver.model()))
                 ret = hi
