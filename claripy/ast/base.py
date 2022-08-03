@@ -547,7 +547,7 @@ class Base:
             return self._apply_to_annotations(lambda alist: alist + args)
         else:
             return self._apply_to_annotations(
-                lambda alist: [ arg for arg in alist + args if arg not in remove_annotations ]
+                lambda alist: tuple(arg for arg in alist if arg not in remove_annotations) + args
             )
 
     def insert_annotation(self, a):
