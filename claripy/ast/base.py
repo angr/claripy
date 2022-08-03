@@ -462,6 +462,7 @@ class Base:
         if simplified is None \
                 and len(kwargs) == 3 \
                 and 'annotations' in kwargs \
+                and kwargs['annotations'] \
                 and 'skip_child_annotations' in kwargs \
                 and kwargs['skip_child_annotations'] is True \
                 and 'length' in kwargs:
