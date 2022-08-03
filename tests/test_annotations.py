@@ -195,3 +195,4 @@ if __name__ == '__main__':
     test_ast_hash_should_consider_relocatable_annotations()
     test_remove_relocatable_annotations()
     test_duplicated_annotations_from_makelike()
+    test_simplification()

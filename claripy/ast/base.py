@@ -467,8 +467,10 @@ class Base:
                 and 'length' in kwargs:
             # fast path
             annotations = tuple(kwargs['annotations'])
-            uneliminatable_annotations = frozenset(anno for anno in annotations if not anno.eliminatable)
-            relocatable_annotations = tuple(anno for anno in annotations if anno.relocatable)
+            uneliminatable_annotations = frozenset(anno for anno in annotations
+                                                   if not anno.eliminatable and not anno.relocatable)
+            relocatable_annotations = tuple(anno for anno in annotations
+                                            if not anno.eliminatable and anno.relocatable)
 
             return type(self).__init_with_annotations__(op, args,
                                                         uneliminatable_annotations=uneliminatable_annotations,
