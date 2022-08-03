@@ -5,6 +5,7 @@ import os
 import struct
 import weakref
 from collections import OrderedDict, deque
+from itertools import chain
 from typing import Optional
 
 try:
@@ -22,6 +23,7 @@ l = logging.getLogger("claripy.ast")
 
 WORKER = bool(os.environ.get('WORKER', False))
 md5_unpacker = struct.Struct('2Q')
+from_iterable = chain.from_iterable
 
 #pylint:enable=unused-argument
 #pylint:disable=unidiomatic-typecheck
@@ -61,6 +63,7 @@ def _d(h, cls, state):
     """
     op, args, length, variables, symbolic, annotations = state
     return cls.__new__(cls, op, args, length=length, variables=variables, symbolic=symbolic, annotations=annotations, hash=h)
+
 
 class Base:
     """
@@ -192,18 +195,18 @@ class Base:
             relocatable_annotations = frozenset()
         else:
             ast_args = tuple(a for a in a_args if isinstance(a, Base))
-            uneliminatable_annotations = frozenset(itertools.chain(
-                itertools.chain.from_iterable(a._uneliminatable_annotations for a in ast_args) if not skip_child_annotations else tuple(),
+            uneliminatable_annotations = frozenset(chain(
+                from_iterable(a._uneliminatable_annotations for a in ast_args) if not skip_child_annotations else tuple(),
                 tuple(a for a in annotations if not a.eliminatable and not a.relocatable)
             ))
 
-            relocatable_annotations = tuple(OrderedDict((e, True) for e in tuple(itertools.chain(
-                itertools.chain.from_iterable(a._relocatable_annotations for a in ast_args) if not skip_child_annotations else tuple(),
+            relocatable_annotations = tuple(OrderedDict((e, True) for e in tuple(chain(
+                from_iterable(a._relocatable_annotations for a in ast_args) if not skip_child_annotations else tuple(),
                 tuple(a for a in annotations if not a.eliminatable and a.relocatable)
             ))).keys())
 
-            annotations = tuple(itertools.chain(
-                itertools.chain.from_iterable(a._relocatable_annotations for a in ast_args) if not skip_child_annotations else tuple(),
+            annotations = tuple(chain(
+                from_iterable(a._relocatable_annotations for a in ast_args) if not skip_child_annotations else tuple(),
                 tuple(a for a in annotations)
             ))
 
@@ -238,6 +241,27 @@ class Base:
         #else:
         #   if self.args != a_args or self.op != op or self.variables != kwargs['variables']:
         #       raise Exception("CRAP -- hash collision")
+
+        return self
+
+    @classmethod
+    def __init_with_annotations__(cls, op, a_args, depth=None, uneliminatable_annotations=None, relocatable_annotations=None,
+                                  **kwargs):
+
+        cache = cls._hash_cache
+        h = Base._calc_hash(op, a_args, kwargs)
+        self = cache.get(h, None)
+        if self is not None:
+            return self
+
+        self = super().__new__(cls)
+        self.__a_init__(op, a_args,
+                        depth=depth,
+                        uneliminatable_annotations=uneliminatable_annotations,
+                        relocatable_annotations=relocatable_annotations, **kwargs)
+
+        self._hash = h
+        cache[h] = self
 
         return self
 
@@ -435,6 +459,29 @@ class Base:
             simplified = None
         if simplified is not None:
             op = simplified.op
+        if simplified is None \
+                and len(kwargs) == 3 \
+                and 'annotations' in kwargs \
+                and 'skip_child_annotations' in kwargs \
+                and kwargs['skip_child_annotations'] is True \
+                and 'length' in kwargs:
+            # fast path
+            annotations = tuple(kwargs['annotations'])
+            uneliminatable_annotations = frozenset(anno for anno in annotations if not anno.eliminatable)
+            relocatable_annotations = tuple(anno for anno in annotations if anno.relocatable)
+
+            return type(self).__init_with_annotations__(op, args,
+                                                        uneliminatable_annotations=uneliminatable_annotations,
+                                                        relocatable_annotations=relocatable_annotations,
+                                                        annotations=annotations,
+                                                        variables=self.variables,
+                                                        uninitialized=self._uninitialized,
+                                                        symbolic=self.symbolic,
+                                                        length=kwargs['length'],
+                                                        depth=self.depth,
+                                                        eager_backends=self._eager_backends,
+                                                        uc_alloc_depth=self._uc_alloc_depth,
+                                                        )
 
         all_operations = operations.leaf_operations_symbolic_with_union
         if 'annotations' not in kwargs:
@@ -445,6 +492,7 @@ class Base:
         if 'variables' not in kwargs and op in all_operations: kwargs['variables'] = self.variables
         if 'uninitialized' not in kwargs: kwargs['uninitialized'] = self._uninitialized
         if 'symbolic' not in kwargs and op in all_operations: kwargs['symbolic'] = self.symbolic
+
         if simplified is None:
             # Cannot simplify the expression anymore
             return type(self)(op, args, **kwargs)
@@ -484,14 +532,20 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: alist + new_tuple)
 
-    def annotate(self, *args):
+    def annotate(self, *args, remove_annotations=None):
         """
         Appends annotations to this AST.
 
         :param args:                the tuple of annotations to append (variadic positional args)
+        :param remove_annotations:  annotations to remove
         :returns:                   a new AST, with the annotations added
         """
-        return self._apply_to_annotations(lambda alist: alist + args)
+        if not remove_annotations:
+            return self._apply_to_annotations(lambda alist: alist + args)
+        else:
+            return self._apply_to_annotations(
+                lambda alist: [ arg for arg in alist + args if arg not in remove_annotations ]
+            )
 
     def insert_annotation(self, a):
         """
@@ -1167,8 +1221,8 @@ def simplify(e):
         # dealing with annotations
         if e.annotations:
             ast_args = tuple(a for a in e.args if isinstance(a, Base))
-            annotations = tuple(set(itertools.chain(
-                itertools.chain.from_iterable(a._relocatable_annotations for a in ast_args),
+            annotations = tuple(set(chain(
+                from_iterable(a._relocatable_annotations for a in ast_args),
                 tuple(a for a in e.annotations)
             )))
             if annotations != s.annotations:
