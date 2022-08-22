@@ -723,7 +723,7 @@ class BackendZ3(Backend):
 
     def solver(self, timeout=None, max_memory=None):
         if not self.reuse_z3_solver or getattr(self._tls, 'solver', None) is None:
-            s = z3.Solver(ctx=self._context)
+            s = z3.Solver(ctx=self._context) #, logFile="claripy.smt2")
             if threading.current_thread() != threading.main_thread():
                 s.set(ctrl_c=False)
             _add_memory_pressure(1024 * 1024 * 10)
