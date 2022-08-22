@@ -1177,6 +1177,11 @@ class BackendZ3(Backend):
         return z3.fpToFP(a1, a2=a2, a3=a3, ctx=self._context)
 
     @condom
+    def _op_raw_fpToFPUnsigned(self, a1, a2, a3):
+        # as above
+        return z3.fpToFPUnsigned(a1, a2, a3, ctx=self._context)
+
+    @condom
     def _op_raw_fpToIEEEBV(self, x):
         return z3.BitVecRef(z3.Z3_mk_fpa_to_ieee_bv(self._context.ref(), x.ast), self._context)
 
