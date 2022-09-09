@@ -338,7 +338,9 @@ namespace Backend::Z3 {
                         }
                     }
                     // Not supported
-                    case Util::Type::index<decltype(data), PyObj::VS::Ptr>: // fallthrough
+                    case Util::Type::index<decltype(data), PyObj::VS::Ptr>:
+                        UTIL_THROW(Error::Backend::Unsupported,
+                                   "VS objects are not supported by the z3 backend");
                     // Error handling
                     default:
                         UTIL_THROW(Util::Err::NotSupported,
@@ -396,7 +398,7 @@ namespace Backend::Z3 {
                 // Error handling
                 case Expr::VS::static_cuid:
                     UTIL_THROW(Error::Backend::Unsupported,
-                               "VSA is not supported by the Z3 backend");
+                               "VS objects are not supported by the Z3 backend");
                 default:
                     UTIL_THROW(Util::Err::NotSupported, "Unknown expr CUID given to z3 backend");
             }
