@@ -25,6 +25,13 @@ namespace Mode::FP {
         constexpr U64 width() const noexcept { return 1 + no_sign_width(); }
         /** The full width of the fp */
         constexpr U64 no_sign_width() const noexcept { return exp + mantissa - 1; }
+
+        /** Equality operator
+         *  Note: This is internal to the class for API generation reasons
+         */
+        constexpr bool operator==(const Width &b) const noexcept {
+            return (this->exp == b.exp) && (this->mantissa == b.mantissa);
+        }
     };
 
     /** A single wide fp width */
@@ -33,16 +40,7 @@ namespace Mode::FP {
     /** A double wide fp width */
     static inline const constexpr Width dbl { 11, 52 + 1 };
 
-    /** Equality operator */
-    constexpr bool operator==(const Width &a, const Width &b) noexcept {
-        return (a.exp == b.exp) && (a.mantissa == b.mantissa);
-    }
-    /** Not-equals operator */
-    constexpr bool operator!=(const Width &a, const Width &b) noexcept {
-        return not(a == b);
-    }
-
-    /** Width stream operator */
+    /** Stream operator */
     inline std::ostream &operator<<(std::ostream &os, const Width &w) {
         os << "Width(" << w.exp << ", " << w.mantissa << ")";
         return os;

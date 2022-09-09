@@ -71,12 +71,10 @@ struct BigInt {
         return mode_.exchange(m);
     }
 
-    // Mode methods
+    // Methods
 
     /** Get the default mode */
     static inline Mode mode() noexcept { return mode_; }
-
-    // Modifiers
 
     /** Converts the BigInt to the given mode */
     template <Mode Mod> void convert() {
@@ -91,6 +89,13 @@ struct BigInt {
         else {
             value = std::get<Int>(value).str();
         }
+    }
+
+    /** Equality operator
+     *  Note: This is internal to the class for API generation reasons
+     */
+    inline bool operator==(const BigInt &b) const {
+        return (this->bit_length == b.bit_length) && (this->value == b.value);
     }
 
     /** The value */
@@ -126,11 +131,6 @@ inline std::ostream &operator<<(std::ostream &os, const BigInt &b) {
     CCSC q { (b.mode() == BigInt::Mode::Str) ? "\"" : "" };
     return os << R"({ "value" : )" << q << b.value << q << R"(, "bit_length" : )" << b.bit_length
               << " }";
-}
-
-/** Equality operator */
-inline bool operator==(const BigInt &a, const BigInt &b) {
-    return (a.bit_length == b.bit_length) && (a.value == b.value);
 }
 
 
