@@ -9,31 +9,48 @@
 #include <src/create.hpp>
 
 
-namespace UnitTest::TestLib::Factories {
+namespace UnitTest::TestLib {
 
-    /** Make it easier to create exprs */
-    template <typename T = Expr::Bool> Expr::BasePtr t_literal(const I64 i = 0) {
-        static_assert(std::is_base_of_v<Expr::Base, T>, "T must derive from Expr::Base");
-        if constexpr (std::is_same_v<T, Expr::Bool>) {
-            return Create::literal(static_cast<bool>(i));
-        }
-        else if constexpr (std::is_same_v<T, Expr::String>) {
-            return Create::literal(std::to_string(i));
-        }
-        else if constexpr (std::is_same_v<T, Expr::BV>) {
-            return Create::literal(static_cast<U64>(i));
-        }
-        else if constexpr (std::is_same_v<T, Expr::FP>) {
-            return Create::literal(static_cast<double>(i));
-        }
-        else if constexpr (std::is_same_v<T, Expr::VS>) {
-            return Create::literal(PyObj::VSVS::factory(i, CHAR_BIT));
-        }
-        else {
-            static_assert(Util::TD::false_<T>, "Unsupported type T");
-        }
-    }
+    /** A Mock VS object used for testing */
+    class MockVS : public PyObj::VS {
+      public:
+        /** Create a MockVS */
+        static inline Ptr make(const I64 i) { return Ptr { new MockVS { Util::unsign(i) } }; }
 
-} // namespace UnitTest::TestLib::Factories
+      private:
+        std::string actual_repr() const {
+            std::ostringstream s;
+            s << hash;
+            return s.str();
+        }
+        MockVS(const U64 u) : ::PyObj::VS { u, CHAR_BIT } {}
+    };
+
+    namespace Factories {
+        /** Make it easier to create exprs */
+        template <typename T = Expr::Bool> Expr::BasePtr t_literal(const I64 i = 0) {
+            static_assert(std::is_base_of_v<Expr::Base, T>, "T must derive from Expr::Base");
+            if constexpr (std::is_same_v<T, Expr::Bool>) {
+                return Create::literal(static_cast<bool>(i));
+            }
+            else if constexpr (std::is_same_v<T, Expr::String>) {
+                return Create::literal(std::to_string(i));
+            }
+            else if constexpr (std::is_same_v<T, Expr::BV>) {
+                return Create::literal(static_cast<U64>(i));
+            }
+            else if constexpr (std::is_same_v<T, Expr::FP>) {
+                return Create::literal(static_cast<double>(i));
+            }
+            else if constexpr (std::is_same_v<T, Expr::VS>) {
+                return Create::literal(MockVS::make(i));
+            }
+            else {
+                static_assert(Util::TD::false_<T>, "Unsupported type T");
+            }
+        }
+    } // namespace Factories
+
+} // namespace UnitTest::TestLib
 
 #endif

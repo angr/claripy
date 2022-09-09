@@ -52,7 +52,7 @@ void literal() {
     literal_t<Expr::FP>(3.4f, 32_ui); // NOLINT
 
     // VS
-    auto ptr { UnitTest::TestLib::Factories::VSVS::make(1) };
+    auto ptr { UnitTest::TestLib::MockVS::make(1) };
     const auto bl { ptr->bit_length };
     literal_t<Expr::VS>(std::move(ptr), bl);
 
