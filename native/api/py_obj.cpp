@@ -32,14 +32,21 @@ template <typename Base> class PyO final : public Base {
     mutable std::variant<std::string, pybind11::object> rep;
 };
 
-void API::py_obj(Binder::ModuleGetter &m) {
-    auto p_o { m("API").def_submodule("py_obj_ctor", "PyObj ctors") };
-    p_o.def(
-        "bvvs",
+template <typename T> static void py_o(pybind11::module_ &m, CCSC name) {
+    static_assert(std::is_base_of_v<PyObj::Base, T>, "Usage");
+    std::ostringstream doc;
+    doc << "Create a C++ wrapper of type " << name << " for the python object o";
+    m.def(
+        name,
         [](pybind11::object &&obj, const U64 bit_length) {
-            return static_cast<const PyObj::BVVS *>(
-                new PyO<PyObj::BVVS> { std::move(obj), bit_length });
+            return static_cast<const T *>(new PyO<T> { std::move(obj), bit_length });
         },
-        "Create a C++ wrapper of type PyObj::BVVS for the python object o", pybind11::arg("obj"),
-        pybind11::arg("bit_length"), pybind11::return_value_policy::take_ownership);
+        doc.str().c_str(), pybind11::arg("obj"), pybind11::arg("bit_length"),
+        pybind11::return_value_policy::take_ownership);
+}
+
+void API::py_obj(Binder::ModuleGetter &m) {
+    // TODO: determine if some register_at_exit function needs to kill py obj references
+    auto p_o { m("API").def_submodule("py_obj_ctor", "PyObj ctors") };
+    py_o<PyObj::VS>(p_o, "vs");
 }
