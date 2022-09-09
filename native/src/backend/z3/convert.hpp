@@ -338,7 +338,7 @@ namespace Backend::Z3 {
                         }
                     }
                     // Not supported
-                    case Util::Type::index<decltype(data), PyObj::VSVS::Ptr>: // fallthrough
+                    case Util::Type::index<decltype(data), PyObj::VS::Ptr>: // fallthrough
                     // Error handling
                     default:
                         UTIL_THROW(Util::Err::NotSupported,

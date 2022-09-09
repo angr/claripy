@@ -8,6 +8,7 @@
 #include "private/literal.hpp"
 
 
+// TODO: remove annotations from literals and symbol???
 namespace Create {
 
     /** Create an Expr containing a literal op */
@@ -33,7 +34,7 @@ namespace Create {
     /** Create a FP Expr with a Literal op containing a VS
      *  data may not be nullptr
      */
-    M_TRIVIAL_TYPE(vs, PyObj::VSVS::Ptr);
+    M_TRIVIAL_TYPE(vs, PyObj::VS::Ptr);
 
     /** Create a FP Expr with a Literal op containing a String
      *  data may not be nullptr
@@ -73,7 +74,7 @@ namespace Create {
     }
 
     // We should support every BV creation method
-    static_assert(std::variant_size_v<Op::BVVar> == 6,
+    static_assert(std::variant_size_v<Op::BVVar> == 5,
                   "There should be more / less creation methods");
 
     /** Create a BV Expr with a Literal op of a given bit length from a U64
@@ -125,14 +126,6 @@ namespace Create {
                                         std::move(sp));
         }
 #undef M_CASE
-    }
-
-    /** Create a BV Expr with a Literal op containing an arbitrary length int
-     *  Warning: this may cast data to a smaller size (bit_length or greater)
-     *  data should be a base 10 string containing
-     */
-    inline Expr::BasePtr literal_bv(PyObj::BVVS::Ptr data, Annotation::SPAV sp = empty_spav) {
-        return Private::literal(std::move(data), std::move(sp));
     }
 
     /** This function exists to prevent accidental use by explicit rejection */

@@ -29,9 +29,7 @@
     };
 
 namespace PyObj {
-    M_NEW_PYOBJ(VSVS);
-    M_NEW_PYOBJ(StridedIntervalSymbol);
-    M_NEW_PYOBJ(StridedIntervalLiteral);
+    M_NEW_PYOBJ(VS);
 } // namespace PyObj
 
 #undef M_NEW_PYOBJ

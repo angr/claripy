@@ -26,10 +26,10 @@ namespace Op {
     using BVVar = BVTL::Apply<std::variant>;
 
     /** A variant of the types a primitive can be */
-    using PrimTL = BVTL::Prepend<bool,            // Bool
-                                 std::string,     // String
-                                 float, double,   // FP
-                                 PyObj::VSVS::Ptr // VS
+    using PrimTL = BVTL::Prepend<bool,          // Bool
+                                 std::string,   // String
+                                 float, double, // FP
+                                 PyObj::VS::Ptr // VS
                                  >;
 
     /** A variant of the types a primitive can support */
@@ -62,7 +62,7 @@ namespace Op {
             M_CASE(std::string, CHAR_BIT * got.size());
             M_CASE(float, CHAR_BIT * sizeof(got));
             M_CASE(double, CHAR_BIT * sizeof(got));
-            M_CASE(PyObj::VSVS::Ptr, got->bit_length);
+            M_CASE(PyObj::VS::Ptr, got->bit_length);
             M_CASE(uint8_t, CHAR_BIT * sizeof(got));
             M_CASE(uint16_t, CHAR_BIT * sizeof(got));
             M_CASE(uint32_t, CHAR_BIT * sizeof(got));
@@ -85,7 +85,7 @@ namespace Op {
             M_CASE(std::string, o << std::quoted(got));
             M_CASE(float, o << got);
             M_CASE(double, o << got);
-            M_CASE(PyObj::VSVS::Ptr, o << got);
+            M_CASE(PyObj::VS::Ptr, o << got);
             M_CASE(uint8_t, o << static_cast<uint16_t>(got));
             M_CASE(uint16_t, o << got);
             M_CASE(uint32_t, o << got);

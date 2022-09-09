@@ -30,7 +30,7 @@ namespace Create::Private {
             // String
             std::string, Expr::String,
             // VS
-            PyObj::VSVS::Ptr, Expr::VS,
+            PyObj::VS::Ptr, Expr::VS,
             // FP
             double, Expr::FP, float, Expr::FP,
             // BV

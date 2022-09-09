@@ -42,7 +42,7 @@ namespace Op {
                 M_CASE(std::string, { got });
                 M_CASE(float, { got });
                 M_CASE(double, { got });
-                M_CASE(PyObj::VSVS::Ptr, { got });
+                M_CASE(PyObj::VS::Ptr, { got });
                 M_CASE(uint8_t, { got });
                 M_CASE(uint16_t, { got });
                 M_CASE(uint32_t, { got });
