@@ -1,18 +1,24 @@
+"""
+Load the clari module in ./lib and install operators / sugar
+Warning: This requires hooking clari, it modifies the module
+"""
 import logging
 import sys
 import os
 
 # TODO: find a better way, pybind11 doesn't seem to play well with relative imports
-_native_path = os.path.join(os.path.dirname(__file__), "lib")
-sys.path.append(_native_path)
+old = sys.path
+sys.path = [ os.path.join(os.path.dirname(__file__), "lib") ]
 import clari
+sys.path = old
+del old
 
 
 config_log = logging.getLogger(__file__)
 
 
 # TODO: remove clari.Create.foo from method calls (dict lookups are costly)
-class Setup:
+class Load:
     def __init__(self, *, debug_mode: bool = False):
         self._debug_mode = debug_mode
 
@@ -34,8 +40,14 @@ class Setup:
         Create = clari.Create
         rm = clari.Mode.FP.Rounding
         rm.default = rm.NearestTiesEven
-        Create.pos = lambda x: x  # TODO: ask fish
+        Create.pos = lambda x: x
+        self._py_obj_ctors()
         self._def_magic_ops()
+
+    @staticmethod
+    def _py_obj_ctors():
+        clari.PyObj.VS.factory = clari.API.py_obj_ctor.vs
+        del clari.API.py_obj_ctor
 
     @staticmethod
     def _fix_operators():
@@ -44,13 +56,22 @@ class Setup:
         clari.Expr.Base.__eq__ = lambda a, b: Create.eq(a, b)
         clari.Expr.Base.__ne__ = lambda a, b: Create.neq(a, b)
         # Hashing
-        clari.Annotation.Base.__hash__ = lambda x: x.hash
-        clari.Annotation.Vec.__hash__ = lambda x: x.hash
-        clari.Expr.Base.__hash__ = lambda x: x.hash
-        clari.Op.Base.__hash__ = lambda x: x.hash
+        # clari.Annotation.Base.__hash__ = lambda x: x.hash
+        # clari.Annotation.Vec.__hash__ = lambda x: x.hash
+        # clari.Expr.Base.__hash__ = lambda x: x.hash
+        # clari.Op.PyObj.__hash__ = lambda x: x.hash
+        # clari.Op.Base.__hash__ = lambda x: x.hash TODO: consolidate
+        config_log.info("Claricpp uses unsigned 64-bit integers to store hashes; "
+            "python uses signed 64-bit integers. The unsigned variant "
+            "is available via x.hash; the signed variant is returned by hash(x)")
+        clari.Mode.FP.Width.__hash__ = lambda x: hash(x.exp, + (x.mantissa << 32))
+        # TODO: make make C++ hashes signed?
+        clari.Hash.Hashed.__hash__ = clari.PyObj.Base.py_hash
         # repr (ignore pybind11 defaults)
+        # TODO: consolidate? HasRepr.__repr__ ?
         clari.Annotation.Base.__repr__ = clari.Annotation.Base.repr
         clari.Annotation.Vec.__repr__ = clari.Annotation.Vec.repr
+        clari.PyObj.Base.__repr__ = clari.PyObj.Base.repr
         clari.Expr.Base.__repr__ = clari.Expr.Base.repr
         clari.Op.Base.__repr__ = clari.Op.Base.repr
 
@@ -123,9 +144,9 @@ class Setup:
 
         ### Bool
         clari.Expr.Bool.__invert__ = lambda x: Create.invert(x)
-        clari.Expr.Bool.__not__ = lambda x: Create.invert(x)  # TODO: ask fish
+        clari.Expr.Bool.__not__ = lambda x: Create.invert(x)
         clari.Expr.Bool.__and__ = lambda x: Create.and_(x)
-        clari.Expr.Bool.__xor__ = lambda x: Create.xor_(x)  # TODO: ask fish
+        clari.Expr.Bool.__xor__ = lambda x: Create.xor_(x)
         clari.Expr.Bool.__or__ = lambda x: Create.or_(x)
 
         ### FP
@@ -160,8 +181,6 @@ class Setup:
         clari.Expr.BV.__mul__ = lambda *args: Create.mul(args)
         clari.Expr.BV.__sub__ = lambda x, y: Create.sub(x, y)
         clari.Expr.BV.__floordiv__ = lambda x, y: Create.div(x, y)
-        clari.Expr.BV.__truediv__ = clari.Expr.BV.__floordiv__
-        # TODO: fake-truediv should be removed (should be legacy)
         clari.Expr.BV.__abs__ = lambda x: Create.abs(x)
         clari.Expr.BV.__pow__ = lambda a, b: Create.pow(a, b)
         clari.Expr.BV.__mod__ = lambda a, b: Create.mod(a, b)
@@ -169,4 +188,4 @@ class Setup:
         clari.Expr.BV.__rshift__ = lambda a, b: Create.shift_arithmetic_right(a, b)
 
 
-__all__ = ("Config", "clari")
+__all__ = ("Load", "clari")
