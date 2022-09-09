@@ -160,9 +160,9 @@ def create(base: type, op: str, py_args: List[Any], length: Optional[int]) -> Tu
     # Construct native and legacy
     native: Type[clari.Expr.Base] = ctor(*_ctor_args(op, cpp_type, py_args, length))
     return native, LegacyData(
-        exprs={ hash(i._native):i for i in py_args if isinstance(i, base) },
+        exprs={hash(i._native):i for i in py_args if isinstance(i, base)},
         bvs=(py_args[1:] if op == "BVS" else None),
-        py_args=[ i for i in py_args ],
+        py_args=tuple(py_args),
     )
 
 

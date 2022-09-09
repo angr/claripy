@@ -1,6 +1,5 @@
 import functools
 import warnings # TODO: does angr roll its own? Do we hook this?
-import weakref
 
 from . import module
 
@@ -25,21 +24,6 @@ class Load(BaseLoad):
         super().define_members()
         # Legacy members
         clari.Expr.BV.__truediv__ = self._deprecated(clari.Expr.BV.__floordiv__)
-        self._enable_args()
         clari.Legacy = module
-
-    @staticmethod
-    def _enable_args():
-        fix = lambda x: int(x.value) if isinstance(x, clari.BigInt) else x
-        def _args(self):
-            if self not in self._args_dict:  # Cache check
-                args = tuple([fix(i) for i in self.op.python_children()])
-                self._args_dict[self] = args
-            return self._args_dict[self]
-
-        # Claricpp objects are generally readonly, so we map weakrefs to cached vars
-        clari.Expr.Base._args_dict = weakref.WeakKeyDictionary()
-        clari.Expr.Base.args = property(_args)
-
 
 __all__ = ("Load",)
