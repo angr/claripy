@@ -19,15 +19,24 @@ config_log = logging.getLogger(__file__)
 
 # TODO: remove clari.Create.foo from method calls (dict lookups are costly)
 class Load:
+    """
+    A class used to load claricpp into claripy
+    """
     def __init__(self, *, debug_mode: bool = False):
         self._debug_mode = debug_mode
 
     def config(self, *, src_root: str = None):
+        """
+        Configure claricpp to work with claripy
+        """
         self._fix_operators()
         if src_root:
             clari.API.add_source_root(src_root)
 
     def establish_link(self, *, logger):
+        """
+        Link claricpp and claripy's logging and exception systems
+        """
         self._link_logging(logger, debug_mode=self._debug_mode)
         clari.Util.Err.Claricpp.toggle_backtrace(self._debug_mode)
         if self._debug_mode:
@@ -37,6 +46,9 @@ class Load:
         self._link_exceptions(logger)
 
     def define_members(self):
+        """
+        Define's various functions for clari to make it far easier to use
+        """
         Create = clari.Create
         rm = clari.Mode.FP.Rounding
         rm.default = rm.NearestTiesEven

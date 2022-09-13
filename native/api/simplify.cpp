@@ -21,4 +21,6 @@ void API::simplify(API::Binder::ModuleGetter &m) {
         "Set a function to be called on every invocation of the builtin simplify()."
         " Will be called as simplifier(op)",
         pybind11::arg("simplifier"));
+    m("API").def("clear_python_simplifier", clear_py_simp,
+                 "Clear any function set by set_python_simplifier");
 }
