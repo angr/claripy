@@ -25,6 +25,7 @@ def create(base: type, op: str, py_args: List[Any], length: Optional[int]) -> Tu
     :param base: The base claripy AST type (used for checking of .args[i] is a claripy AST)
     :param op: The claripy op
     :param py_args: The op arguments
+    :param length: The length argument passed to claripy.ast.base's __init__ function
     :return: The native op & a data object needed for legacy support
     """
     return _create(base, op, py_args, length)

@@ -25,16 +25,17 @@ def _to_py_arg(x: Any, children: Dict[int, "claripy.ast.Base"]) -> Any:
         return width_cpp_to_py(x)
     return x
 
-def _chk_eq_args(a: List[Any], b: List[Any]) -> bool:  # TODO: remove when not debugging
+def _chk_eq_args(a: List[Any], b: List[Any]) -> None:  # TODO: remove when not debugging
     """
     Verify the cpp args were generated properly (they should be the same as the python args)
     TODO: THIS METHOD SHOULD BE DELETED
     """
-    if len(a) == len(b):
-        for i in range(len(a)):
-            if hash(a[i]) != hash(b[i]):
-                return False
-    return True
+    if len(a) != len(b) or any(hash(i) != hash(k) for i, k in zip(a, b)):
+        print("Diff args!")
+        print("Native: a")
+        print("Python: b")
+        import IPython
+        IPython.embed()
 
 def args(op: str, uninitialized: bool, native: Type[clari.Expr.Base], legacy: LegacyData) -> List[Any]:
     """
@@ -63,12 +64,7 @@ def args(op: str, uninitialized: bool, native: Type[clari.Expr.Base], legacy: Le
     exprs = legacy.exprs
     ret: Tuple[Any] = tuple(_to_py_arg(i, exprs) for i in cpp)
     # TODO: delete this section; it just verifies .args was created properly
-    if not _chk_eq_args(ret, legacy.py_args):
-        print("Diff args!")
-        print("Python: legacy.py_args")
-        print("Native: ret")
-        import IPython
-        IPython.embed()
+    _chk_eq_args(ret, legacy.py_args)
     return ret
 
 __all__ = ("args",)

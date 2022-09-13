@@ -5,6 +5,9 @@
 *.swp
 *.swo
 
+# Explicit
+ignore
+
 # From setup.py
 dist
 MANIFEST
