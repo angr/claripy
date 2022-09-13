@@ -200,20 +200,17 @@ class SimplificationManager:
         if a.op == "BVV" and b.op != "BVV":
             return b == a
 
-        # expr - c == 0    ->   expr == c
-        if a.op == "__sub__" and a.args[1].op == "BVV" and b.op == "BVV":
+        # expr - c1 == c2    ->   expr == c1 + c2
+        if a.op == "__sub__" and len(a.args) == 2 and a.args[1].op == "BVV" and b.op == "BVV":
             return a.args[0] == a.args[1] + b
 
         # 1 ^ expr == 0     ->   expr == 1
-        if a.op == '__xor__' and isinstance(b.args[0], int) and b.args[0] == 0:
-            if a.args[0].op == 'If' and a.args[1].args[0] == 1:
+        if a.op == '__xor__' and b.op == "BVV" and b.args[0] == 0 and len(a.args) == 2:
+            if a.args[0].op == 'If' and a.args[1].op == "BVV" and a.args[1].args[0] == 1:   # If(expr, v1, v2) ^ 1 == 0
                 return a.args[0] == 1
-            elif a.args[1].op == 'If' and a.args[0].args[0] == 1:
+            elif a.args[1].op == 'If' and a.args[0].op == "BVV" and a.args[0].args[0] == 1:  # 1 ^ If(expr, v1, v2) == 0
                 return a.args[1] == 1
 
-        if a.op == 'Concat' and isinstance(b.args[0], int) and b.args[0] == 0 and \
-                a.args[0].args[0] == 0 and a.args[1].op == '__invert__':
-            return a.args[1].args[0] == 1
 
 
         # TODO: all these ==/!= might really slow things down...
@@ -302,7 +299,7 @@ class SimplificationManager:
             # 	  return b._claripy.false
 
         # 1 ^ expr != 0     ->   expr == 0
-        if a.op == '__xor__' and b.args[1] == 1 and b.args[0] == 0:
+        if a.op == '__xor__' and b.op == "BVV" and b.args[0] == 0 and len(a.args) == 2:
             if a.args[1].op == "BVV" and a.args[1].args[0] == 1 and a.args[0].size() == 1:
                 return a.args[0] == 0
             elif a.args[0].op == "BVV" and a.args[0].args[0] == 1 and a.args[1].size() == 1:
@@ -411,7 +408,7 @@ class SimplificationManager:
             a = args[0]
             b = args[1]
             if len(a.args) >= 2 and len(b.args) >= 2:
-                if (a.args[0] == b.args[0]).is_true() and (a.args[1] == b.args[1]).is_true():
+                if a.args[0] is b.args[0] and a.args[1] is b.args[1]:
                     if a.op == "__ge__" and b.op == "__ne__":
                         return ast.all_operations.UGT(a.args[0], a.args[1])
 
