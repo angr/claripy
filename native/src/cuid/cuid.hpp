@@ -24,7 +24,9 @@
 
 namespace CUID {
 
-    /** The CUID type */
+    /** The CUID type
+     *  Guaranteed to be fast to pass by value
+     */
     using CUID = U64;
 
     /** A type that has a class unique id
