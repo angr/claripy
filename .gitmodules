@@ -3,4 +3,4 @@
 	url = https://github.com/bombela/backward-cpp/
 [submodule "native/pybind11"]
 	path = native/pybind11
-	url = https://github.com/RosettaCommons/pybind11
+	url = https://github.com/pybind/pybind11
