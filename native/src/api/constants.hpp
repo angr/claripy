@@ -7,8 +7,8 @@
  * @brief This file defines constants used throughout the API
  * \ingroup api
  */
-#ifndef R_API_CONSTANTS_HPP_
-#define R_API_CONSTANTS_HPP_
+#ifndef R_SRC_API_CONSTANTS_HPP_
+#define R_SRC_API_CONSTANTS_HPP_
 
 #include "../constants.hpp"
 

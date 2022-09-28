@@ -3,8 +3,8 @@
  * @brief Register global variables as binder doesn't grab them
  * \ingroup api
  */
-#ifndef R_API_GLOBALS_HPP_
-#define R_API_GLOBALS_HPP_
+#ifndef R_SRC_API_GLOBALS_HPP_
+#define R_SRC_API_GLOBALS_HPP_
 
 #include "constants.hpp"
 

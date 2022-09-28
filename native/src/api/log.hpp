@@ -3,8 +3,8 @@
  * @brief This file defines a method to link the Python and C++ logging systems together
  * \ingroup api
  */
-#ifndef R_API_LOG_HPP_
-#define R_API_LOG_HPP_
+#ifndef R_SRC_API_LOG_HPP_
+#define R_SRC_API_LOG_HPP_
 
 #include "constants.hpp"
 

@@ -3,8 +3,8 @@
  * @brief This file defines API Errors
  * \ingroup api
  */
-#ifndef R_ERR_HPP_
-#define R_ERR_HPP_
+#ifndef R_SRC_API_ERR_HPP_
+#define R_SRC_API_ERR_HPP_
 
 #include "../util.hpp"
 

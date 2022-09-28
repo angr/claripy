@@ -3,8 +3,8 @@
  * @brief Define a way to store custom simplifiers
  * \ingroup api
  */
-#ifndef R_API_SIMPLIFY_HPP_
-#define R_API_SIMPLIFY_HPP_
+#ifndef R_SRC_API_SIMPLIFY_HPP_
+#define R_SRC_API_SIMPLIFY_HPP_
 
 #include "constants.hpp"
 

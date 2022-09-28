@@ -3,8 +3,8 @@
  * @brief This file defines the headers binder will scan to generate bindings
  * \ingroup api
  */
-#ifndef R_API_HEADERS_HPP_
-#define R_API_HEADERS_HPP_
+#ifndef R_SRC_API_HEADERS_HPP_
+#define R_SRC_API_HEADERS_HPP_
 
 #include "../backend.hpp"
 #include "../create.hpp"

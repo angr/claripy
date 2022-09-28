@@ -3,8 +3,8 @@
  * @brief This file defines a function to link Python and C++ exceptions
  * \ingroup api
  */
-#ifndef R_API_EXCEPTIONS_HPP_
-#define R_API_EXCEPTIONS_HPP_
+#ifndef R_SRC_API_EXCEPTIONS_HPP_
+#define R_SRC_API_EXCEPTIONS_HPP_
 
 #include <pybind11/pybind11.h>
 

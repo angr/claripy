@@ -3,8 +3,8 @@
  * @brief This file defines the API for PyObj's
  * \ingroup api
  */
-#ifndef R_API_PYOBJ_HPP_
-#define R_API_PYOBJ_HPP_
+#ifndef R_SRC_API_PYOBJ_HPP_
+#define R_SRC_API_PYOBJ_HPP_
 
 #include "constants.hpp"
 
