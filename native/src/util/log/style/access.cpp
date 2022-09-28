@@ -14,23 +14,23 @@ using Sty = Style::Base;
 
 
 // File local variables
-static ThreadSafe::Access<const Sty> access {
+static ThreadSafe::Access<const Sty> access_ {
     make_derived_shared<const Sty, const Style::Default>()
 };
 
 
 void Style::silent_less_safe_set(std::shared_ptr<const Base> &&ptr) {
     UTIL_ASSERT_NOT_NULL_DEBUG(ptr);
-    access.set_shared_ptr_move(std::move(ptr));
+    access_.set_shared_ptr_move(std::move(ptr));
 }
 
 void Style::less_safe_set(std::shared_ptr<const Base> &&ptr) {
     UTIL_ASSERT_NOT_NULL_DEBUG(ptr);
     info("Replacing log style \"", get()->name(), "\" with log style \"", ptr->name(), '"');
-    access.set_shared_ptr_move(std::move(ptr));
+    access_.set_shared_ptr_move(std::move(ptr));
     info("Log style successfully installed!");
 }
 
 std::shared_ptr<const Style::Base> Style::get() {
-    return access.get();
+    return access_.get();
 }
