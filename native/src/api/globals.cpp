@@ -4,7 +4,7 @@
  */
 #include "globals.hpp"
 
-#include <src/mode.hpp>
+#include "../mode.hpp"
 
 
 /** Register globals with pybind11 */

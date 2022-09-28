@@ -12,7 +12,7 @@
 #include "signal_handler.hpp"
 #include "simplify.hpp"
 
-#include <src/util.hpp>
+#include "../util.hpp"
 
 
 /** Safely log a message */

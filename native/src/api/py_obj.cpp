@@ -6,7 +6,7 @@
 
 #include "err.hpp"
 
-#include <src/py_obj.hpp>
+#include "../py_obj.hpp"
 
 
 /** A class which derives a PyObj and adds pybind11 machinery */

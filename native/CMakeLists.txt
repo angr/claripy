@@ -37,11 +37,8 @@ default(SOURCE_ROOT_FOR_BACKTRACE "${CMAKE_CURRENT_SOURCE_DIR}")
 ### Constants ###
 
 # Shared library name
-default( CLARICPP "claricpp" )
+default( CLARICPP "clari" )
 message("Library name: ${CLARICPP}")
-
-# API name
-default( API_TARGET "clari" )
 
 # Run make <DOC_MAKE_TARGET> to build documentation if BUILD_DOC is ON
 # Running make <DOC_MAKE_TARGET> generates html, latex, and man pages
@@ -52,6 +49,9 @@ set( DOC_MAKE_TARGET "docs" )
 # Use cache to override defaults
 # Can override this by running cmake with "-DCMAKE_BUILD_TYPE=RelWithDebugInfo" or Release
 set( CMAKE_BUILD_TYPE "Debug" CACHE STRING "Cmake build type" )
+if (BUILD_TESTS AND NOT CMAKE_BUILD_TYPE MATCHES "Debug" )
+	message(FATAL_ERROR "Tests not supported for release build due to pybind11 linkage visibility")
+endif()
 
 # Log levels are defined in ./src/utils/log/level/level/hpp
 # Note: Lower log levels implier higher levels (i.e. verbose implies critical)
@@ -317,7 +317,8 @@ endif()
 
 # API
 # Currently we add a subdir to ensure a desired version (could be a fork as needed)
-add_subdirectory(pybind11) # TODO: replace with find_package
+set(PYBIND11_FINDPYTHON ON)
+add_subdirectory(pybind11)
 
 # Remap file prefixes to make source location irrelevant to __FILE__, etc.
 # This is *required* as we calculate class unique IDs based off the normalized
@@ -413,6 +414,13 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	add_compile_options("-EHsc") # Allow C++ exceptions
 endif()
 
+# Allow linking to claricpp for testing purposes when built with debug
+# This should not be done for release builds, pybind11 items should be hidden!
+# Specifically, pybind11 normally forces -fvisibility=hidden
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+	set(CMAKE_CXX_VISIBILITY_PRESET "default")
+endif()
+
 
 #################################################
 #                                               #
@@ -423,7 +431,11 @@ endif()
 
 # Note: This should be the last program constant
 # Non-target specific things *must* be defined before this for them to affect this
-add_library("${CLARICPP}" SHARED)
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+	pybind11_add_module("${CLARICPP}" SHARED)
+else()
+	pybind11_add_module("${CLARICPP}")
+endif()
 
 
 #################################################
@@ -435,7 +447,7 @@ add_library("${CLARICPP}" SHARED)
 
 # Option verification
 if(ENABLE_MEMCHECK AND APPLE AND NOT ALLOW_NO_MEMCHECK_APPLE)
-	message(FATAL_ERROR "Memcheck is not compatible with the lastest versions of MacOS")
+	message(FATAL_ERROR "Memcheck is not compatible with the latest versions of MacOS")
 endif()
 
 # Enable good coding checks as actual warnings
@@ -470,7 +482,7 @@ endif()
 
 # Enable testing
 if(BUILD_TESTS)
-	target_compile_definitions("${CLARICPP}" PUBLIC "ENABLE_TESTING") # Export this macro
+	target_compile_definitions("${CLARICPP}" PUBLIC "BUILD_TESTS") # Export this macro
 endif()
 
 # Build type
@@ -554,15 +566,6 @@ target_link_libraries("${CLARICPP}"
 	PUBLIC "${GMP_LIBRARIES}" # Boost multiprecision backend
 	# PUBLIC dl (only necessary if using native backtraces; Backward handles it's own dependencies)
 )
-
-# API
-if (BUILD_API)
-	add_subdirectory(api)
-endif()
-
-# Create a make target for test cases
-if(BUILD_TESTS)
-endif()
 
 # Enable testing
 if(BUILD_TESTS)

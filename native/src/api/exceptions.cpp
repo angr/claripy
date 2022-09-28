@@ -8,8 +8,10 @@
 #include "err.hpp"
 #include "py_shim_code.hpp"
 
+#include "../error.hpp"
+
 #include <pybind11/eval.h>
-#include <src/error.hpp>
+
 
 // For brevity
 namespace py = pybind11;
@@ -20,7 +22,7 @@ namespace py = pybind11;
  *  Note: cepan_mi must be set first
  */
 template <typename T>
-auto register_exception_mi(pybind11::module_ &m, const char *const ex_name,
+auto register_exception_mi(py::module_ &m, const char *const ex_name,
                            std::vector<std::string> &&pybind_qual_names,
                            std::vector<std::string> &&native_names) {
     UTIL_ASSERT(Util::Err::Usage, ((native_names.size() + pybind_qual_names.size()) >= 2),
@@ -37,7 +39,7 @@ auto register_exception_mi(pybind11::module_ &m, const char *const ex_name,
     }
     gen << "),{})";
     // Eval the constructed shim class, capture the PyObject *, make our exception subclass it
-    return pybind11::register_exception<T>(m, ex_name, py::eval(gen.str()));
+    return py::register_exception<T>(m, ex_name, py::eval(gen.str()));
 }
 
 /** Translates a C++ exception to an existing python exception

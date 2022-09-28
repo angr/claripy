@@ -6,7 +6,7 @@
 #ifndef R_ERR_HPP_
 #define R_ERR_HPP_
 
-#include <src/util.hpp>
+#include "../util.hpp"
 
 namespace API::Err {
 
