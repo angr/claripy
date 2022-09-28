@@ -22,9 +22,9 @@ void Expr::Base::repr_stream(std::ostream &out) const {
     }
     out << R"|("op":)|";
     op->repr_stream(out);
-    if (annotations) {
-        out << R"|(, "annotations":)|";
-        annotations->repr_stream(out);
+    if (dict) {
+        // TODO: make repr() give valid json?
+        out << ' ' << static_cast<std::string>(pybind11::repr(dict.value()));
     }
     out << " }";
 }

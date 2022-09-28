@@ -18,13 +18,13 @@ namespace Create::Private {
      */
     template <SizeMode Mode> U64 binary_len(const Expr::BasePtr &left, const Expr::BasePtr &right) {
         if constexpr (Mode == SizeMode::First) {
-            return Expr::get_bit_length(left);
+            return Expr::bit_length(left);
         }
         else if constexpr (Mode == SizeMode::Add) {
             // Type check before size extraction
             UTIL_ASSERT(Util::Err::Type, left->cuid == right->cuid,
                         "right operand of incorrect type");
-            return Expr::get_bit_length(left) + Expr::get_bit_length(right);
+            return Expr::bit_length(left) + Expr::bit_length(right);
         }
         else {
             static_assert(Util::CD::false_<Mode>, "Invalid SizeMode");
@@ -37,10 +37,8 @@ namespace Create::Private {
      */
     template <typename Out, typename OpT, SizeMode Mode, typename... Allowed>
     inline Expr::BasePtr binary_explicit(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                                         Annotation::SPAV &&sp) {
+                                         Expr::OpPyDict &&d) {
         static const Expr::TypeNames<Allowed...> allowed;
-        using namespace Simplify;
-        namespace Err = Error::Expr;
 
         // Static checks
         static_assert(Util::Type::Is::ancestor<Expr::Base, Out>,
@@ -48,19 +46,21 @@ namespace Create::Private {
         static_assert(Op::is_binary<OpT>, "Create::Private::binary requires a binary OpT");
 
         // Dynamic checks
-        UTIL_ASSERT(Err::Usage, left && right, "Expr pointer arguments may not be nullptr");
+        UTIL_ASSERT(Error::Expr::Usage, left && right, "Expr pointer arguments may not be nullptr");
         const bool type_ok { CUID::is_any_t<const Expr::Base, Allowed...>(left) };
-        UTIL_ASSERT(Err::Type, type_ok, "left operand of invalid type; allowed types: ", allowed);
+        UTIL_ASSERT(Error::Expr::Type, type_ok,
+                    "left operand of invalid type; allowed types: ", allowed);
 
         // Construct expr
+        using Simplify::simplify;
         if constexpr (std::is_same_v<Expr::Bool, Out>) {
             return simplify(Expr::factory<Out>(left->symbolic || right->symbolic,
-                                               Op::factory<OpT>(left, right), std::move(sp)));
+                                               Op::factory<OpT>(left, right), std::move(d)));
         }
         else {
             return simplify(Expr::factory<Out>(left->symbolic || right->symbolic,
-                                               Op::factory<OpT>(left, right),
-                                               binary_len<Mode>(left, right), std::move(sp)));
+                                               Op::factory<OpT>(left, right), std::move(d),
+                                               binary_len<Mode>(left, right)));
         }
     }
 
@@ -71,32 +71,31 @@ namespace Create::Private {
      */
     template <typename OpT, SizeMode Mode, typename... Allowed>
     inline Expr::BasePtr binary(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                                Annotation::SPAV &&sp) {
+                                Expr::OpPyDict &&d) {
         static_assert(Op::is_binary<OpT>, "Create::Private::binary requires a binary OpT");
-        using namespace Simplify;
-        namespace Err = Error::Expr;
 
         // For speed
         if constexpr (sizeof...(Allowed) == 1) {
-            return binary_explicit<Allowed..., OpT, Mode, Allowed...>(left, right, std::move(sp));
+            return binary_explicit<Allowed..., OpT, Mode, Allowed...>(left, right, std::move(d));
         }
 
         // Dynamic checks
-        UTIL_ASSERT(Err::Usage, left && right, "Expr pointer arguments may not be nullptr");
+        UTIL_ASSERT(Error::Expr::Usage, left && right, "Expr pointer arguments may not be nullptr");
         const bool type_ok { CUID::is_any_t<const Expr::Base, Allowed...>(left) };
-        UTIL_ASSERT(Err::Type, type_ok, "left operand of incorrect type");
+        UTIL_ASSERT(Error::Expr::Type, type_ok, "left operand of incorrect type");
 
         // Create Expr
+        using Simplify::simplify;
         if constexpr (Util::Type::Is::in<Expr::Bool, Allowed...>) {
             if (CUID::is_t<Expr::Bool>(left)) {
                 return simplify(Expr::factory<Expr::Bool>(left->symbolic || right->symbolic,
                                                           Op::factory<OpT>(left, right),
-                                                          std::move(sp)));
+                                                          std::move(d)));
             }
         }
         return simplify(Expr::factory_cuid(left->cuid, left->symbolic || right->symbolic,
-                                           Op::factory<OpT>(left, right),
-                                           binary_len<Mode>(left, right), std::move(sp)));
+                                           Op::factory<OpT>(left, right), std::move(d),
+                                           binary_len<Mode>(left, right)));
     }
 
 } // namespace Create::Private

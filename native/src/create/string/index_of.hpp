@@ -15,13 +15,12 @@ namespace Create::String {
      */
     inline Expr::BasePtr index_of(const Expr::BasePtr &str, const Expr::BasePtr &pattern,
                                   const Expr::BasePtr &start_index, const U64 bit_length,
-                                  Annotation::SPAV sp = empty_spav) {
+                                  Expr::OpPyDict d = {}) {
         UTIL_ASSERT(Error::Expr::Usage, str && pattern && start_index,
                     "Exprs pointers cannot be nullptr");
-        return Simplify::simplify(
-            Expr::factory<Expr::BV>(str->symbolic || pattern->symbolic,
-                                    Op::factory<Op::String::IndexOf>(str, pattern, start_index),
-                                    bit_length, std::move(sp)));
+        return Simplify::simplify(Expr::factory<Expr::BV>(
+            str->symbolic || pattern->symbolic,
+            Op::factory<Op::String::IndexOf>(str, pattern, start_index), std::move(d), bit_length));
     }
 
 } // namespace Create::String

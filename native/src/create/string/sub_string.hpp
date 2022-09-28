@@ -22,7 +22,7 @@ namespace Create::String {
             if (count->symbolic) {
                 UTIL_ASSERT(E, CUID::is_t<Expr::String>(full_string),
                             "full_string expr must be a String");
-                return Expr::get_bit_length(full_string);
+                return Expr::bit_length(full_string);
             }
             // If concrete, use Concrete Op's length
             else {
@@ -41,15 +41,14 @@ namespace Create::String {
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr sub_string(const Expr::BasePtr &start_index, const Expr::BasePtr &count,
-                                    const Expr::BasePtr &full_string,
-                                    Annotation::SPAV sp = empty_spav) {
+                                    const Expr::BasePtr &full_string, Expr::OpPyDict d = {}) {
         UTIL_ASSERT(Error::Expr::Usage, start_index && count && full_string,
                     "Expr pointers cannot be nullptr");
         const U64 bit_length { Private::sub_string_length(count, full_string) };
         return Simplify::simplify(Expr::factory<Expr::String>(
             start_index->symbolic || count->symbolic || full_string->symbolic,
-            Op::factory<Op::String::SubString>(start_index, count, full_string), bit_length,
-            std::move(sp)));
+            Op::factory<Op::String::SubString>(start_index, count, full_string), std::move(d),
+            bit_length));
     }
 
 } // namespace Create::String

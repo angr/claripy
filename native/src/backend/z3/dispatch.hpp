@@ -222,7 +222,7 @@ namespace Backend::Z3 {
         using ToBV = CTSC<Op::FP::OPT>;                                                            \
         check_vec_usage(args, 1);                                                                  \
         auto ret { Conv::FP::FUNC(Util::checked_static_cast<ToBV>(expr->op.get())->mode,           \
-                                  *args.back(), Expr::get_bit_length(expr)) };                     \
+                                  *args.back(), Expr::bit_length(expr)) };                         \
         args.pop_back();                                                                           \
         return ret;                                                                                \
     }
@@ -296,7 +296,7 @@ namespace Backend::Z3 {
                     check_vec_usage(args, 2);
                     const auto size { args.size() };
                     debug_assert_dcast<Expr::Bits>(expr, "String::IndexOf has no length");
-                    const auto bl { Expr::get_bit_length(expr) };
+                    const auto bl { Expr::bit_length(expr) };
                     auto ret { Conv::String::index_of(*args[size - 3], *args[size - 2],
                                                       *args[size - 1], bl) };
                     args.resize(size - 2);

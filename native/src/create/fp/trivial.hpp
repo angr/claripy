@@ -21,15 +21,15 @@ namespace Create::FP {
     /** Create a Expr with an FP::IsNan op
      *  Expr pointers may not be nullptr
      */
-    inline Expr::BasePtr is_nan(const Expr::BasePtr &x, Annotation::SPAV sp = empty_spav) {
-        return Private::unary_explicit<Expr::Bool, Op::FP::IsNan, Expr::FP>(x, std::move(sp));
+    inline Expr::BasePtr is_nan(const Expr::BasePtr &x, Expr::OpPyDict d = {}) {
+        return Private::unary_explicit<Expr::Bool, Op::FP::IsNan, Expr::FP>(x, std::move(d));
     }
 
     /** Create a Expr with an FP::ToIEEEBV op
      *  Expr pointers may not be nullptr
      */
-    inline Expr::BasePtr to_ieee_bv(const Expr::BasePtr &x, Annotation::SPAV sp = empty_spav) {
-        return Private::unary_explicit<Expr::BV, Op::FP::ToIEEEBV, Expr::FP>(x, std::move(sp));
+    inline Expr::BasePtr to_ieee_bv(const Expr::BasePtr &x, Expr::OpPyDict d = {}) {
+        return Private::unary_explicit<Expr::BV, Op::FP::ToIEEEBV, Expr::FP>(x, std::move(d));
     }
 
     /********************************************************************/
@@ -38,8 +38,8 @@ namespace Create::FP {
 
 #define M_FP_MB_SMF_ARITH(FN, OP)                                                                  \
     inline Expr::BasePtr FN(const Expr::BasePtr &left, const Expr::BasePtr &right,                 \
-                            const Mode::FP::Rounding mode, Annotation::SPAV sp = empty_spav) {     \
-        return Private::mode_binary<Op::FP::OP>(left, right, mode, std::move(sp));                 \
+                            const Mode::FP::Rounding mode, Expr::OpPyDict d = {}) {                \
+        return Private::mode_binary<Op::FP::OP>(left, right, mode, std::move(d));                  \
     }
 
     /** Create a Expr with an FP::Add op
@@ -69,9 +69,9 @@ namespace Create::FP {
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr fp(const Expr::BasePtr &first, const Expr::BasePtr &second,
-                            const Expr::BasePtr &third, Annotation::SPAV sp = empty_spav) {
+                            const Expr::BasePtr &third, Expr::OpPyDict d = {}) {
         return Private::ternary_explicit<Expr::FP, Op::FP::FP, Expr::BV>(first, second, third,
-                                                                         std::move(sp));
+                                                                         std::move(d));
     }
 
 } // namespace Create::FP

@@ -14,10 +14,8 @@ namespace Create::Private {
      *  Expr pointers may not be nullptr
      */
     template <typename Out, typename OpT, typename... Allowed>
-    inline Expr::BasePtr unary_explicit(const Expr::BasePtr &x, Annotation::SPAV &&sp) {
+    inline Expr::BasePtr unary_explicit(const Expr::BasePtr &x, Expr::OpPyDict &&d) {
         static const Expr::TypeNames<Allowed...> allowed;
-        using namespace Simplify;
-        namespace Err = Error::Expr;
 
         // Static checks
         static_assert(Util::Type::Is::ancestor<Expr::Base, Out>,
@@ -25,17 +23,19 @@ namespace Create::Private {
         static_assert(Op::is_unary<OpT>, "Create::Private::unary requires OpT to be unary");
 
         // Dynamic checks
-        UTIL_ASSERT(Err::Usage, x, "x cannot be nullptr");
+        UTIL_ASSERT(Error::Expr::Usage, x, "x cannot be nullptr");
         const bool type_ok { CUID::is_any_t<const Expr::Base, Allowed...>(x) };
-        UTIL_ASSERT(Err::Type, type_ok, "operand of invalid type; allowed types: ", allowed);
+        UTIL_ASSERT(Error::Expr::Type, type_ok,
+                    "operand of invalid type; allowed types: ", allowed);
 
         // Construct expr
+        using Simplify::simplify;
         if constexpr (std::is_same_v<Expr::Bool, Out>) {
-            return simplify(Expr::factory<Out>(x->symbolic, Op::factory<OpT>(x), std::move(sp)));
+            return simplify(Expr::factory<Out>(x->symbolic, Op::factory<OpT>(x), std::move(d)));
         }
         else {
-            return simplify(Expr::factory<Out>(x->symbolic, Op::factory<OpT>(x),
-                                               Expr::get_bit_length(x), std::move(sp)));
+            return simplify(Expr::factory<Out>(x->symbolic, Op::factory<OpT>(x), std::move(d),
+                                               Expr::bit_length(x)));
         }
     }
 
@@ -44,30 +44,29 @@ namespace Create::Private {
      *  x may not be nullptr
      */
     template <typename OpT, typename... Allowed>
-    inline Expr::BasePtr unary(const Expr::BasePtr &x, Annotation::SPAV &&sp) {
+    inline Expr::BasePtr unary(const Expr::BasePtr &x, Expr::OpPyDict &&d) {
         static_assert(Op::is_unary<OpT>, "Create::Private::unary requires OpT to be unary");
-        using namespace Simplify;
-        namespace Err = Error::Expr;
 
         // For speed
         if constexpr (sizeof...(Allowed) == 1) {
-            return unary_explicit<Allowed..., OpT, Allowed...>(x, std::move(sp));
+            return unary_explicit<Allowed..., OpT, Allowed...>(x, std::move(d));
         }
 
         // Dynamic checks
-        UTIL_ASSERT(Err::Usage, x, "x cannot be nullptr");
+        UTIL_ASSERT(Error::Expr::Usage, x, "x cannot be nullptr");
         const bool type_ok { CUID::is_any_t<const Expr::Base, Allowed...>(x) };
-        UTIL_ASSERT(Err::Type, type_ok, "operand of wrong type");
+        UTIL_ASSERT(Error::Expr::Type, type_ok, "operand of wrong type");
 
         // Construct expr
+        using Simplify::simplify;
         if constexpr (Util::Type::Is::in<Expr::Bool, Allowed...>) {
             if (CUID::is_t<Expr::Bool>(x)) {
                 return simplify(
-                    Expr::factory<Expr::Bool>(x->symbolic, Op::factory<OpT>(x), std::move(sp)));
+                    Expr::factory<Expr::Bool>(x->symbolic, Op::factory<OpT>(x), std::move(d)));
             }
         }
-        return simplify(Expr::factory_cuid(x->cuid, x->symbolic, Op::factory<OpT>(x),
-                                           Expr::get_bit_length(x), std::move(sp)));
+        return simplify(Expr::factory_cuid(x->cuid, x->symbolic, Op::factory<OpT>(x), std::move(d),
+                                           Expr::bit_length(x)));
     }
 
 } // namespace Create::Private

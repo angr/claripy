@@ -15,33 +15,28 @@ namespace Create::String {
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr replace(const Expr::BasePtr &full, const Expr::BasePtr &search,
-                                 const Expr::BasePtr &replacement,
-                                 Annotation::SPAV sp = empty_spav) {
-        using namespace Simplify;
-        namespace Err = Error::Expr;
-
-        // Checks
-        UTIL_ASSERT(Err::Usage, full && search && replacement, "Expr pointers cannot be nullptr");
-        UTIL_ASSERT(Err::Type,
+                                 const Expr::BasePtr &replacement, Expr::OpPyDict d = {}) {
+        UTIL_ASSERT(Error::Expr::Usage, full && search && replacement,
+                    "Expr pointers cannot be nullptr");
+        UTIL_ASSERT(Error::Expr::Type,
                     CUID::is_t<Expr::String>(full) && CUID::is_t<Expr::String>(search) &&
                         CUID::is_t<Expr::String>(replacement),
                     "operands must be each be of type Expr::String");
 
         // Construct size
-        U64 new_bit_length { Expr::get_bit_length(full) };
-        const auto s2 { Expr::get_bit_length(search) };
-        UTIL_ASSERT(Err::Size, new_bit_length >= s2,
+        U64 new_len { Expr::bit_length(full) };
+        const auto search_len { Expr::bit_length(search) };
+        UTIL_ASSERT(Error::Expr::Size, new_len >= search_len,
                     "The pattern that has to be replaced is longer than the string itself");
-        const auto s3 { Expr::get_bit_length(replacement) };
-        if (s2 < s3) {
-            new_bit_length += s3 - s2;
+        const auto repl_len { Expr::bit_length(replacement) };
+        if (search_len < repl_len) {
+            new_len += repl_len - search_len;
         }
 
         // Construct expr
-        return simplify(
-            Expr::factory<Expr::String>(full->symbolic || search->symbolic || replacement->symbolic,
-                                        Op::factory<Op::String::Replace>(full, search, replacement),
-                                        new_bit_length, std::move(sp)));
+        return Simplify::simplify(Expr::factory<Expr::String>(
+            full->symbolic || search->symbolic || replacement->symbolic,
+            Op::factory<Op::String::Replace>(full, search, replacement), std::move(d), new_len));
     }
 
 } // namespace Create::String

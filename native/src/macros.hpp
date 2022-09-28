@@ -55,6 +55,10 @@
 #define UNLIKELY(X) __builtin_expect(!!(X), 0)
 
 
+/** The dict key claripy uses to store annotations */
+#define ANNOTATIONS_KEY "annotations"
+
+
 /********************************************************************/
 /*                   Setters of implicit methods                    */
 /********************************************************************/

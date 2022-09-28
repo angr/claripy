@@ -13,19 +13,19 @@ namespace Create {
 
     /** Create an Expr containing a literal op */
     template <typename T> Expr::BasePtr literal(T data) {
-        return Private::literal(std::move(data), nullptr);
+        return Private::literal(std::move(data), {});
     }
 
     /** Create an Expr containing a literal op with annotations */
-    template <typename T> Expr::BasePtr literal(T data, Annotation::SPAV &&sp) {
-        return Private::literal(std::move(data), std::move(sp));
+    template <typename T> Expr::BasePtr literal(T data, Expr::OpPyDict &&d) {
+        return Private::literal(std::move(data), std::move(d));
     }
 
     // Non-templated non-moving functions (the API can use these)
 
 #define M_TRIVIAL_TYPE(NAME, INPUT)                                                                \
-    inline Expr::BasePtr literal_##NAME(INPUT data, Annotation::SPAV sp = empty_spav) {            \
-        return Private::literal<INPUT>(std::move(data), std::move(sp));                            \
+    inline Expr::BasePtr literal_##NAME(INPUT data, Expr::OpPyDict d = {}) {                       \
+        return Private::literal<INPUT>(std::move(data), std::move(d));                             \
     }
 
     /** Create a Bool Expr with a Literal op */
@@ -48,10 +48,10 @@ namespace Create {
      *  Note: length is taken in as a byte length, not a bit length
      */
     inline Expr::BasePtr literal_string(std::string data, const U64 byte_length,
-                                        Annotation::SPAV sp = empty_spav) {
+                                        Expr::OpPyDict d = {}) {
         UTIL_ASSERT(Util::Err::Usage, byte_length >= data.size(),
                     "Byte length must be at least as long as the passed string");
-        return Private::literal(std::move(data), CHAR_BIT * byte_length, std::move(sp));
+        return Private::literal(std::move(data), std::move(d), CHAR_BIT * byte_length);
     }
 
     // Order is the order that pybind11 will try them, common first!
@@ -63,12 +63,12 @@ namespace Create {
      *  TODO: later allow Width instead of bit_length (they should be the same size)
      */
     inline Expr::BasePtr literal_fp(const double data, const U64 bit_length,
-                                    Annotation::SPAV sp = empty_spav) {
+                                    Expr::OpPyDict d = {}) {
         if (LIKELY(bit_length == 64)) {
-            return Private::literal(data, std::move(sp));
+            return Private::literal(data, std::move(d));
         }
         else if (LIKELY(bit_length == 32)) {
-            return Private::literal(static_cast<float>(data), std::move(sp));
+            return Private::literal(static_cast<float>(data), std::move(d));
         }
         UTIL_THROW(Util::Err::Usage, "Claricpp only supports 32 and 64 bit floats");
     }
@@ -84,11 +84,10 @@ namespace Create {
      *  careful to ensure U8 methods were defined before U16, etc; then using
      *  U64 would fail 4 overrides and be slow.
      */
-    inline Expr::BasePtr literal_bv(const U64 data, const U64 bit_length,
-                                    Annotation::SPAV sp = empty_spav) {
+    inline Expr::BasePtr literal_bv(const U64 data, const U64 bit_length, Expr::OpPyDict d = {}) {
 #define M_CASE(LEN, TO)                                                                            \
     case (LEN):                                                                                    \
-        return Private::literal(static_cast<TO>(data), std::move(sp));
+        return Private::literal(static_cast<TO>(data), std::move(d));
         // Prefer native types
         switch (bit_length) {
             M_CASE(64, U64);
@@ -96,25 +95,24 @@ namespace Create {
             M_CASE(16, uint16_t);
             M_CASE(8, uint8_t);
             default:
-                return Private::literal(BigInt::from_int(data, bit_length), std::move(sp));
+                return Private::literal(BigInt::from_int(data, bit_length), std::move(d));
         }
 #undef M_CASE
     }
 
     /** Create a BV Expr with a Literal op from a BigInt */
-    inline Expr::BasePtr literal_bv(BigInt data, Annotation::SPAV sp = empty_spav) {
-        return Private::literal(std::move(data), std::move(sp));
+    inline Expr::BasePtr literal_bv(BigInt data, Expr::OpPyDict d = {}) {
+        return Private::literal(std::move(data), std::move(d));
     }
 
     /** Create a BV Expr with a Literal op containing an arbitrary length int
      *  Warning: this may cast data to a smaller size (bit_length or greater)
      *  data should be a base 10 string containing
      */
-    inline Expr::BasePtr literal_bv(std::string data, const U64 bit_length,
-                                    Annotation::SPAV sp = empty_spav) {
+    inline Expr::BasePtr literal_bv(std::string data, const U64 bit_length, Expr::OpPyDict d = {}) {
 #define M_CASE(LEN, TO)                                                                            \
     case (LEN):                                                                                    \
-        return Private::literal(static_cast<TO>(std::stoull(std::move(data))), std::move(sp));
+        return Private::literal(static_cast<TO>(std::stoull(std::move(data))), std::move(d));
         // Prefer native types
         switch (bit_length) {
             M_CASE(64, U64);
@@ -123,13 +121,13 @@ namespace Create {
             M_CASE(8, uint8_t);
             default:
                 return Private::literal(BigInt::from_str(std::move(data), bit_length),
-                                        std::move(sp));
+                                        std::move(d));
         }
 #undef M_CASE
     }
 
     /** This function exists to prevent accidental use by explicit rejection */
-    inline Expr::BasePtr literal(CCSC, Annotation::SPAV = empty_spav) {
+    inline Expr::BasePtr literal(CCSC, Expr::OpPyDict = {}) {
         UTIL_THROW(Util::Err::Usage, "Do not pass a char * to literal(); C++ casts it to bool; did "
                                      "you mean to use std::string?");
     }

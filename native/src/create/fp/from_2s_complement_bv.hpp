@@ -16,11 +16,11 @@ namespace Create::FP {
     inline Expr::BasePtr from_2s_complement_bv_signed(const Mode::FP::Rounding m,
                                                       const Expr::BasePtr &bv,
                                                       const Mode::FP::Width &w,
-                                                      Annotation::SPAV sp = empty_spav) {
+                                                      Expr::OpPyDict d = {}) {
         UTIL_ASSERT(Error::Expr::Usage, bv, "bv may not be nullptr");
         using FromBV = Op::FP::From2sComplementBVSigned;
         return Simplify::simplify(Expr::factory<Expr::FP>(
-            bv->symbolic, Op::factory<FromBV>(m, bv, w), w.width(), std::move(sp)));
+            bv->symbolic, Op::factory<FromBV>(m, bv, w), std::move(d), w.width()));
     }
 
     /** Create an Expr with an From2sComplementBVUnigned op
@@ -29,11 +29,11 @@ namespace Create::FP {
     inline Expr::BasePtr from_2s_complement_bv_unsigned(const Mode::FP::Rounding m,
                                                         const Expr::BasePtr &bv,
                                                         const Mode::FP::Width &w,
-                                                        Annotation::SPAV sp = empty_spav) {
+                                                        Expr::OpPyDict d = {}) {
         UTIL_ASSERT(Error::Expr::Usage, bv, "bv may not be nullptr");
         using FromBV = Op::FP::From2sComplementBVUnsigned;
         return Simplify::simplify(Expr::factory<Expr::FP>(
-            bv->symbolic, Op::factory<FromBV>(m, bv, w), w.width(), std::move(sp)));
+            bv->symbolic, Op::factory<FromBV>(m, bv, w), std::move(d), w.width()));
     }
 
 } // namespace Create::FP

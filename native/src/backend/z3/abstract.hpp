@@ -12,6 +12,7 @@
 
 #include <cmath>
 #include <limits>
+#include <pybind11/cast.h>
 
 
 #define M_ASSERT_ARG_LEN(X, N)                                                                     \
@@ -39,7 +40,7 @@
 
 #define M_BINARY(FUNC)                                                                             \
     M_ASSERT_ARG_LEN(args, 2);                                                                     \
-    return FUNC(M_GET_EARG(0), M_GET_EARG(1), { nullptr });
+    return FUNC(M_GET_EARG(0), M_GET_EARG(1), {});
 
 #define M_MODEBINARY(FUNC)                                                                         \
     M_ASSERT_ARG_LEN(args, 3);                                                                     \
@@ -105,8 +106,10 @@ namespace Backend::Z3 {
                         const auto bl { sort.bv_size() };
                         const U64 name_hash { Util::FNV1a<char>::hash(name.c_str(), name.size()) };
                         if (const auto lookup { satd.find(name_hash) }; lookup != satd.end()) {
-                            return Create::symbol<Expr::BV>(std::move(name), bl,
-                                                            Annotation::SPAV { lookup->second });
+                            using namespace pybind11::literals;
+                            return Create::symbol<Expr::BV>(
+                                std::move(name),
+                                pybind11::dict { ANNOTATIONS_KEY ""_a = lookup->second }, bl);
                         }
                         return Create::symbol_bv(std::move(name), bl);
                     }
@@ -152,7 +155,7 @@ namespace Backend::Z3 {
         template <typename OpT> static Expr::BasePtr inequality(const ArgsVec &args) {
             static_assert(std::is_base_of_v<Op::Inequality, OpT>, "Op must derive from inequality");
             M_ASSERT_ARG_LEN(args, 2);
-            return Create::inequality<OpT>(M_GET_EARG(0), M_GET_EARG(1), { nullptr });
+            return Create::inequality<OpT>(M_GET_EARG(0), M_GET_EARG(1), {});
         }
 
         /**********************************************************/

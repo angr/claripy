@@ -491,7 +491,7 @@ namespace Backend::Z3 {
 #ifdef DEBUG
             UTIL_ASSERT(Usage, CUID::is_t<Expr::BV>(raw_expr), "expr must be a BV");
 #endif
-            const auto len { Expr::get_bit_length(raw_expr) };
+            const auto len { Expr::bit_length(raw_expr) };
             UTIL_ASSERT(Usage, len <= 64, "ret cannot be called on BV wider than 64 bits");
             z3::expr expr { convert(raw_expr) };
 

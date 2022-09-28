@@ -12,55 +12,42 @@ namespace Create {
 
     /** Create an Expr with a symbol op with annotations */
     template <typename T, typename... Args>
-    Expr::BasePtr symbol(std::string &&name, const U64 bit_length, Args &&...args) {
+    Expr::BasePtr symbol(std::string &&name, Expr::OpPyDict d, Args &&...args) {
         static_assert(Util::Type::Is::ancestor<Expr::Bits, T>,
                       "Create::symbol argument types must be a subclass of Base");
         static_assert(std::is_final_v<T>, "Create::symbol's T must be a final type");
-        // Append SPAV if needed
-        if constexpr (sizeof...(Args) == 0) {
-            return Expr::factory<T>(true, Op::factory<Op::Symbol>(std::move(name)),
-                                    std::move(bit_length), std::move(empty_spav));
-        }
-        else {
-            return Expr::factory<T>(true, Op::factory<Op::Symbol>(std::move(name)),
-                                    std::move(bit_length), std::forward<Args>(args)...);
-        }
+        return Expr::factory<T>(true, Op::factory<Op::Symbol>(std::move(name)), std::move(d),
+                                std::forward<Args>(args)...);
     }
 
     /** Create an Expr with a symbol op */
     template <typename... Args> Expr::BasePtr symbol(std::string &&name, Args &&...args) {
-        if constexpr (sizeof...(Args) == 0) {
-            return Expr::factory<Expr::Bool>(true, Op::factory<Op::Symbol>(std::move(name)),
-                                             std::move(empty_spav));
-        }
-        else {
-            return Expr::factory<Expr::Bool>(true, Op::factory<Op::Symbol>(std::move(name)),
-                                             std::forward<Args>(args)...);
-        }
+        return Expr::factory<Expr::Bool>(true, Op::factory<Op::Symbol>(std::move(name)),
+                                         std::forward<Args>(args)...);
     }
 
     // Non-templated non-moving functions (the API can use these)
 
     /** Create a Bool Expr with a symbol op */
-    inline Expr::BasePtr symbol_bool(std::string name, Annotation::SPAV sp = empty_spav) {
+    inline Expr::BasePtr symbol_bool(std::string name, Expr::OpPyDict d = {}) {
         return Expr::factory<Expr::Bool>(true, Op::factory<Op::Symbol>(std::move(name)),
-                                         std::move(sp));
+                                         std::move(d));
     }
 
     /** Create a String Expr with a symbol op
      *  Note: length is taken in as a byte length, not a bit length
      */
     inline Expr::BasePtr symbol_string(std::string name, const U64 byte_length,
-                                       Annotation::SPAV sp = empty_spav) {
+                                       Expr::OpPyDict d = {}) {
         return Expr::factory<Expr::String>(true, Op::factory<Op::Symbol>(std::move(name)),
-                                           CHAR_BIT * byte_length, std::move(sp));
+                                           std::move(d), CHAR_BIT * byte_length);
     }
 
 #define M_BITS_TYPE(TYPE, NAME)                                                                    \
     inline Expr::BasePtr symbol_##NAME(std::string name, const U64 bit_length,                     \
-                                       Annotation::SPAV sp = empty_spav) {                         \
+                                       Expr::OpPyDict d = {}) {                                    \
         return Expr::factory<Expr::TYPE>(true, Op::factory<Op::Symbol>(std::move(name)),           \
-                                         std::move(bit_length), std::move(sp));                    \
+                                         std::move(d), bit_length);                                \
     }
 
     /** Create a BV Expr with a symbol op */

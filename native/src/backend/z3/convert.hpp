@@ -315,14 +315,14 @@ namespace Backend::Z3 {
 #undef M_CASE
                     case Util::Type::index<decltype(data), std::string>: {
                         const auto &str { std::get<std::string>(data) };
-                        if (LIKELY(str.size() * CHAR_BIT == Expr::get_bit_length(expr))) {
+                        if (LIKELY(str.size() * CHAR_BIT == Expr::bit_length(expr))) {
                             return ctx.string_val(str);
                         }
                         // Pad string with null bytes
                         Util::Log::warning(WHOAMI "Padding string literal with null bytes to match "
                                                   "expr length; this is slow.");
                         std::string s2 { str };
-                        s2.resize(Expr::get_bit_length(expr), '\0');
+                        s2.resize(Expr::bit_length(expr), '\0');
                         return ctx.string_val(s2.c_str(), Util::narrow<unsigned>(s2.size()));
                     }
                     case Util::Type::index<decltype(data), BigInt>: {
@@ -377,7 +377,6 @@ namespace Backend::Z3 {
                     return ctx.fpa_const(name.c_str(), fpw.exp, fpw.mantissa);
                 }
                 case Expr::BV::static_cuid: {
-                    using BVP = CTSC<Expr::BV>;
 #ifdef DEBUG // @todo Double check if I am strill right
                     UTIL_ASSERT(Util::Err::Unknown,
                                 Factory::Private::gcache<Expr::Base>().find(expr->hash),
@@ -385,15 +384,15 @@ namespace Backend::Z3 {
 #endif
                     // Update annotations for translocation
                     const U64 name_hash { Util::FNV1a<char>::hash(name.c_str(), name.size()) };
-                    if (expr->annotations) {
-                        Util::map_emplace(satd, name_hash, expr->annotations);
+                    auto ans { expr->annotations() };
+                    if (ans) {
+                        Util::map_emplace(satd, name_hash, std::move(ans.value()));
                     }
                     else {
                         satd.erase(name_hash);
                     }
                     // Return the converted constant
-                    const U64 bit_length { Util::checked_static_cast<BVP>(expr)->bit_length };
-                    return ctx.bv_const(name.c_str(), to_z3u(bit_length));
+                    return ctx.bv_const(name.c_str(), to_z3u(Expr::bit_length(expr)));
                 }
                 // Error handling
                 case Expr::VS::static_cuid:

@@ -11,18 +11,18 @@
 namespace Create::Private {
 
     /** Create a Expr with a Literal op
-     *  data may not be nullptr
+     *  data may not be OpPyDict{}
      */
-    inline Expr::BasePtr literal(std::string &&data, const U64 bit_length, Annotation::SPAV &&sp) {
+    inline Expr::BasePtr literal(std::string &&data, Expr::OpPyDict &&d, const U64 bit_length) {
         auto op { Op::factory<Op::Literal>(std::move(data)) };
         UTIL_ASSERT_NOT_NULL_DEBUG(op.get());
-        return Expr::factory<Expr::String>(false, std::move(op), bit_length, std::move(sp));
+        return Expr::factory<Expr::String>(false, std::move(op), std::move(d), bit_length);
     }
 
     /** Create a Expr with a Literal op
      *  data may not be nullptr
      */
-    template <typename Data> Expr::BasePtr literal(Data &&data, Annotation::SPAV &&sp) {
+    template <typename Data> Expr::BasePtr literal(Data &&data, Expr::OpPyDict &&d) {
         // Determine expr type
         using TypeMap = Util::Type::Map<
             // Bool
@@ -40,13 +40,13 @@ namespace Create::Private {
         // Construct expr
         auto op { Op::factory<Op::Literal>(std::move(data)) };
         if constexpr (not Util::Type::Is::ancestor<Expr::Bits, ExprT>) {
-            return Expr::factory<ExprT>(false, std::move(op), std::move(sp));
+            return Expr::factory<ExprT>(false, std::move(op), std::move(d));
         }
         else {
             using To = CTSC<Op::Literal>;
             UTIL_ASSERT_NOT_NULL_DEBUG(op.get());
             const auto bl { Op::bit_length(Util::checked_static_cast<To>(op.get())->value) };
-            return Expr::factory<ExprT>(false, std::move(op), bl, std::move(sp));
+            return Expr::factory<ExprT>(false, std::move(op), std::move(d), bl);
         }
     }
 

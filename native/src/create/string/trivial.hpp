@@ -19,9 +19,9 @@ namespace Create::String {
     /** Create a bool Expr with an String::IsDigit op
      *  Expr pointers may not be nullptr
      */
-    inline Expr::BasePtr is_digit(const Expr::BasePtr &x, Annotation::SPAV sp = empty_spav) {
+    inline Expr::BasePtr is_digit(const Expr::BasePtr &x, Expr::OpPyDict d = {}) {
         namespace CP = ::Create::Private;
-        return CP::unary_explicit<Expr::Bool, Op::String::IsDigit, Expr::String>(x, std::move(sp));
+        return CP::unary_explicit<Expr::Bool, Op::String::IsDigit, Expr::String>(x, std::move(d));
     }
 
     /********************************************************************/
@@ -33,10 +33,10 @@ namespace Create::String {
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr to_int(const Expr::BasePtr &expr, const U64 output_bit_length,
-                                Annotation::SPAV sp = empty_spav) {
+                                Expr::OpPyDict d = {}) {
         namespace CP = ::Create::Private;
         return CP::uint_binary<U64, Op::String::ToInt, CP::SizeMode::Second, Expr::String>(
-            expr, output_bit_length, std::move(sp));
+            expr, output_bit_length, std::move(d));
     }
 
     /** Create an Expr with an String::Len op
@@ -44,10 +44,10 @@ namespace Create::String {
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr len(const Expr::BasePtr &expr, const U64 output_bit_length,
-                             Annotation::SPAV sp = empty_spav) {
+                             Expr::OpPyDict d = {}) {
         namespace CP = ::Create::Private;
         return CP::uint_binary<U64, Op::String::Len, CP::SizeMode::Second, Expr::String>(
-            expr, output_bit_length, std::move(sp));
+            expr, output_bit_length, std::move(d));
     }
 
     /********************************************************************/
@@ -58,30 +58,30 @@ namespace Create::String {
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr contains(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                                  Annotation::SPAV sp = empty_spav) {
+                                  Expr::OpPyDict d = {}) {
         namespace CP = ::Create::Private;
         return CP::binary_explicit<Expr::Bool, Op::String::Contains, CP::SizeMode::NA,
-                                   Expr::String>(left, right, std::move(sp));
+                                   Expr::String>(left, right, std::move(d));
     }
 
     /** Create an Expr with a String::PrefixOf op
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr prefix_of(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                                   Annotation::SPAV sp = empty_spav) {
+                                   Expr::OpPyDict d = {}) {
         namespace CP = ::Create::Private;
         return CP::binary_explicit<Expr::Bool, Op::String::PrefixOf, CP::SizeMode::NA,
-                                   Expr::String>(left, right, std::move(sp));
+                                   Expr::String>(left, right, std::move(d));
     }
 
     /** Create an Expr with a String::SuffixOf op
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr suffix_of(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                                   Annotation::SPAV sp = empty_spav) {
+                                   Expr::OpPyDict d = {}) {
         namespace CP = ::Create::Private;
         return CP::binary_explicit<Expr::Bool, Op::String::SuffixOf, CP::SizeMode::NA,
-                                   Expr::String>(left, right, std::move(sp));
+                                   Expr::String>(left, right, std::move(d));
     }
 
 } // namespace Create::String

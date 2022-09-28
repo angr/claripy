@@ -130,7 +130,10 @@ namespace Backend {
                     // Note: No need for a cache lookup, op_stack contains only cache misses
                     BackendObj obj { dispatch_conversion(expr, arg_stack) };
                     if constexpr (Derived::apply_annotations) {
-                        obj = std::move(apply_annotations(obj, expr->annotations));
+                        auto ans { expr->annotations() };
+                        if (ans) {
+                            obj = std::move(apply_annotations(obj, std::move(ans.value())));
+                        }
                     }
 
                     // Store the result in the arg stack and in the cache
@@ -199,15 +202,15 @@ namespace Backend {
         /** This applies the given annotations to the backend object
          *  If the given backend does not support this, this function will never be called
          */
-        BackendObj apply_annotations(const BackendObj &o, Annotation::SPAV &&sp) const {
+        BackendObj apply_annotations(const BackendObj &o, pybind11::dict &&annotations) const {
             static_assert(Derived::apply_annotations, "Derived::apply_annotations is not enabled");
-            return apply_annotations_helper(o, std::move(sp));
+            return apply_annotations_helper(o, std::move(annotations));
         }
 
         /** This applies the given annotations to the backend object
          *  If the given backend does not support this, this function will never be called
          */
-        virtual BackendObj apply_annotations_helper(const BackendObj &, Annotation::SPAV &&) const {
+        virtual BackendObj apply_annotations_helper(const BackendObj &, pybind11::dict &&) const {
             UTIL_THROW(Util::Err::NotSupported,
                        "The backend has failed to implement this method. Please report this");
         }

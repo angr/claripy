@@ -5,8 +5,8 @@
 #ifndef R_SRC_EXPR_BASE_HPP_
 #define R_SRC_EXPR_BASE_HPP_
 
-#include "../annotation.hpp"
 #include "../factory.hpp"
+#include "../has_repr.hpp"
 
 #include <memory>
 #include <sstream>
@@ -21,8 +21,13 @@ namespace Op {
 
 namespace Expr {
 
+    /** An optional python dict type
+     *  TODO: this should probably be a subclass of Hashed and pybind11::dict somehow
+     */
+    using OpPyDict = std::optional<pybind11::dict>;
+
     /** The base Expr type
-     *  All exprs must subclass this
+     *  All Exprs must subclass this
      */
     class Base : public HasRepr<Base>, public Factory::FactoryMade {
         FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base)
@@ -31,8 +36,11 @@ namespace Expr {
         const bool symbolic;
         /** The Expr Op */
         const Op::BasePtr op;
-        /** A set of annotations applied onto this Expr */
-        const Annotation::SPAV annotations;
+        /** A set of annotations applied onto this Expr
+         *  Warning: This dict should never be edited
+         *  pybind11 doesn't really do const, so we can't here either :(
+         */
+        const OpPyDict dict;
 
         // Functions
 
@@ -40,18 +48,28 @@ namespace Expr {
         virtual inline const char *type_name() const noexcept = 0;
         /** Get the Expr's repr */
         void repr_stream(std::ostream &out) const;
+        /** Get annotations
+         *  Warning: Do not edit this dict
+         *  pybind11 doesn't really do const, so we can't here either :(
+         */
+        inline OpPyDict annotations() const {
+            if (dict) {
+                const auto &d { dict.value() };
+                if (d.contains(ANNOTATIONS_KEY)) {
+                    return d[ANNOTATIONS_KEY];
+                }
+            }
+            return {};
+        }
 
       protected:
-        /** Protected Constructor
-         *  Note: arguments are templated to allow for perfect forwarding (consts and such)
-         */
-        template <typename OpBasePtrT, typename SPAVT>
-        explicit inline Base(const Hash::Hash h, const CUID::CUID &c, const bool sym,
-                             OpBasePtrT &&op_, SPAVT &&sp) NOEXCEPT_UNLESS_DEBUG :
+        /** Protected Constructor */
+        explicit inline Base(const Hash::Hash h, const CUID::CUID c, const bool sym,
+                             Op::BasePtr &&o, OpPyDict &&d) NOEXCEPT_UNLESS_DEBUG :
             FactoryMade { h, c },
             symbolic { sym },
-            op { std::move(op_) },
-            annotations { std::move(sp) } {
+            op { std::move(o) },
+            dict { std::move(d) } {
 #ifdef DEBUG
             UTIL_ASSERT(Util::Err::Usage, op, "op may not be nullptr");
             ctor_debug_checks();

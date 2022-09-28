@@ -15,11 +15,11 @@ namespace Create::FP {
      */
     inline Expr::BasePtr from_not_2s_complement_bv(const Expr::BasePtr &bv,
                                                    const Mode::FP::Width &w,
-                                                   Annotation::SPAV sp = empty_spav) {
+                                                   Expr::OpPyDict d = {}) {
         UTIL_ASSERT(Error::Expr::Usage, bv, "bv may not be nullptr");
         using Not2s = Op::FP::FromNot2sComplementBV;
         return Simplify::simplify(Expr::factory<Expr::FP>(bv->symbolic, Op::factory<Not2s>(bv, w),
-                                                          w.width(), std::move(sp)));
+                                                          std::move(d), w.width()));
     }
 
 } // namespace Create::FP
