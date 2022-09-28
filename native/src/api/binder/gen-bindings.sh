@@ -1,4 +1,4 @@
-#!/bin/bash -eux
+#!/bin/bash -eu
 
 # Config
 Z3="$(python3 -c "import z3, os; print(os.path.dirname(z3.__file__))")/include"
@@ -26,6 +26,7 @@ INCLUDES=(
 	-isystem "/native/gmp/include"
 	-isystem "/native/backward-cpp"
 )
+set -x
 docker run --rm \
 	--user "$(id -u):$(id -g)" \
 	`# Mount in everything` \
@@ -35,12 +36,13 @@ docker run --rm \
 	-v "${BINDER_D}:/binder:ro" \
 	-v "${OUTPUT}:/output" \
 	`# Run binder` \
-	-it zwimer/binder:14 \
+ 	-it zwimer/binder:14 \
 	"/binder/cmd.sh" 0 "/native/src/api/headers.hpp" "${INCLUDES[@]}"
+set +x
 echo "Bindings generated"
 
 # Permissions
-if [["$(uname -s)" == "Darwin"]]; then
+if [[ "$(uname -s)" == "Darwin" ]]; then
 	echo "Mac detected: Removing ACLs of output directory"
 	chmod -N "${OUTPUT}"
 fi
