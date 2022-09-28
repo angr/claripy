@@ -15,7 +15,7 @@
  */
 template <typename T> struct HasRepr {
     /** Return the repr as a string */
-    inline std::string repr() const {
+    inline std::string __repr__() const {
         std::ostringstream o;
         static_cast<const T &>(*this).repr_stream(o);
         return o.str();
