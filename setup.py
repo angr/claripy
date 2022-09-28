@@ -1,45 +1,43 @@
-from setuptools.command.sdist import sdist as SDistOriginal
-from distutils.command.build import build as BuildOriginal  # TODO
-from setuptools import setup, Command
+from typing import NamedTuple, Optional, Callable, Union, Tuple, List, Dict, Set, Any
+from distutils.command.build import build as BuildOriginal  # TODO: remove before 3.12(?)
 from multiprocessing import cpu_count
 from contextlib import contextmanager
+from zipfile import ZipFile
 from hashlib import sha256
+from pathlib import Path
 from enum import Enum
-from tqdm import tqdm
 from glob import glob
 import subprocess
-import requests
 import platform
 import tempfile
+import tarfile
 import string
 import shutil
 import sys
 import os
 import re
 
+from setuptools.command.sdist import sdist as SDistOriginal
+from setuptools import setup, Command
+from tqdm import tqdm
+import requests
+
 # Shared libraries
 import z3
-
-
-# TODO: pycache is not excluded?
-# TODO: I think our sdists are GPL3?
-
 
 ######################################################################
 #                              Globals                               #
 ######################################################################
 
-
 # Paths
-claripy = os.path.dirname(os.path.abspath(__file__))
-native = os.path.join(claripy, "native")
+claripy = Path(__file__).absolute().parent
+native: Path = claripy / "native"
 
-with open(os.path.join(claripy, "VERSION")) as f:
-    version = f.read().strip()
+with open(claripy / "VERSION") as f:
+    version: str = f.read().strip()
 
-# Claricpp library names; these should be in MANIFEST.in
-claricpp = "claricpp"
-
+# Clari library names; these should be in MANIFEST.in
+clari: str = "clari"
 
 ######################################################################
 #                              Helpers                               #
@@ -57,12 +55,12 @@ class JDict(dict):
 
 
 @contextmanager
-def chdir(new):
+def chdir(new: Path) -> None:
     """
     Current working directory context manager
     """
-    old = os.getcwd()
-    new = os.path.abspath(new)
+    old: str = os.getcwd()
+    new = new.absolute()
     try:
         print(f"cd {new}")
         os.chdir(new)
@@ -72,17 +70,17 @@ def chdir(new):
         os.chdir(old)
 
 
-def find_exe(name, fail_ok=False):
+def find_exe(name: str, fail_ok: bool = False) -> Path:
     """
     Akin to bash's which function
     """
-    exe = shutil.which(name, mode=os.X_OK)
+    exe: str = shutil.which(name, mode=os.X_OK)
     if exe is None and not fail_ok:
-        raise RuntimeError("Cannot find " + name)
-    return exe
+        raise RuntimeError(f"Cannot find {name}")
+    return Path(exe).absolute()
 
 
-def cname(x):
+def cname(x: type) -> str:
     """
     Return the class name of x
     """
@@ -93,96 +91,103 @@ class BuiltLib:
     """
     A shared or static library
     """
+    install_dir: Path = claripy / "claripy" / "native" / "lib"
 
-    install_dir = os.path.join(claripy, "claripy/native/lib")
-
-    def __init__(self, name, build_dir, *, permit_shared, permit_static):
-        self.name = name
-        self._lic = os.path.join(self.install_dir, f"LICENSE.{name}".replace(" ", "_"))
-        self.build_dir = build_dir
+    def __init__(self, name: str, build_dir: Path, *, permit_shared: bool, permit_static: bool):
+        self.name: str = name
+        self._lic: Path = self.install_dir / f"LICENSE.{name}".replace(" ", "_")
+        self.build_dir: Path = build_dir
         # Determine extensions
-        self._permit_shared = permit_shared
-        self._permit_static = permit_static
-        self._licensed = False
+        self._permit_shared: bool = permit_shared
+        self._permit_static: bool = permit_static
+        self._licensed: bool = False
 
-    def init_license(self, installer, cleaner):
+    def init_license(self, installer: Callable, cleaner: Callable) -> None:
         """
         Install license handling functions
         """
-        self._lic_installer = installer
-        self._lic_cleaner = cleaner
+        self._lic_installer: Callable = installer
+        self._lic_cleaner: Callable = cleaner
 
-    def _find_ext(self, where, ext):
-        exact = os.path.realpath(os.path.join(where, self.name + ext))
-        if os.path.exists(exact):
+    def _find_ext(self, where: Path, ext: str) -> Path:
+        exact = (where / f"{self.name}.{ext}").resolve()
+        if exact.exists():
             return exact
-        files = glob(os.path.join(where, self.name) + ".*")
+        files: List[str] = glob(f"{where / self.name}.*")
         # Check ext after glob b/c .'s can overlap
-        files = [i for i in files if i.endswith(ext)]
+        files: List[str] = [i for i in files if i.endswith(f".{ext}")]
         if len(files) == 1:
-            return files[0]
+            return Path(files[0]).absolute()
         if len(files) > 1:
             print(f"Found: {files}")
-            msg = f"Multiple {self.name} libraries in {where} with the same extension: {ext}: {files}"
-            raise RuntimeError(msg)
+            raise RuntimeError(f"Multiple {self.name} libraries in {where} with the same extension: {ext}: {files}")
 
-    def _find(self, where):
+    def _find(self, where: Path) -> Optional[Path]:
         """
         Tries to find a library within the directory where
         Will prefer the native file extension type but may permit others
         Static libraries have the lowest preference
         """
-        exts = []
+        exts: List[str] = []
         if self._permit_shared:
-            ops = platform.system()
+            ops: str = platform.system()
             if ops == "Darwin":
-                exts.extend([".dylib", ".so"])
+                exts.extend(["dylib", "so"])
             elif ops == "Windows":
-                exts.extend([".dll", ".so"])
+                exts.extend(["dll", "so"])
             else:
-                exts.extend([".so", ".dll", ".dylib"])
+                exts.extend(["so", "dll", "dylib"])
         if self._permit_static:
-            exts.append(".a")
-        found = [self._find_ext(where, i) for i in exts]
-        found = [i for i in found if i is not None] + [None]
-        return found[0]
+            exts.append("a")
+        found: List[Path] = [self._find_ext(where, i) for i in exts]
+        found: List[Path] = [i for i in found if i is not None]
+        return found[0] if found else None
 
-    def find_installed(self):
+    def find_installed(self) -> Optional[Path]:
         """
         Look for the library in the installation directory
         """
         return self._find(self.install_dir)
 
-    def find_built(self):
+    def find_built(self) -> Optional[Path]:
         """
         Look for the library in the build directory
         """
         return self._find(self.build_dir)
 
-    def licensed(self, b):
-        self._licensed = b
+    def licensed(self, b: bool) -> None:
+        self._licensed: bool = b
 
-    def install(self):
+    def install(self) -> None:
         """
         Copies the library from build dir to install dir
         """
         assert self._licensed is not None, "Will not install without a license"
-        p = self.find_built()
+        p: Optional[Path] = self.find_built()
         assert p is not None, "Cannot install a non-built library"
-        if not os.path.exists(self.install_dir):
+        if not self.install_dir.exists():
             print(f"Creating install dir {self.install_dir}")
-            os.mkdir(self.install_dir)
+            self.install_dir.mkdir()
         shutil.copy2(p, self.install_dir)
 
-    def _clean(self, x):
+    def _clean(self, x: Optional[Path]) -> None:
         if x:
-            os.remove(x)
+            x.unlink()
 
-    def clean_build(self):
+    def clean_build(self) -> None:
         self._clean(self.find_built())
 
-    def clean_install(self):
+    def clean_install(self) -> None:
         self._clean(self.find_installed())
+
+
+class Downloadable(NamedTuple):
+    """
+    A downloadable object
+    """
+    url: str
+    sha: str
+    ext: str
 
 
 class SharedLib(BuiltLib):
@@ -190,7 +195,7 @@ class SharedLib(BuiltLib):
     A shared library
     """
 
-    def __init__(self, name: str, build_dir: str):
+    def __init__(self, name: str, build_dir: Path):
         super().__init__(name, build_dir, permit_shared=True, permit_static=False)
 
 
@@ -199,85 +204,86 @@ class StaticLib(BuiltLib):
     A shared library
     """
 
-    def __init__(self, name: str, build_dir: str):
+    def __init__(self, name: str, build_dir: Path):
         super().__init__(name, build_dir, permit_shared=False, permit_static=True)
 
 
-def run_cmd_no_fail(*args, **kwargs):
+def run_cmd_no_fail(*args: Union[str, Path], **kwargs: Any) -> int:
     """
     A wrapper around subprocess.run that errors on subprocess failure
-    Returns subprocess.run(args, **kwargs
+    Note: paths should be passes as pathlib.Path objects, not strs!
+    Returns subprocess.run(args, **kwargs)
     """
-    args = list(args)
+    args: List[str] = list(args)
     print(f"Running command: {args}")
-    rc = subprocess.run(args, **kwargs)
+    rc: subprocess.CompletedProcess = subprocess.run(args, **kwargs)
     if rc.returncode != 0:
         if rc.stdout:
             print(rc.stdout)
         if rc.stderr:
             print(rc.stderr, file=sys.stderr)
-        what = os.path.basename(args[0])
-        raise RuntimeError(f"{what} failed with return code: {rc.returncode}")
+        raise RuntimeError(f"{args[0].parent} failed with return code: {rc.returncode}")
     return rc
 
 
-def extract(d, f, ext):
+def extract(d: Path, f: Path, ext: str) -> None:
     """
-    Extract f into d given, the compression is assumed from the extension (ext)
+    Extract f into d, the compression is assumed from the extension (ext)
     No leading period is allowed in ext
     """
-    if ".tar" in ext:
-        import tarfile
-
+    if ext.startswith("tar"):
         with tarfile.open(f) as z:
             z.extractall(d)
     elif ext == "zip":
-        from zipfile import ZipFile
-
         with ZipFile(f) as z:
             z.extractall(d)
     else:
         raise RuntimeError("Compression type not supported: " + ext)
 
 
-def build_cmake_target(target, *args):
+def build_cmake_target(target: str, *args: Union[str, Path]) -> int:
     """
     Build the target with multiple jobs
     Extra args may be passed to the generator via args
     Run this from the same directory you would the generator
+    Return the exit code of the run command
     """
-    cmake = [find_exe("cmake"), "--build", "."]
-    j = "-j" + str(max(cpu_count() - 1, 1))
-    return run_cmd_no_fail(*cmake, j, "--target", target, "--", *args)
+    return run_cmd_no_fail(
+        find_exe("cmake"), "--build", ".",
+        f"-j{max(cpu_count() - 1, 1)}",
+        "--target", target,
+        "--", *args
+    )
 
 
-def download_checksum_extract(name, where, url, sha, ext):
+def download_checksum_extract(name: str, where: Path,
+                              down: Downloadable) -> Tuple[Path, List[Path]]:
     """
     Download a file from url, checksum it, then extract it into a temp dir
     Return the temp dir and the files within it
     """
     print(f"Downloading and hash-verifying {name}...")
     hasher = sha256()
-    prefix = re.sub(r"\s+", "_", name) + "-"
-    fd, comp_f = tempfile.mkstemp(dir=where, prefix=prefix, suffix=ext)
+    prefix: str = re.sub(r"\s+", "_", name) + "-"
+    fd, comp_f = tempfile.mkstemp(dir=where, prefix=prefix, suffix=f".{down.ext}")
     with os.fdopen(fd, "wb") as f:
-        with requests.get(url, allow_redirects=True, stream=True) as r:
+        with requests.get(down.url, allow_redirects=True, stream=True) as r:
             r.raise_for_status()
-            as_bytes = {"unit": "B", "unit_scale": True, "unit_divisor": 1024}
-            with tqdm(total=int(r.headers["Content-length"]), **as_bytes) as prog:
-                chunk_size = 2**16
+            with tqdm(total=int(r.headers["Content-length"]), leave=False,
+                      unit="B", unit_scale=True, unit_divisor=1024) as prog:
+                chunk_size: int = 2**16
                 for block in r.iter_content(chunk_size=chunk_size):
                     hasher.update(block)
                     f.write(block)
                     prog.update(chunk_size)
-    if hasher.hexdigest() != sha:
+    if hasher.hexdigest() != down.sha:
         raise RuntimeError(f"Downloaded {name} hash failure!")
     # Extract
-    raw = tempfile.mkdtemp(dir=where, prefix=f"{prefix}dir-", suffix=".tmp")
+    raw = Path(tempfile.mkdtemp(dir=where, prefix=f"{prefix}dir-", suffix=".tmp"))
     print(f"Extracting {name} to: {raw}")
-    extract(raw, comp_f, ext)
+    extract(raw, comp_f, down.ext)
     os.remove(comp_f)
-    return raw, glob(os.path.join(raw, "*"))
+    return raw, [Path(i).absolute() for i in glob(f"{raw}/*")]
 
 
 class CleanLevel(Enum):
@@ -286,7 +292,6 @@ class CleanLevel(Enum):
     Values will be incremented by 1 between levels
     Non-whole values are allowed but may only be referenced in clean functions
     """
-
     INSTALL = 1
     LICENSE = 2
     BUILT_LIBS = 2.5
@@ -300,16 +305,15 @@ setattr(type(CleanLevel.GET), "implies", lambda self, o: self.value >= o.value)
 setattr(type(CleanLevel.GET), "inc", lambda self: CleanLevel(self.value + 1))
 
 
-def to_clean_lvl(name):
+def to_clean_lvl(name: str) -> int:
     """
     Get the clean level named name
     """
-    name = name.upper()
+    name: str = name.upper()
     try:
         return getattr(CleanLevel, name)
     except AttributeError:
-        valid = [i.name for i in CleanLevel]
-        valid = "Valid clean levels: " + ", ".join(valid)
+        valid: str = "Valid clean levels: " + ", ".join([i.name for i in CleanLevel])
         raise Exception(f"Invalid clean level: {name}. {valid}")
 
 
@@ -324,7 +328,8 @@ class Library:
     Subclasses may want to override _get, _build, _install, and _clean
     """
 
-    def __init__(self, get_chk, build_chk, install_chk, *dependencies):
+    def __init__(self, get_chk: Dict[str, Path], build_chk: Dict[str, Path],
+                 install_chk: Dict[str, Path], *dependencies: "Library"):
         """
         get_chk, build_chk, and install_chk are dicts to given to _body
         When call .get(), self._done(*i) will be called for i in get_chk
@@ -335,29 +340,30 @@ class Library:
         Subclasses must override _license
         Will only call _get, _build, _license, and _install once
         """
-        self._done_set = set()
-        self._dependencies = dependencies
+        self._done_set: Set[Path] = set()
+        self._dependencies: List[Library] = dependencies
         assert self._dep_check(type(self)), f"Cyclical dependency found on: {type(self)}"
         # Done check lists
-        self._get_chk = dict(get_chk)
-        self._build_chk = self._fix_chk(build_chk, "find_built")
-        self._install_chk = self._fix_chk(install_chk, "find_installed")
+        self._get_chk: Dict[str, Path] = dict(get_chk)
+        self._build_chk: Dict[str, Path] = self._fix_chk(build_chk, "find_built")
+        self._install_chk: Dict[str, Path] = self._fix_chk(install_chk, "find_installed")
 
     @staticmethod
-    def _fix_chk(d, name):
+    def _fix_chk(d: Dict[str, str], name: str) -> Dict[str, str]:
         """
-        Update replace BuiltLib values in d with their name functions
+        Return a new dict which replaces BuiltLib values with their name functions
         """
-        fix = lambda x: getattr(x, name) if isinstance(x, BuiltLib) else x
-        return {i: fix(k) for i, k in d.items()}
+        return {i: getattr(k, name) if isinstance(k, BuiltLib) else k
+                for i, k in d.items()}
 
-    def _dep_check(self, t):
+    def _dep_check(self, t: type) -> bool:
         """
-        Return true iff t is not a dependency recursively
+        Return true iff no self does not depend on anything of type t
         """
-        return all([(type(i) != t and i._dep_check(t)) for i in self._dependencies])
+        return all(not isinstance(i, t) and i._dep_check(t)
+                   for i in self._dependencies)
 
-    def _done(self, name, path):
+    def _done(self, name: str, path: Union[Path, Callable[[], Path]]) -> bool:
         """
         If path is a function, path = path()
         If path exists, note it will be reused and return True
@@ -365,8 +371,8 @@ class Library:
         path may be None
         """
         if callable(path):
-            path = path()
-        ret = False if path is None else os.path.exists(path)
+            path: Path = path()
+        ret: bool = False if path is None else path.exists()
         if path in self._done_set:
             assert ret, f"{path} used to exist but now does not"
         elif ret:
@@ -374,19 +380,20 @@ class Library:
             self._done_set.add(path)
         return ret
 
-    def _call_format(self, x, n):
+    def _call_format(self, x: type, n: str) -> str:
         return f"{cname(x)}.{n}()"
 
-    def _call(self, origin, obj, fn, called):
-        what = self._call_format(obj, fn)
+    def _call(self, origin: str, obj: Any, fn: Callable[[Set[str]], None],
+              called: Set[str]) -> None:
+        what: str = self._call_format(obj, fn)
         if what not in called:
             called.add(what)
-            me = self._call_format(self, origin)
+            me: str = self._call_format(self, origin)
             print(f"{me} invoking {what}")
             getattr(obj, fn)(called)
             print(f"Resuming {me}")
 
-    def _body(self, lvl, chk, called):
+    def _body(self, lvl: CleanLevel, chk: Dict[str, Path], called: Set[str]) -> None:
         """
         A helper function used to automate the logic of invoking dependencies and body
         Note: for lvl = license, license files are force cleaned!
@@ -400,8 +407,8 @@ class Library:
         if len(chk) and all([self._done(*i) for i in chk.items()]):
             return
         # Call dependent levels
-        next = None
-        lvl_name = lvl.name.lower()
+        next: Optional[str] = None
+        lvl_name: str = lvl.name.lower()
         try:
             next = lvl.inc().name.lower()
         except ValueError:
@@ -412,79 +419,78 @@ class Library:
         for obj in self._dependencies:
             self._call(lvl_name, obj, lvl_name, called)
         getattr(self, "_" + lvl_name)()
-        me = self._call_format(self, lvl_name)
-        called.add(me)
+        called.add(self._call_format(self, lvl_name))
 
-    def get(self, called=None):
+    def get(self, called: Optional[Set[str]] = None) -> None:
         """
         Acquire source files for this class and dependencies
         May reuse existing files
         """
-        called = set() if called is None else called
+        called: Set[str] = set() if called is None else called
         self._body(CleanLevel.GET, self._get_chk, called)
 
-    def build(self, called=None):
+    def build(self, called: Optional[Set[str]] = None) -> None:
         """
         Build libraries for this class and dependencies
         """
-        called = set() if called is None else called
+        called: Set[str] = set() if called is None else called
         self._body(CleanLevel.BUILD, self._build_chk, called)
 
-    def license(self, called=None):
+    def license(self, called: Optional[Set[str]] = None) -> None:
         """
         Install library licenses; will call ._license if it has not been called
         May reuse existing files
         """
-        called = set() if called is None else called
+        called: Set[str] = set() if called is None else called
         self._body(CleanLevel.LICENSE, {}, called)
 
-    def install(self, called=None):
+    def install(self, called: Optional[Set[str]] = None) -> None:
         """
         Install libraries and source files for this class and dependencies
         May reuse existing files
         """
-        called = set() if called is None else called
+        called: Set[str] = set() if called is None else called
         self._body(CleanLevel.INSTALL, self._install_chk, called)
 
-    def clean(self, level: CleanLevel):
+    def clean(self, level: CleanLevel) -> None:
         """
         Cleans up after the library
         """
-        p = lambda x: f"{x.__class__.__name__}.clean({level.name})"
+        p = lambda x: f"{cname(x)}.clean({level.name})"
         for i in self._dependencies:
             print(f"{p(self)} invoking {p(i)}")
             i.clean(level)
         self._clean(level)
 
-    def _get(self):
+    def _get(self) -> None:
         """
         A function subclasses should override to get source files
         No need to handle dependencies in this
         """
         pass
 
-    def _build(self):
+    def _build(self) -> None:
         """
         A function subclasses should override to build libraries
         No need to handle dependencies in this
         """
         pass
 
-    def _license(self):
+    def _license(self) -> None:
         """
         A function subclasses must override to install licenses
         No need to handle dependencies in this
         """
         raise RuntimeError("No licenses installed")
 
-    def _install(self):
+    def _install(self) -> None:
         """
         A function subclasses should override to install libaries
         No need to handle dependencies in this
         """
         pass
 
-    def _clean(self, level):
+    def _clean(self, level) -> None:
         """
         A function subclasses should override to clean up
         No need to handle dependencies in this
@@ -497,72 +503,71 @@ class GMP(Library):
     A class to manage GMP
     """
 
-    _url = "https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.xz"
-    _root = os.path.join(native, "gmp")
-    _source = os.path.join(_root, "src")
-    _build_dir = os.path.join(_root, "build")
-    include_dir = os.path.join(_root, "include")
-    lib_dir = os.path.join(_build_dir, ".libs")
+    _down = Downloadable(
+        url="https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.xz",
+        sha="fd4829912cddd12f84181c3451cc752be224643e87fac497b69edddadc49b4f2",
+        ext="tar.gz")
+    # Paths
+    _root: Path = native / "gmp"
+    _source: Path = _root / "src"
+    _build_dir: Path = _root / "build"
+    include_dir: Path = _root / "include"
+    lib_dir: Path = _build_dir / ".libs"
     # We are ok with either static or shared, but we prefer shared
     _lib_default = BuiltLib("libgmp", lib_dir, permit_static=True, permit_shared=True)
-    _lic_d = os.path.join(BuiltLib.install_dir, "LICENSE.GMP")
-    _lib = _lib_default
+    _lic_d: Path = BuiltLib.install_dir / "LICENSE.GMP"
+    _lib: Path = _lib_default
 
     def __init__(self):
-        get_chk = {"GMP source": self._source}
-        build_chk = {
-            "GMP license": os.path.join(self._source, "COPYINGv3"),
+        get_chk: Dict[str, Path] = {"GMP source": self._source}
+        build_chk: Dict[str, Path] = {
+            "GMP license": self._source / "COPYINGv3",
             "GMP library": self._lib,
             "GMP include directory": self.include_dir,
         }
-        install_chk = {"GMP lib": self._lib.find_installed}
+        install_chk: Dict[str, Path] = {"GMP lib": self._lib.find_installed}
         super().__init__(get_chk, build_chk, install_chk)
 
-    def _get(self):
-        os.makedirs(self._root, exist_ok=True)
-        url = self._url
-        sha = "fd4829912cddd12f84181c3451cc752be224643e87fac497b69edddadc49b4f2"
-        d, gmp = download_checksum_extract(
-            "GMP source", self._root, url, sha, ".tar.xz"
-        )
+    def _get(self) -> None:
+        self._root.mkdir(parents=True, exist_ok=True)
+        d, gmp = download_checksum_extract("GMP source", self._root, self._down)
         print(f"Moving GMP source to: {self._source}")
         assert len(gmp) == 1, "gmp's tarball is weird"
-        os.rename(gmp[0], self._source)
-        os.rmdir(d)
+        gmp[0].rename(self._source)
+        d.rmdir()
 
-    def _set_lib_type(self, config_log):
+    def _set_lib_type(self, config_log: Path) -> None:
         """
         Determine the built library type
         Run this during the build stage, after the build!
         """
-        with open(config_log) as f:
-            lines = f.readlines()
-        sh_lib_str = "Shared libraries:"
-        lines = [i for i in lines if sh_lib_str in i]
+        sh_lib_str: str = "Shared libraries:"
+        with config_log.open("r") as f:
+            lines: List[str] = [i for i in f.readlines() if sh_lib_str in i]
         assert len(lines) == 1, "./configure gave weird output"
-        is_static = lines[0].replace(sh_lib_str, "").strip() == "no"
-        print("GMP lib type: " + ("static" if is_static else "shared"))
-        lib_type = StaticLib if is_static else SharedLib
+        is_static: bool = lines[0].replace(sh_lib_str, "").strip() == "no"
+        print(f"GMP lib type: {'static' if is_static else 'shared'}")
+        lib_type: type = StaticLib if is_static else SharedLib
         self._lib = lib_type(self._lib.name, self._lib.build_dir)
 
-    def _run(self, name, *args, _count=0):
+    def _run(self, name: str, *args: str, _count: int = 0) -> Path:
         """
         A wrapper for run
         _count should only be used by this function
         """
-        whitelist = string.ascii_lowercase + string.digits + "_-"
-        log_f = "".join([i for i in name.lower().replace(" ", "_") if i in whitelist])
-        log_f = os.path.join(self._build_dir, "setup-py-" + log_f)
-        log_f += ("" if _count == 0 else "_" + str(_count)) + ".log"
-        if os.path.exists(log_f):
+        whitelist: str = string.ascii_lowercase + string.digits + "_-"
+        base: str = "".join([i for i in name.lower().replace(" ", "_") if i in whitelist])
+        base += f"{'' if _count == 0 else f'_{_count}'}.log"
+        log_f: Path = self._build_dir / f"setup-py-{base}"
+        if log_f.exists():
             return self._run(name, *args, _count=_count + 1)
-        with open(log_f, "w") as f:
+        with log_f.open("w") as f:
             print(f"{name}...\n  - Output file: f{log_f}")
             sys.stdout.write("  - ")
             run_cmd_no_fail(*args, stdout=f, stderr=f)
         return log_f
 
-    def _build(self):
+    def _build(self) -> None:
         print(f"Copying source to build dir: {self._build_dir}")
         shutil.copytree(self._source, self._build_dir)  # Do not pollute source
         with chdir(self._build_dir):
@@ -579,23 +584,22 @@ class GMP(Library):
                 "--host=none",
             ]
             self._set_lib_type(self._run("Configuring", "./configure", *config_args))
-            # Building + Checking
-            nproc = max(cpu_count() - 1, 1)
-            makej = (find_exe("make"), f"-j{nproc}")  # GMP requires make
+            # Building + Checking (GMP requires make)
+            makej: Tuple[str] = (find_exe("make"), f"-j{max(cpu_count() - 1, 1)}")
             _ = self._run("Building GMP", *makej)
             _ = self._run("Checking GMP build", *makej, "check")
             # Include dir
-            os.mkdir(self.include_dir)
-            shutil.copy2(os.path.join(self._build_dir, "gmp.h"), self.include_dir)
+            self.include_dir.mkdir()
+            shutil.copy2(self._build_dir / "gmp.h", self.include_dir)
 
-    def _license(self):
-        if not os.path.exists(self._lic_d):
+    def _license(self) -> None:
+        if not self._lic_d.exists():
             print(f"Creating {self._lic_d}")
-            os.makedirs(self._lic_d)
+            self._lic_d.mkdir(parents=True)
 
-        def cpy(src, dst):
-            src = os.path.join(self._build_dir, src)
-            dst = os.path.join(self._lic_d, dst)
+        def cpy(src: str, dst: str):
+            src: Path = self._build_dir / src
+            dst: Path = self._lic_d / dst
             print(f"Copying {src} --> {dst}")
             shutil.copy2(src, dst)
 
@@ -603,14 +607,14 @@ class GMP(Library):
         cpy("AUTHORS", "AUTHORS")
         cpy("COPYING.LESSERv3", "GNU-LGPLv3")
         print("Generating README...")
-        msg = "The compiled GMP library is licensed under the GNU LGPLv3. The library was built from unmodified source code which can be found at: "
-        with open(os.path.join(self._lic_d, "README"), "w") as f:
-            f.write(msg + self._url)
+        with (self._lic_d / "README").open("w") as f:
+            msg = "The compiled GMP library is licensed under the GNU LGPLv3. The library was built from unmodified source code which can be found at: "
+            f.write(f"{msg}{self._down.url}")
 
-    def _install(self):
+    def _install(self) -> None:
         self._lib.install()
 
-    def _clean(self, level):
+    def _clean(self, level: CleanLevel) -> None:
         if level.implies(CleanLevel.INSTALL):
             self._lib.clean_install()
         if level.implies(CleanLevel.LICENSE):
@@ -629,41 +633,43 @@ class Boost(Library):
     A class used to manage Boost
     """
 
-    root = os.path.join(native, "boost")
-    _inc = os.path.join(root, "boost")
-    _lic = os.path.join(root, "LICENSE")
+    root: Path = native / "boost"
+    _inc: Path = root / "boost"
+    _lic: Path = root / "LICENSE"
 
     def __init__(self):
-        chk = {"boost headers": self._inc, "boost license": self._lic}
         # Boost depends on GMP
-        super().__init__(chk, {}, {}, GMP())
+        super().__init__({"boost headers": self._inc, "boost license": self._lic}, {}, {}, GMP())
 
     @staticmethod
-    def url_data():
+    def url_data() -> Downloadable:
+        """
+        Get the correct downloadable for the given OS
+        """
         return {
             # Get this info from: https://www.boost.org/users/download/
-            "posix": (
-                "https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz",
-                "94ced8b72956591c4775ae2207a9763d3600b30d9d7446562c552f0a14a63be7",
-                ".tar.gz",
+            "posix": Downloadable(
+                url="https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz",
+                sha="94ced8b72956591c4775ae2207a9763d3600b30d9d7446562c552f0a14a63be7",
+                ext="tar.gz",
             ),
-            "nt": (
-                "https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.zip",
-                "f22143b5528e081123c3c5ed437e92f648fe69748e95fa6e2bd41484e2986cc3",
-                ".zip",
+            "nt": Downloadable(
+                url="https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.zip",
+                sha="f22143b5528e081123c3c5ed437e92f648fe69748e95fa6e2bd41484e2986cc3",
+                ext="zip",
             ),
         }[os.name]
 
-    def _get(self):
+    def _get(self) -> None:
         self._clean(CleanLevel.GET)  # Do not operate on a dirty boost dir
-        os.mkdir(self.root)
-        d, fs = download_checksum_extract("boost headers", self.root, *self.url_data())
+        self.root.mkdir()
+        d, fs = download_checksum_extract("boost headers", self.root, self.url_data())
         print("Installing boost license...")
         if len(fs) != 1:
             raise RuntimeError("Boost should decompress into a single directory.")
-        shutil.copy2(os.path.join(fs[0], "LICENSE_1_0.txt"), self._lic)
+        shutil.copy2(fs[0] / "LICENSE_1_0.txt", self._lic)
         print("Installing boost headers...")
-        os.rename(os.path.join(fs[0], "boost"), os.path.join(self.root, "boost"))
+        (fs[0] / "boost").rename(self.root / "boost")
         print("Cleaning temporary files...")
         shutil.rmtree(d)
 
@@ -672,7 +678,7 @@ class Boost(Library):
 
     def _clean(self, level):
         if level.implies(CleanLevel.GET):
-            if os.path.exists(self.root):
+            if self.root.exists():
                 shutil.rmtree(self.root)
 
 
@@ -682,9 +688,9 @@ class Z3(Library):
     Z3 has no dependencies; it should be pre-installed
     """
 
-    _root = os.path.dirname(z3.__file__)
-    include_dir = os.path.join(_root, "include")
-    lib = SharedLib("libz3", os.path.join(_root, "lib"))
+    _root = Path(z3.__file__).parent
+    include_dir: Path = _root / "include"
+    lib = SharedLib("libz3", _root / "lib")
 
     def __init__(self):
         super().__init__({}, {}, {"Z3 library": self.lib.find_installed})
@@ -692,10 +698,10 @@ class Z3(Library):
     # _get is simply that _root has been resolved
     # Z3's pip has no license file so nothing for us to copy
 
-    def _build(self):
+    def _build(self) -> None:
         assert self.lib.find_built(), "Z3 is missing"
 
-    def _license(self):
+    def _license(self) -> None:
         pass  # Nothing to install
 
 
@@ -710,14 +716,12 @@ class Backward(Library):
         # TODO: these depend on libdebuginfod (=dummy is an option?)
         super().__init__({}, {}, {})
 
-    def _get(self):
-        bk = os.path.join(native, "backward-cpp")
-        b = os.path.exists(bk)
-        assert b, "Backward is missing; run: git submodule init --recursive"
-        lic = os.path.join(bk, "LICENSE.txt")
-        assert os.path.exists(lic), "Backward missing license"
+    def _get(self) -> None:
+        bk: Path = native / "backward-cpp"
+        assert bk.exists(), "Backward is missing; run: git submodule init --recursive"
+        assert (bk / "LICENSE.txt").exists(), "Backward missing license"
 
-    def _license(self):
+    def _license(self) -> None:
         pass  # Nothing to install
 
 
@@ -729,57 +733,59 @@ class Pybind11(Library):
     def __init__(self):
         super().__init__({}, {}, {})
 
-    def _get(self):
-        root = os.path.join(native, "pybind11")
-        b = os.path.exists(root)
-        assert b, "pybind11 is missing; run: git submodule init --recursive"
-        lic = os.path.join(root, "LICENSE")
-        assert os.path.exists(lic), "pybind11 missing license"
+    def _get(self) -> None:
+        root: Path = native / "pybind11"
+        assert root.exists(), "pybind11 is missing; run: git submodule init --recursive"
+        assert (root / "LICENSE").exists(), "pybind11 missing license"
 
     def _license(self):
         pass  # Nothing to install
 
 
-class Claricpp(Library):
+class Clari(Library):
     """
-    A class to manage Claricpp
+    A class to manage Clari
     """
 
     # Constants
-    build_dir = os.path.join(native, "build")
-    _lib = SharedLib("libclaricpp", build_dir)
-    _out_native_src = os.path.join(BuiltLib.install_dir, "cpp_src")
-    # API constants
-    _api_target = "clari"
-    _api_lib = SharedLib(_api_target, os.path.join(build_dir, "api"))
+    build_dir: Path = native / "build"
+    _lib = SharedLib(clari, build_dir)
+    _out_native_src: Path = BuiltLib.install_dir / "cpp"
+    _binder: Path = native / "src" / "api" / "binder"
     # Docs constants
-    _docs_dir = os.path.join(build_dir, "docs")  # Must be in build_dir
+    _docs_dir: Path = build_dir / "docs"  # Must be in build_dir
 
-    def __init__(
-        self, *, api, no_build=False, no_lib=False, docs=False, debug=False, tests=False
-    ):
+    def __init__(self,
+                 *,
+                 api: bool,
+                 no_build: bool = False,
+                 no_lib: bool = False,
+                 docs: bool = False,
+                 debug: bool = False,
+                 tests: bool = False):
         # Options
-        self._build_lib = not no_lib
-        self._build_tests = tests
-        self._build_debug = debug
-        self._build_doc = docs
-        self._build_api = api
-        self._no_build = no_build
+        self._build_lib: bool = not no_lib
+        self._build_tests: bool = tests
+        self._build_debug: bool = debug
+        self._build_doc: bool = docs
+        self._build_api: bool = api
+        self._no_build: bool = no_build
         # Config
-        default_chk = {i.name: i for i in [self._lib, self._api_lib]}
-        default_chk["C++ Source files"] = self._out_native_src
-        chk = {} if (self._build_tests or self._build_doc) else default_chk
+        chk: Dict[str, Path] = {} if (self._build_tests or self._build_doc) else {
+            self._lib.name: self._lib,
+            "C++ Source files": self._out_native_src
+        }
         super().__init__({}, chk, chk, Boost(), Z3(), Pybind11(), Backward())
 
-    def _cmake_args(self):
+    def _cmake_args(self) -> List[str]:
         """
-        Create arguments to pass to cmake for configuring claricpp
+        Create arguments to pass to cmake for configuring clari
         """
-        z3_built = Z3.lib.find_built()
+        z3_built: Optional[Path] = Z3.lib.find_built()
         assert z3_built is not None, "z3 was not built"
-        config = {
+        config: Dict[str, Union[Path, bool, str, None]] = {
             "VERSION": version,
-            "CLARICPP": claricpp,
+            "CLARICPP": clari,  # TODO: clari
             # Build options
             "BUILD_TESTS": self._build_tests,
             "BUILD_DOC": self._build_doc,
@@ -804,26 +810,28 @@ class Claricpp(Library):
             "Z3_INCLUDE_DIR": Z3.include_dir,
             "Z3_LIB": z3_built,
         }
-        on_off = lambda x: ("ON" if x else "OFF") if type(x) is bool else x
-        dd = lambda key, val: f"-D{key}=" + ("" if val is None else on_off(val))
-        return [dd(*i) for i in config.items()]
+        for i, k in config.items():
+            if isinstance(k, bool):
+                config[i] = "ON" if k else "OFF"
+            elif k is None:
+                config[i] = ""
+        return [f"-D{i}={k}" for i, k in config.items()]
 
-    def _build(self):
-        if not os.path.exists(self.build_dir):
-            os.mkdir(self.build_dir)
+    def _build(self) -> None:
+        self.build_dir.mkdir(exist_ok=True)
         # CMake
         print("Configuring...")
         with chdir(self.build_dir):
             run_cmd_no_fail(find_exe("cmake"), *self._cmake_args(), native)
         # Build
         if not self._no_build:
-            targets = [  # Order matters (for cleaner output)
-                (self._build_lib, claricpp),
+            # Order matters (for cleaner output)
+            options: Tuple[str] = (
+                (self._build_lib, clari),
                 (self._build_tests, "unit_tests"),
                 (self._build_doc, "docs"),
-                (self._build_api, self._api_target),
-            ]
-            targets = [i[1] for i in targets if i[0]]
+            )
+            targets: List[str] = [i[1] for i in options if i[0]]
             with chdir(self.build_dir):
                 for i in targets:
                     build_cmake_target(i)
@@ -831,57 +839,46 @@ class Claricpp(Library):
                     print(f"Docs built in: {self._docs_dir}")
 
     @classmethod
-    def run_tests(cls):  # Warning: tests should be built before calling this
-        # Prefer ctest over make test but either will work
+    def run_tests(cls) -> None:  # Warning: tests should be built before calling this
         with chdir(cls.build_dir):
-            ctest = find_exe("ctest")
-            if ctest is not None:
-                run_cmd_no_fail(ctest, f"-j{max(cpu_count() - 1, 1)}", ".")
-            else:
-                build_cmake_target("test")  # This will not be parallel
+            run_cmd_no_fail(find_exe("ctest"), f"-j{max(cpu_count() - 1, 1)}", ".")
 
-    def _license(self):
+    def _license(self) -> None:
         pass  # Same as main project
 
-    def _install(self):
+    def _install(self) -> None:
         if self._build_lib:
             self._lib.install()
-        if self._build_api:
-            self._api_lib.install()
-        if not os.path.exists(self._out_native_src):
-            def ign(d, fs):
-                rv = shutil.ignore_patterns("*.cpp", "*.hpp", "*.c", "*.h")(d, fs)
-                return [ i for i in fs if i not in rv ]
+        if not self._out_native_src.exists():
+            def ign(d: str, fs: List[str]) -> Set[str]:
+                keep = shutil.ignore_patterns("*.cpp", "*.hpp", "*.c", "*.h")(d, fs)
+                bad = {i for i in fs if i not in keep and not Path(d, i).is_dir()}
+                return bad | {i for i in fs if Path(d, i) == self._binder}
 
             # Parent dir
-            parent = os.path.dirname(self._out_native_src)
-            if not os.path.exists(parent):
+            parent = self._out_native_src.parent
+            if not parent.exists():
                 print(f"Creating {self._lic_d}")
-                os.makedirs(self.parent)
+                self.parent.mkdir(parents=True)
             # Generate output
-            tmp = tempfile.mkdtemp(dir=self.build_dir, prefix="src-copy", suffix=".tmp")
+            tmp = Path(tempfile.mkdtemp())
             print(f"Generating output source in: {tmp}")
-            for i in ["src", "api"]:
-                src = os.path.join(native, i)
-                dst = os.path.join(tmp, i)
-                shutil.copytree(src, dst, ignore=ign)
+            shutil.copytree(native / "src", tmp / "src", ignore=ign)
             # Install
             print("Installing output source...")
-            os.rename(tmp, self._out_native_src)
+            tmp.rename(self._out_native_src)
 
-    def _clean(self, level):
+    def _clean(self, level: CleanLevel) -> None:
         if level.implies(CleanLevel.INSTALL):
-            self._api_lib.clean_install()
             self._lib.clean_install()
             shutil.rmtree(self._out_native_src, ignore_errors=True)
         if level.implies(CleanLevel.BUILT_LIBS):
-            self._api_lib.clean_build()
             self._lib.clean_build()
         if level.implies(CleanLevel.BUILD):
-            if os.path.exists(self.build_dir):
-                if os.path.exists(os.path.join(self.build_dir, "Makefile")):
-                    with chdir(self.build_dir):
-                        build_cmake_target("clean")
+            if (self.build_dir / "Makefile").exists():
+                with chdir(self.build_dir):
+                    build_cmake_target("clean")
+            if self.build_dir.exists():
                 shutil.rmtree(self.build_dir, ignore_errors=True)
 
 
@@ -892,47 +889,49 @@ class Claricpp(Library):
 
 class SDist(SDistOriginal):
     def run(self):
-        f = lambda: Claricpp(api=True).get()
-        self.execute(f, (), msg="Getting build source dependencies")
+        self.execute(lambda: Clari(api=True).get(), (),
+                     msg="Getting build source dependencies")
         super().run()
 
 
 class Native(Command):
-    description = "Build native components"
-    cmake_msg = "Do not build any Claricpp objects, stop after running cmake"
-    docs_msg = "Build Claricpp docs; if --test builds test docs also; if not --no-api build API docs also"
+    description: str = "Build native components"
+    cmake_msg: str = "Do not build any Clari objects, stop after running cmake"
+    docs_msg: str = "Build Clari docs; if --test builds test docs also; if not --no-api build API docs also"
     user_options = [
         ("no-install", None, "Do not install built libraries"),
         ("no-build", None, cmake_msg),
-        ("no-lib", None, "Do not build the Claricpp library"),
-        ("no-api", None, "Do not build the Claricpp API"),
+        ("no-lib", None, "Do not build the Clari library"),
+        ("no-api", None, "Do not build the Clari API"),
         ("docs", None, docs_msg),
         ("override", None, "Ignore options sanity checks. Do not do this"),
-        ("tests", "t", "Build Claricpp unit tests"),
-        ("run-tests", None, "Run Claricpp tests"),
+        ("tests", "t", "Build Clari unit tests"),
+        ("run-tests", None, "Run Clari tests"),
         ("debug", "d", "Prefers debug mode to release mode while building"),
         ("clean=", "c", "Runs clean at the given level first"),
     ]
 
     def initialize_options(self) -> None:
-        self.args = [i for i in self.user_options if "=" not in i]  # Bools only
-        self.args = [i[0].replace("-", "_") for i in self.args]
-        _ = [setattr(self, i, None) for i in self.args]
-        self.clean = None  # We will put this in args later
+        raw: List[str] = [i for i in self.user_options if "=" not in i]  # Bools only
+        self.raw = [i[0].replace("-", "_") for i in raw]
+        for i in self.raw:
+            setattr(self, i, None)
+        self.clean: Optional[CleanLevel] = None  # We will put this in args later
 
     def finalize_options(self) -> None:
         # Namespace args and make them bools here
-        self.args = {i: (getattr(self, i) is not None) for i in self.args}
+        args: Dict[str, Any] = {i: (getattr(self, i) is not None) for i in self.raw}
         # Add clean to args and freeze arg keys
         if self.clean is not None:
-            self.clean = to_clean_lvl(self.clean)
-        self.args["clean"] = self.clean
-        self.args = JDict(self.args)
+            self.clean: CleanLevel = to_clean_lvl(self.clean)
+        args["clean"]: bool = self.clean
+        self.args = JDict(args)
         # Error checking + cleanup
-        _ = [delattr(self, i) for i in self.args]
+        for i in self.args:
+            delattr(self, i)
         if self.args.no_lib and not self.args.no_build:
             print("Warning: --no-lib has no effect given --no-build")
-        msgs = []
+        msgs: List[str] = []
         if self.args.no_build and not self.args.no_install:
             msgs.append("--no-build will likely fail without --no-install")
         if self.args.run_test and self.args.no_build:
@@ -940,35 +939,33 @@ class Native(Command):
         if self.args.run_test and not self.args.tests:
             raise RuntimeError("--run-tests will likely fail without --tests")
         if self.args.no_lib and not self.args.no_api:
-            msg = "--no-lib will likely fail without --no-api; unless --no-build is passed"
-            msgs.append(msg)
+            msgs.append("--no-lib will likely fail without --no-api; unless --no-build is passed")
         if self.args.no_lib and self.args.tests:
-            msg = "--no-lib will likely fail with --tests; unless --no-build is passed"
-            msgs.append(msg)
+            msgs.append("--no-lib will likely fail with --tests; unless --no-build is passed")
         if self.args.no_lib and self.args.run_tests:
             msgs.append("--no-lib will likely fail with --run_tests")
         # Allow sanity check override
-        msg = "Options sanity check errors:\n  - " + "\n  - ".join(msgs)
         if len(msgs) > 0:
+            msg: str = "Options sanity check errors:\n  - " + "\n  - ".join(msgs)
             if not self.args.override:
                 raise RuntimeError(msg)
             print(f"Overriding o{msg[1:]}")
 
     def run(self) -> None:
         # Construct the main class and determine the function name
-        params = ["no_lib", "docs", "tests", "debug", "no_build"]
-        params = {i: k for i, k in self.args.items() if i in params}
-        instance = Claricpp(**params, api=not self.args.no_api)
-        fname = "build" if self.args.no_install else "install"
+        wanted: Tuple[str] = ("no_lib", "docs", "tests", "debug", "no_build")
+        params: Dict[str, str] = {i: k for i, k in self.args.items() if i in wanted}
+        instance = Clari(**params, api=not self.args.no_api)
+        fname: str = "build" if self.args.no_install else "install"
         # Message
-        msg = "Building native components"
-        options = [f"--{i}".replace("_", "-") for i, k in self.args.items() if k]
+        msg: str = "Building native components"
+        options: List[str] = [f"--{i}".replace("_", "-") for i, k in self.args.items() if k]
         if len(options) > 0:
             msg += " with options: " + " ".join(options)
         # Run
         if self.args.clean is not None:
-            msg = f"Cleaning Claricpp at level: {self.args.clean.name}"
-            self.execute(lambda: instance.clean(self.args.clean), (), msg=msg)
+            self.execute(lambda: instance.clean(self.args.clean), (),
+                         msg=f"Cleaning Clari at level: {self.args.clean.name}")
         self.execute(lambda: getattr(instance, fname)(), (), msg=msg)
         if self.args.run_tests:
             self.execute(instance.run_tests, (), msg="Running native tests")
@@ -984,23 +981,21 @@ class Clean(Command):
     user_options = [("level=", "l", "Clean")]
 
     def initialize_options(self) -> None:
-        self.level = "GET"
+        self.level: str = "GET"
 
     def finalize_options(self) -> None:
-        self.level = to_clean_lvl(self.level)
+        self.lvl: CleanLevel = to_clean_lvl(self.level)
 
     def run(self):
-        f = lambda: Claricpp(api=True).clean(self.level)
-        self.execute(f, (), msg=f"Cleaning Claricpp at level: {self.level.name}")
+        self.execute(lambda: Clari(api=True).clean(self.lvl), (),
+                     msg=f"Cleaning Clari at level: {self.lvl.name}")
 
 
 if __name__ == "__main__":
-    setup(
-        cmdclass={
-            "sdist": SDist,
-            "build": Build,
-            # Custom commands
-            "native": Native,
-            "clean": Clean,
-        },
-    )
+    setup(cmdclass={
+        "sdist": SDist,
+        "build": Build,
+        # Custom commands
+        "native": Native,
+        "clean": Clean,
+    })
