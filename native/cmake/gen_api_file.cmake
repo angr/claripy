@@ -34,15 +34,15 @@ function(_use_existing API_SOURCE BINDINGS_DIR MUST_INCLUDE RET_VAR)
 endfunction()
 
 # Generates API_SOURCE
-function(gen_api_file API_TARGET API_SOURCE BINDINGS_DIR) # Append 'must include' files
+function(gen_api_file MODULE API_SOURCE BINDINGS_DIR) # Append 'must include' files
     set(MUST_INCLUDE "${ARGN}")
 
     if (EXISTS "${BINDINGS_DIR}")
         # Remove bad auto-gen'd code
         if (EXISTS "${BINDINGS_DIR}/std")
             message(STATUS "Removing undesired auto-generated code...")
-            file(REMOVE "${BINDINGS_DIR}/${API_TARGET}.modules")
-            file(REMOVE "${BINDINGS_DIR}/${API_TARGET}.sources")
+            file(REMOVE "${BINDINGS_DIR}/${MODULE}.modules")
+            file(REMOVE "${BINDINGS_DIR}/${MODULE}.sources")
             file(REMOVE_RECURSE "${BINDINGS_DIR}/std") # std bindings
         endif()
         # Hash check BINDINGS_DIR in case clang-format or something broke it
@@ -89,7 +89,7 @@ function(gen_api_file API_TARGET API_SOURCE BINDINGS_DIR) # Append 'must include
 
     # Read in file as list of lines (cannot use file(STRINGS) because semicolons :( )
     message(STATUS "Parsing binder generated code...")
-    set(IN_FILE "${BINDINGS_DIR}/${API_TARGET}.cpp")
+    set(IN_FILE "${BINDINGS_DIR}/${MODULE}.cpp")
     read_lines("${IN_FILE}" RAW_LINES)
     split_code("${RAW_LINES}" HEADERS BODY_LINES)
 
