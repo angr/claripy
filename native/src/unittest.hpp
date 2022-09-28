@@ -5,7 +5,7 @@
 #ifndef R_SRC_UNITTEST_HPP_
 #define R_SRC_UNITTEST_HPP_
 
-#ifndef ENABLE_TESTING
+#ifndef BUILD_TESTS
     #define ENABLE_UNITTEST_FRIEND_ACCESS
 #else
 

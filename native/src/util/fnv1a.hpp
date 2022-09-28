@@ -63,6 +63,7 @@ namespace Util {
         }
 
         /** Any HashSize version
+         *  Len is the number of entries within s (not the byte length)
          *  Default: 64
          */
         template <U64 HashSize = 64> static constexpr auto hash(CInput s, const U64 len) noexcept {
