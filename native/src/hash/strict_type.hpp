@@ -15,14 +15,19 @@
 namespace Hash {
 
     namespace Private {
-        template <typename T> constexpr Hash try_cuid() {
-            static_assert(CUID::has_static_cuid<T>, "No defined type-hash or static_cuid");
-            return T::static_cuid;
+        template <typename T> constexpr Hash type_id() noexcept {
+            if constexpr (std::is_same_v<T, pybind11::dict>) {
+                return UTIL_FILE_LINE_HASH;
+            }
+            else {
+                static_assert(CUID::has_static_cuid<T>, "No defined type-hash or static_cuid");
+                return T::static_cuid;
+            }
         }
     } // namespace Private
 
     /** A hash of exactly type T */
-    template <typename T> inline const constexpr Hash strict_type { Private::try_cuid<T>() };
+    template <typename T> inline const constexpr Hash strict_type { Private::type_id<T>() };
 
 #define M_T_HASH(TYPE)                                                                             \
     /** A hash of exactly this type */                                                             \

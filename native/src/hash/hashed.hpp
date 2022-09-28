@@ -9,6 +9,7 @@
 
 #include "../macros.hpp"
 
+#include <pybind11/pybind11.h> // Not just types, otherwise linker error
 
 namespace Hash {
 
@@ -18,8 +19,8 @@ namespace Hash {
     struct Hashed {
         /** A hash for this object */
         const Hash hash;
-        /** Get the hash as a signed 64-bit value */
-        constexpr I64 py_hash() noexcept { return Util::sign(hash); }
+        /** Get the python hash (a signed 64-bit int) */
+        constexpr I64 __hash__() noexcept { return Util::sign(hash); }
 
       protected:
         /** Constructor */

@@ -207,7 +207,7 @@ namespace Hash {
         return serialize_helper(p.get()); // SFINAE reject if not a Hashed
     }
 
-    /** A specialization for std::optional of integral types */
+    /** A specialization for std::optional */
     template <typename T> inline Hash serialize(const std::optional<T> &o) noexcept {
         static_assert(std::is_integral_v<Util::Type::RemoveCVR<T>>, "T must be integral");
         return HASH_CANTOR(Hash { o.has_value() }, serialize(o.value_or(0)));
@@ -228,6 +228,32 @@ namespace Hash {
 #endif
         // Return hash
         return fnv1a<U64>(hashes, v.size());
+    }
+
+    /** Serialization for an optional python dict */
+    inline Hash serialize(const std::optional<pybind11::dict> &py) {
+        // What keys we hash the values for in a dicts
+        static constexpr CCSC keys[] = { ANNOTATIONS_KEY };
+        static const constexpr auto len { sizeof(keys) / sizeof(keys[0]) };
+        // Check for non-existing dict
+        if (not py.has_value()) {
+            return 0;
+        }
+        // Hash
+        const auto &d { py.value() };
+        using PyHashT = decltype(pybind11::hash(d));
+        std::array<PyHashT, len> each;
+        uint_fast8_t entries { 0 };
+        for (uint_fast8_t i { 0 }; i < len; ++i) {
+            if (d.contains(keys[i])) {
+                each[entries] = pybind11::hash(d[keys[i]]);
+                ++entries;
+            }
+        }
+        if (LIKELY(entries != 0)) {
+            return fnv1a<PyHashT>(each.data(), entries);
+        }
+        return 0; // An empty dict is the same as no dict for us
     }
 
 } // namespace Hash
