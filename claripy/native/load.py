@@ -2,19 +2,28 @@
 Load the clari module in ./lib and install operators / sugar
 Warning: This requires hooking clari, it modifies the module
 """
+from pathlib import Path
 import logging
 import sys
 import os
 
 # TODO: find a better way, pybind11 doesn't seem to play well with relative imports
 old = sys.path
-sys.path = [ os.path.join(os.path.dirname(__file__), "lib") ]
+sys.path = [str(Path(__file__).parent / "lib")]
 import clari
+
 sys.path = old
 del old
 
 
 config_log = logging.getLogger(__file__)
+
+
+def _not_implemented(*_, **__):
+    """
+    Not implemented
+    """
+    raise NotImplementedError
 
 
 # TODO: remove clari.Create.foo from method calls (dict lookups are costly)
@@ -29,7 +38,13 @@ class Load:
         """
         Configure claricpp to work with claripy
         """
-        self._fix_operators()
+        clari.Expr.Base.__eq__ = _not_implemented
+        clari.Expr.Base.__ne__ = _not_implemented
+        config_log.info(
+            "Claricpp uses unsigned 64-bit integers to store hashes; "
+            "python uses signed 64-bit integers. The unsigned variant "
+            "is available via x.hash; the signed variant is returned by hash(x)"
+        )
         if src_root:
             clari.API.add_source_root(src_root)
 
@@ -47,7 +62,7 @@ class Load:
 
     def define_members(self):
         """
-        Define's various functions for clari to make it far easier to use
+        Defines various functions for clari to make it far easier to use
         """
         Create = clari.Create
         rm = clari.Mode.FP.Rounding
@@ -60,32 +75,6 @@ class Load:
     def _py_obj_ctors():
         clari.PyObj.VS.factory = clari.API.py_obj_ctor.vs
         del clari.API.py_obj_ctor
-
-    @staticmethod
-    def _fix_operators():
-        Create = clari.Create
-        # Equality (bindings default to pointer equality)
-        clari.Expr.Base.__eq__ = lambda a, b: Create.eq(a, b)
-        clari.Expr.Base.__ne__ = lambda a, b: Create.neq(a, b)
-        # Hashing
-        # clari.Annotation.Base.__hash__ = lambda x: x.hash
-        # clari.Annotation.Vec.__hash__ = lambda x: x.hash
-        # clari.Expr.Base.__hash__ = lambda x: x.hash
-        # clari.Op.PyObj.__hash__ = lambda x: x.hash
-        # clari.Op.Base.__hash__ = lambda x: x.hash TODO: consolidate
-        config_log.info("Claricpp uses unsigned 64-bit integers to store hashes; "
-            "python uses signed 64-bit integers. The unsigned variant "
-            "is available via x.hash; the signed variant is returned by hash(x)")
-        clari.Mode.FP.Width.__hash__ = lambda x: hash(x.exp, + (x.mantissa << 32))
-        # TODO: make make C++ hashes signed?
-        clari.Hash.Hashed.__hash__ = clari.PyObj.Base.py_hash
-        # repr (ignore pybind11 defaults)
-        # TODO: consolidate? HasRepr.__repr__ ?
-        clari.Annotation.Base.__repr__ = clari.Annotation.Base.repr
-        clari.Annotation.Vec.__repr__ = clari.Annotation.Vec.repr
-        clari.PyObj.Base.__repr__ = clari.PyObj.Base.repr
-        clari.Expr.Base.__repr__ = clari.Expr.Base.repr
-        clari.Op.Base.__repr__ = clari.Op.Base.repr
 
     @staticmethod
     def _link_logging(logger, *, debug_mode: bool):
@@ -140,15 +129,19 @@ class Load:
         Base.__init__ = _cls_init
 
     @staticmethod
-    def _def_magic_ops():
+    def _def_magic_ops():  # TODO: move to C++ API
         # TODO: reverse operators __radd__ etc
-        # TODO: support for things like "x + 3" instead of needing "x + BV(3, 32)"
+        # TODO: support for things like "x + 3" instead of needing "x + BV(3, 32)" ?
         # TODO: ask fish __sizeof__ for base # z3 backend uses getsizeof
         # TODO: ask fish __reduce__ for base
         # TODO: VS?
         check = hasattr(clari.Mode.FP.Rounding, "default")
         assert check, "Define a default FP rounding mode first"
         Create = clari.Create
+        # Equality
+        clari.Expr.Base.__eq__ = lambda a, b: Create.eq(a, b)
+        clari.Expr.Base.__ne__ = lambda a, b: Create.neq(a, b)
+
         ### Base / Bits / String
         clari.Expr.Base.__pos__ = Create.pos
         clari.Expr.Bits.__len__ = lambda x: x.bit_length

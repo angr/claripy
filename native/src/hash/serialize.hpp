@@ -146,13 +146,7 @@ namespace Hash {
 
     /** A specialization for T = Mode::FP::Width */
     template <> inline Hash serialize(const Mode::FP::Width &w) noexcept {
-        static_assert(sizeof(Mode::FP::Width) == 2 * sizeof(uint32_t),
-                      "Mode::FP::Width's composition differs from expected");
-        static_assert(sizeof(Mode::FP::Width) == sizeof(Hash),
-                      "serialize(Mode::FP::Width) must be modified.");
-        Hash tmp; // NOLINT
-        UTIL_TYPE_PUN_ONTO(&tmp, &w);
-        return tmp;
+        return Util::unsign(w.__hash__());
     }
 
     /** A specialization for T = std::byte */

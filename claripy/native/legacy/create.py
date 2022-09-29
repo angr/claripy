@@ -1,4 +1,4 @@
-from typing import List, Optional, Any, Tuple, Type, Callable
+from typing import List, Optional, Any, Dict, Tuple, Callable
 
 from .data_types import LegacyData
 from .fp import rm_py_to_cpp, width_py_to_cpp
@@ -30,70 +30,70 @@ def _ctor_type(op: str):
     C = clari.Create
     O = clari.Op
     _op_ctor_type = {
-        "BoolV": (C.literal_bool, O.Literal,),
-        "BVV": (_BVV, O.Literal,),
-        "Extract": (C.extract, O.Extract,),
-        "FPV": (C.literal_fp, O.Literal,),
-        "StringV": (C.literal_string, O.Literal,),
-        "StringS": (C.symbol_string, O.Symbol,),
-        "StrConcat": (C.concat, O.Concat,),
-        "__eq__": (C.eq, O.Eq,),
-        "StrContains": (C.String.contains, O.String.Contains,),
-        "StrIndexOf": (C.String.index_of, O.String.IndexOf,),
-        "BVS": (C.symbol_bv, O.Symbol,),
-        "__gt__": (C.ugt, O.UGT,),
-        "__lt__": (C.ult, O.ULT,),
-        "__ne__": (C.neq, O.Neq,),
-        "IntToStr": (C.String.from_int, O.String.FromInt,),
-        "StrIsDigit": (C.String.is_digit, O.String.IsDigit,),
-        "StrLen": (C.String.len, O.String.Len,),
-        "__le__": (C.ule, O.ULE,),
-        "__ge__": (C.uge, O.UGE,),
-        "Or": (C.or_, O.Or,),
-        "StrPrefixOf": (C.String.prefix_of, O.String.PrefixOf,),
-        "StrReplace": (C.String.replace, O.String.Replace,),
-        "StrToInt": (C.String.to_int, O.String.ToInt,),
-        "StrSubstr": (C.String.sub_string, O.String.SubString,),
-        "StrSuffixOf": (C.String.suffix_of, O.String.SuffixOf,),
-        "__add__": (C.add, O.Add,),
-        "__rshift__": (C.shift_arithmetic_right, O.ShiftArithmeticRight,),
-        "BoolS": (C.symbol_bool, O.Symbol,),
-        "And": (C.and_, O.And,),
-        "__mul__": (C.mul, O.Mul,),
-        "If": (C.if_, O.If,),
-        "union": (C.union_, O.Union,),
-        "intersection": (C.intersection_, O.Intersection,),
-        "LShR": (C.shift_logical_right, O.ShiftLogicalRight,),
-        "Reverse": (C.reverse, O.Reverse,),
-        "ZeroExt": (C.zero_ext, O.ZeroExt,),
-        "SignExt": (C.sign_ext, O.SignExt,),
-        "Concat": (C.concat, O.Concat,),
-        "__mod__": (C.mod_unsigned, O.ModUnsigned,),
-        "__sub__": (C.sub, O.Sub,),
-        "__or__": (C.or_, O.Or,),
-        "__xor__": (C.xor_, O.Xor,),
-        "__and__": (C.and_, O.And,),
-        "__floordiv__": (C.div_unsigned, O.DivUnsigned,),
-        "SDiv": (C.div_signed, O.DivSigned,),
-        "SMod": (C.mod_signed, O.ModSigned,),
-        "ULE": (C.ule, O.ULE,),
-        "Not": (C.not_, O.Not,),
-        "__lshift__": (C.shift_l, O.ShiftLeft,),
-        "fpToUBV": (C.FP.to_bv_unsigned, O.FP.ToBVUnsigned,),
-        "FPS": (C.symbol_fp, O.Symbol,),
-        "fpEQ": (C.eq, O.Eq,),
-        "fpAbs": (C.abs, O.Abs,),
-        "fpAdd": (C.FP.add, O.FP.Add,),
-        "fpSub": (C.FP.sub, O.FP.Sub,),
-        "fpMul": (C.FP.mul, O.FP.Mul,),
-        "fpDiv": (C.FP.div, O.FP.Div,),
-        "fpIsNaN": (C.FP.is_nan, O.FP.IsNan,),
-        "fpToIEEEBV": (C.FP.to_ieee_bv, O.FP.ToIEEEBV,),
-        "__invert__": (C.invert, O.Invert,),
-        "SLT": (C.slt, O.SLT,),
-        "SGE": (C.sge, O.SGE,),
-        "SLE": (C.sle, O.SLE,),
-        "widen": (C.widen, O.Widen,),
+        "BoolV": (C.literal_bool, O.Literal),
+        "BVV": (_BVV, O.Literal),
+        "Extract": (C.extract, O.Extract),
+        "FPV": (C.literal_fp, O.Literal),
+        "StringV": (C.literal_string, O.Literal),
+        "StringS": (C.symbol_string, O.Symbol),
+        "StrConcat": (C.concat, O.Concat),
+        "__eq__": (C.eq, O.Eq),
+        "StrContains": (C.String.contains, O.String.Contains),
+        "StrIndexOf": (C.String.index_of, O.String.IndexOf),
+        "BVS": (C.symbol_bv, O.Symbol),
+        "__gt__": (C.ugt, O.UGT),
+        "__lt__": (C.ult, O.ULT),
+        "__ne__": (C.neq, O.Neq),
+        "IntToStr": (C.String.from_int, O.String.FromInt),
+        "StrIsDigit": (C.String.is_digit, O.String.IsDigit),
+        "StrLen": (C.String.len, O.String.Len),
+        "__le__": (C.ule, O.ULE),
+        "__ge__": (C.uge, O.UGE),
+        "Or": (C.or_, O.Or),
+        "StrPrefixOf": (C.String.prefix_of, O.String.PrefixOf),
+        "StrReplace": (C.String.replace, O.String.Replace),
+        "StrToInt": (C.String.to_int, O.String.ToInt),
+        "StrSubstr": (C.String.sub_string, O.String.SubString),
+        "StrSuffixOf": (C.String.suffix_of, O.String.SuffixOf),
+        "__add__": (C.add, O.Add),
+        "__rshift__": (C.shift_arithmetic_right, O.ShiftArithmeticRight),
+        "BoolS": (C.symbol_bool, O.Symbol),
+        "And": (C.and_, O.And),
+        "__mul__": (C.mul, O.Mul),
+        "If": (C.if_, O.If),
+        "union": (C.union_, O.Union),
+        "intersection": (C.intersection_, O.Intersection),
+        "LShR": (C.shift_logical_right, O.ShiftLogicalRight),
+        "Reverse": (C.reverse, O.Reverse),
+        "ZeroExt": (C.zero_ext, O.ZeroExt),
+        "SignExt": (C.sign_ext, O.SignExt),
+        "Concat": (C.concat, O.Concat),
+        "__mod__": (C.mod_unsigned, O.ModUnsigned),
+        "__sub__": (C.sub, O.Sub),
+        "__or__": (C.or_, O.Or),
+        "__xor__": (C.xor_, O.Xor),
+        "__and__": (C.and_, O.And),
+        "__floordiv__": (C.div_unsigned, O.DivUnsigned),
+        "SDiv": (C.div_signed, O.DivSigned),
+        "SMod": (C.mod_signed, O.ModSigned),
+        "ULE": (C.ule, O.ULE),
+        "Not": (C.not_, O.Not),
+        "__lshift__": (C.shift_l, O.ShiftLeft),
+        "fpToUBV": (C.FP.to_bv_unsigned, O.FP.ToBVUnsigned),
+        "FPS": (C.symbol_fp, O.Symbol),
+        "fpEQ": (C.eq, O.Eq),
+        "fpAbs": (C.abs, O.Abs),
+        "fpAdd": (C.FP.add, O.FP.Add),
+        "fpSub": (C.FP.sub, O.FP.Sub),
+        "fpMul": (C.FP.mul, O.FP.Mul),
+        "fpDiv": (C.FP.div, O.FP.Div),
+        "fpIsNaN": (C.FP.is_nan, O.FP.IsNan),
+        "fpToIEEEBV": (C.FP.to_ieee_bv, O.FP.ToIEEEBV),
+        "__invert__": (C.invert, O.Invert),
+        "SLT": (C.slt, O.SLT),
+        "SGE": (C.sge, O.SGE),
+        "SLE": (C.sle, O.SLE),
+        "widen": (C.widen, O.Widen),
     }
     return _ctor_type(op)
 
@@ -119,7 +119,7 @@ def _ctor_args(op: str, cpp_type: type, py_args: List[Any], length: Optional[int
         return (py_args[0],)
     elif op in {'BVS', 'FPS', 'FPV', 'VSS', 'StringS'}:
         assert length is not None, f"{op} should have a length"
-        return (py_args[0], length,)
+        return (py_args[0], length)
     # Fix and order args
     args: List[Any] = [_to_cpp_arg(i) for i in py_args]
     if issubclass(cpp_type, clari.Op.AbstractFlat):
@@ -131,7 +131,8 @@ def _ctor_args(op: str, cpp_type: type, py_args: List[Any], length: Optional[int
     return args
 
 
-def create(base: type, op: str, py_args: List[Any], length: Optional[int]) -> Tuple[Type[clari.Expr.Base], LegacyData]:
+def create(base: type, op: str, py_args: List[Any],
+           length: Optional[int], other: Dict[str, Any]) -> Tuple[clari.Expr.Base, LegacyData]:
     """
     Create a claricpp object with op type op and py_args as arguments
     Length is passed if the object is sized
@@ -159,7 +160,7 @@ def create(base: type, op: str, py_args: List[Any], length: Optional[int]) -> Tu
     else:
         ctor, cpp_type = _ctor_type(op)
     # Construct native and legacy
-    native: Type[clari.Expr.Base] = ctor(*_ctor_args(op, cpp_type, py_args, length))
+    native: clari.Expr.Base = ctor(*_ctor_args(op, cpp_type, py_args, length), other)
     return native, LegacyData(
         exprs={hash(i._native):i for i in py_args if isinstance(i, base)},
         bvs=(py_args[1:] if op == "BVS" else None),

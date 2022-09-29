@@ -26,6 +26,14 @@ namespace Mode::FP {
         /** The full width of the fp */
         constexpr U64 no_sign_width() const noexcept { return exp + mantissa - 1; }
 
+        /** Signed 64-bit hash function */
+        inline I64 __hash__() const noexcept {
+            static_assert(sizeof(I64) == sizeof(Width), "Fix me");
+            I64 tmp; // NOLINT
+            UTIL_TYPE_PUN_ONTO(&tmp, this);
+            return tmp;
+        }
+
         /** Equality operator
          *  Note: This is internal to the class for API generation reasons
          */

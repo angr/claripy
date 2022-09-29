@@ -25,11 +25,12 @@ def _to_py_arg(x: Any, children: Dict[int, "claripy.ast.Base"]) -> Any:
         return width_cpp_to_py(x)
     return x
 
-def _chk_eq_args(a: List[Any], b: List[Any]) -> None:  # TODO: remove when not debugging
+def _chk_eq_args(a: List[Any], l: LegacyData) -> None:
     """
     Verify the cpp args were generated properly (they should be the same as the python args)
     TODO: THIS METHOD SHOULD BE DELETED
     """
+    b: List[Any] = l.py_args
     if len(a) != len(b) or any(hash(i) != hash(k) for i, k in zip(a, b)):
         print("Diff args!")
         print("Native: a")
@@ -37,7 +38,9 @@ def _chk_eq_args(a: List[Any], b: List[Any]) -> None:  # TODO: remove when not d
         import IPython
         IPython.embed()
 
-def args(op: str, uninitialized: bool, native: Type[clari.Expr.Base], legacy: LegacyData) -> List[Any]:
+
+def args(op: str, uninitialized: bool, native: Type[clari.Expr.Base],
+         legacy: LegacyData) -> List[Any]:
     """
     Generate the .args list; note this can be very expensive
     :param op: The python op name
@@ -59,12 +62,12 @@ def args(op: str, uninitialized: bool, native: Type[clari.Expr.Base], legacy: Le
     elif op in {"ZeroExt", "SignExt"}:
         cpp = cpp[::-1]
     elif op == "StringV":
-        cpp[1] /= 8
+        cpp[1] //= 8
     # Convert a C++ arg to python
     exprs = legacy.exprs
     ret: Tuple[Any] = tuple(_to_py_arg(i, exprs) for i in cpp)
     # TODO: delete this section; it just verifies .args was created properly
-    _chk_eq_args(ret, legacy.py_args)
+    _chk_eq_args(ret, legacy)
     return ret
 
 __all__ = ("args",)
