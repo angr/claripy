@@ -1,5 +1,12 @@
 #!/bin/bash -eu
 
+# Sanity check
+if [[ "${VIRTUAL_ENV:-}" == "" && "${FORCE_GEN:-}" != 1 ]]; then
+	echo "Run from the venv with z3 installed"
+	echo "Set FORCE_GEN=1 to override this."
+	exit 1
+fi
+
 # Config
 Z3="$(python3 -c "import z3, os; print(os.path.dirname(z3.__file__))")/include"
 PY="$(python3 -c 'from distutils.sysconfig import get_python_inc as f; print(f())')"
