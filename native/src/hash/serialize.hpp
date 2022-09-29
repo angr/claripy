@@ -250,7 +250,7 @@ namespace Hash {
                 ++entries;
             }
         }
-        if (LIKELY(entries != 0)) {
+        if (entries != 0) {
             return fnv1a<PyHashT>(each.data(), entries);
         }
         return 0; // An empty dict is the same as no dict for us

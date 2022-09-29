@@ -10,12 +10,21 @@
 
 namespace Create {
 
+    namespace Private {
+        template <typename T, typename... Args> constexpr bool is_u64() {
+            return (sizeof...(Args) == 0) && std::is_same_v<U64, Util::Type::RemoveCVR<T>>;
+        };
+    } // namespace Private
+
     /** Create an Expr with a symbol op with annotations */
     template <typename T, typename... Args>
     Expr::BasePtr symbol(std::string &&name, Expr::OpPyDict d, Args &&...args) {
         static_assert(Util::Type::Is::ancestor<Expr::Bits, T>,
                       "Create::symbol argument types must be a subclass of Base");
         static_assert(std::is_final_v<T>, "Create::symbol's T must be a final type");
+        if constexpr (sizeof...(Args) > 0) {
+            static_assert(Private::is_u64<Args...>(), "Args... should be a U64");
+        }
         return Expr::factory<T>(true, Op::factory<Op::Symbol>(std::move(name)), std::move(d),
                                 std::forward<Args>(args)...);
     }
