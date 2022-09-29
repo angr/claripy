@@ -113,8 +113,8 @@ void fp() {
     /**************************************************/
 
     Util::Log::debug("Testing to_bv...");
-    UNITTEST_ASSERT(test_id(C::FP::to_bv_signed(tz, fp_x, Expr::get_bit_length(fp_x))));
-    UNITTEST_ASSERT(test_id(C::FP::to_bv_unsigned(tz, fp_x, Expr::get_bit_length(fp_x))));
+    UNITTEST_ASSERT(test_id(C::FP::to_bv_signed(tz, fp_x, Expr::bit_length(fp_x))));
+    UNITTEST_ASSERT(test_id(C::FP::to_bv_unsigned(tz, fp_x, Expr::bit_length(fp_x))));
 
     Util::Log::debug("Testing from_fp...");
     /* TODO: UNITTEST_ASSERT(test_id(C::FP::from_fp(tz, fp_x, Mode::FP::dbl))); */

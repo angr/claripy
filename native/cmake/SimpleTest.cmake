@@ -78,7 +78,7 @@ function(simple_test FUNC_NAME)
 	add_dependencies("${BUILD_TESTS_TARGET}" "${TEST_NAME}.test")
 
 	# Config test
-	target_link_libraries("${BINARY}" PRIVATE "${TESTLIB}" pybind11::embed)
+	target_link_libraries("${BINARY}" PRIVATE "${TESTLIB}")
 	target_include_directories("${BINARY}" SYSTEM PRIVATE "${TESTLIB_SRC}/..")
 	target_compile_definitions("${BINARY}" PRIVATE "_GLIBCXX_ASSERTIONS")
 	target_compile_options("${BINARY}" PRIVATE

@@ -14,7 +14,7 @@ endif()
 # Then add headers and sources to the test library
 # Note: Visibility for things is set to public as this is for testing
 add_library("${TESTLIB}" SHARED)
-target_link_libraries("${TESTLIB}" PUBLIC "${CLARICPP}")
+target_link_libraries("${TESTLIB}" PUBLIC "${CLARICPP}" pybind11::embed)
 target_include_directories("${TESTLIB}" SYSTEM PUBLIC "${CLARICPP_SRC}/..")
 
 # Include additional header files

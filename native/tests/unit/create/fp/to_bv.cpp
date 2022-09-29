@@ -17,7 +17,7 @@ template <bool Signed> void to_bv_b() {
 
     // Test
     const auto exp { (Signed ? Create::FP::to_bv_signed
-                             : Create::FP::to_bv_unsigned)(mode, fp, bit_length, { nullptr }) };
+                             : Create::FP::to_bv_unsigned)(mode, fp, bit_length, {}) };
 
     // Pointer checks
     UNITTEST_ASSERT(fp.use_count() == 2);

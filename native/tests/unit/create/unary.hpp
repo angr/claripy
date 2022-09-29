@@ -21,7 +21,7 @@ template <typename Out, typename In, typename OpT, auto CreateF> inline void una
     const auto arg { UnitTest::TestLib::Factories::t_literal<In>() };
 
     // Test
-    const auto exp { CreateF(arg, nullptr) };
+    const auto exp { CreateF(arg, {}) };
 
     // Pointer checks
     UNITTEST_ASSERT(exp.use_count() == 1);

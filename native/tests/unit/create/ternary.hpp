@@ -32,7 +32,7 @@ template <typename Out, typename In, typename OpT, SM Mode, auto CreateF> inline
     const auto c { UnitTest::TestLib::Factories::t_literal<In>(2) };
 
     // Test
-    const auto exp { CreateF(a, b, c, nullptr) };
+    const auto exp { CreateF(a, b, c, {}) };
 
     // Pointer checks
     UNITTEST_ASSERT(a.use_count() == 2);

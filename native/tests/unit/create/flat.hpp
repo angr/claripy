@@ -28,7 +28,7 @@ template <typename T, typename OpT, SM Mode, auto CreateF> inline void flat() {
     };
 
     // Test
-    const auto exp { CreateF(input, nullptr) };
+    const auto exp { CreateF(input, {}) };
 
     // Pointer checks
     for (auto &i : input) {

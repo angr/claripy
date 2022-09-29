@@ -32,7 +32,7 @@ inline void uint_binary() {
     const IntT b { 16 };
 
     // Test
-    const auto exp { CreateF(a, b, nullptr) };
+    const auto exp { CreateF(a, b, {}) };
 
     // Pointer checks
     UNITTEST_ASSERT(a.use_count() == 2);

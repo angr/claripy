@@ -9,6 +9,8 @@
 
 #include "test_func.hpp"
 
+#include <pybind11/embed.h>
+
 
 /** Testlib init */
 static inline void testlib_init() {
@@ -21,6 +23,7 @@ static inline void testlib_init() {
     Util::Log::info("Preparing for unit test");
     Util::Err::Claricpp::toggle_backtrace(true);
     Util::Backtrace::handle_signals();
+    pybind11::initialize_interpreter(false);
     Util::Log::info("Unit test preparations complete");
 }
 

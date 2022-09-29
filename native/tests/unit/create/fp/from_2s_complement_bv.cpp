@@ -24,7 +24,7 @@ template <bool Signed> void from_2s_complement_bv_v() {
     // Test
     const auto exp { (Signed ? Create::FP::from_2s_complement_bv_signed
                              : Create::FP::from_2s_complement_bv_unsigned)(mode, bv, Mode::FP::dbl,
-                                                                           { nullptr }) };
+                                                                           {}) };
 
     // Pointer checks
     UNITTEST_ASSERT(bv.use_count() == 2);

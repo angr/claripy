@@ -19,7 +19,7 @@ template <typename T> void symbol_t() {
     // Test
     Expr::BasePtr sym;
     if constexpr (Util::Type::Is::ancestor<Expr::Bits, T>) {
-        sym = Create::symbol<T>(std::move(name), size);
+        sym = Create::symbol<T>(std::move(name), {}, size);
     }
     else {
         sym = Create::symbol_bool(std::move(name));

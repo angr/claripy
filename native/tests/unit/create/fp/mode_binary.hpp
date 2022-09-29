@@ -21,7 +21,7 @@ template <typename OpT, auto CreateF> inline void mode_binary() {
 
     // Test
     const Mode::FP::Rounding mode { Mode::FP::Rounding::TowardsZero };
-    const auto exp { CreateF(a, b, mode, nullptr) };
+    const auto exp { CreateF(a, b, mode, {}) };
 
     // Pointer checks
     UNITTEST_ASSERT(a.use_count() == 2);

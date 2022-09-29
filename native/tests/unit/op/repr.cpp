@@ -57,7 +57,7 @@ void repr() {
     const auto ite { make_ite(str) };
     const auto solution { make_solution(str, str.size()) };
 
-    UNITTEST_ASSERT(ite->repr() == solution);
+    UNITTEST_ASSERT(ite->__repr__() == solution);
 
     std::ostringstream s;
     s << ite;

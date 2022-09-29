@@ -11,7 +11,7 @@ void simplify() {
 
     // Test function
     const auto test = [&z3](const Expr::BasePtr &t, const Expr::BasePtr &sol) {
-        return z3.simplify(t.get())->repr() == sol->repr();
+        return z3.simplify(t.get())->__repr__() == sol->__repr__();
     };
 
     // FP

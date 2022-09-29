@@ -25,8 +25,6 @@ int UnitTest::TestLib::test_func(TestFN &f) {
     // Test f
     try {
         f();
-        Util::Log::info("Test case passed!");
-        return EXIT_SUCCESS;
     }
     // UnitTest error
     catch (Error &e) {
@@ -41,4 +39,7 @@ int UnitTest::TestLib::test_func(TestFN &f) {
         std::signal(SIGABRT, nullptr);
         UNITTEST_ERR("std::exception: ", e.what());
     }
+    // Success
+    Util::Log::info("Test case passed!");
+    return EXIT_SUCCESS;
 }
