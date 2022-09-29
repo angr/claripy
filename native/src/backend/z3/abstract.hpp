@@ -103,7 +103,7 @@ namespace Backend::Z3 {
                 std::string name { decl.name().str() };
                 switch (sort.sort_kind()) {
                     case Z3_BV_SORT: {
-                        const auto bl { sort.bv_size() };
+                        const U64 bl { sort.bv_size() };
                         const U64 name_hash { Util::FNV1a<char>::hash(name.c_str(), name.size()) };
                         if (const auto lookup { satd.find(name_hash) }; lookup != satd.end()) {
                             using namespace pybind11::literals;

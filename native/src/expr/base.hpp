@@ -5,6 +5,7 @@
 #ifndef R_SRC_EXPR_BASE_HPP_
 #define R_SRC_EXPR_BASE_HPP_
 
+#include "../error.hpp"
 #include "../factory.hpp"
 #include "../has_repr.hpp"
 
@@ -28,6 +29,7 @@ namespace Expr {
 
     /** The base Expr type
      *  All Exprs must subclass this
+     *  Annotations passed via the python dict *must* be stored in a tuple
      */
     class Base : public HasRepr<Base>, public Factory::FactoryMade {
         FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base)
@@ -52,7 +54,7 @@ namespace Expr {
          *  Warning: Do not edit this dict
          *  pybind11 doesn't really do const, so we can't here either :(
          */
-        inline OpPyDict annotations() const {
+        inline std::optional<pybind11::tuple> annotations() const {
             if (dict) {
                 const auto &d { dict.value() };
                 if (d.contains(ANNOTATIONS_KEY)) {
@@ -71,6 +73,10 @@ namespace Expr {
             op { std::move(o) },
             dict { std::move(d) } {
 #ifdef DEBUG
+            if (dict && dict->contains(ANNOTATIONS_KEY)) {
+                UTIL_ASSERT(Error::Expr::Type, PyTuple_Check(dict.value()[ANNOTATIONS_KEY].ptr()),
+                            "Annotations must be passed as a tuple");
+            }
             UTIL_ASSERT(Util::Err::Usage, op, "op may not be nullptr");
             ctor_debug_checks();
 #endif

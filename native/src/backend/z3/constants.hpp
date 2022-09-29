@@ -13,7 +13,7 @@ namespace Backend::Z3 {
     /** A map used for translocating annotations between symbols
      *  It assists in translocations between pre-conversion and post-abstraction exprs
      */
-    using SymAnTransData = std::map<U64, pybind11::dict>;
+    using SymAnTransData = std::map<U64, pybind11::tuple>;
 
     /** The designated NaN for the given type that the Z3 backend uses */
     template <typename T>
