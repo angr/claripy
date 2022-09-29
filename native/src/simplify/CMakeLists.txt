@@ -1,5 +1,5 @@
 # Add sources
-target_sources("${CLARICPP}" PRIVATE
+target_sources("${CLARI}" PRIVATE
 	./simplifiers.cpp
 	./simplify.cpp
 )

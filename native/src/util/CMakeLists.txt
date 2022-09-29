@@ -1,5 +1,5 @@
 # Add current directory's source files
-target_sources("${CLARICPP}" PRIVATE
+target_sources("${CLARI}" PRIVATE
 	recurrence_guard.cpp
 	stack_limit.cpp
 	terminate.cpp

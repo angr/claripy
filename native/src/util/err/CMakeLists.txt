@@ -1,4 +1,4 @@
 # Add current directory's source files
-target_sources("${CLARICPP}" PRIVATE
+target_sources("${CLARI}" PRIVATE
 	claricpp.cpp
 )

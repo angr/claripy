@@ -21,7 +21,7 @@ option( OPTIMIZE_FOR_NATIVE "Build with -march=native etc"  OFF )
 option( ENABLE_ANSI_COLOR_CODES "Enable ansi color codes"   ON )
 
 
-# Where the claricpp source will be installed
+# Where the the library source will be installed
 # This source will be parsed by backtraces for code snippits
 # Set this to empty if dynamic configuration is preferred (ex. building with setup.py)
 default(SOURCE_ROOT_FOR_BACKTRACE "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -37,8 +37,8 @@ default(SOURCE_ROOT_FOR_BACKTRACE "${CMAKE_CURRENT_SOURCE_DIR}")
 ### Constants ###
 
 # Shared library name
-default( CLARICPP "clari" )
-message("Library name: ${CLARICPP}")
+default( CLARI "clari" )
+message("Library name: ${CLARI}")
 
 # Run make <DOC_MAKE_TARGET> to build documentation if BUILD_DOC is ON
 # Running make <DOC_MAKE_TARGET> generates html, latex, and man pages
@@ -146,8 +146,8 @@ set( Z3_MAKE_TARGET "z3" )
 #  PATH     - Define the library to be loaded from some file path
 #  BUILD    - Build z3 either from a local directory or git link (local will be prioritized)
 # Note that for all modes, the output must be a directory containing a 'bin' and 'include' directory
-# The 'bin' directory should include the shared library claricpp can link to
-# The 'include' directory should include the header files claricpp can use
+# The 'bin' directory should include the shared library clari can link to
+# The 'include' directory should include the header files clari can use
 default( Z3_ACQUISITION_MODE SYSTEM )
 
 # If on, forces re-creation of Z3 links and such
@@ -256,7 +256,7 @@ endif()
 
 
 # Define the project
-project("${CLARICPP}" C CXX)
+project("${CLARI}" C CXX)
 
 # Define standards
 set(CMAKE_C_STANDARD 11)
@@ -281,10 +281,6 @@ message(STATUS "Version: ${VERSION}")
 
 # The API version (on macOS: the compatability version; we support only the current one)
 default( SOVERSION "${VERSION}" )
-
-# Library source
-# Used for compilation and header lookup for tests
-set(CLARICPP_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 
 #################################################
@@ -432,9 +428,9 @@ endif()
 # Note: This should be the last program constant
 # Non-target specific things *must* be defined before this for them to affect this
 if(CMAKE_BUILD_TYPE MATCHES Debug)
-	pybind11_add_module("${CLARICPP}" SHARED)
+	pybind11_add_module("${CLARI}" SHARED)
 else()
-	pybind11_add_module("${CLARICPP}")
+	pybind11_add_module("${CLARI}")
 endif()
 
 
@@ -452,7 +448,7 @@ endif()
 
 # Enable good coding checks as actual warnings
 if(NOT EFFECTIVE_CPP_STYLE_CHECK)
-	target_compile_options("${CLARICPP}" PUBLIC
+	target_compile_options("${CLARI}" PUBLIC
 		"-Weffc++" # Enforces a few generally good C++ coding practices
 		"-Wno-error=effc++" # Allow effc++ warnings to remain warnings
 	)
@@ -460,7 +456,7 @@ endif()
 
 # Optimize for native code
 if(OPTIMIZE_FOR_NATIVE)
-	target_compile_options("${CLARICPP}" PRIVATE
+	target_compile_options("${CLARI}" PRIVATE
 		"-march=native"
 		"-mtune=native"
 	)
@@ -469,49 +465,49 @@ endif()
 # RTTI override
 if(RTTI_OVERRIDE)
 	message("RTTI_OVERRIDE enabled; forcibly assuming compiler supports RTTI")
-	target_compile_definitions("${CLARICPP}" PUBLIC "RTTI_OVERRIDE") # Export this macro
+	target_compile_definitions("${CLARI}" PUBLIC "RTTI_OVERRIDE") # Export this macro
 endif()
 
 # Fix compile time logging
 if(CONSTANT_LOG_LEVEL)
     message("Constant log level set!")
-	target_compile_definitions("${CLARICPP}" PUBLIC "CONSTANT_LOG_LEVEL") # Export this macro
+	target_compile_definitions("${CLARI}" PUBLIC "CONSTANT_LOG_LEVEL") # Export this macro
 else()
     message("Runtime adjustable log level enabled!")
 endif()
 
 # Enable testing
 if(BUILD_TESTS)
-	target_compile_definitions("${CLARICPP}" PUBLIC "BUILD_TESTS") # Export this macro
+	target_compile_definitions("${CLARI}" PUBLIC "BUILD_TESTS") # Export this macro
 endif()
 
 # Build type
 if(CMAKE_BUILD_TYPE MATCHES Debug)
     message("Debug Mode enabled!")
-	target_compile_definitions("${CLARICPP}"
+	target_compile_definitions("${CLARI}"
 		PUBLIC "DEFAULT_LOG_LEVEL=${DEFAULT_DEBUG_LOG_LEVEL}" # Export this macro
 		PUBLIC "_GLIBCXX_ASSERTIONS" # Export this macro
 		PUBLIC "DEBUGMODE=1" # Export this macro
 		PUBLIC "DEBUG=1" # Export this macro
 	)
-	target_compile_options("${CLARICPP}" PUBLIC
+	target_compile_options("${CLARI}" PUBLIC
 		"-O0"
 		"-fasynchronous-unwind-tables"
 		"-grecord-gcc-switches"
 	)
-	target_link_options("${CLARICPP}" PUBLIC
+	target_link_options("${CLARI}" PUBLIC
 		"-rdynamic"
 	)
 elseif(CMAKE_BUILD_TYPE MATCHES Rel) # Release / RelWithDebugInfo
     message("Release Build enabled!")
-	target_compile_definitions("${CLARICPP}"
+	target_compile_definitions("${CLARI}"
 		 PUBLIC "DEFAULT_LOG_LEVEL=${DEFAULT_RELEASE_LOG_LEVEL}" # Export this macro
 	)
 	# Compilation and linker flags
-	target_compile_options("${CLARICPP}" PRIVATE "-pipe" "-O3")
+	target_compile_options("${CLARI}" PRIVATE "-pipe" "-O3")
 else()
 	message(WARNING "Build level: ${CMAKE_BUILD_TYPE}")
-	target_compile_definitions("${CLARICPP}"
+	target_compile_definitions("${CLARI}"
 		PUBLIC "DEFAULT_LOG_LEVEL=${DEFAULT_OTHER_LOG_LEVEL}" # Export this macro
 	)
 endif()
@@ -520,7 +516,8 @@ endif()
 # These come after build type as they may override the given flags
 if(ENABLE_SECURITY)
 	message(WARNING "Security mode enabled. Overriding other options!")
-	include(EnableSecurity)
+	include(enable_security)
+	enable_security("${CLARI}" "${ENABLE_MEMCHECK}" "${ENABLE_CET}")
 endif()
 
 # Configure library compilation and linking
@@ -530,8 +527,8 @@ if(CMAKE_BUILD_TYPE MATCHES Rel)
 	check_ipo_supported(RESULT IPO_SUPPORTED OUTPUT IPO_ERROR)
 	if (IPO_SUPPORTED)
 		message(STATUS "Interprocedural optimization enabled")
-		target_link_options("${CLARICPP}" PRIVATE "-flto")
-		set_property(TARGET "${CLARICPP}" PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+		target_link_options("${CLARI}" PRIVATE "-flto")
+		set_property(TARGET "${CLARI}" PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 	else()
 		message(WARNING "Interprocedural optimization is not supported: ${IPO_ERROR}")
 		message("Disabling interprocedural optimization")
@@ -546,22 +543,22 @@ endif()
 #################################################
 
 
-# Claricpp library
-add_subdirectory("${CLARICPP_SRC}")
+# Library source
+add_subdirectory(src)
 
 # Backtrace config
-add_backward("${CLARICPP}" TRUE)
+add_backward("${CLARI}" TRUE)
 
 # Z3 config
-target_include_directories("${CLARICPP}"
+target_include_directories("${CLARI}"
 	SYSTEM BEFORE
 	PUBLIC "${Z3_INCLUDE_DIR}"
 	PUBLIC ${Boost_INCLUDE_DIRS}
 )
 if (NOT GMP_INCLUDE_DIR STREQUAL "")
-	target_include_directories("${CLARICPP}" SYSTEM BEFORE PUBLIC "${GMP_INCLUDE_DIR}")
+	target_include_directories("${CLARI}" SYSTEM BEFORE PUBLIC "${GMP_INCLUDE_DIR}")
 endif()
-target_link_libraries("${CLARICPP}"
+target_link_libraries("${CLARI}"
 	PUBLIC "${Z3_LINK_TARGET}"
 	PUBLIC "${GMP_LIBRARIES}" # Boost multiprecision backend
 	# PUBLIC dl (only necessary if using native backtraces; Backward handles it's own dependencies)

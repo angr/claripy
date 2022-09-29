@@ -785,7 +785,7 @@ class Clari(Library):
         assert z3_built is not None, "z3 was not built"
         config: Dict[str, Union[Path, bool, str, None]] = {
             "VERSION": version,
-            "CLARICPP": clari,  # TODO: clari
+            "CLARI": clari,
             # Build options
             "BUILD_TESTS": self._build_tests,
             "BUILD_DOC": self._build_doc,
