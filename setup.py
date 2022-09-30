@@ -6,7 +6,6 @@ from zipfile import ZipFile
 from hashlib import sha256
 from pathlib import Path
 from enum import Enum
-from glob import glob
 import subprocess
 import platform
 import tempfile
@@ -113,9 +112,9 @@ class BuiltLib:
         exact = (where / f"{self.name}.{ext}").resolve()
         if exact.exists():
             return exact
-        files: List[str] = glob(f"{where / self.name}.*")
+        files: List[Path] = where.glob(f"{self.name}.*")
         # Check ext after glob b/c .'s can overlap
-        files: List[str] = [i for i in files if i.endswith(f".{ext}")]
+        files: List[Path] = [i for i in files if str(i).endswith(f".{ext}")]
         if len(files) == 1:
             return Path(files[0]).absolute()
         if len(files) > 1:
@@ -283,7 +282,7 @@ def download_checksum_extract(name: str, where: Path,
     print(f"Extracting {name} to: {raw}")
     extract(raw, comp_f, down.ext)
     os.remove(comp_f)
-    return raw, [Path(i).absolute() for i in glob(f"{raw}/*")]
+    return raw, [Path(i).absolute() for i in raw.glob("*")]
 
 
 class CleanLevel(Enum):
@@ -317,6 +316,10 @@ def to_clean_lvl(name: str) -> int:
         raise Exception(f"Invalid clean level: {name}. {valid}")
 
 
+RawChk: type = Dict[str, Union[Path, BuiltLib]]
+Chk: type = Dict[str, Union[Path, Callable[[], Path]]]
+
+
 ######################################################################
 #                         Dependency Classes                         #
 ######################################################################
@@ -328,8 +331,8 @@ class Library:
     Subclasses may want to override _get, _build, _install, and _clean
     """
 
-    def __init__(self, get_chk: Dict[str, Path], build_chk: Dict[str, Path],
-                 install_chk: Dict[str, Path], *dependencies: "Library"):
+    def __init__(self, get_chk: RawChk, build_chk: RawChk,
+                 install_chk: RawChk, *dependencies: "Library"):
         """
         get_chk, build_chk, and install_chk are dicts to given to _body
         When call .get(), self._done(*i) will be called for i in get_chk
@@ -344,16 +347,16 @@ class Library:
         self._dependencies: List[Library] = dependencies
         assert self._dep_check(type(self)), f"Cyclical dependency found on: {type(self)}"
         # Done check lists
-        self._get_chk: Dict[str, Path] = dict(get_chk)
-        self._build_chk: Dict[str, Path] = self._fix_chk(build_chk, "find_built")
-        self._install_chk: Dict[str, Path] = self._fix_chk(install_chk, "find_installed")
+        self._get_chk: Chk = dict(get_chk)
+        self._build_chk: Chk = self._fix_chk(build_chk, "find_built")
+        self._install_chk: Chk = self._fix_chk(install_chk, "find_installed")
 
     @staticmethod
-    def _fix_chk(d: Dict[str, str], name: str) -> Dict[str, str]:
+    def _fix_chk(d: RawChk, name: str) -> Chk:
         """
         Return a new dict which replaces BuiltLib values with their name functions
         """
-        return {i: getattr(k, name) if isinstance(k, BuiltLib) else k
+        return {i: getattr(k, name) if isinstance(k, BuiltLib) else k.absolute()
                 for i, k in d.items()}
 
     def _dep_check(self, t: type) -> bool:
@@ -363,7 +366,7 @@ class Library:
         return all(not isinstance(i, t) and i._dep_check(t)
                    for i in self._dependencies)
 
-    def _done(self, name: str, path: Union[Path, Callable[[], Path]]) -> bool:
+    def _done(self, name: str, path: Chk) -> bool:
         """
         If path is a function, path = path()
         If path exists, note it will be reused and return True
@@ -393,7 +396,7 @@ class Library:
             getattr(obj, fn)(called)
             print(f"Resuming {me}")
 
-    def _body(self, lvl: CleanLevel, chk: Dict[str, Path], called: Set[str]) -> None:
+    def _body(self, lvl: CleanLevel, chk: Chk, called: Set[str]) -> None:
         """
         A helper function used to automate the logic of invoking dependencies and body
         Note: for lvl = license, license files are force cleaned!
@@ -520,12 +523,12 @@ class GMP(Library):
 
     def __init__(self):
         get_chk: Dict[str, Path] = {"GMP source": self._source}
-        build_chk: Dict[str, Path] = {
+        build_chk: RawChk = {
             "GMP license": self._source / "COPYINGv3",
             "GMP library": self._lib,
             "GMP include directory": self.include_dir,
         }
-        install_chk: Dict[str, Path] = {"GMP lib": self._lib.find_installed}
+        install_chk: RawChk = {"GMP lib": self._lib}
         super().__init__(get_chk, build_chk, install_chk)
 
     def _get(self) -> None:
@@ -693,7 +696,7 @@ class Z3(Library):
     lib = SharedLib("libz3", _root / "lib")
 
     def __init__(self):
-        super().__init__({}, {}, {"Z3 library": self.lib.find_installed})
+        super().__init__({}, {}, {"Z3 library": self.lib})
 
     # _get is simply that _root has been resolved
     # Z3's pip has no license file so nothing for us to copy
@@ -771,7 +774,7 @@ class Clari(Library):
         self._build_api: bool = api
         self._no_build: bool = no_build
         # Config
-        chk: Dict[str, Path] = {} if (self._build_tests or self._build_doc) else {
+        chk: RawChk = {} if (self._build_tests or self._build_doc) else {
             self._lib.name: self._lib,
             "C++ Source files": self._out_native_src
         }
@@ -853,7 +856,7 @@ class Clari(Library):
             def ign(d: str, fs: List[str]) -> Set[str]:
                 keep = shutil.ignore_patterns("*.cpp", "*.hpp", "*.c", "*.h")(d, fs)
                 bad = {i for i in fs if i not in keep and not Path(d, i).is_dir()}
-                return bad | {i for i in fs if Path(d, i) == self._binder}
+                return bad | {i for i in fs if Path(d, i).resolve() == self._binder.resolve()}
 
             # Parent dir
             parent = self._out_native_src.parent
