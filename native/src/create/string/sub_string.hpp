@@ -13,27 +13,29 @@ namespace Create::String {
     namespace Private {
         /** Calculate the length for a SubString expr
          *  Expr pointers may not be nullptr
-         *  @todo Adjust as we edit concrete
          */
         static inline U64 sub_string_length(const Expr::BasePtr &count,
                                             const Expr::BasePtr &full_string) {
-            using E = Error::Expr::Type;
-            // If symbolic, use full_string's length
-            if (count->symbolic) {
-                UTIL_ASSERT(E, CUID::is_t<Expr::String>(full_string),
-                            "full_string expr must be a String");
-                return Expr::bit_length(full_string);
+            UTIL_ASSERT(Error::Expr::Type, CUID::is_t<Expr::String>(full_string),
+                        "full_string expr must be a String");
+            UTIL_ASSERT_NOT_NULL_DEBUG(count);
+            if (CUID::is_t<Op::Literal>(count->op) && CUID::is_t<Expr::BV>(count)) {
+                UTIL_ASSERT_NOT_NULL_DEBUG(count->op);
+                const auto &prim {
+                    Util::checked_static_cast<CTSC<Op::Literal>>(count->op.get())->value
+                };
+                switch (prim.index()) {
+#define M_GET(TYPE)                                                                                \
+    case Util::Type::index<decltype(prim), TYPE>:                                                  \
+        return static_cast<U64>(std::get<TYPE>(prim))
+                    M_GET(uint8_t);
+                    M_GET(uint16_t);
+                    M_GET(uint32_t);
+                    M_GET(U64);
+#undef M_GET
+                }
             }
-            // If concrete, use Concrete Op's length
-            else {
-#ifdef DEBUG
-                UTIL_ASSERT(E, CUID::is_t<Expr::BV>(count), "count expr must be a BV");
-#endif
-                UTIL_ASSERT(E, CUID::is_t<Op::Literal>(count->op),
-                            "count op must be a Literal. More than likely, this means that some "
-                            "simplifiers are unimplemented / failing.");
-                return 0x1000; // NOLINT TODO
-            }
+            return Expr::bit_length(full_string);
         }
     } // namespace Private
 

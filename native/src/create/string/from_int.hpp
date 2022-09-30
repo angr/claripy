@@ -16,14 +16,14 @@ namespace Create::String {
      *  This should be large-enough, and isn't as bad an over-estimation as INT_MAX or anything
      *  Expr pointers may not be nullptr
      *  Note: This is not trivial due to its length calculation
+     *  TODO: length might want to be: Expr::bit_length(x) + 2_ui * CHAR_BIT
      */
     inline Expr::BasePtr from_int(const Expr::BasePtr &x, Expr::OpPyDict d = {}) {
-        namespace Err = Error::Expr;
-        UTIL_ASSERT(Err::Usage, x, "Expr pointers cannot be nullptr");
-        UTIL_ASSERT(Err::Type, CUID::is_t<Expr::BV>(x), "operand must be each be of type Expr::BV");
-        return Simplify::simplify(
-            Expr::factory<Expr::String>(x->symbolic, Op::factory<Op::String::FromInt>(x),
-                                        std::move(d), Expr::bit_length(x) + 2_ui * CHAR_BIT));
+        UTIL_ASSERT(Error::Expr::Usage, x, "Expr pointers cannot be nullptr");
+        UTIL_ASSERT(Error::Expr::Type, CUID::is_t<Expr::BV>(x),
+                    "operand must be each be of type Expr::BV");
+        return Simplify::simplify(Expr::factory<Expr::String>(
+            x->symbolic, Op::factory<Op::String::FromInt>(x), std::move(d), CHAR_BIT * 10000_ui));
     }
 
 } // namespace Create::String

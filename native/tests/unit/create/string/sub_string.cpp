@@ -23,7 +23,8 @@ template <bool Literal> void sub_string_b() {
 
     // Create distinct inputs
     const auto a { Create::literal(0_ui) };
-    const auto b { create_bv<Literal>("named", 1) };
+    const U64 b_value { 1 };
+    const auto b { create_bv<Literal>("named", b_value) };
     const auto c { Create::literal("2"s) };
 
     // Test
@@ -49,7 +50,7 @@ template <bool Literal> void sub_string_b() {
 
     // Size check
     if constexpr (Literal) {
-        UNITTEST_ASSERT(exp_down->bit_length == 0x1000); // TODO
+        UNITTEST_ASSERT(exp_down->bit_length == b_value);
     }
     else {
         UNITTEST_ASSERT(exp_down->bit_length == c_down->bit_length);
