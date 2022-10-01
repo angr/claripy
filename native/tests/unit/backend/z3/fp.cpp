@@ -112,6 +112,9 @@ void fp() {
     /*                  Non-Trivial                   */
     /**************************************************/
 
+    Util::Log::debug("Testing sqrt...");
+    UNITTEST_ASSERT(test_id(C::FP::sqrt(tz, fp_x)));
+
     Util::Log::debug("Testing to_bv...");
     UNITTEST_ASSERT(test_id(C::FP::to_bv_signed(tz, fp_x, Expr::bit_length(fp_x))));
     UNITTEST_ASSERT(test_id(C::FP::to_bv_unsigned(tz, fp_x, Expr::bit_length(fp_x))));

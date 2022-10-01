@@ -20,7 +20,10 @@ namespace Backend::Z3 {
         inline const z3::solver *operator->() const { return &s; }
         // Friend operators
         friend inline std::ostream &operator<<(std::ostream &, const Solver &);
-
+        /** Clone the solver */
+        inline Solver clone(z3::context & c) const {
+            return z3::solver(c, s, z3::solver::translate{});
+        }
       private:
         /** The z3::solver */
         z3::solver s;

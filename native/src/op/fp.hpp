@@ -11,5 +11,6 @@
 #include "fp/mode_binary.hpp"
 #include "fp/to_bv.hpp"
 #include "fp/trivial.hpp"
+#include "fp/sqrt.hpp"
 
 #endif

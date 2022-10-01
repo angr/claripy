@@ -476,6 +476,12 @@ namespace Backend::Z3 {
 
             // Other
 
+            /** FP::Sqrt converter */
+            static z3::expr sqrt(const Mode::FP::Rounding mode, const z3::expr &fp) {
+                fp.ctx().set_rounding_mode(to_z3_rm(mode));
+                return z3::sqrt(fp, fp.ctx().fpa_rounding_mode());
+            }
+
             /** FP::ToBVSigned converter */
             static z3::expr to_bv_signed(const Mode::FP::Rounding mode, const z3::expr &e,
                                          const U64 bit_length) {

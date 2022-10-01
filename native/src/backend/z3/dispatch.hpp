@@ -216,6 +216,14 @@ namespace Backend::Z3 {
 
                     // Other
 
+                case Op::FP::Sqrt::static_cuid: {
+                    check_vec_usage(args, 1_ui);
+                    using To = CTSC<Op::FP::Sqrt>;
+                    auto ret { Conv::FP::sqrt(Util::checked_static_cast<To>(expr->op.get())->mode, *args.back()) };
+                    args.pop_back();
+                    return ret;
+                }
+
 #define M_TO_BV_CASE(OPT, FUNC)                                                                    \
     case Op::FP::OPT::static_cuid: {                                                               \
         debug_assert_dcast<Expr::Bits>(expr, "FP::ToBV has no length");                            \
@@ -507,6 +515,8 @@ namespace Backend::Z3 {
                     return Abs::FP::mul(args);
                 case Z3_OP_FPA_DIV:
                     return Abs::FP::div(args);
+                case Z3_OP_FPA_SQRT:
+                    return Abs::FP::sqrt(args);
 
                     // Rounding modes
                 case Z3_OP_FPA_RM_NEAREST_TIES_TO_EVEN:

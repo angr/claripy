@@ -543,6 +543,11 @@ namespace Backend::Z3 {
 
             /** Abstraction function for Z3_OP_FPA_DIV */
             static Expr::BasePtr div(const ArgsVec &args) { M_MODEBINARY(Create::FP::div); }
+
+            /** Abstraction function for Z3_OP_FPA_SQRT */
+            static Expr::BasePtr sqrt(const ArgsVec &args) {
+                return Create::FP::sqrt(std::get<Mode::FP::Rounding>(args[0]), M_GET_EARG(1));
+            }
         };
 
 #undef M_REFUSE_FP_STANDARD

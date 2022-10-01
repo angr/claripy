@@ -10,5 +10,6 @@
 #include "fp/from_not_2s_complement_bv.hpp"
 #include "fp/to_bv.hpp"
 #include "fp/trivial.hpp"
+#include "fp/sqrt.hpp"
 
 #endif

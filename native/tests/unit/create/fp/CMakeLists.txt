@@ -1,4 +1,5 @@
 simple_test(trivial)
+simple_test(sqrt)
 simple_test(to_bv)
 simple_test(from_fp)
 simple_test(from_2s_complement_bv)

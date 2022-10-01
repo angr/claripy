@@ -6,7 +6,7 @@
 #include <testlib/testlib.hpp>
 
 
-/** Verify the two arg getter functions of o do not contradict */
+/** Verify the two arg getter functions of op do not contradict */
 static void test_op(const Op::BasePtr &op) {
     Op::Stack stack;
     Util::Log::debug("Testing op: ", op->op_name());
@@ -63,6 +63,7 @@ void args() {
     test(C::FP::from_fp(ntz, fp_sym, Mode::FP::dbl));
     test(C::FP::to_bv_signed(ntz, fp_sym, 64));
     test(C::FP::to_bv_unsigned(ntz, fp_sym, 64));
+    test(C::FP::sqrt(ntz, fp_sym));
 
     // String
     test(C::String::from_int(bv_sym));
