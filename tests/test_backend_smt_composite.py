@@ -1,14 +1,12 @@
 import unittest
 import claripy
-import nose
 from claripy.backends.backend_smtlib_solvers.z3_popen import SolverBackendZ3
 import common_backend_smt_solver
 
 
 class SmtLibSolverTest_Z3(common_backend_smt_solver.SmtLibSolverTestBase):
+    @unittest.skip("Skip these test for now because of a problem with pysmt")
     def get_solver(self):
-        # Skip these test for now because of a problem with pysmt
-        raise nose.SkipTest()
         solver = claripy.SolverPortfolio(
             solvers=[
                 claripy.SolverComposite(

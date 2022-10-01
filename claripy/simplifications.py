@@ -374,12 +374,16 @@ class SimplificationManager:
             return ast.all_operations.And(*new_args)
 
         flattened = SimplificationManager._flatten_simplifier('And', SimplificationManager._deduplicate_filter, *args)
+        if flattened.op != 'And':
+            return flattened
+
         fargs = flattened.args if flattened is not None else args
 
         # Check if we are left with one argument again
         if len(fargs) == 1:
             return fargs[0]
 
+        # what the fuck is this supposed to do?
         if any(len(arg.args) != 2 for arg in fargs):
             return flattened
 
@@ -451,7 +455,7 @@ class SimplificationManager:
     def _flatten_simplifier(op_name, filter_func, *args, **kwargs):
         # we cannot further flatten if any top-level argument has non-relocatable annotations
         if any(not anno.relocatable for anno in itertools.chain.from_iterable(arg.annotations for arg in args)):
-            return
+            return None
 
         new_args = tuple(itertools.chain.from_iterable(
             (a.args if isinstance(a, ast.Base) and a.op == op_name else (a,)) for a in args
@@ -473,6 +477,9 @@ class SimplificationManager:
         if filter_func: new_args = filter_func(new_args)
         if not new_args and 'initial_value' in kwargs:
             return kwargs['initial_value']
+        # if a single arg is left, don't create an op for it
+        if len(new_args) == 1:
+            return new_args[0]
         return next(a for a in args if isinstance(a, ast.Base)).make_like(op_name, new_args,
                                                                           variables=variables,
                                                                           simplify=False)
@@ -601,11 +608,15 @@ class SimplificationManager:
         if not args:
             if a is ast.all_operations.BVV(0, a.size()):
                 return b
-            elif b is ast.all_operations.BVV(0, a.size()):
+            if b is ast.all_operations.BVV(0, a.size()):
                 return a
+            if a.op == b.op and a.op in {"BVV", "BoolV", "FPV"}:
+                if a.args == b.args:
+                    if (a == b).is_true():
+                        return a
             elif (a == b).is_true():
                 return a
-            elif a is b:
+            if a is b:
                 return a
 
         return SimplificationManager._flatten_simplifier('__or__', SimplificationManager._deduplicate_filter, a, b, *args)
@@ -617,20 +628,25 @@ class SimplificationManager:
             r = SimplificationManager.rotate_shift_mask_simplifier(a, b)
             if r is not None:
                 return r
-
-            if (a == 2**a.size()-1).is_true():
+            # we do not use (a == 2 ** a.size()-1).is_true() to avoid creating redundant ASTs
+            if a.op == "BVV" and a.args[0] == 2**a.size()-1:
                 return b
-            elif (b == 2**a.size()-1).is_true():
+            if b.op == "BVV" and b.args[0] == 2**b.size()-1:
                 return a
+            if a is b:
+                return a
+            # for concrete values, we delay the AST creation as much as possible
+            if a.op == b.op and a.op in {"BVV", "BoolV", "FPV"}:
+                if a.args == b.args:
+                    if (a == b).is_true():
+                        return a
             elif (a == b).is_true():
                 return a
-            elif a is b:
-                return a
-            elif (a == 0).is_true():
+            if a.op == "BVV" and a.args[0] == 0:
                 return ast.all_operations.BVV(0, a.size())
-            elif (b == 0).is_true():
+            if b.op == "BVV" and b.args[0] == 0:
                 return ast.all_operations.BVV(0, a.size())
-            elif a.op == "Concat" and len(a.args) == 2:
+            if a.op == "Concat" and len(a.args) == 2:
                 # Concat(a.args[0], a.args[1]) & b  ==>  ZeroExt(size, a.args[1])
                 # maybe we can drop the second argument
                 if (b == 2 ** (a.size() - a.args[0].size()) - 1).is_true():
@@ -727,31 +743,39 @@ class SimplificationManager:
 
         if val.op == 'Concat':
             pos = val.length
-            high_i, low_i, low_loc = None, None, None
+            high_i, low_i, high_loc, low_loc = None, None, None, None
             for i, v in enumerate(val.args):
                 if pos - v.length <= high < pos:
                     high_i = i
+                    high_loc = high - (pos - v.length)
                 if pos - v.length <= low < pos:
                     low_i = i
                     low_loc = low - (pos - v.length)
                 pos -= v.length
 
-            used = val.args[high_i:low_i+1]
-            if len(used) == 1:
-                self = used[0]
-            else:
-                self = ast.all_operations.Concat(*used)
+            used = list(val.args[high_i:low_i + 1])
 
-            new_high = low_loc + high - low
-            if new_high == self.length - 1 and low_loc == 0:
-                return self
-            else:
-                if self.op != 'Concat':
-                    return self[new_high:low_loc]
-                else:
-                    # to avoid infinite recursion we only return if something was simplified
-                    if len(used) != len(val.args) or new_high != high or low_loc != low:
-                        return ast.all_operations.Extract(new_high, low_loc, self)
+            # if we have only one part, we can avoid creating a new concat
+            if len(used) == 1:
+                new_high = low_loc + high - low
+                result = used[0]
+
+                # avoid extracting if we need the full value
+                if new_high == result.length - 1 and low_loc == 0:
+                    return result
+
+                # else extract the part we need
+                return result[new_high:low_loc]
+
+            # if we have more than one part, cut the parts that we need from the start & end chunks
+            # if necessary
+            if high_loc != used[0].length:
+                used[0] = used[0][high_loc:]
+
+            if low_loc != 0:
+                used[-1] = used[-1][:low_loc]
+
+            return ast.all_operations.Concat(*used)
 
         if val.op == 'Extract':
             _, inner_low = val.args[:2]
@@ -778,7 +802,11 @@ class SimplificationManager:
 
         if val.op in extract_distributable:
             all_args = tuple(a[high:low] for a in val.args)
-            return reduce(getattr(operator, val.op), all_args)
+            if val.op in flattenable:
+                # directly create a flattened AST
+                return next(a for a in all_args if isinstance(a, ast.Base)).make_like(val.op, all_args)
+            else:
+                return reduce(getattr(operator, val.op), all_args)
 
     # oh gods
     @staticmethod
@@ -970,9 +998,15 @@ class SimplificationManager:
         If the high bits of b are all zeros (in case of __eq__) or have at least one ones (in case of __ne__), ZeroExt
         can be eliminated.
         """
-        if op in {operator.__eq__, operator.__ne__} and a.op == "ZeroExt" and b.op == "BVV":
+        if op in {operator.__eq__, operator.__ne__} and b.op == "BVV":
             # check if the high bits of b are zeros
-            a_zeroext_bits = a.args[0]
+            if a.op == "ZeroExt":
+                a_zeroext_bits = a.args[0]
+            elif a.op == "Concat" and len(a.args) == 2 and (a.args[0] == 0).is_true():
+                a_zeroext_bits = a.args[0].size()
+            else:
+                return None
+
             b_highbits = b[b.size() - 1 : b.size() - a_zeroext_bits]
             if (b_highbits == 0).is_true():
                 # we can get rid of ZeroExt
@@ -990,6 +1024,15 @@ extract_distributable = {
     '__and__', '__rand__',
     '__or__', '__ror__',
     '__xor__', '__rxor__',
+}
+
+flattenable = {
+    '__and__',
+    '__or__',
+    '__xor__',
+    '__mul__',
+    'And',
+    'Or',
 }
 
 from .backend_manager import backends

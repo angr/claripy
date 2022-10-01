@@ -1,6 +1,4 @@
-
 import os
-import z3
 import ctypes
 import logging
 import numbers
@@ -9,6 +7,7 @@ import threading
 import weakref
 from functools import reduce
 from decimal import Decimal
+import z3
 
 from cachetools import LRUCache
 
@@ -25,9 +24,9 @@ except ImportError:
     _is_pypy = False
 
 def z3_expr_to_smt2(f, status="unknown", name="benchmark", logic=""):
-      # from https://stackoverflow.com/a/14629021/9719920
-      v = (z3.Ast * 0)()
-      return z3.Z3_benchmark_to_smtlib_string(f.ctx_ref(), name, logic, status, "", 0, v, f.as_ast())
+    # from https://stackoverflow.com/a/14629021/9719920
+    v = (z3.Ast * 0)()
+    return z3.Z3_benchmark_to_smtlib_string(f.ctx_ref(), name, logic, status, "", 0, v, f.as_ast())
 
 def claripy_solver_to_smt2(s):
     return s._get_solver().to_smt2()
@@ -702,6 +701,12 @@ class BackendZ3(Backend):
                 s.set('timeout', timeout)
         return s
 
+    def clone_solver(self, s):
+        # This clones the solver.
+        # See https://github.com/Z3Prover/z3/issues/556
+        clone = s.translate(self._context)
+        return clone
+
     def _add(self, s, c, track=False):
         if track:
             already_tracked = set(str(impl.children()[0]) for impl in s.assertions())
@@ -709,6 +714,7 @@ class BackendZ3(Backend):
                 name = str(hash(constraint))
                 if name not in already_tracked:
                     s.assert_and_track(constraint, name)
+                    already_tracked.add(name)
         else:
             s.add(*c)
 
@@ -751,21 +757,14 @@ class BackendZ3(Backend):
         global solve_count
 
         solve_count += 1
-        if len(extra_constraints) > 0:
-            solver.push()
-            solver.add(*extra_constraints)
 
-        try:
-            l.debug("Doing a check! (satisfiable)")
-            if solver.check() != z3.sat:
-                return False
-            if model_callback is not None:
-                model_callback(self._generic_model(solver.model()))
-            return True
-        finally:
-            if len(extra_constraints) > 0:
-                solver.pop()
-        return False
+        l.debug("Doing a check! (satisfiable)")
+        if solver.check(extra_constraints) != z3.sat:
+            return False
+
+        if model_callback is not None:
+            model_callback(self._generic_model(solver.model()))
+        return True
 
     def _eval(self, expr, n, extra_constraints=(), solver=None, model_callback=None):
         results = self._batch_eval(
@@ -782,15 +781,13 @@ class BackendZ3(Backend):
 
         result_values = [ ]
 
-        if len(extra_constraints) > 0 or n != 1:
+        if n > 1:
             solver.push()
-        if len(extra_constraints) > 0:
-            solver.add(*extra_constraints)
 
         for i in range(n):
             solve_count += 1
             l.debug("Doing a check! (batch_eval)")
-            if solver.check() != z3.sat:
+            if solver.check(extra_constraints) != z3.sat:
                 break
             model = solver.model()
 
@@ -816,7 +813,7 @@ class BackendZ3(Backend):
                     solver.add(self._op_raw_Not(self._op_raw_And(*[(ex == ex_v) for ex, ex_v in zip(exprs, r)])))
                 model = None
 
-        if len(extra_constraints) > 0 or n != 1:
+        if n > 1:
             solver.pop()
 
         return result_values
@@ -832,13 +829,9 @@ class BackendZ3(Backend):
             lo = 0
             hi = 2**expr.size()-1
 
-        vals = set()
+        extra_constraints_converted = [self.convert(e) for e in extra_constraints]
+        new_constraints = []
 
-        if len(extra_constraints) > 0:
-            solver.push()
-            solver.add(*[self.convert(e) for e in extra_constraints])
-
-        numpop = 0
         GE = operator.ge if signed else z3.UGE
         LE = operator.le if signed else z3.ULE
 
@@ -847,51 +840,38 @@ class BackendZ3(Backend):
             middle = (lo + hi)//2
             #l.debug("h/m/l/d: %d %d %d %d", hi, middle, lo, hi-lo)
 
-            solver.push()
             # TODO: is this assumption correct?
             # here it's not safe to call directly the z3 low level API since it might happen that the argument is an
             # integer and not a BV
-            solver.add(GE(expr, lo), LE(expr, middle))
-            numpop += 1
+            new_constraints.append(z3.And(GE(expr, lo), LE(expr, middle)))
 
             solve_count += 1
             l.debug("Doing a check! (min)")
-            if solver.check() == z3.sat:
+            if solver.check(extra_constraints_converted + new_constraints) == z3.sat:
                 l.debug("... still sat")
                 if model_callback is not None:
                     model_callback(self._generic_model(solver.model()))
-                vals.add(self._primitive_from_model(solver.model(), expr))
                 hi = middle
             else:
                 l.debug("... now unsat")
                 lo = middle
-                solver.pop()
-                numpop -= 1
-
-        for _ in range(numpop):
-            solver.pop()
+                new_constraints.pop()
 
         #l.debug("final hi/lo: %d, %d", hi, lo)
 
+        ret = None
         if hi == lo:
-            vals.add(lo)
+            ret = lo
         else:
-            solver.push()
-            solver.add(expr == lo)
             l.debug("Doing a check! (min)")
-            if solver.check() == z3.sat:
+            if solver.check(extra_constraints_converted + [expr == lo]) == z3.sat:
                 if model_callback is not None:
                     model_callback(self._generic_model(solver.model()))
-                vals.add(lo)
-                solver.pop()
+                ret = lo
             else:
-                vals.add(hi)
-                solver.pop()
+                ret = hi
 
-        if len(extra_constraints) > 0:
-            solver.pop()
-
-        return min(vals)
+        return ret
 
     @condom
     def _max(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None):
@@ -903,13 +883,10 @@ class BackendZ3(Backend):
         else:
             lo = 0
             hi = 2**expr.size()-1
-        vals = set()
 
-        if len(extra_constraints) > 0:
-            solver.push()
-            solver.add(*[self.convert(e) for e in extra_constraints])
+        extra_constraints_converted = [self.convert(e) for e in extra_constraints]
+        new_constraints = []
 
-        numpop = 0
         GT = operator.gt if signed else z3.UGT
         LE = operator.le if signed else z3.ULE
 
@@ -918,50 +895,37 @@ class BackendZ3(Backend):
             middle = (lo + hi)//2
             #l.debug("h/m/l/d: %d %d %d %d", hi, middle, lo, hi-lo)
 
-            solver.push()
             # TODO: is this assumption correct?
             # here it's not safe to call directly the z3 low level API since it might happen that the argument is an
             # integer and not a BV
-            solver.add(GT(expr, middle), LE(expr, hi))
-            numpop += 1
+            new_constraints.append(z3.And(GT(expr, middle), LE(expr, hi)))
 
             solve_count += 1
             l.debug("Doing a check! (max)")
-            if solver.check() == z3.sat:
+            if solver.check(extra_constraints_converted + new_constraints) == z3.sat:
                 l.debug("... still sat")
-                lo = middle
-                vals.add(self._primitive_from_model(solver.model(), expr))
                 if model_callback is not None:
                     model_callback(self._generic_model(solver.model()))
+                lo = middle
             else:
                 l.debug("... now unsat")
                 hi = middle
-                solver.pop()
-                numpop -= 1
+                new_constraints.pop()
             #l.debug("          now: %d %d %d %d", hi, middle, lo, hi-lo)
 
-        for _ in range(numpop):
-            solver.pop()
-
+        ret = None
         if hi == lo:
-            vals.add(hi)
+            ret = hi
         else:
-            solver.push()
-            solver.add(expr == hi)
             l.debug("Doing a check! (max)")
-            if solver.check() == z3.sat:
+            if solver.check(extra_constraints_converted + [expr == hi]) == z3.sat:
                 if model_callback is not None:
                     model_callback(self._generic_model(solver.model()))
-                vals.add(hi)
-                solver.pop()
+                ret = hi
             else:
-                vals.add(lo)
-                solver.pop()
+                ret = lo
 
-        if len(extra_constraints) > 0:
-            solver.pop()
-
-        return max(vals)
+        return ret
 
     def _simplify(self, e): #pylint:disable=W0613,R0201
         raise Exception("This shouldn't be called. Bug Yan.")
@@ -1122,6 +1086,10 @@ class BackendZ3(Backend):
     @condom
     def _op_raw_fpDiv(self, rm, a, b):
         return z3.FPRef(z3.Z3_mk_fpa_div(self._context.ref(), rm.as_ast(), a.as_ast(), b.as_ast()), self._context)
+
+    @condom
+    def _op_raw_fpSqrt(self, rm, a):
+        return z3.FPRef(z3.Z3_mk_fpa_sqrt(self._context.ref(), rm.as_ast(), a.as_ast()), self._context)
 
     @condom
     def _op_raw_fpLT(self, a, b):
@@ -1501,6 +1469,7 @@ op_map = {
     'Z3_OP_FPA_SUB': 'fpSub',
     'Z3_OP_FPA_MUL': 'fpMul',
     'Z3_OP_FPA_DIV': 'fpDiv',
+    'Z3_OP_FPA_SQRT': 'fpSqrt',
 
     'Z3_OP_FPA_RM_NEAREST_TIES_TO_EVEN': 'RM_RNE',
     'Z3_OP_FPA_RM_NEAREST_TIES_TO_AWAY': 'RM_RNA',
@@ -1656,6 +1625,7 @@ op_type_map = {
     'Z3_OP_FPA_SUB': FP,
     'Z3_OP_FPA_MUL': FP,
     'Z3_OP_FPA_DIV': FP,
+    'Z3_OP_FPA_SQRT': FP,
 
     'Z3_OP_INTERNAL': None,
     'Z3_OP_UNINTERPRETED': 'UNINTERPRETED'

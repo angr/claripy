@@ -298,7 +298,7 @@ backend_fp_cmp_operations = {
 
 backend_fp_operations = {
     'FPS', 'fpToFP', 'fpToIEEEBV', 'fpFP', 'fpToSBV', 'fpToUBV',
-    'fpNeg', 'fpSub', 'fpAdd', 'fpMul', 'fpDiv', 'fpAbs', 'fpIsNaN', 'fpIsInf',
+    'fpNeg', 'fpSub', 'fpAdd', 'fpMul', 'fpDiv', 'fpAbs', 'fpIsNaN', 'fpIsInf', 'fpSqrt',
 } | backend_fp_cmp_operations
 
 backend_strings_operations = {
@@ -367,6 +367,7 @@ inverse_operations = {
 leaf_operations = backend_symbol_creation_operations | backend_creation_operations
 leaf_operations_concrete = backend_creation_operations
 leaf_operations_symbolic = backend_symbol_creation_operations
+leaf_operations_symbolic_with_union = leaf_operations_symbolic | {'union'}
 
 #
 # Reversibility

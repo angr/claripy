@@ -1,11 +1,18 @@
+from common_backend_smt_solver import if_installed
 import claripy
-import nose
-import math
 
 import logging
-l = logging.getLogger('claripy.test.solver')
 
-solver_list = (claripy.Solver, claripy.SolverReplacement, claripy.SolverHybrid, claripy.SolverComposite, claripy.SolverCacheless)
+l = logging.getLogger("claripy.test.solver")
+
+solver_list = (
+    claripy.Solver,
+    claripy.SolverReplacement,
+    claripy.SolverHybrid,
+    claripy.SolverComposite,
+    claripy.SolverCacheless,
+)
+
 
 def test_solver():
     for s in solver_list:
@@ -19,13 +26,12 @@ def test_hybrid_solver():
 
 
 def raw_hybrid_solver(reuse_z3_solver):
-
     claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
 
     s = claripy.SolverHybrid()
 
-    x = claripy.BVS('x', 32, min=0, max=10, stride=2)
-    y = claripy.BVS('y', 32, min=20, max=30, stride=5)
+    x = claripy.BVS("x", 32, min=0, max=10, stride=2)
+    y = claripy.BVS("y", 32, min=20, max=30, stride=5)
 
     # TODO: for now, the stride isn't respected in symbolic mode, but we'll fix that next.
     # until we do, let's add constraints
@@ -33,81 +39,82 @@ def raw_hybrid_solver(reuse_z3_solver):
     s.add(x % 2 == 0)
     s.add(y >= 20)
     s.add(y <= 30)
-    s.add((y-20) % 5 == 0)
+    s.add((y - 20) % 5 == 0)
     s.add(x != 8)
 
-    nose.tools.assert_equal(sorted(s.eval(x, 20, exact=False)), [0, 2, 4, 6, 8, 10])
-    nose.tools.assert_equal(sorted(s.eval(x, 20)), [0, 2, 4, 6, 10])
-    nose.tools.assert_equal(sorted(s.eval(y, 20, exact=False)), [20, 25, 30])
-    nose.tools.assert_equal(sorted(s.eval(y, 20)), [20, 25, 30])
+    assert sorted(s.eval(x, 20, exact=False)) == [0, 2, 4, 6, 8, 10]
+    assert sorted(s.eval(x, 20)) == [0, 2, 4, 6, 10]
+    assert sorted(s.eval(y, 20, exact=False)) == [20, 25, 30]
+    assert sorted(s.eval(y, 20)) == [20, 25, 30]
 
     # test approximate_first option
     s._approximate_first = True
     old_solve_count = claripy._backends_module.backend_z3.solve_count
-    nose.tools.assert_equal(sorted(s.eval(x, 20)), [0, 2, 4, 6, 8, 10])
-    nose.tools.assert_equal(claripy._backends_module.backend_z3.solve_count, old_solve_count)
+    assert sorted(s.eval(x, 20)) == [0, 2, 4, 6, 8, 10]
+    assert claripy._backends_module.backend_z3.solve_count == old_solve_count
     s._approximate_firsrt = False
 
     # now constrain things further so that the VSA overapproximates
     s.add(x <= 4)
-    nose.tools.assert_equal(sorted(s.eval(x, 20, exact=False)), [0, 2, 4])
-    nose.tools.assert_equal(sorted(s.eval(x, 20)), [0, 2, 4])
+    assert sorted(s.eval(x, 20, exact=False)) == [0, 2, 4]
+    assert sorted(s.eval(x, 20)) == [0, 2, 4]
 
     s.add(y >= 27)
-    nose.tools.assert_equal(s.eval(y, 20, exact=False), (30,))
-    nose.tools.assert_equal(s.eval(y, 20), (30,))
+    assert s.eval(y, 20, exact=False) == (30,)
+    assert s.eval(y, 20) == (30,)
 
     t = claripy.SolverHybrid()
-    x = claripy.BVS('x', 32)
+    x = claripy.BVS("x", 32)
     t.add(x <= 10)
     print(t.eval(x, 80, exact=False))
-    nose.tools.assert_equal(len(t.eval(x, 5, exact=False)), 5)
-    nose.tools.assert_equal(len(t.eval(x, 5, exact=False)), 5)
-    nose.tools.assert_equal(len(t.eval(x, 6, exact=False)), 6)
-    nose.tools.assert_equal(len(t.eval(x, 8, exact=False)), 8)
-    nose.tools.assert_equal(len(t.eval(x, 99, exact=False)), 11)
+    assert len(t.eval(x, 5, exact=False)) == 5
+    assert len(t.eval(x, 5, exact=False)) == 5
+    assert len(t.eval(x, 6, exact=False)) == 6
+    assert len(t.eval(x, 8, exact=False)) == 8
+    assert len(t.eval(x, 99, exact=False)) == 11
 
 
 def test_replacement_solver():
     yield raw_replacement_solver, True
     yield raw_replacement_solver, False
 
-def raw_replacement_solver(reuse_z3_solver):
 
+def raw_replacement_solver(reuse_z3_solver):
     claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
 
     sr = claripy.SolverReplacement()
-    x = claripy.BVS('x', 32)
-    nose.tools.assert_equal(len(sr.eval(x, 10)), 10)
+    x = claripy.BVS("x", 32)
+    assert len(sr.eval(x, 10)) == 10
     sr.add_replacement(x, claripy.BVV(0x101, 32))
-    nose.tools.assert_equal(sr.eval(x, 10), (0x101,))
+    assert sr.eval(x, 10) == (0x101,)
 
-    y = claripy.BVS('y', 32)
-    sr.add([y+1 == 200])
-    assert (y+1).cache_key in sr._replacements
-    assert sr._replacement(y+1) is claripy.BVV(200, 32)
+    y = claripy.BVS("y", 32)
+    sr.add([y + 1 == 200])
+    assert (y + 1).cache_key in sr._replacements
+    assert sr._replacement(y + 1) is claripy.BVV(200, 32)
 
     srb = sr.branch()
-    assert len(srb.constraints) == len(sr.constraints) #pylint:disable=no-member
-    assert (y+1).cache_key in sr._replacements
-    assert sr._replacement(y+1) is claripy.BVV(200, 32)
+    assert len(srb.constraints) == len(sr.constraints)  # pylint:disable=no-member
+    assert (y + 1).cache_key in sr._replacements
+    assert sr._replacement(y + 1) is claripy.BVV(200, 32)
 
     sr = claripy.SolverReplacement()
-    b = claripy.BoolS('b')
+    b = claripy.BoolS("b")
     assert sr._replacement(b) is b
     sr.add(claripy.Not(b))
     assert sr._replacement(b) is claripy.false
 
     sr = claripy.SolverReplacement(claripy.SolverVSA(), complex_auto_replace=True)
-    x = claripy.BVS('x', 64)
-    sr.add([x + 8 <= 0xffffffffffffffff])
+    x = claripy.BVS("x", 64)
+    sr.add([x + 8 <= 0xFFFFFFFFFFFFFFFF])
     sr.add([x + 8 >= 0])
     assert sr._replacement(x) is not x
 
+
 def raw_solver(solver_type, reuse_z3_solver):
-    #bc = claripy.backends.BackendConcrete(clrp)
-    #bz = claripy.backends.BackendZ3(clrp)
-    #claripy.expression_backends = [ bc, bz, ba ]
+    # bc = claripy.backends.BackendConcrete(clrp)
+    # bz = claripy.backends.BackendZ3(clrp)
+    # claripy.expression_backends = [ bc, bz, ba ]
 
     claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
 
@@ -115,9 +122,9 @@ def raw_solver(solver_type, reuse_z3_solver):
 
     s.simplify()
 
-    x = claripy.BVS('x', 32)
-    y = claripy.BVS('y', 32)
-    z = claripy.BVS('z', 32)
+    x = claripy.BVS("x", 32)
+    y = claripy.BVS("y", 32)
+    z = claripy.BVS("z", 32)
 
     l.debug("adding constraints")
 
@@ -126,46 +133,51 @@ def raw_solver(solver_type, reuse_z3_solver):
 
     # Batch evaluation
     results = s.batch_eval([x + 5, x + 6, 3], 2)
-    nose.tools.assert_equal(len(results), 1)
-    nose.tools.assert_equal(results[0][0], 15) # x + 5
-    nose.tools.assert_equal(results[0][1], 16) # x + 6
-    nose.tools.assert_equal(results[0][2], 3)  # constant
+    assert len(results) == 1
+    assert results[0][0] == 15
+    assert results[0][1] == 16
+    assert results[0][2] == 3
 
     l.debug("checking")
-    nose.tools.assert_true(s.satisfiable())
-    nose.tools.assert_false(s.satisfiable(extra_constraints=[x == 5]))
-    nose.tools.assert_equal(s.eval(x + 5, 1)[0], 15)
-    nose.tools.assert_true(s.solution(x + 5, 15))
-    nose.tools.assert_true(s.solution(x, 10))
-    nose.tools.assert_true(s.solution(y, 15))
-    nose.tools.assert_false(s.solution(y, 13))
+    assert s.satisfiable()
+    assert not s.satisfiable(extra_constraints=[x == 5])
+    assert s.eval(x + 5, 1)[0] == 15
+    assert s.solution(x + 5, 15)
+    assert s.solution(x, 10)
+    assert s.solution(y, 15)
+    assert not s.solution(y, 13)
 
     shards = s.split()
-    nose.tools.assert_equal(len(shards), 2)
-    nose.tools.assert_equal(len(shards[0].variables), 1)
-    nose.tools.assert_equal(len(shards[1].variables), 1)
+    assert len(shards) == 2
+    assert len(shards[0].variables) == 1
+    assert len(shards[1].variables) == 1
     if isinstance(s, claripy.frontend_mixins.ConstraintExpansionMixin) or (
-        isinstance(s, claripy.frontends.HybridFrontend) and
-        isinstance(s._exact_frontend, claripy.frontend_mixins.ConstraintExpansionMixin)
-    ): #the hybrid frontend actually uses the exact frontend for the split
-        nose.tools.assert_equal({ len(shards[0].constraints), len(shards[1].constraints) }, { 2, 1 }) # adds the != from the solution() check
+        isinstance(s, claripy.frontends.HybridFrontend)
+        and isinstance(
+            s._exact_frontend, claripy.frontend_mixins.ConstraintExpansionMixin
+        )
+    ):  # the hybrid frontend actually uses the exact frontend for the split
+        assert {len(shards[0].constraints), len(shards[1].constraints)} == {
+            2,
+            1,
+        }  # adds the != from the solution() check
     if isinstance(s, claripy.frontends.ReplacementFrontend):
-        nose.tools.assert_equal({ len(shards[0].constraints), len(shards[1].constraints) }, { 1, 1 }) # not a caching frontend
+        assert {len(shards[0].constraints), len(shards[1].constraints)} == {1, 1}
 
     # test result caching
     s = solver_type()
     s.add(x == 10)
     s.add(y == 15)
-    nose.tools.assert_false(s.satisfiable(extra_constraints=(x==5,)))
-    nose.tools.assert_true(s.satisfiable())
+    assert not s.satisfiable(extra_constraints=(x == 5,))
+    assert s.satisfiable()
 
     s = solver_type()
-    #claripy.expression_backends = [ bc, ba, bz ]
+    # claripy.expression_backends = [ bc, ba, bz ]
     s.add(claripy.UGT(x, 10))
     s.add(claripy.UGT(x, 20))
     s.simplify()
-    nose.tools.assert_equal(len(s.constraints), 1)
-    #nose.tools.assert_equal(str(s.constraints[0]._obj), "Not(ULE(x <= 20))")
+    assert len(s.constraints) == 1
+    # assert str(s.constraints[0]._obj) == "Not(ULE(x <= 20))"
 
     s.add(claripy.UGT(y, x))
     s.add(claripy.ULT(z, 5))
@@ -173,75 +185,87 @@ def raw_solver(solver_type, reuse_z3_solver):
     # test that duplicate constraints are ignored
     old_count = len(s.constraints)
     s.add(claripy.ULT(z, 5))
-    nose.tools.assert_equal(len(s.constraints), old_count)
+    assert len(s.constraints) == old_count
 
-    #print("========================================================================================")
-    #print("========================================================================================")
-    #print("========================================================================================")
-    #print("========================================================================================")
-    #a = s.eval(z, 100)
-    #print("ANY:", a)
-    #print("========================================================================================")
-    #mx = s.max(z)
-    #print("MAX",mx)
-    #print("========================================================================================")
-    #mn = s.min(z)
-    #print("MIN",mn)
-    #print("========================================================================================")
-    #print("========================================================================================")
-    #print("========================================================================================")
-    #print("========================================================================================")
+    # print("========================================================================================")
+    # print("========================================================================================")
+    # print("========================================================================================")
+    # print("========================================================================================")
+    # a = s.eval(z, 100)
+    # print("ANY:", a)
+    # print("========================================================================================")
+    # mx = s.max(z)
+    # print("MAX",mx)
+    # print("========================================================================================")
+    # mn = s.min(z)
+    # print("MIN",mn)
+    # print("========================================================================================")
+    # print("========================================================================================")
+    # print("========================================================================================")
+    # print("========================================================================================")
 
-    print("CONSTRAINT COUNTS:", [ len(_.constraints) for _ in s.split() ])
+    print("CONSTRAINT COUNTS:", [len(_.constraints) for _ in s.split()])
 
-    nose.tools.assert_equal(s.max(z), 4)
-    nose.tools.assert_equal(s.min(z), 0)
-    nose.tools.assert_equal(s.min(y), 22)
-    nose.tools.assert_equal(s.max(y), 2**y.size()-1)
+    assert s.max(z) == 4
+    assert s.min(z) == 0
+    assert s.min(y) == 22
+    assert s.max(y) == 2 ** y.size() - 1
 
-    print("CONSTRAINT COUNTS:", [ len(_.constraints) for _ in s.split() ])
+    print("CONSTRAINT COUNTS:", [len(_.constraints) for _ in s.split()])
 
     ss = s.split()
-    nose.tools.assert_equal(len(ss), 2)
-    #if isinstance(s, claripy.frontend_mixins.ConstraintExpansionMixin):
-    #   nose.tools.assert_equal({ len(_.constraints) for _ in ss }, { 3, 2 }) # constraints from min or max
+    assert len(ss) == 2
+    # if isinstance(s, claripy.frontend_mixins.ConstraintExpansionMixin):
+    #   assert { len(_.constraints) for _ in ss } == { 3, 2 }
 
     # Batch evaluation
     s.add(y < 24)
-    s.add(z < x) # Just to make sure x, y, and z belong to the same solver, since batch evaluation does not support the
-                 # situation where expressions belong to more than one solver
+    s.add(
+        z < x
+    )  # Just to make sure x, y, and z belong to the same solver, since batch evaluation does not support the
+    # situation where expressions belong to more than one solver
     results = s.batch_eval([x, y, z], 20)
-    nose.tools.assert_set_equal(
-        set(results),
-        {(21, 23, 1), (22, 23, 3), (22, 23, 2), (22, 23, 4), (21, 22, 4), (21, 23, 4), (22, 23, 0),
-         (22, 23, 1), (21, 22, 1), (21, 22, 3), (21, 22, 2), (21, 22, 0), (21, 23, 0), (21, 23, 2),
-         (21, 23, 3)
-        }
-    )
+    assert set(results) == {
+        (21, 23, 1),
+        (22, 23, 3),
+        (22, 23, 2),
+        (22, 23, 4),
+        (21, 22, 4),
+        (21, 23, 4),
+        (22, 23, 0),
+        (22, 23, 1),
+        (21, 22, 1),
+        (21, 22, 3),
+        (21, 22, 2),
+        (21, 22, 0),
+        (21, 23, 0),
+        (21, 23, 2),
+        (21, 23, 3),
+    }
 
     # test that False makes it unsat
     s = solver_type()
-    s.add(claripy.BVV(1,1) == claripy.BVV(1,1))
-    nose.tools.assert_true(s.satisfiable())
-    s.add(claripy.BVV(1,1) == claripy.BVV(0,1))
-    nose.tools.assert_false(s.satisfiable())
+    s.add(claripy.BVV(1, 1) == claripy.BVV(1, 1))
+    assert s.satisfiable()
+    s.add(claripy.BVV(1, 1) == claripy.BVV(0, 1))
+    assert not s.satisfiable()
 
     # test extra constraints
     s = solver_type()
-    x = claripy.BVS('x', 32)
-    nose.tools.assert_equal(s.eval(x, 2, extra_constraints=[x==10]), ( 10, ))
+    x = claripy.BVS("x", 32)
+    assert s.eval(x, 2, extra_constraints=[x == 10]) == (10,)
     s.add(x == 10)
-    nose.tools.assert_false(s.solution(x, 2))
-    nose.tools.assert_true(s.solution(x, 10))
+    assert not s.solution(x, 2)
+    assert s.solution(x, 10)
 
     # test signed min/max
     s = solver_type()
-    x = claripy.BVS('x', 32)
-    nose.tools.assert_equal(s.min(x, signed=True), -0x80000000)
-    nose.tools.assert_equal(s.max(x, signed=True), 0x7FFFFFFF)
+    x = claripy.BVS("x", 32)
+    assert s.min(x, signed=True) == -0x80000000
+    assert s.max(x, signed=True) == 0x7FFFFFFF
     s.add(claripy.ULE(x, 0x40000000) | claripy.UGE(x, 0xC0000000))
-    nose.tools.assert_equal(s.min(x, signed=True), -0x40000000)
-    nose.tools.assert_equal(s.max(x, signed=True), 0x40000000)
+    assert s.min(x, signed=True) == -0x40000000
+    assert s.max(x, signed=True) == 0x40000000
 
     # test result caching
 
@@ -249,28 +273,30 @@ def raw_solver(solver_type, reuse_z3_solver):
         count = claripy._backends_module.backend_z3.solve_count
 
         s = solver_type()
-        x = claripy.BVS('x', 32)
+        x = claripy.BVS("x", 32)
         s.add(x == 10)
-        nose.tools.assert_true(s.satisfiable())
+        assert s.satisfiable()
         assert claripy._backends_module.backend_z3.solve_count == count
-        nose.tools.assert_equal(s.eval(x, 1)[0], 10)
+        assert s.eval(x, 1)[0] == 10
         assert claripy._backends_module.backend_z3.solve_count == count
         s.add(x == 10)
         s.add(x > 9)
-        nose.tools.assert_equal(s.eval(x, 1)[0], 10)
+        assert s.eval(x, 1)[0] == 10
         assert claripy._backends_module.backend_z3.solve_count == count
 
-        y = claripy.BVS('y', 32)
+        y = claripy.BVS("y", 32)
         s.add(y < 999)
         assert s.satisfiable()
         assert claripy._backends_module.backend_z3.solve_count == count
-        nose.tools.assert_equal(s.eval(y, 1)[0], 0)
+        assert s.eval(y, 1)[0] == 0
         assert claripy._backends_module.backend_z3.solve_count == count
+
 
 def test_solver_branching():
     for s in solver_list:
         yield raw_solver_branching, s, True
         yield raw_solver_branching, s, False
+
 
 def raw_solver_branching(solver_type, reuse_z3_solver):
     claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
@@ -281,32 +307,34 @@ def raw_solver_branching(solver_type, reuse_z3_solver):
     s.add(claripy.UGT(x, y))
     s.add(claripy.ULT(x, 10))
 
-    nose.tools.assert_greater(s.eval(x, 1)[0], 0)
+    assert s.eval(x, 1)[0] > 0
 
     t = s.branch()
     if isinstance(s, claripy.frontends.FullFrontend):
-        nose.tools.assert_is(s._tls.solver, t._tls.solver)
-        nose.tools.assert_true(s._finalized)
-        nose.tools.assert_true(t._finalized)
+        assert s._tls.solver is t._tls.solver
+        assert s._finalized
+        assert t._finalized
     t.add(x == 5)
-    #if isinstance(s, claripy.FullFrontend):
-    #   nose.tools.assert_is(t._solver, None)
+    # if isinstance(s, claripy.FullFrontend):
+    #   assert t._solver is None
 
     s.add(x == 3)
-    nose.tools.assert_true(s.satisfiable())
+    assert s.satisfiable()
     t.add(x == 3)
-    nose.tools.assert_false(t.satisfiable())
+    assert not t.satisfiable()
 
     s.add(y == 2)
-    nose.tools.assert_true(s.satisfiable())
-    nose.tools.assert_equal(s.eval(x, 1)[0], 3)
-    nose.tools.assert_equal(s.eval(y, 1)[0], 2)
-    nose.tools.assert_false(t.satisfiable())
+    assert s.satisfiable()
+    assert s.eval(x, 1)[0] == 3
+    assert s.eval(y, 1)[0] == 2
+    assert not t.satisfiable()
+
 
 def test_combine():
     for s in solver_list:
         yield raw_combine, s, True
         yield raw_combine, s, False
+
 
 def raw_combine(solver_type, reuse_z3_solver):
     claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
@@ -320,31 +348,33 @@ def raw_combine(solver_type, reuse_z3_solver):
     s20.add(x <= 20)
     s30.add(x == 30)
 
-    nose.tools.assert_true(s10.satisfiable())
-    nose.tools.assert_true(s20.satisfiable())
-    nose.tools.assert_true(s30.satisfiable())
-    nose.tools.assert_true(s10.combine([s20]).satisfiable())
-    nose.tools.assert_true(s20.combine([s10]).satisfiable())
-    nose.tools.assert_true(s30.combine([s10]).satisfiable())
-    nose.tools.assert_false(s30.combine([s20]).satisfiable())
-    nose.tools.assert_equal(s30.combine([s10]).eval(x, 1), ( 30, ))
-    nose.tools.assert_equal(len(s30.combine([s10]).constraints), 2)
+    assert s10.satisfiable()
+    assert s20.satisfiable()
+    assert s30.satisfiable()
+    assert s10.combine([s20]).satisfiable()
+    assert s20.combine([s10]).satisfiable()
+    assert s30.combine([s10]).satisfiable()
+    assert not s30.combine([s20]).satisfiable()
+    assert s30.combine([s10]).eval(x, 1) == (30,)
+    assert len(s30.combine([s10]).constraints) == 2
 
+
+@if_installed
 def test_composite_solver_with_strings():
-    try:
-        s = claripy.SolverComposite(
-            template_solver_string=claripy.SolverCompositeChild(backend=claripy.backend_manager.backends.smtlib_cvc4))
-        x = claripy.BVS("x", 32)
-        y = claripy.BVS("y", 32)
-        z = claripy.BVS("z", 32)
-        str_1 = claripy.StringS("sym_str_1", 1024)
-        c = claripy.And(x == 1, y == 2, z == 3, str_1 == claripy.StringV("cavallo"))
-        s.add(c)
-        nose.tools.assert_equal(len(s._solver_list), 4)
-        nose.tools.assert_true(s.satisfiable())
-        nose.tools.assert_equal(list(s.eval(str_1, 1)), ["cavallo"])
-    except claripy.errors.MissingSolverError:
-        raise nose.SkipTest()
+    s = claripy.SolverComposite(
+        template_solver_string=claripy.SolverCompositeChild(
+            backend=claripy.backend_manager.backends.smtlib_cvc4
+        )
+    )
+    x = claripy.BVS("x", 32)
+    y = claripy.BVS("y", 32)
+    z = claripy.BVS("z", 32)
+    str_1 = claripy.StringS("sym_str_1", 1024)
+    c = claripy.And(x == 1, y == 2, z == 3, str_1 == claripy.StringV("cavallo"))
+    s.add(c)
+    assert len(s._solver_list) == 4
+    assert s.satisfiable()
+    assert list(s.eval(str_1, 1)) == ["cavallo"]
 
 
 def test_composite_solver():
@@ -355,40 +385,40 @@ def test_composite_solver():
 def raw_composite_solver(reuse_z3_solver):
     claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
 
-    #pylint:disable=no-member
+    # pylint:disable=no-member
     s = claripy.SolverComposite()
     x = claripy.BVS("x", 32)
     y = claripy.BVS("y", 32)
     z = claripy.BVS("z", 32)
     c = claripy.And(x == 1, y == 2, z == 3)
     s.add(c)
-    nose.tools.assert_equal(len(s._solver_list), 3)
-    nose.tools.assert_true(s.satisfiable())
+    assert len(s._solver_list) == 3
+    assert s.satisfiable()
 
     s.add(x < y)
-    nose.tools.assert_equal(len(s._solver_list), 2)
-    nose.tools.assert_true(s.satisfiable())
+    assert len(s._solver_list) == 2
+    assert s.satisfiable()
 
     s.simplify()
-    nose.tools.assert_equal(len(s._solver_list), 3)
-    nose.tools.assert_true(s.satisfiable())
+    assert len(s._solver_list) == 3
+    assert s.satisfiable()
 
     s1 = s.branch()
-    nose.tools.assert_equal(len(s1._solver_list), 3)
+    assert len(s1._solver_list) == 3
 
     s1.add(x > y)
-    nose.tools.assert_equal(len(s1._solver_list), 2)
-    nose.tools.assert_false(s1.satisfiable())
-    nose.tools.assert_equal(len(s._solver_list), 3)
-    nose.tools.assert_true(s.satisfiable())
+    assert len(s1._solver_list) == 2
+    assert not s1.satisfiable()
+    assert len(s._solver_list) == 3
+    assert s.satisfiable()
 
     s.add(claripy.BVV(1, 32) == claripy.BVV(2, 32))
-    nose.tools.assert_equal(len(s._solver_list), 3)
-    nose.tools.assert_false(s.satisfiable())
+    assert len(s._solver_list) == 3
+    assert not s.satisfiable()
 
     ss = s.branch()
-    nose.tools.assert_equal(len(ss._solver_list), 3)
-    nose.tools.assert_false(ss.satisfiable())
+    assert len(ss._solver_list) == 3
+    assert not ss.satisfiable()
 
     s = claripy.SolverComposite()
     x = claripy.BVS("x", 32)
@@ -402,7 +432,7 @@ def raw_composite_solver(reuse_z3_solver):
         count = claripy._backends_module.backend_z3.solve_count
         assert s.satisfiable()
         assert claripy._backends_module.backend_z3.solve_count == count + 3
-        assert list(s.eval(x+y, 1)) == [3]
+        assert list(s.eval(x + y, 1)) == [3]
         assert claripy._backends_module.backend_z3.solve_count == count + 3
 
 
@@ -410,15 +440,16 @@ def test_minmax():
     yield raw_minmax, True
     yield raw_minmax, False
 
+
 def raw_minmax(reuse_z3_solver):
     claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
 
     s = claripy.Solver()
     x = claripy.BVS("x", 32)
 
-    nose.tools.assert_equal(s.max(x), 2**32-1)
-    nose.tools.assert_equal(s.min(x), 0)
-    nose.tools.assert_true(s.satisfiable())
+    assert s.max(x) == 2 ** 32 - 1
+    assert s.min(x) == 0
+    assert s.satisfiable()
 
 
 def test_composite_discrepancy():
@@ -436,17 +467,17 @@ def raw_composite_discrepancy(reuse_z3_solver):
     z = claripy.BVS("z", 32)
 
     xy = x + y
-    dst = claripy.BVV(0xbaaaaf50, 32) + xy
-    constraints = [ ]
+    dst = claripy.BVV(0xBAAAAF50, 32) + xy
+    constraints = []
     constraints.append(x <= 0x1)
     constraints.append(x != 0x0)
-    constraints.append(claripy.SignExt(24, claripy.If(x > 0x0, a, 0)) != 0xa)
+    constraints.append(claripy.SignExt(24, claripy.If(x > 0x0, a, 0)) != 0xA)
     constraints.append(x < 0x80)
     constraints.append(y <= 0x1)
     constraints.append(x == 0x1)
-    constraints.append((0xbaaaaf50 + x) == 0xbaaaaf51)
+    constraints.append((0xBAAAAF50 + x) == 0xBAAAAF51)
     constraints.append(y != 0x0)
-    constraints.append(claripy.SignExt(24, claripy.If(y > 0x0, b, 0)) != 0xa)
+    constraints.append(claripy.SignExt(24, claripy.If(y > 0x0, b, 0)) != 0xA)
     constraints.append((x + y) < 0x80)
     constraints.append(z <= 0x1)
     constraints.append((x + y) == 0x2)
@@ -461,6 +492,7 @@ def raw_composite_discrepancy(reuse_z3_solver):
     assert sn.max(dst) == sc.max(dst)
     assert sn.min(dst) == sc.min(dst)
 
+
 def test_model():
     x = claripy.BVS("x", 32)
     y = claripy.BVS("y", 32)
@@ -471,6 +503,7 @@ def test_model():
     s.add(y == 1337)
     assert sorted(s.eval(x, 20)) == list(range(10))
 
+
 def test_unsatness():
     x = claripy.BVS("x", 32)
 
@@ -479,6 +512,7 @@ def test_unsatness():
     assert s.satisfiable()
     s.add(claripy.false)
     assert not s.satisfiable()
+
 
 def test_simplification_annotations():
     s = claripy.Solver()
@@ -491,6 +525,7 @@ def test_simplification_annotations():
     assert len(s.constraints) == 3
     s.simplify()
     assert len(s.constraints) == 2
+
 
 def raw_ancestor_merge(solver, reuse_z3_solver):
     claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
@@ -515,8 +550,9 @@ def raw_ancestor_merge(solver, reuse_z3_solver):
         assert len(r.constraints) == 1
     assert len(t.constraints) == 3
     assert t.constraints[-1].variables == z.variables
-    assert t.constraints[-1].op == 'Or'
+    assert t.constraints[-1].op == "Or"
     assert len(t.constraints[-1].args) == 2
+
 
 def test_ancestor_merge():
     for s in solver_list:
@@ -548,16 +584,21 @@ def raw_unsat_core(solver, reuse_z3_solver):
 
 
 def test_unsat_core():
-    for s in (claripy.Solver, claripy.SolverComposite, claripy.SolverCacheless, claripy.SolverHybrid):
+    for s in (
+        claripy.Solver,
+        claripy.SolverComposite,
+        claripy.SolverCacheless,
+        claripy.SolverHybrid,
+    ):
         yield raw_unsat_core, s, True
         yield raw_unsat_core, s, False
 
 
 def test_zero_division_in_cache_mixin():
     # Bug in the caching backend. See issue #49 on github.
-    num = claripy.BVS('num', 256)
-    denum = claripy.BVS('denum', 256)
-    e = claripy.BVS('e', 256)
+    num = claripy.BVS("num", 256)
+    denum = claripy.BVS("denum", 256)
+    e = claripy.BVS("e", 256)
     s = claripy.Solver()
     s.add(e == 8)
     assert s.satisfiable()
@@ -568,6 +609,7 @@ def test_zero_division_in_cache_mixin():
     assert s.satisfiable()
     s.add(denum == 3)
     assert not s.satisfiable()
+
 
 def test_composite_solver_branching_optimizations():
     s = claripy.SolverComposite()
@@ -601,20 +643,22 @@ def test_composite_solver_branching_optimizations():
     assert not s2.satisfiable()
     assert not s2.satisfiable()
 
+
 def test_exhaustion():
     s = claripy.Solver()
-    x = claripy.BVS('x', 32)
+    x = claripy.BVS("x", 32)
     s.add(x >= 19)
     print(s.min(x, extra_constraints=[x >= 20]))
     assert s.min(x) == 19
 
     s = claripy.Solver()
-    x = claripy.BVS('x', 32)
+    x = claripy.BVS("x", 32)
     s.add(x <= 19)
     print(s.max(x, extra_constraints=[x <= 18]))
     assert s.max(x) == 19
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     for fparams in test_unsat_core():
         fparams[0](*fparams[1:])
 

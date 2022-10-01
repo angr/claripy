@@ -12,4 +12,3 @@ ignore
 dist
 MANIFEST
 build
-claripy.egg-info

@@ -1,5 +1,8 @@
+import struct
+
 from .bits import Bits
 from ..ast.base import _make_name
+from ..fp import FSORT_FLOAT
 
 class FP(Bits):
     """
@@ -102,6 +105,11 @@ def FPV(value, sort):
     if type(sort) is not fp.FSort:
         raise TypeError("Must instanciate FPV with a FSort")
 
+    if sort == FSORT_FLOAT:
+        # By default, Python treats all floating-point numbers as double-precision. However, a single-precision float is
+        # being created here. Hence, we need to convert value to single-precision.
+        value = struct.unpack("f", struct.pack("f", value))[0]
+
     return FP('FPV', (value, sort), length=sort.length)
 
 #
@@ -157,6 +165,7 @@ fpSub = operations.op('fpSub', (fp.RM, FP, FP), FP, bound=False, extra_check=_fp
 fpAdd = operations.op('fpAdd', (fp.RM, FP, FP), FP, bound=False, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
 fpMul = operations.op('fpMul', (fp.RM, FP, FP), FP, bound=False, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
 fpDiv = operations.op('fpDiv', (fp.RM, FP, FP), FP, bound=False, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
+fpSqrt = operations.op('fpSqrt', (fp.RM, FP,), FP, bound=False, calc_length=lambda _, x: x.length)
 
 #
 # bound fp operations
@@ -176,6 +185,7 @@ FP.__add__ = fpAdd
 FP.__sub__ = fpSub
 FP.__mul__ = fpMul
 FP.__truediv__ = fpDiv
+FP.Sqrt = fpSqrt
 
 FP.__radd__ = operations.reversed_op(FP.__add__)
 FP.__rsub__ = operations.reversed_op(FP.__sub__)

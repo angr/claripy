@@ -1,9 +1,8 @@
 import claripy
-import nose
 
 def test_bool_simplification():
     def assert_correct(a, b):
-        nose.tools.assert_true(claripy.backends.z3.identical(claripy.simplify(a), b))
+        assert claripy.backends.z3.identical(claripy.simplify(a), b)
 
     a, b, c = (claripy.BoolS(name) for name in ('a', 'b', 'c'))
 
@@ -18,7 +17,7 @@ def test_bool_simplification():
 
 def test_simplification():
     def assert_correct(a, b):
-        nose.tools.assert_true(claripy.backends.z3.identical(a, b))
+        assert claripy.backends.z3.identical(a, b)
 
     x, y, z = (claripy.BVS(name, 32) for name in ('x', 'y', 'z'))
 
@@ -39,6 +38,10 @@ def test_simplification():
     assert_correct(concatted[70:15], concatted[70:15])
     assert_correct(concatted[70:35], claripy.Concat(x, y)[38:3])
 
+    # test extraction of nested concats
+    concatted_nested = claripy.Concat(claripy.Reverse(claripy.Concat(x, y)), z)
+    assert_correct(concatted_nested[63:0], claripy.Concat(claripy.Reverse(x), z))
+
     # make sure the division simplification works
     assert_correct(2+x, claripy.backends.z3.simplify(1+x+1))
     assert_correct(x/y, claripy.backends.z3.simplify(x/y))
@@ -54,9 +57,9 @@ def test_rotate_shift_mask_simplification():
     # print(expr)
     # print(expr._model_vsa)
     model_vsa = expr._model_vsa
-    nose.tools.assert_equal(model_vsa.lower_bound, 8)
-    nose.tools.assert_equal(model_vsa.upper_bound, 0x60)
-    nose.tools.assert_equal(model_vsa.cardinality, 12)
+    assert model_vsa.lower_bound == 8
+    assert model_vsa.upper_bound == 0x60
+    assert model_vsa.cardinality == 12
 
 
 def test_reverse_extract_reverse_simplification():
@@ -69,10 +72,10 @@ def test_reverse_extract_reverse_simplification():
     dx = claripy.Reverse(claripy.Extract(63, 48, claripy.Reverse(a)))
 
     # simplification should have kicked in at this moment
-    nose.tools.assert_equal(dx.op, 'Extract')
-    nose.tools.assert_equal(dx.args[0], 15)
-    nose.tools.assert_equal(dx.args[1], 0)
-    nose.tools.assert_is(dx.args[2], a)
+    assert dx.op == 'Extract'
+    assert dx.args[0] == 15
+    assert dx.args[1] == 0
+    assert dx.args[2] is a
 
 
 def test_reverse_concat_reverse_simplification():
@@ -83,9 +86,9 @@ def test_reverse_concat_reverse_simplification():
     b = claripy.BVS('b', 32)
     x = claripy.Reverse(claripy.Concat(claripy.Reverse(a), claripy.Reverse(b)))
 
-    nose.tools.assert_equal(x.op, 'Concat')
-    nose.tools.assert_is(x.args[0], b)
-    nose.tools.assert_is(x.args[1], a)
+    assert x.op == 'Concat'
+    assert x.args[0] is b
+    assert x.args[1] is a
 
 
 def perf_boolean_and_simplification_0():
@@ -111,20 +114,20 @@ def test_concrete_flatten():
     b = a + 10
     c = 10 + b
     d = a + 20
-    nose.tools.assert_is(c, d)
+    assert c is d
 
     # to future test writers or debuggers: whether the answer is b_neg or b is not particularly important
     e = a - 10
     f = e + 20
     b_neg = a - -10
-    nose.tools.assert_is(f, b_neg)
+    assert f is b_neg
 
     g = e - 10
     h = a - 20
-    nose.tools.assert_is(g, h)
+    assert g is h
 
     i = d - 10
-    nose.tools.assert_is(i, b)
+    assert i is b
 
 
 def test_mask_eq_constant():

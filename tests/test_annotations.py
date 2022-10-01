@@ -1,4 +1,6 @@
+# pylint:disable=missing-class-docstring,multiple-statements
 import claripy
+
 
 class AnnotationA(claripy.Annotation):
     def __init__(self, letter, number):
@@ -68,6 +70,19 @@ def test_simplification():
     assert y.depth == 1
     assert len(y.annotations) == 1
     assert y.annotations[0].number == 2
+
+
+def test_missing_annotations_from_simplification():
+    relocatable_anno = AnnotationC('a', 2)
+
+    x0 = claripy.BVS('x', 32)
+    x1 = claripy.BVV(24, 32)
+    k = (x1 + x0).annotate(relocatable_anno)
+
+    x3 = claripy.simplify(k)
+
+    assert len(x3.annotations) == 1
+
 
 def test_annotations():
     x = claripy.BVS('x', 32) + 1
@@ -157,9 +172,26 @@ def test_remove_relocatable_annotations():
     assert len(y1.annotations) == 0
 
 
+def test_duplicated_annotations_from_makelike():
+    relocatable_anno = AnnotationC('a', 2)
+
+    x0 = claripy.BVS('x', 32).annotate(relocatable_anno)
+    x1 = claripy.BVV(24, 32)
+
+    # make_like() should not re-apply child annotations if the child is the make_like target
+    x2 = x0 + x1
+    assert len(x2.annotations) == 1
+
+    # simplify() should not re-apply annotations since annotations are kept during the simplification process by
+    # make_like().
+    x3 = claripy.simplify(x0 + x1)
+    assert len(x3.annotations) == 1
+
+
 if __name__ == '__main__':
     test_annotations()
     test_backend()
     test_eagerness()
     test_ast_hash_should_consider_relocatable_annotations()
     test_remove_relocatable_annotations()
+    test_duplicated_annotations_from_makelike()
