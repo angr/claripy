@@ -110,7 +110,7 @@ class Base:
         :param args:                The arguments to the AST operation (i.e., the objects to add)
         :param variables:           The symbolic variables present in the AST (default: empty set)
         :param symbolic:            A flag saying whether or not the AST is symbolic (default: False)
-        :param length:              An integer specifying the length of this AST (default: None)
+        :param length:              An integer specifying the bit length of this AST (default: None)
         :param simplified:          A measure of how simplified this AST is. 0 means unsimplified,
                                         1 means fast-simplified (basically, just undoing the Reverse
                                         op), and 2 means simplified through z3.
