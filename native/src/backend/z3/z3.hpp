@@ -29,9 +29,9 @@ namespace Backend::Z3 {
         SET_IMPLICITS_NONDEFAULT_CTORS(Z3, delete);
 
         /** Convert v to an z3::expr_vector */
-        inline z3::expr_vector to_expr_vec(z3::context & ctx, const std::vector<Expr::RawPtr> & v) {
-            z3::expr_vector ret {ctx};
-            for (uint32_t i {0}; i < v.size(); ++i) {
+        inline z3::expr_vector to_expr_vec(z3::context &ctx, const std::vector<Expr::RawPtr> &v) {
+            z3::expr_vector ret { ctx };
+            for (uint32_t i { 0 }; i < v.size(); ++i) {
                 ret.push_back(convert(v[i])); // TODO: find a more efficient way
             }
             return ret;
@@ -97,6 +97,24 @@ namespace Backend::Z3 {
         /*                         Member Functions                         */
         /********************************************************************/
 
+        /** Define this thread as the main thread
+         *  This should only be called once
+         */
+        static inline void set_main() {
+            static std::atomic_bool done { false };
+            const bool ok { not done.exchange(true) };
+            UTIL_ASSERT(Util::Err::Usage, ok, "This function may only be called once");
+            tls.main_thread = true;
+#ifdef DEBUG
+            main_set = true;
+#endif
+        }
+
+        /** Interrupt this thread's z3 context */
+        inline void interrupt() {
+            tls.ctx.interrupt();
+        }
+
         /** Clone the given solver */
         inline Solver clone(const Solver &s) {
             // https://github.com/Z3Prover/z3/issues/556
@@ -105,13 +123,15 @@ namespace Backend::Z3 {
 
         /** Return a tls solver
          *  If timeout is not 0, timeouts will be configured for the solver, new or reused
+         *  If max_memory is not 0, memory limits will be configured for the solver, new or reused
          *  Warning: solver is not saved locally if force_new is false
          */
         template <bool ForceNew = false>
-        [[nodiscard]] inline std::shared_ptr<Solver> tls_solver(const unsigned timeout = 0) {
+        [[nodiscard]] inline std::shared_ptr<Solver> tls_solver(const unsigned timeout = 0,
+                                                                const unsigned max_memory = 0) {
             auto ret { get_tls_solver<ForceNew>() };
+            auto &slv { *ret };
             if (timeout) {
-                auto slv { *ret };
                 if (slv->get_param_descrs().to_string().find("soft_timeout") != std::string::npos) {
                     slv->set("soft_timeout", timeout);
                     slv->set("solver2_timeout", timeout);
@@ -119,6 +139,9 @@ namespace Backend::Z3 {
                 else {
                     slv->set("timeout", timeout);
                 }
+            }
+            if (UNLIKELY(max_memory)) {
+                slv->set("max_memory", max_memory);
             }
             return ret;
         }
@@ -136,13 +159,14 @@ namespace Backend::Z3 {
 
         /** Check to see if the solver is in a satisfiable state */
         inline bool satisfiable(Solver &solver) const {
-            return solver->check() == z3::check_result::sat;
+            return is_sat(solver, nullptr);
         }
 
         /** Check to see if the solver is in a satisfiable state */
         inline bool satisfiable(Solver &solver,
                                 const std::vector<Expr::RawPtr> &extra_constraints) {
-            return satisfiable(solver, to_expr_vec(solver->ctx(), extra_constraints));
+            const auto ec { to_expr_vec(solver->ctx(), extra_constraints) };
+            return is_sat(solver, &ec);
         }
 
         /** Check if expr = sol is a solution to the given solver; none may be nullptr */
@@ -150,7 +174,7 @@ namespace Backend::Z3 {
                              const std::vector<Expr::RawPtr> &extra_constraints) {
             auto ec { to_expr_vec(solver->ctx(), extra_constraints) };
             ec.push_back(convert(expr) == convert(sol)); // Debug verifies expr is not null
-            return satisfiable(solver, ec); // Debug verifies non-null
+            return is_sat(solver, &ec);                  // Debug verifies non-null
         }
 
         /** Check to see if sol is a solution to expr w.r.t the solver; neither may be nullptr */
@@ -231,7 +255,8 @@ namespace Backend::Z3 {
          *  No pointers may be nullptr
          */
         inline std::vector<Op::PrimVar> eval(const Expr::RawPtr expr, Solver &solver,
-                                             const U64 n_sol, const std::vector<Expr::RawPtr> &extra_constraints) {
+                                             const U64 n_sol,
+                                             const std::vector<Expr::RawPtr> &extra_constraints) {
             auto ec { to_expr_vec(solver->ctx(), extra_constraints) };
             std::vector<Op::PrimVar> ret;
             ret.reserve(n_sol); // We do not resize as we may return < n_sol
@@ -241,7 +266,7 @@ namespace Backend::Z3 {
             }
             // Repeat for each new solution
             for (U64 iter { 0 }; iter < n_sol; ++iter) {
-                if (not satisfiable(solver, ec)) {
+                if (not is_sat(solver, &ec)) {
                     // No point in search further, return what we have
                     break;
                 }
@@ -329,15 +354,28 @@ namespace Backend::Z3 {
         /*                     Private Helper Functions                     */
         /********************************************************************/
 
+        /** Disable Z3 sigint handling for non-main-thread solvers */
+        inline void no_sigint(Solver &s) {
+#ifdef DEBUG
+            UTIL_ASSERT(Util::Err::Usage, main_set, "Mark the main thread!");
+#endif
+            if (not tls.main_thread) {
+                s->set("ctrl_c", false);
+            }
+        }
+
         /** Return a tls solver
          *  Warning: solver is not saved locally if force_new is false
          */
         template <bool ForceNew> [[nodiscard]] inline std::shared_ptr<Solver> get_tls_solver() {
             if constexpr (ForceNew) {
-                return std::make_shared<Solver>(z3::solver { tls.ctx });
+                auto ret { std::make_shared<Solver>(z3::solver { tls.ctx }) };
+                no_sigint(*ret);
+                return ret;
             }
             else if (UNLIKELY(tls.solver == nullptr)) {
                 tls.solver = std::make_shared<Solver>(z3::solver { tls.ctx });
+                no_sigint(*(tls.solver));
             }
             return tls.solver;
         }
@@ -420,15 +458,31 @@ namespace Backend::Z3 {
         }
 
         /** Check to see if the solver is in a satisfiable state */
-        inline bool satisfiable(Solver &solver, const z3::expr_vector &ec) const {
-            return solver->check(ec) == z3::check_result::sat;
+        inline bool is_sat(Solver &solver, CTSC<z3::expr_vector> ec) const {
+            z3::check_result res { (ec == nullptr ? solver->check() : solver->check(*ec)) };
+            if (UNLIKELY(res == z3::unknown)) {
+                // If the solvers were interrupted oddly, raise the proper error exception
+                const std::string reason { solver->reason_unknown() };
+#define M_EXCEPT_IF(ERR, ...)                                                                      \
+    {                                                                                              \
+        static const std::set<std::string> s { __VA_ARGS__ };                                      \
+        UTIL_ASSERT(ERR, s.find(reason) != s.end(), reason);                                       \
+    }
+                M_EXCEPT_IF(Util::Err::Python::KeyboardInterrupt, "interrupted",
+                            "interrupted from keyboard");
+                M_EXCEPT_IF(Error::Backend::SolverInterrupt, "timeout",
+                            "max. resource limit exceeded", "max. memory exceeded");
+#undef M_EXCEPT_IF
+            }
+            return res == z3::sat;
         }
 
         /** Return up to n_sol different solutions of solver given exprs, where exprs.size() > 1
          *  No pointers may be nullptr
          */
         inline std::vector<std::vector<Op::PrimVar>>
-        batch_eval(const std::vector<z3::expr> exprs, Solver &solver, const U64 n_sol, const z3::expr_vector& extra_constraints) const {
+        batch_eval(const std::vector<z3::expr> exprs, Solver &solver, const U64 n_sol,
+                   const z3::expr_vector &extra_constraints) const {
             UTIL_ASSERT(Util::Err::Usage, exprs.size() > 1,
                         "should only be called when exprs.size() > 1");
             // Prep
@@ -438,7 +492,7 @@ namespace Backend::Z3 {
             // Repeat for each new solution
             std::vector<z3::expr> z3_sol;
             for (U64 iter { 0 }; iter < n_sol; ++iter) {
-                if (not satisfiable(solver, extra_constraints)) {
+                if (not is_sat(solver, &extra_constraints)) {
                     // No point in search further, return what we have
                     break;
                 }
@@ -496,7 +550,8 @@ namespace Backend::Z3 {
 
         /** Find the min/max value of expr that satisfies solver; returns an I64 or U64 */
         template <bool Signed, bool Minimize>
-        inline auto extrema(const Expr::RawPtr raw_expr, Solver &solver, z3::expr_vector&& extra_constraints) {
+        inline auto extrema(const Expr::RawPtr raw_expr, Solver &solver,
+                            z3::expr_vector &&extra_constraints) {
             // Check input
             using Usage = Util::Err::Usage;
             UTIL_ASSERT_NOT_NULL_DEBUG(raw_expr);
@@ -530,16 +585,17 @@ namespace Backend::Z3 {
             while (hi > lo + 1) { // Difference of 1 instead of 0 to prevent infinite loop
                 // Add new bounding constraints
                 const Integer middle { Util::avg(hi, lo) };
-                extra_constraints.push_back(ge(expr, to_z3(Minimize ? lo : middle)) && le(expr, to_z3(Minimize ? middle : hi)));
+                extra_constraints.push_back(ge(expr, to_z3(Minimize ? lo : middle)) &&
+                                            le(expr, to_z3(Minimize ? middle : hi)));
                 // Binary search
-                const bool sat { satisfiable(solver, extra_constraints) };
+                const bool sat { is_sat(solver, &extra_constraints) };
                 (sat == Minimize ? hi : lo) = middle;
                 extra_constraints.pop_back();
             }
 
             // Last step of binary search
             extra_constraints.push_back(expr == to_z3(Minimize ? lo : hi));
-            const Integer ret { Minimize == satisfiable(solver, extra_constraints) ? lo : hi };
+            const Integer ret { Minimize == is_sat(solver, &extra_constraints) ? lo : hi };
             return ret;
         }
 
@@ -547,9 +603,11 @@ namespace Backend::Z3 {
         /*                      Private Helper Classes                      */
         /********************************************************************/
 
-        /** Holds and initalizes the thread_local z3 data */
+        /** Holds and initializes the thread_local z3 data */
         struct TLS final {
 
+            /** If this is the main thread */
+            bool main_thread { false };
             /** The z3 context this uses */
             z3::context ctx {};
             /** The BoolTactic the z3 backend will use */
@@ -575,6 +633,11 @@ namespace Backend::Z3 {
          *  All Z3 backends share this
          */
         static thread_local TLS tls;
+
+#ifdef DEBUG
+        /** True iff the main thread was noted */
+        static std::atomic_bool main_set;
+#endif
     };
 
 } // namespace Backend::Z3

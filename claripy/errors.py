@@ -28,6 +28,9 @@ class ClaripyBackendVSAError(BackendError):
 class MissingSolverError(ClaripyError):
     pass
 
+class ClaripySolverInterruptError(ClaripyError):
+    pass
+
 #
 # AST errors
 #

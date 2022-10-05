@@ -24,6 +24,9 @@ namespace Error::Backend {
     /** @todo document */
     UTIL_ERR_DEFINE_FINAL_EXCEPTION(Unsupported, Claripy);
 
+    /** Thrown when a backend solver was interrupted */
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(SolverInterrupt, Claripy);
+
 } // namespace Error::Backend
 
 #endif

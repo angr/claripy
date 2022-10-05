@@ -27,6 +27,9 @@ namespace Util::Err::Python {
     /** A custom claripy exception for python runtime errors */
     UTIL_ERR_DEFINE_NONFINAL_EXCEPTION(Runtime, Base);
 
+    /** A custom claripy exception for python keyboard interrupts */
+    UTIL_ERR_DEFINE_FINAL_EXCEPTION(KeyboardInterrupt, Base);
+
 } // namespace Util::Err::Python
 
 #endif

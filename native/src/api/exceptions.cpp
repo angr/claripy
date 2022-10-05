@@ -89,7 +89,9 @@ static void register_internal(py::module_ &m, const py::handle &claricpp) {
 
 /** Register generic python exceptions with pybind11 */
 static void register_generic_python() {
-    M_TRANSLATE_EXC(Util::Err::Python::Runtime, PyExc_RuntimeError); // prefer python builtin
+    // prefer python builtin
+    M_TRANSLATE_EXC(Util::Err::Python::KeyboardInterrupt, PyExc_KeyboardInterrupt);
+    M_TRANSLATE_EXC(Util::Err::Python::Runtime, PyExc_RuntimeError);
 }
 
 /** Register claripy exceptions with pybind11 */
@@ -101,6 +103,7 @@ static void register_claripy(py::module_ &m, const py::handle &python) {
     namespace EBa = Error::Backend;
     M_REGISTER_CLARIPY_EXC(EBa, Abstraction, claripy);
     M_REGISTER_CLARIPY_EXC(EBa, Unsupported, claripy);
+    M_REGISTER_CLARIPY_EXC(EBa, SolverInterrupt, claripy);
     // Error::Expr
     namespace EEx = Error::Expr;
     register_exception_mi<EEx::Value>(m, "Value", { "py_err.Claripy" }, { "ValueError" });

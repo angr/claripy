@@ -412,6 +412,18 @@ class CompositeFrontend(ConstrainedFrontend):
         for s in self._solver_list:
             s.timeout = t
 
+    @property
+    def max_memory(self):
+        return self._template_frontend.max_memory
+
+    @max_memory.setter
+    def max_memory(self, val):
+        # this is technically wrong. we cannot enforce a memory limit for a pool shared among multiple solvers
+        self._template_frontend.max_memory = val
+        for s in self._solver_list:
+            s.max_memory = val
+
+
     @staticmethod
     def _merge_with_ancestor(common_ancestor, merge_conditions):
         merged = common_ancestor.branch()

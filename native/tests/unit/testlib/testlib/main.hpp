@@ -24,6 +24,7 @@ static inline void testlib_init() {
     Util::Err::Claricpp::toggle_backtrace(true);
     Util::Backtrace::handle_signals();
     pybind11::initialize_interpreter(false);
+    ::Backend::Z3::Z3::set_main();
     Util::Log::info("Unit test preparations complete");
 }
 

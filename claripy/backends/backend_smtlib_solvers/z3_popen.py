@@ -26,8 +26,9 @@ def get_version():
 IS_INSTALLED, VERSION, ERROR = get_version()
 
 class Z3Proxy(PopenSolverProxy):
-    def __init__(self, timeout=None):
+    def __init__(self, timeout=None, max_memory=None):
         self.timeout = timeout
+        self.max_memory = max_memory
         self.installed = False
         p = None
         super(Z3Proxy, self).__init__(p)
@@ -38,18 +39,20 @@ class Z3Proxy(PopenSolverProxy):
         cmd = ['z3', '-smt2', '-in']
         if self.timeout is not None:
             cmd.append('-t:{}'.format(self.timeout//1000))  # our timeout is in milliseconds
+        if self.max_memory is not None:
+            cmd.append('-memory:{}'.format(self.max_memory))
 
         p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.installed = True
         return p
 
 class SolverBackendZ3(SMTLibSolverBackend):
-    def solver(self, timeout=None):
+    def solver(self, timeout=None, max_memory=None):
         """
         This function should return an instance of whatever object handles
         solving for this backend. For example, in Z3, this would be z3.Solver().
         """
-        return Z3Proxy(timeout=timeout)
+        return Z3Proxy(timeout=timeout, max_memory=max_memory)
 
 from ... import backend_manager as backend_manager
 backend_manager.backends._register_backend(SolverBackendZ3(), 'smtlib_z3', False, False)

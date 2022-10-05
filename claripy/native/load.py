@@ -5,7 +5,6 @@ Warning: This requires hooking clari, it modifies the module
 from pathlib import Path
 import logging
 import sys
-import os
 
 # TODO: find a better way, pybind11 doesn't seem to play well with relative imports
 old = sys.path
@@ -34,9 +33,10 @@ class Load:
     def __init__(self, *, debug_mode: bool = False):
         self._debug_mode = debug_mode
 
-    def config(self, *, src_root: str = None):
+    def config(self, *, src_root: str):
         """
-        Configure claricpp to work with claripy
+        Configure claricpp to work with claripy; run this from the main thread
+        :param src_root: The source root of the C++ code (for clean tracebacks)
         """
         clari.Expr.Base.__eq__ = _not_implemented
         clari.Expr.Base.__ne__ = _not_implemented
@@ -45,8 +45,11 @@ class Load:
             "python uses signed 64-bit integers. The unsigned variant "
             "is available via x.hash; the signed variant is returned by hash(x)"
         )
-        if src_root:
-            clari.API.add_source_root(src_root)
+        clari.API.add_source_root(src_root)
+        clari.API.set_main()
+        # These are only for initial config, no need to expose them
+        del clari.API.add_source_root
+        del clari.API.set_main
 
     def establish_link(self, *, logger):
         """

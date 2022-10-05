@@ -80,7 +80,7 @@ class SMTLibSolverBackend(BackendSMTLibBase):
         self.smt_script_log_dir = kwargs.pop('smt_script_log_dir', None)
         super(SMTLibSolverBackend, self).__init__(*args, **kwargs)
 
-    def solver(self, timeout=None): #pylint:disable=no-self-use,unused-argument
+    def solver(self, timeout=None, max_memory=None): #pylint:disable=no-self-use,unused-argument
         """
         This function should return an instance of whatever object handles
         solving for this backend. For example, in Z3, this would be z3.Solver().
