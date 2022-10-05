@@ -155,10 +155,10 @@ def extract_length_calc(high, low, _):
 
 
 def str_basic_length_calc(str_1):
-    return str_1.string_length
+    return str_1.length
 
 def int_to_str_length_calc(int_val): # pylint: disable=unused-argument
-    return ast.String.MAX_LENGTH
+    return 8*ast.String.MAX_LENGTH
 
 def str_replace_check(*args):
     str_1, str_2, _ = args
@@ -168,13 +168,13 @@ def str_replace_check(*args):
 
 def substr_length_calc(start_idx, count, strval): # pylint: disable=unused-argument
     # FIXME: How can I get the value of a concrete object without a solver
-    return strval.string_length if not count.concrete else count.args[0]
+    return strval.length if not count.concrete else 8*count.args[0]
 
 def ext_length_calc(ext, orig):
     return orig.length + ext
 
 def str_concat_length_calc(*args):
-    return sum(arg.string_length for arg in args)
+    return sum(arg.length for arg in args)
 
 def str_replace_length_calc(*args):
     str_1, str_2, str_3 = args
@@ -184,10 +184,10 @@ def str_replace_length_calc(*args):
     # If the part that has to be replaced if greater than
     # the replacement than the we have the maximum length possible
     # when the part that has to be replaced is not found inside the string
-    if str_2.string_length >= str_3.string_length:
-        return str_1.string_length
+    if str_2.length >= str_3.length:
+        return str_1.length
     # Otherwise We have the maximum length when teh replacement happens
-    return str_1.string_length - str_2.string_length + str_3.string_length
+    return str_1.length - str_2.length + str_3.length
 
 def strlen_bv_size_calc(s, bitlength): # pylint: disable=unused-argument
     return bitlength
