@@ -1,5 +1,5 @@
+from io import StringIO
 import hashlib
-
 import os
 
 from claripy.ast.bv import BV
@@ -7,7 +7,6 @@ from claripy.ast.bv import BV
 from .. import BackendError
 from ..backend_smtlib import BackendSMTLibBase
 from ...smtlib_utils import SMTParser, make_pysmt_const_from_type
-from io import StringIO
 
 from pysmt.smtlib.parser import Tokenizer
 from pysmt.shortcuts import NotEquals
