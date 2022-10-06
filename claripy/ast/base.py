@@ -99,7 +99,7 @@ class Base:
     MID_REPR=1
     FULL_REPR=2
 
-    def __new__(cls, op, args, add_variables=None, hash=None, **kwargs): #pylint:disable=redefined-builtin
+    def __new__(cls, op, args, add_variables=None, **kwargs): #pylint:disable=redefined-builtin
         """
         This is called when you create a new Base object, whether directly or through an operation.
         It finalizes the arguments (see the _finalize function, above) and then computes
@@ -211,57 +211,34 @@ class Base:
             ))
 
         kwargs['annotations'] = annotations
-
-        cache = cls._hash_cache
-        if hash is not None:
-            h = hash
-        elif op in {'BVS', 'BVV', 'BoolS', 'BoolV', 'FPS', 'FPV'} and not annotations:
-            if op == "FPV" and a_args[0] == 0.0 and math.copysign(1, a_args[0]) < 0:
-                # Python does not distinguish between +0.0 and -0.0 so we add sign to tuple to distinguish
-                h = (op, kwargs.get('length', None), ("-",) + a_args)
-            elif op == "FPV" and math.isnan(a_args[0]):
-                # cannot compare nans
-                h = (op, kwargs.get('length', None), ('nan',) + a_args[1:])
-            else:
-                h = (op, kwargs.get('length', None), a_args)
-
-            cache = cls._leaf_cache
-        else:
-            h = Base._calc_hash(op, a_args, kwargs) if hash is None else hash
-        self = cache.get(h, None)
-        if self is None:
-            self = super(Base, cls).__new__(cls)
-            depth = arg_max_depth + 1
-            self.__a_init__(op, a_args, depth=depth,
-                            uneliminatable_annotations=uneliminatable_annotations,
-                            relocatable_annotations=relocatable_annotations,
-                            **kwargs)
-            self._hash = h
-            cache[h] = self
-        #else:
-        #   if self.args != a_args or self.op != op or self.variables != kwargs['variables']:
-        #       raise Exception("CRAP -- hash collision")
-
-        return self
+        return cls.__init_with_annotations__(
+            op,
+            a_args,
+            arg_max_depth + 1,
+            uneliminatable_annotations,
+            relocatable_annotations,
+            **kwargs
+        )
 
     @classmethod
-    def __init_with_annotations__(cls, op, a_args, depth=None, uneliminatable_annotations=None, relocatable_annotations=None,
-                                  **kwargs):
-
-        cache = cls._hash_cache
-        h = Base._calc_hash(op, a_args, kwargs)
+    def __init_with_annotations__(cls, op, a_args, depth=None, uneliminatable_annotations=None,
+                                  relocatable_annotations=None, hash=None, **kwargs):
+        cache = (
+            cls._leaf_cache
+            if (op in {'BVS', 'BVV', 'BoolS', 'BoolV', 'FPS', 'FPV'} and not kwargs.get('annotations', None))
+            else cls._hash_cache
+        )
+        h = Base._calc_hash(op, a_args, kwargs) if hash is None else hash
         self = cache.get(h, None)
-        if self is not None:
-            return self
 
-        self = super().__new__(cls)
-        self.__a_init__(op, a_args,
-                        depth=depth,
-                        uneliminatable_annotations=uneliminatable_annotations,
-                        relocatable_annotations=relocatable_annotations, **kwargs)
-
-        self._hash = h
-        cache[h] = self
+        if self is None:
+            self = super().__new__(cls)
+            self.__a_init__(op, a_args,
+                            depth=depth,
+                            uneliminatable_annotations=uneliminatable_annotations,
+                            relocatable_annotations=relocatable_annotations, **kwargs)
+            self._hash = h
+            cache[h] = self
 
         return self
 
@@ -287,6 +264,17 @@ class Base:
         (hash(-1) == hash(-2), for example)
         """
         args_tup = tuple(a if type(a) in (int, float) else getattr(a, '_hash', hash(a)) for a in args)
+
+        # Adjustments to args_tup to force different hashes on known collisions
+        if op == "FPV" and args_tup[0] == 0.0 and math.copysign(1, args_tup[0]) < 0:
+            args_tup = args_tup + (-1,)
+
+        # Fast path for leaves (also fix for +0.0 vs -0.0)
+        ans = keywords.get('annotations', None)
+        length = keywords.get('length', None)
+        if op in {'BVS', 'BVV', 'BoolS', 'BoolV', 'FPS', 'FPV'} and not ans:
+            return hash((op, length, args_tup))
+
         # HASHCONS: these attributes key the cache
         # BEFORE CHANGING THIS, SEE ALL OTHER INSTANCES OF "HASHCONS" IN THIS FILE
 
@@ -295,10 +283,10 @@ class Base:
             # fall back to pickle.dumps
             to_hash = (
                 op, args_tup,
-                str(keywords.get('length', None)),
+                str(length),
                 hash(keywords['variables']),
                 keywords['symbolic'],
-                hash(keywords.get('annotations', None)),
+                hash(ans),
             )
             to_hash = pickle.dumps(to_hash, -1)
 
