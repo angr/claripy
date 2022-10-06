@@ -279,7 +279,7 @@ class Base:
         else:
             # HASHCONS: these attributes key the cache
             # BEFORE CHANGING THIS, SEE ALL OTHER INSTANCES OF "HASHCONS" IN THIS FILE
-            to_hash = Base._ast_serialize(op, args_tup, keywords)
+            to_hash = Base._ast_serialize(op, args_tup, minus0, keywords)
             if to_hash is None:
                 # fall back to pickle.dumps
                 to_hash = (
@@ -339,12 +339,13 @@ class Base:
         return None
 
     @staticmethod
-    def _ast_serialize(op: str, args_tup, keywords) -> Optional[bytes]:
+    def _ast_serialize(op: str, args_tup, minus0, keywords) -> Optional[bytes]:
         """
         Serialize the AST and get a bytestring for hashing.
 
         :param op:          The operator.
         :param args_tup:    A tuple of arguments.
+        :param minus0:      A bool stating this is an FPV where args[0] is -0.0
         :param keywords:    A dict of keywords.
         :return:            The serialized bytestring.
         """
@@ -367,7 +368,7 @@ class Base:
         else:
             annotations = b'\xf9'
 
-        return op.encode() + serialized_args + length + variables + symbolic + annotations
+        return op.encode() + serialized_args + Base._arg_serialize(minus0) + length + variables + symbolic + annotations
 
     #pylint:disable=attribute-defined-outside-init
     def __a_init__(self, op, args, variables=None, symbolic=None, length=None, simplified=0, errored=None,
