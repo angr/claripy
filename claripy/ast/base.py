@@ -61,7 +61,9 @@ def _d(h, cls, state):
     It exists to work around the fact that pickle will (normally) call __new__() with no arguments during deserialization.
     For ASTs, this does not work.
     """
-    op, args, length, variables, symbolic, annotations = state
+    op, args, length, variables, symbolic, annotations, minus0 = state
+    if minus0:
+        args = (-0.0, *args[1:])
     return cls.__new__(cls, op, args, length=length, variables=variables, symbolic=symbolic, annotations=annotations, hash=h)
 
 
@@ -245,7 +247,7 @@ class Base:
     def __reduce__(self):
         # HASHCONS: these attributes key the cache
         # BEFORE CHANGING THIS, SEE ALL OTHER INSTANCES OF "HASHCONS" IN THIS FILE
-        return _d, (self._hash, self.__class__, (self.op, self.args, self.length, self.variables, self.symbolic, self.annotations))
+        return _d, (self._hash, self.__class__, (self.op, self.args, self.length, self.variables, self.symbolic, self.annotations, _minus_zero(self.op, self.args)))
 
     def __init__(self, *args, **kwargs):
         pass
@@ -263,37 +265,38 @@ class Base:
         We do it using md5 to avoid hash collisions.
         (hash(-1) == hash(-2), for example)
         """
-        args_tup = tuple(a if type(a) in (int, float) else getattr(a, '_hash', hash(a)) for a in args)
         ans = keywords.get('annotations', None)
-        length = keywords.get('length', None)
+        length: int = keywords.get('length', None)
 
-        # Adjustments to args_tup to force different hashes on known collisions
-        if op == "FPV" and args_tup[0] == 0.0 and math.copysign(1, args_tup[0]) < 0:
-            args_tup = args_tup + (-1,)
+        # Adjustments to args to force different hashes on known collisions
+        minus0: bool = _minus_zero(op, args)
 
         # Fast path for leaves (also fix for +0.0 vs -0.0)
+        args_tup = tuple(a if type(a) in (int, float) else getattr(a, '_hash', hash(a)) for a in args)
         if op in {'BVS', 'BVV', 'BoolS', 'BoolV', 'FPS', 'FPV'} and not ans:
-            return hash((op, length, args_tup))
-
-        # HASHCONS: these attributes key the cache
-        # BEFORE CHANGING THIS, SEE ALL OTHER INSTANCES OF "HASHCONS" IN THIS FILE
-        to_hash = Base._ast_serialize(op, args_tup, keywords)
-        if to_hash is None:
-            # fall back to pickle.dumps
-            to_hash = (
-                op, args_tup,
-                str(length),
-                hash(keywords['variables']),
-                keywords['symbolic'],
-                hash(ans),
-            )
-            to_hash = pickle.dumps(to_hash, -1)
+            # TODO: this is slow for the fast path. Move cache lookup here and rename function
+            to_hash = pickle.dumps((op, length, args_tup, minus0), -1)
+        else:
+            # HASHCONS: these attributes key the cache
+            # BEFORE CHANGING THIS, SEE ALL OTHER INSTANCES OF "HASHCONS" IN THIS FILE
+            to_hash = Base._ast_serialize(op, args_tup, keywords)
+            if to_hash is None:
+                # fall back to pickle.dumps
+                to_hash = (
+                    op, args_tup,
+                    str(length),
+                    hash(keywords['variables']),
+                    keywords['symbolic'],
+                    hash(ans),
+                    minus0,
+                )
+                to_hash = pickle.dumps(to_hash, -1)
 
         # Why do we use md5 when it's broken? Because speed is more important
         # than cryptographic integrity here. Then again, look at all those
         # allocations we're doing here... fast python is painful.
         hd = md5.md5(to_hash).digest()
-        return md5_unpacker.unpack(hd)[0] # 64 bits
+        return md5_unpacker.unpack(hd)[0]  # 64 bits
 
     @staticmethod
     def _arg_serialize(arg) -> Optional[bytes]:
@@ -1220,6 +1223,12 @@ def simplify(e):
                 s = s.annotate(*annotations)
 
         return s
+
+def _minus_zero(op, args) -> bool:
+    """
+    :returns: True iff op==FPV and args[0] is -0.0
+    """
+    return op == "FPV" and args[0] == 0.0 and math.copysign(1, args[0]) < 0
 
 
 from ..errors import BackendError, ClaripyOperationError, ClaripyReplacementError
