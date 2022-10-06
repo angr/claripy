@@ -368,7 +368,7 @@ class Base:
         else:
             annotations = b'\xf9'
 
-        return op.encode() + serialized_args + Base._arg_serialize(minus0) + length + variables + symbolic + annotations
+        return op.encode() + serialized_args + length + variables + symbolic + annotations + Base._arg_serialize(minus0)
 
     #pylint:disable=attribute-defined-outside-init
     def __a_init__(self, op, args, variables=None, symbolic=None, length=None, simplified=0, errored=None,
