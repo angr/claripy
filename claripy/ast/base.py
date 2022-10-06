@@ -264,20 +264,19 @@ class Base:
         (hash(-1) == hash(-2), for example)
         """
         args_tup = tuple(a if type(a) in (int, float) else getattr(a, '_hash', hash(a)) for a in args)
+        ans = keywords.get('annotations', None)
+        length = keywords.get('length', None)
 
         # Adjustments to args_tup to force different hashes on known collisions
         if op == "FPV" and args_tup[0] == 0.0 and math.copysign(1, args_tup[0]) < 0:
             args_tup = args_tup + (-1,)
 
         # Fast path for leaves (also fix for +0.0 vs -0.0)
-        ans = keywords.get('annotations', None)
-        length = keywords.get('length', None)
         if op in {'BVS', 'BVV', 'BoolS', 'BoolV', 'FPS', 'FPV'} and not ans:
             return hash((op, length, args_tup))
 
         # HASHCONS: these attributes key the cache
         # BEFORE CHANGING THIS, SEE ALL OTHER INSTANCES OF "HASHCONS" IN THIS FILE
-
         to_hash = Base._ast_serialize(op, args_tup, keywords)
         if to_hash is None:
             # fall back to pickle.dumps
@@ -619,7 +618,7 @@ class Base:
         :returns:                   A string representing the AST
         """
         if max_depth is not None and max_depth <= 0:
-                return '<...>'
+            return '<...>'
 
         elif self.op in operations.reversed_ops:
             op = operations.reversed_ops[self.op]
