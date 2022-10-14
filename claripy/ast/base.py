@@ -61,7 +61,11 @@ def _d(h, cls, state):
     It exists to work around the fact that pickle will (normally) call __new__() with no arguments during deserialization.
     For ASTs, this does not work.
     """
-    op, args, length, variables, symbolic, annotations, minus0 = state
+    if len(state) == 6: # TODO: remove me
+        op, args, length, variables, symbolic, annotations = state
+        minus0 = False
+    else:
+        op, args, length, variables, symbolic, annotations, minus0 = state
     if minus0:
         args = (-0.0, *args[1:])
     return cls.__new__(cls, op, args, length=length, variables=variables, symbolic=symbolic, annotations=annotations, hash=h)
@@ -247,6 +251,7 @@ class Base:
     def __reduce__(self):
         # HASHCONS: these attributes key the cache
         # BEFORE CHANGING THIS, SEE ALL OTHER INSTANCES OF "HASHCONS" IN THIS FILE
+        breakpoint()
         return _d, (self._hash, self.__class__, (self.op, self.args, self.length, self.variables, self.symbolic, self.annotations, _minus_zero(self.op, self.args)))
 
     def __init__(self, *args, **kwargs):
@@ -339,7 +344,7 @@ class Base:
         return None
 
     @staticmethod
-    def _ast_serialize(op: str, args_tup, minus0, keywords) -> Optional[bytes]:
+    def _ast_serialize(op: str, args_tup, minus0: bool, keywords) -> Optional[bytes]:
         """
         Serialize the AST and get a bytestring for hashing.
 
