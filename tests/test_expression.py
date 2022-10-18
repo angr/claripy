@@ -494,12 +494,46 @@ class TestExpression(unittest.TestCase):
     def test_arith_shift(self):
         bc = claripy.backends.concrete
         a = claripy.BVV(-4, 32)
+        assert bc.convert(a << 1) == -8
         assert bc.convert(a >> 1) == -2
+        assert bc.convert(a << 32) == 0
+        assert bc.convert(a >> 32) == -1
+        # neg shift is treated as unsigned
+        assert bc.convert(a << -1) == bc.convert(a << (2 ** 32 - 1))
+        assert bc.convert(a >> -1) == bc.convert(a >> (2 ** 32 - 1))
 
         solver = claripy.Solver()
         a = claripy.BVS("a", 32)
         solver.add(a == -4)
+        assert list(solver.eval(a << 1, 2)) == [2 ** 32 - 8]
         assert list(solver.eval(a >> 1, 2)) == [2 ** 32 - 2]
+        assert list(solver.eval(a << 32, 2)) == [0]
+        assert list(solver.eval(a >> 32, 2)) == [2 ** 32 - 1]
+
+        x = claripy.BVS("x", 32)
+        y = claripy.BVS("y", 32)
+        assert list(solver.eval(a << -x == a << (2 ** 32 - x), 2)) == [True]
+        assert list(solver.eval(a >> -x == a >> (2 ** 32 - x), 2)) == [True]
+        solver.add(y >= 32)
+        assert list(solver.eval(x << y, 2)) == [0]
+        assert list(solver.eval(x >> y, 2)) == [0, 2 ** 32 - 1]
+
+    def test_logic_shift_right(self):
+        bc = claripy.backends.concrete
+        a = claripy.BVV(-4, 32)
+        assert bc.convert(a.LShR(1)) == 0x7fff_fffe
+        assert bc.convert(a.LShR(32)) == 0
+        assert bc.convert(a.LShR(-1)) == 0
+
+        solver = claripy.Solver()
+        a = claripy.BVS("a", 32)
+        solver.add(a == -4)
+        assert list(solver.eval(a.LShR(1), 2)) == [0x7fff_fffe]
+
+        x = claripy.BVS("x", 32)
+        y = claripy.BVS("y", 32)
+        solver.add(y >= 32)
+        assert list(solver.eval(x.LShR(y), 2)) == [0]
 
     def test_bool_conversion(self):
         a = claripy.BVV(42, 32)
