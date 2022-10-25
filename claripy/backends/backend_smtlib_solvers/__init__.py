@@ -1,5 +1,5 @@
+from io import StringIO
 import hashlib
-
 import os
 
 from claripy.ast.bv import BV
@@ -7,7 +7,6 @@ from claripy.ast.bv import BV
 from .. import BackendError
 from ..backend_smtlib import BackendSMTLibBase
 from ...smtlib_utils import SMTParser, make_pysmt_const_from_type
-from six.moves import cStringIO
 
 from pysmt.smtlib.parser import Tokenizer
 from pysmt.shortcuts import NotEquals
@@ -158,7 +157,7 @@ class SMTLibSolverBackend(BackendSMTLibBase):
         sat = solver.read_sat()
         if sat == 'sat':
             model_string = solver.read_model()
-            tokens = Tokenizer(cStringIO(model_string), interactive=True)
+            tokens = Tokenizer(StringIO(model_string), interactive=True)
             ass_list = SMTParser(tokens).consume_assignment_list()
             return sat, {s: val for s, val in ass_list}, ass_list
         else:
