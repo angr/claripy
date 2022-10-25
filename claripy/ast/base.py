@@ -61,11 +61,7 @@ def _d(h, cls, state):
     It exists to work around the fact that pickle will (normally) call __new__() with no arguments during deserialization.
     For ASTs, this does not work.
     """
-    if len(state) == 6: # TODO: remove me
-        op, args, length, variables, symbolic, annotations = state
-        minus0 = False
-    else:
-        op, args, length, variables, symbolic, annotations, minus0 = state
+    op, args, length, variables, symbolic, annotations, minus0 = state
     if minus0:
         args = (-0.0, *args[1:])
     return cls.__new__(cls, op, args, length=length, variables=variables, symbolic=symbolic, annotations=annotations, hash=h)
