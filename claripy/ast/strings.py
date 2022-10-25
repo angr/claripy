@@ -1,11 +1,11 @@
+from typing import Optional
+
 from .bits import Bits
 from ..ast.base import _make_name
 
 from .. import operations
 from .bool import Bool
 from .bv import BV, BVS, BVV
-
-import math
 
 
 class String(Bits):
@@ -26,11 +26,12 @@ class String(Bits):
     GENERATED_BVS_IDENTIFIER = 'BVS_'
     MAX_LENGTH = 10000
 
-    def __init__(self, *args, **kwargs):
-        str_len = kwargs['length']
-        kwargs['length'] *= 8
-        super().__init__(*args, **kwargs)
-        self.string_length = str_len
+    def __init__(self, *args, length: int, **kwargs):
+        """
+        :param length: The string byte length
+        """
+        super().__init__(*args, length=length, **kwargs)
+        self.string_length: int = length
 
     def __getitem__(self, rng):
         '''
@@ -133,16 +134,17 @@ def StringS(name, size, uninitialized=False, explicit_name=False, **kwargs):
     :returns:                    The String object representing the symbolic string
     """
     n = _make_name(String.STRING_TYPE_IDENTIFIER + name, size, False if explicit_name is None else explicit_name)
-    result = String("StringS", (n, uninitialized), length=size, symbolic=True, eager_backends=None, uninitialized=uninitialized, variables={n}, **kwargs)
+    result = String("StringS", (n, uninitialized), length=8*size, symbolic=True, eager_backends=None, uninitialized=uninitialized, variables={n}, **kwargs)
     return result
 
-def StringV(value, length=None, **kwargs):
+def StringV(value, length: Optional[int]=None, **kwargs):
     """
     Create a new Concrete string (analogous to z3.StringVal())
 
-    :param value: The constant value of the concrete string
+    :param value:  The constant value of the concrete string
+    :param length: The byte length of the string
 
-    :returns:                    The String object representing the concrete string
+    :returns:      The String object representing the concrete string
     """
 
     if length is None:
@@ -151,7 +153,7 @@ def StringV(value, length=None, **kwargs):
     if length < len(value):
         raise ValueError("Can't make a concrete string value longer than the specified length!")
 
-    result = String("StringV", (value, len(value)), length=length, **kwargs)
+    result = String("StringV", (value, length), length=8*length, **kwargs)
     return result
 
 StrConcat = operations.op('StrConcat', String, String, calc_length=operations.str_concat_length_calc, bound=False)
