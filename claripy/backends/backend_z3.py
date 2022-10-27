@@ -1190,11 +1190,7 @@ class BackendZ3(Backend):
     @condom
     def _op_raw_Concat(*args):
         sz = len(args)
-        ctx = None
-        for a in args:
-            if z3.is_expr(a):
-                ctx = a.ctx
-                break
+        ctx = a.ctx
         # TODO: I don't think this is needed for us, we don't deal with Seq or Regex
         # if z3.is_seq(args[0]) or isinstance(args[0], str):
         #     v = (z3.Ast * sz)()
