@@ -900,17 +900,13 @@ class BackendZ3(Backend):
             else:
                 hi = middle
 
-        if hi == lo:
+        sat = z3_solver_sat(solver, extra_constraints_converted + [expr == (hi if is_max else lo)], comment)
+        if sat and model_callback is not None:
+            model_callback(self._generic_model(solver.model()))
+        if sat == is_max:
             ret = hi
         else:
-            sat = z3_solver_sat(solver, extra_constraints_converted + [expr == (hi if is_max else lo)], comment)
-            if sat and model_callback is not None:
-                model_callback(self._generic_model(solver.model()))
-            if sat == is_max:
-                ret = hi
-            else:
-                ret = lo
-
+            ret = lo
         return ret
 
 
