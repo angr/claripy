@@ -400,7 +400,7 @@ BV.SDiv = operations.op('SDiv', (BV, BV), BV, extra_check=operations.length_same
 BV.SMod = operations.op('SMod', (BV, BV), BV, extra_check=operations.length_same_check, bound=False, calc_length=operations.basic_length_calc)
 
 BV.__neg__ = operations.op('__neg__', (BV,), BV, calc_length=operations.basic_length_calc)
-BV.__pos__ = operations.op('__pos__', (BV,), BV, calc_length=operations.basic_length_calc)
+BV.__pos__ = lambda x: x
 BV.__abs__ = operations.op('__abs__', (BV,), BV, calc_length=operations.basic_length_calc)
 
 BV.__eq__ = operations.op('__eq__', (BV, BV), Bool, extra_check=operations.length_same_check)
