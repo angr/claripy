@@ -858,12 +858,8 @@ class BackendZ3(Backend):
         """
         global solve_count
 
-        if signed:
-            lo = -2**(expr.size()-1)
-            hi = 2**(expr.size()-1)-1
-        else:
-            lo = 0
-            hi = 2**expr.size()-1
+        lo = -2**(expr.size()-1) if signed else 0
+        hi = 2**(expr.size()-1)-1 if signed else 2**expr.size()-1
 
         extra_constraints_converted = [self.convert(e) for e in extra_constraints]
         comment = "max" if is_max else "min"
