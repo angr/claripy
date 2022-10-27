@@ -852,8 +852,10 @@ class BackendZ3(Backend):
 
         return result_values
 
-    @condom
-    def _min(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None):
+    def _extrema(self, is_max: bool, expr, extra_constraints, signed, solver, model_callback):
+        """
+        _max if is_max else _min
+        """
         global solve_count
 
         if signed:
@@ -864,6 +866,7 @@ class BackendZ3(Backend):
             hi = 2**expr.size()-1
 
         extra_constraints_converted = [self.convert(e) for e in extra_constraints]
+        comment = "max" if is_max else "min"
         new_constraints = []
 
         GE = operator.ge if signed else z3.UGE
@@ -877,85 +880,47 @@ class BackendZ3(Backend):
             # TODO: is this assumption correct?
             # here it's not safe to call directly the z3 low level API since it might happen that the argument is an
             # integer and not a BV
-            new_constraints.append(z3.And(GE(expr, lo), LE(expr, middle)))
+            new_constraints.append(
+                z3.And(GE(expr, middle), LE(expr, hi))
+                if is_max else
+                z3.And(GE(expr, lo), LE(expr, middle))
+            )
 
             solve_count += 1
-            if z3_solver_sat(solver, extra_constraints_converted + new_constraints, "min"):
+            sat = z3_solver_sat(solver, extra_constraints_converted + new_constraints, comment)
+            if sat:
                 l.debug("... still sat")
                 if model_callback is not None:
                     model_callback(self._generic_model(solver.model()))
-                hi = middle
             else:
                 l.debug("... now unsat")
-                lo = middle
                 new_constraints.pop()
-
-        #l.debug("final hi/lo: %d, %d", hi, lo)
-
-        ret = None
-        if hi == lo:
-            ret = lo
-        else:
-            if z3_solver_sat(solver, extra_constraints_converted + [expr == lo], "min"):
-                if model_callback is not None:
-                    model_callback(self._generic_model(solver.model()))
-                ret = lo
-            else:
-                ret = hi
-
-        return ret
-
-    @condom
-    def _max(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None):
-        global solve_count
-
-        if signed:
-            lo = -2**(expr.size()-1)
-            hi = 2**(expr.size()-1)-1
-        else:
-            lo = 0
-            hi = 2**expr.size()-1
-
-        extra_constraints_converted = [self.convert(e) for e in extra_constraints]
-        new_constraints = []
-
-        GT = operator.gt if signed else z3.UGT
-        LE = operator.le if signed else z3.ULE
-
-        # TODO: Can only deal with bitvectors, not floats
-        while hi-lo > 1:
-            middle = (lo + hi)//2
-            #l.debug("h/m/l/d: %d %d %d %d", hi, middle, lo, hi-lo)
-
-            # TODO: is this assumption correct?
-            # here it's not safe to call directly the z3 low level API since it might happen that the argument is an
-            # integer and not a BV
-            new_constraints.append(z3.And(GT(expr, middle), LE(expr, hi)))
-
-            solve_count += 1
-            if z3_solver_sat(solver, extra_constraints_converted + new_constraints, "max"):
-                l.debug("... still sat")
-                if model_callback is not None:
-                    model_callback(self._generic_model(solver.model()))
+            if sat == is_max:
                 lo = middle
             else:
-                l.debug("... now unsat")
                 hi = middle
-                new_constraints.pop()
-            #l.debug("          now: %d %d %d %d", hi, middle, lo, hi-lo)
 
-        ret = None
         if hi == lo:
             ret = hi
         else:
-            if z3_solver_sat(solver, extra_constraints_converted + [expr == hi], "max"):
-                if model_callback is not None:
-                    model_callback(self._generic_model(solver.model()))
+            sat = z3_solver_sat(solver, extra_constraints_converted + [expr == (hi if is_max else lo)], comment)
+            if sat and model_callback is not None:
+                model_callback(self._generic_model(solver.model()))
+            if sat == is_max:
                 ret = hi
             else:
                 ret = lo
 
         return ret
+
+
+    @condom
+    def _min(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None):
+        return self._extrema(False, expr, extra_constraints, signed, solver, model_callback)
+
+    @condom
+    def _max(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None):
+        return self._extrema(True, expr, extra_constraints, signed, solver, model_callback)
 
     def _simplify(self, e): #pylint:disable=W0613,R0201
         raise Exception("This shouldn't be called. Bug Yan.")
