@@ -1157,7 +1157,7 @@ class BackendZ3(Backend):
 
     @condom
     def _op_raw_fpIsInf(self, a):
-        return z3.BoolRef(z3.Z3_mk_fpa_is_inf(self._context.ref(), a.as_ast()), self._context)
+        return z3.BoolRef(z3.Z3_mk_fpa_is_infinite(self._context.ref(), a.as_ast()), self._context)
 
     @condom
     def _op_raw_fpFP(self, sgn, exp, sig):
