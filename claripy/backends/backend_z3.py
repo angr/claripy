@@ -136,7 +136,6 @@ class BackendZ3(Backend):
 
     def __init__(self, reuse_z3_solver=None, ast_cache_size=10000):
         Backend.__init__(self, solver_required=True)
-        self._enable_simplification_cache = False
 
         # Per-thread Z3 solver
         # This setting is treated as a global setting and is not supposed to be changed during runtime, unless you know
@@ -257,30 +256,12 @@ class BackendZ3(Backend):
             self._tls.sym_cache = weakref.WeakValueDictionary()
             return self._tls.sym_cache
 
-    @property
-    def _simplification_cache_key(self):
-        try:
-            return self._tls.simplification_cache_key
-        except AttributeError:
-            self._tls.simplification_cache_key = weakref.WeakValueDictionary()
-            return self._tls.simplification_cache_key
-
-    @property
-    def _simplification_cache_val(self):
-        try:
-            return self._tls.simplification_cache_val
-        except AttributeError:
-            self._tls.simplification_cache_val = weakref.WeakValueDictionary()
-            return self._tls.simplification_cache_val
-
     def downsize(self):
         Backend.downsize(self)
 
         self._ast_cache.clear()
         self._var_cache.clear()
         self._sym_cache.clear()
-        self._simplification_cache_key.clear()
-        self._simplification_cache_val.clear()
 
     def _name(self, o): #pylint:disable=unused-argument
         l.warning("BackendZ3.name() called. This is weird.")
@@ -975,22 +956,6 @@ class BackendZ3(Backend):
         if expr._simplified:
             return expr
 
-        if self._enable_simplification_cache:
-            try:
-                k = self._simplification_cache_key[expr._cache_key]
-                #print "HIT WEAK KEY CACHE"
-                return k
-            except KeyError:
-                pass
-            try:
-                k = self._simplification_cache_val[expr._cache_key]
-                #print "HIT WEAK VALUE CACHE"
-                return k
-            except KeyError:
-                pass
-
-            #print "MISS CACHE"
-
         #l.debug("SIMPLIFYING EXPRESSION")
 
         expr_raw = self.convert(expr)
@@ -1016,9 +981,6 @@ class BackendZ3(Backend):
         o = self._abstract(s)
         o._simplified = Base.FULL_SIMPLIFY
 
-        if self._enable_simplification_cache:
-            self._simplification_cache_val[expr._cache_key] = o
-            self._simplification_cache_key[expr._cache_key] = o
         return o
 
     def _is_false(self, e, extra_constraints=(), solver=None, model_callback=None):
