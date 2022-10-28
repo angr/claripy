@@ -1,28 +1,10 @@
 from common_backend_smt_solver import if_installed
+from unittest import TestCase, main
 import claripy
 
 import logging
 
 l = logging.getLogger("claripy.test.solver")
-
-solver_list = (
-    claripy.Solver,
-    claripy.SolverReplacement,
-    claripy.SolverHybrid,
-    claripy.SolverComposite,
-    claripy.SolverCacheless,
-)
-
-
-def test_solver():
-    for s in solver_list:
-        yield raw_solver, s, True
-        yield raw_solver, s, False
-
-
-def test_hybrid_solver():
-    yield raw_hybrid_solver, True
-    yield raw_hybrid_solver, False
 
 
 def raw_hybrid_solver(reuse_z3_solver):
@@ -72,11 +54,6 @@ def raw_hybrid_solver(reuse_z3_solver):
     assert len(t.eval(x, 6, exact=False)) == 6
     assert len(t.eval(x, 8, exact=False)) == 8
     assert len(t.eval(x, 99, exact=False)) == 11
-
-
-def test_replacement_solver():
-    yield raw_replacement_solver, True
-    yield raw_replacement_solver, False
 
 
 def raw_replacement_solver(reuse_z3_solver):
@@ -292,11 +269,6 @@ def raw_solver(solver_type, reuse_z3_solver):
         assert claripy._backends_module.backend_z3.solve_count == count
 
 
-def test_solver_branching():
-    for s in solver_list:
-        yield raw_solver_branching, s, True
-        yield raw_solver_branching, s, False
-
 
 def raw_solver_branching(solver_type, reuse_z3_solver):
     claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
@@ -330,12 +302,6 @@ def raw_solver_branching(solver_type, reuse_z3_solver):
     assert not t.satisfiable()
 
 
-def test_combine():
-    for s in solver_list:
-        yield raw_combine, s, True
-        yield raw_combine, s, False
-
-
 def raw_combine(solver_type, reuse_z3_solver):
     claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
 
@@ -357,29 +323,6 @@ def raw_combine(solver_type, reuse_z3_solver):
     assert not s30.combine([s20]).satisfiable()
     assert s30.combine([s10]).eval(x, 1) == (30,)
     assert len(s30.combine([s10]).constraints) == 2
-
-
-@if_installed
-def test_composite_solver_with_strings():
-    s = claripy.SolverComposite(
-        template_solver_string=claripy.SolverCompositeChild(
-            backend=claripy.backend_manager.backends.smtlib_cvc4
-        )
-    )
-    x = claripy.BVS("x", 32)
-    y = claripy.BVS("y", 32)
-    z = claripy.BVS("z", 32)
-    str_1 = claripy.StringS("sym_str_1", 1024)
-    c = claripy.And(x == 1, y == 2, z == 3, str_1 == claripy.StringV("cavallo"))
-    s.add(c)
-    assert len(s._solver_list) == 4
-    assert s.satisfiable()
-    assert list(s.eval(str_1, 1)) == ["cavallo"]
-
-
-def test_composite_solver():
-    yield raw_composite_solver, True
-    yield raw_composite_solver, False
 
 
 def raw_composite_solver(reuse_z3_solver):
@@ -436,11 +379,6 @@ def raw_composite_solver(reuse_z3_solver):
         assert claripy._backends_module.backend_z3.solve_count == count + 3
 
 
-def test_minmax():
-    yield raw_minmax, True
-    yield raw_minmax, False
-
-
 def raw_minmax(reuse_z3_solver):
     claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
 
@@ -450,11 +388,6 @@ def raw_minmax(reuse_z3_solver):
     assert s.max(x) == 2 ** 32 - 1
     assert s.min(x) == 0
     assert s.satisfiable()
-
-
-def test_composite_discrepancy():
-    yield raw_composite_discrepancy, True
-    yield raw_composite_discrepancy, False
 
 
 def raw_composite_discrepancy(reuse_z3_solver):
@@ -493,40 +426,6 @@ def raw_composite_discrepancy(reuse_z3_solver):
     assert sn.min(dst) == sc.min(dst)
 
 
-def test_model():
-    x = claripy.BVS("x", 32)
-    y = claripy.BVS("y", 32)
-    s = claripy.Solver()
-
-    s.add(x < 10)
-    assert sorted(s.eval(x, 20)) == list(range(10))
-    s.add(y == 1337)
-    assert sorted(s.eval(x, 20)) == list(range(10))
-
-
-def test_unsatness():
-    x = claripy.BVS("x", 32)
-
-    s = claripy.Solver()
-    s.add(x == 10)
-    assert s.satisfiable()
-    s.add(claripy.false)
-    assert not s.satisfiable()
-
-
-def test_simplification_annotations():
-    s = claripy.Solver()
-    x = claripy.BVS("x", 32)
-
-    s.add(x > 10)
-    s.add(x > 11)
-    s.add((x > 12).annotate(claripy.SimplificationAvoidanceAnnotation()))
-
-    assert len(s.constraints) == 3
-    s.simplify()
-    assert len(s.constraints) == 2
-
-
 def raw_ancestor_merge(solver, reuse_z3_solver):
     claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
 
@@ -554,12 +453,6 @@ def raw_ancestor_merge(solver, reuse_z3_solver):
     assert len(t.constraints[-1].args) == 2
 
 
-def test_ancestor_merge():
-    for s in solver_list:
-        yield raw_ancestor_merge, s, True
-        yield raw_ancestor_merge, s, False
-
-
 def raw_unsat_core(solver, reuse_z3_solver):
     claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
 
@@ -582,104 +475,208 @@ def raw_unsat_core(solver, reuse_z3_solver):
     assert unsat_core[1] is not None
     assert unsat_core[2] is not None
 
+#
+# Test Classes
+#
 
-def test_unsat_core():
-    for s in (
-        claripy.Solver,
-        claripy.SolverComposite,
-        claripy.SolverCacheless,
-        claripy.SolverHybrid,
-    ):
-        yield raw_unsat_core, s, True
-        yield raw_unsat_core, s, False
+class StandardTests(TestCase):
 
-
-def test_zero_division_in_cache_mixin():
-    # Bug in the caching backend. See issue #49 on github.
-    num = claripy.BVS("num", 256)
-    denum = claripy.BVS("denum", 256)
-    e = claripy.BVS("e", 256)
-    s = claripy.Solver()
-    s.add(e == 8)
-    assert s.satisfiable()
-    s.add(claripy.If(denum == 0, 0, num / denum) == e)
-    assert s.satisfiable()
-    # As a bonus:
-    s.add(num == 16)
-    assert s.satisfiable()
-    s.add(denum == 3)
-    assert not s.satisfiable()
+    @if_installed
+    def test_composite_solver_with_strings(self):
+        s = claripy.SolverComposite(
+            template_solver_string=claripy.SolverCompositeChild(
+                backend=claripy.backend_manager.backends.smtlib_cvc4
+            )
+        )
+        x = claripy.BVS("x", 32)
+        y = claripy.BVS("y", 32)
+        z = claripy.BVS("z", 32)
+        str_1 = claripy.StringS("sym_str_1", 1024)
+        c = claripy.And(x == 1, y == 2, z == 3, str_1 == claripy.StringV("cavallo"))
+        s.add(c)
+        assert len(s._solver_list) == 4
+        assert s.satisfiable()
+        assert list(s.eval(str_1, 1)) == ["cavallo"]
 
 
-def test_composite_solver_branching_optimizations():
-    s = claripy.SolverComposite()
-    w = claripy.BVS("w", 32)
-    x = claripy.BVS("x", 32)
-    y = claripy.BVS("y", 32)
-    z = claripy.BVS("z", 32)
-
-    s.add(w == 10)
-    assert len(s._unchecked_solvers) == 1
-    assert s.satisfiable()
-    s.add(x == 10)
-    assert len(s._unchecked_solvers) == 1
-
-    s2 = s.branch()
-    assert len(s2._unchecked_solvers) == 1
-    assert s.satisfiable()
-    assert len(s._unchecked_solvers) == 0
-    assert len(s2._unchecked_solvers) == 1
-    s.add(y == 10)
-    assert len(s._unchecked_solvers) == 1
-    assert len(s2._unchecked_solvers) == 1
-    s2.add(z == 10)
-    assert len(s._unchecked_solvers) == 1
-    assert len(s2._unchecked_solvers) == 2
-    assert s2.satisfiable()
-    assert len(s._unchecked_solvers) == 1
-    assert len(s2._unchecked_solvers) == 0
-
-    s2.add(z == 12)
-    assert not s2.satisfiable()
-    assert not s2.satisfiable()
+    def test_minmax_with_reuse(self):
+        raw_minmax(True)
+    def test_minmax_without_reuse(self):
+        raw_minmax(False)
 
 
-def test_exhaustion():
-    s = claripy.Solver()
-    x = claripy.BVS("x", 32)
-    s.add(x >= 19)
-    print(s.min(x, extra_constraints=[x >= 20]))
-    assert s.min(x) == 19
+    def test_composite_discrepancy_with_reuse(self):
+        raw_composite_discrepancy(True)
+    def test_composite_discrepancy_without_reuse(self):
+        raw_composite_discrepancy(False)
 
-    s = claripy.Solver()
-    x = claripy.BVS("x", 32)
-    s.add(x <= 19)
-    print(s.max(x, extra_constraints=[x <= 18]))
-    assert s.max(x) == 19
+
+    def test_model(self):
+        x = claripy.BVS("x", 32)
+        y = claripy.BVS("y", 32)
+        s = claripy.Solver()
+
+        s.add(x < 10)
+        assert sorted(s.eval(x, 20)) == list(range(10))
+        s.add(y == 1337)
+        assert sorted(s.eval(x, 20)) == list(range(10))
+
+
+    def test_unsatness(self):
+        x = claripy.BVS("x", 32)
+
+        s = claripy.Solver()
+        s.add(x == 10)
+        assert s.satisfiable()
+        s.add(claripy.false)
+        assert not s.satisfiable()
+
+
+    def test_simplification_annotations(self):
+        s = claripy.Solver()
+        x = claripy.BVS("x", 32)
+
+        s.add(x > 10)
+        s.add(x > 11)
+        s.add((x > 12).annotate(claripy.SimplificationAvoidanceAnnotation()))
+
+        assert len(s.constraints) == 3
+        s.simplify()
+        assert len(s.constraints) == 2
+
+
+    def test_zero_division_in_cache_mixin(self):
+        # Bug in the caching backend. See issue #49 on github.
+        num = claripy.BVS("num", 256)
+        denum = claripy.BVS("denum", 256)
+        e = claripy.BVS("e", 256)
+        s = claripy.Solver()
+        s.add(e == 8)
+        assert s.satisfiable()
+        s.add(claripy.If(denum == 0, 0, num / denum) == e)
+        assert s.satisfiable()
+        # As a bonus:
+        s.add(num == 16)
+        assert s.satisfiable()
+        s.add(denum == 3)
+        assert not s.satisfiable()
+
+
+    def test_composite_solver_branching_optimizations(self):
+        s = claripy.SolverComposite()
+        w = claripy.BVS("w", 32)
+        x = claripy.BVS("x", 32)
+        y = claripy.BVS("y", 32)
+        z = claripy.BVS("z", 32)
+
+        s.add(w == 10)
+        assert len(s._unchecked_solvers) == 1
+        assert s.satisfiable()
+        s.add(x == 10)
+        assert len(s._unchecked_solvers) == 1
+
+        s2 = s.branch()
+        assert len(s2._unchecked_solvers) == 1
+        assert s.satisfiable()
+        assert len(s._unchecked_solvers) == 0
+        assert len(s2._unchecked_solvers) == 1
+        s.add(y == 10)
+        assert len(s._unchecked_solvers) == 1
+        assert len(s2._unchecked_solvers) == 1
+        s2.add(z == 10)
+        assert len(s._unchecked_solvers) == 1
+        assert len(s2._unchecked_solvers) == 2
+        assert s2.satisfiable()
+        assert len(s._unchecked_solvers) == 1
+        assert len(s2._unchecked_solvers) == 0
+
+        s2.add(z == 12)
+        assert not s2.satisfiable()
+        assert not s2.satisfiable()
+
+
+    def test_exhaustion(self):
+        s = claripy.Solver()
+        x = claripy.BVS("x", 32)
+        s.add(x >= 19)
+        print(s.min(x, extra_constraints=[x >= 20]))
+        assert s.min(x) == 19
+
+        s = claripy.Solver()
+        x = claripy.BVS("x", 32)
+        s.add(x <= 19)
+        print(s.max(x, extra_constraints=[x <= 18]))
+        assert s.max(x) == 19
+
+#
+# Multi-Solver test base classes
+#
+
+class Base:
+    def test_solver_with_reuse(self):
+        raw_solver(self.solver, True)
+    def test_solver_without_reuse(self):
+        raw_solver(self.solver, False)
+
+    def test_solver_branching_with_reuse(self):
+        raw_solver_branching(self.solver, True)
+    def test_solver_branching_without_reuse(self):
+        raw_solver_branching(self.solver, False)
+
+    def test_combine_with_reuse(self):
+        raw_combine(self.solver, True)
+    def test_combine_without_reuse(self):
+        raw_combine(self.solver, False)
+
+    def test_ancestor_merge_with_reuse(self):
+        raw_ancestor_merge(self.solver, True)
+    def test_ancestor_merge_without_reuse(self):
+        raw_ancestor_merge(self.solver, False)
+
+class UnsatCore(Base):
+    def test_unsat_core_with_reuse(self):
+        raw_unsat_core(self.solver, True)
+    def test_unsat_core_without_reuse(self):
+        raw_unsat_core(self.solver, False)
+
+#
+# Multi-Solver test base classes
+#
+
+class TestSolver(TestCase, UnsatCore):
+    solver = claripy.Solver
+
+
+class TestSolverReplacement(TestCase, Base):
+    solver = claripy.SolverReplacement
+
+    def test_replacement_solver_with_reuse(self):
+        raw_replacement_solver(True)
+    def test_replacement_solver_without_reuse(self):
+        raw_replacement_solver(False)
+
+
+class TestHybrid(TestCase, UnsatCore):
+    solver = claripy.SolverHybrid
+
+    def test_hybrid_solver_with_reuse(self):
+        raw_hybrid_solver(True)
+    def test_hybrid_solver_without_reuse(self):
+        raw_hybrid_solver(False)
+
+
+class TestComposite(TestCase, UnsatCore):
+    solver = claripy.SolverComposite
+
+    def test_composite_solver_with_reuse(self):
+        raw_composite_solver(True)
+    def test_composite_solver_without_reuse(self):
+        raw_composite_solver(False)
+
+
+class TestSolverCacheless(TestCase, UnsatCore):
+    solver = claripy.SolverCacheless
 
 
 if __name__ == "__main__":
-    for fparams in test_unsat_core():
-        fparams[0](*fparams[1:])
-
-    for fparams in test_ancestor_merge():
-        fparams[0](*fparams[1:])
-    test_simplification_annotations()
-    test_model()
-    for fparams in test_composite_discrepancy():
-        fparams[0](*fparams[1:])
-    for fparams in test_solver():
-        fparams[0](*fparams[1:])
-    for fparams in test_hybrid_solver():
-        fparams[0](*fparams[1:])
-    test_replacement_solver()
-    test_minmax()
-    test_solver_branching()
-    for fparams in test_solver_branching():
-        fparams[0](*fparams[1:])
-    for fparams in test_combine():
-        fparams[0](*fparams[1:])
-    for fparams in test_composite_solver():
-        fparams[0](*fparams[1:])
-    test_zero_division_in_cache_mixin()
-    test_composite_solver_branching_optimizations()
+    main()
