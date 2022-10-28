@@ -65,7 +65,7 @@ def _add_memory_pressure(p):
     This is not a problem for CPython since its GC is based on reference counting.
     """
 
-    global _is_pypy
+    global _is_pypy # pylint:disable=global-variable-not-assigned
     if _is_pypy:
         __pypy__.add_memory_pressure(p)
 
@@ -359,7 +359,7 @@ class BackendZ3(Backend):
     #
 
     @condom
-    def _convert(self, obj):  # pylint:disable=arguments-differ
+    def _convert(self, obj):  # pylint:disable=arguments-renamed
         if isinstance(obj, FSort):
             return z3.FPSortRef(z3.Z3_mk_fpa_sort(self._context.ref(), obj.exp, obj.mantissa), self._context)
         elif isinstance(obj, RM):
@@ -387,7 +387,7 @@ class BackendZ3(Backend):
             l.debug("BackendZ3 encountered unexpected type %s", type(obj))
             raise BackendError("unexpected type %s encountered in BackendZ3" % type(obj))
 
-    def call(self, *args, **kwargs):  # pylint;disable=arguments-differ
+    def call(self, *args, **kwargs):  # pylint;disable=arguments-renamed
         return Backend.call(self, *args, **kwargs)
 
     @condom
