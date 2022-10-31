@@ -608,6 +608,22 @@ class StandardTests(TestCase):
         print(s.max(x, extra_constraints=[x <= 18]))
         assert s.max(x) == 19
 
+    def test_cached_max(self):
+        s = claripy.Solver()
+        x = claripy.BVS("x", 32)
+        assert not s.constraints
+        assert s.max(x) == 0xffffffff
+        assert len(s.constraints) == 1  # ConstraintExpansionMixin will add a new constraint
+        assert s.max(x) == 0xffffffff  # calling it the second time, the cache should not give a different result
+
+        s = claripy.Solver()
+        y = claripy.BVS("y", 32)
+        s.add(y == 8)
+        assert s.eval(y, n=1)[0] == 8
+        assert len(s.constraints) == 1
+        assert s.max(x) == 0xffffffff
+        assert s.max(x) == 0xffffffff
+
 #
 # Multi-Solver test base classes
 #
