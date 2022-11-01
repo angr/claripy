@@ -861,7 +861,7 @@ class BackendZ3(Backend):
         lo = -2**(expr.size()-1) if signed else 0
         hi = 2**(expr.size()-1)-1 if signed else 2**expr.size()-1
 
-        extra_constraints_converted = [self.convert(e) for e in extra_constraints]
+        constraints = [self.convert(e) for e in extra_constraints]
         comment = "max" if is_max else "min"
         new_constraints = []
 
@@ -878,21 +878,21 @@ class BackendZ3(Backend):
             # TODO: is this assumption correct?
             # here it's not safe to call directly the z3 low level API since it might happen that the argument is an
             # integer and not a BV
-            new_constraints.append(
+            constraints.append(
                 z3.And(GE(expr, middle), LE(expr, hi))
                 if is_max else
                 z3.And(GE(expr, lo), LE(expr, middle))
             )
 
             solve_count += 1
-            sat = z3_solver_sat(solver, extra_constraints_converted + new_constraints, comment)
+            sat = z3_solver_sat(solver, constraints, comment)
+            constraints.pop()
             if sat:
                 l.debug("... still sat")
                 if model_callback is not None:
                     model_callback(self._generic_model(solver.model()))
             else:
                 l.debug("... now unsat")
-                new_constraints.pop()
             print(f"\t\t{hi}\t{middle}\t{lo}")
             if sat == is_max:
                 lo = middle
@@ -906,7 +906,8 @@ class BackendZ3(Backend):
                 print("Cannot find extrema: ", expr)
                 raise ValueError("fail here")
 
-        sat = z3_solver_sat(solver, extra_constraints_converted + [expr == (hi if is_max else lo)], comment)
+        constraints.append(expr == (hi if is_max else lo))
+        sat = z3_solver_sat(solver, constraints, comment)
         if sat and model_callback is not None:
             model_callback(self._generic_model(solver.model()))
         if sat == is_max:
