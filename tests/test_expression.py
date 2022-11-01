@@ -246,6 +246,9 @@ class TestExpression(unittest.TestCase):
 
         ite = claripy.ite_dict(x, {1: 11, 2: 22, 3: 33, 4: 44, 5: 55, 6: 66, 7: 77, 8: 88, 9: 99}, claripy.BVV(0, 32))
         self.assertEqual(sorted(s.eval(ite, 100)), [0, 11, 22, 33, 44, 55, 66, 77, 88, 99])
+        # calling it a second time should not fail. it was failing on master due to we incorrectly putting the AST
+        # into the eval-exhausted set.
+        self.assertEqual(sorted(s.eval(ite, 100)), [0, 11, 22, 33, 44, 55, 66, 77, 88, 99])
 
         ss = s.branch()
         ss.add(ite == 88)
