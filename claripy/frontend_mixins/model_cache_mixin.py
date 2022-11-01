@@ -315,7 +315,11 @@ class ModelCacheMixin:
                 raise
 
         if len(extra_constraints) == 0 and len(results) < n:
-            self._eval_exhausted.update(e.cache_key for e in asts)
+            for e in asts:
+                # only mark an AST as eval-exhausted if e.variables is a subset of variables that the current solver
+                # knows about (from its constraints)
+                if self.variables.issuperset(e.variables):
+                    self._eval_exhausted.add(e.cache_key)
 
         return results
 
