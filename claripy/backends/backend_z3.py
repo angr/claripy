@@ -869,6 +869,8 @@ class BackendZ3(Backend):
         LE = operator.le if signed else z3.ULE
 
         # TODO: Can only deal with bitvectors, not floats
+        qqq = 0
+        print("\n"*3 + f"Max: {is_max}\nSigned: {signed}\nExpr: {expr}\n\tType: {type(expr)}\n\tSize: {expr.size()}\nExtra constraints: {extra_constraints}\nSolver: {solver}\n\tConstraints: {solver.assertions()}")
         while hi-lo > 1:
             middle = (lo + hi)//2
             #l.debug("h/m/l/d: %d %d %d %d", hi, middle, lo, hi-lo)
@@ -891,10 +893,18 @@ class BackendZ3(Backend):
             else:
                 l.debug("... now unsat")
                 new_constraints.pop()
+            print(f"\t\t{hi}\t{middle}\t{lo}")
             if sat == is_max:
                 lo = middle
             else:
                 hi = middle
+            qqq += 1
+            if qqq > (expr.size() + 2):
+                print("Hung: ")
+                print(solver)
+                print(extra_constraints)
+                print("Cannot find extrema: ", expr)
+                raise ValueError("fail here")
 
         sat = z3_solver_sat(solver, extra_constraints_converted + [expr == (hi if is_max else lo)], comment)
         if sat and model_callback is not None:
@@ -903,6 +913,7 @@ class BackendZ3(Backend):
             ret = hi
         else:
             ret = lo
+        print(f"End: {ret}")
         return ret
 
 
