@@ -213,7 +213,6 @@ expression_arithmetic_operations = {
     '__mod__', '__rmod__',
     'SDiv', 'SMod',
     '__neg__',
-    '__pos__',
     '__abs__',
 }
 
@@ -326,7 +325,6 @@ opposites = {
     'SLE': 'SGE', 'SGE': 'SLE',
 
     #'__neg__':
-    #'__pos__':
     #'__abs__':
     #'__invert__':
     '__or__': '__ror__', '__ror__': '__or__',
