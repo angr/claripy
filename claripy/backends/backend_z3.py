@@ -35,12 +35,13 @@ def handle_sigint(signals, frametype):
         print("*** CRITICAL ERROR - THIS SHOULD NEVER HAPPEN")
         raise KeyboardInterrupt()
 
-old_handler = signal.getsignal(signal.SIGINT)
-if old_handler is None or old_handler == signal.SIG_DFL:
-    # there is a signal handler installed by someone other than python. we cannot handle this.
-    old_handler = True
-elif threading.current_thread() == threading.main_thread():  # Signal only works in the main thread
-    signal.signal(signal.SIGINT, handle_sigint)
+if threading.current_thread() == threading.main_thread():  # Signal only works in the main thread
+    old_handler = signal.getsignal(signal.SIGINT)
+    if old_handler is None or old_handler == signal.SIG_DFL:
+        # there is a signal handler installed by someone other than python. we cannot handle this.
+        old_handler = True
+    else:
+        signal.signal(signal.SIGINT, handle_sigint)
 
 try:
     import __pypy__
