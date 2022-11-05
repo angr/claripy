@@ -489,6 +489,13 @@ class BackendZ3(Backend):
                         variables={ symbol_str },
                         symbolic=True,
                         length=sort.length)
+            elif z3.Z3_is_string_sort(ctx, z3_sort):
+                return String('StringS',
+                        (symbol_str, False),
+                        length=8*
+                        variables={ symbol_str },
+                        symbolic=True)
+
             else:
                 raise BackendError("Unknown z3 term type %d...?" % symbol_ty)
 
