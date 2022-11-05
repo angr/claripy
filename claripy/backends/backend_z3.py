@@ -109,10 +109,9 @@ def z3_solver_sat(solver, extra_constraints, occasion):
         reason = solver.reason_unknown()
         if reason in ('interrupted from keyboard', 'interrupted'):
             raise KeyboardInterrupt()
-        elif reason in ('timeout', 'max. resource limit exceeded', 'max. memory exceeded'):
+        if reason in ('timeout', 'max. resource limit exceeded', 'max. memory exceeded'):
             raise ClaripySolverInterruptError(reason)
-        else:
-            raise ClaripyZ3Error('solver unknown: ' + reason)
+        raise ClaripyZ3Error('solver unknown: ' + reason)
     return result == z3.sat
 
 class SmartLRUCache(LRUCache):
@@ -142,8 +141,7 @@ class BackendZ3(Backend):
         # This setting is treated as a global setting and is not supposed to be changed during runtime, unless you know
         # what you are doing.
         if reuse_z3_solver is None:
-            reuse_z3_solver = True if os.environ.get('REUSE_Z3_SOLVER', "False").lower() in {"1", "true", "yes", "y"} \
-                else False
+            reuse_z3_solver = os.environ.get('REUSE_Z3_SOLVER', "False").lower() in {"1", "true", "yes", "y"}
         self.reuse_z3_solver = reuse_z3_solver
 
         self._ast_cache_size = ast_cache_size
@@ -288,7 +286,11 @@ class BackendZ3(Backend):
         #       the else branch of the check. This evidence although comes from the execution of the angr and claripy
         #       test suite so I'm not sure if this assumption would hold on 100% of the cases
         bv = z3.BitVecSortRef(z3.Z3_mk_bv_sort(self._context.ref(), size), self._context)
-        expr = z3.BitVecRef(z3.Z3_mk_const(self._context.ref(), z3.to_symbol(name, self._context), bv.ast), self._context)
+        expr = z3.BitVecRef(z3.Z3_mk_const(
+            self._context.ref(),
+            z3.to_symbol(name, self._context), bv.ast),
+            self._context
+        )
         #if mn is not None:
         #    expr = z3.If(z3.ULT(expr, mn), mn, expr, ctx=self._context)
         #if mx is not None:
@@ -427,7 +429,10 @@ class BackendZ3(Backend):
         num_args = z3.Z3_get_app_num_args(ctx, ast)
         split_on = self._split_on if split_on is None else split_on
         new_split_on = split_on if op_name in split_on else set()
-        children = [ self._abstract_internal(ctx, z3.Z3_get_app_arg(ctx, ast, i), new_split_on) for i in range(num_args) ]
+        children = [
+            self._abstract_internal(ctx, z3.Z3_get_app_arg(ctx, ast, i), new_split_on)
+            for i in range(num_args)
+        ]
 
         append_children = True
 
@@ -515,7 +520,7 @@ class BackendZ3(Backend):
 
         if z3_op_nums[decl_num] == 'Z3_OP_INTERNAL' and not args:
             # special case for Z3 string constants
-            a = self._string_constant_from_ast(ctx, ast, decl)
+            a = self._string_constant_from_ast(ctx, decl)
         else:
             # hmm.... honestly not sure what to do here
             result_ty = op_type_map[z3_op_nums[decl_num]]
@@ -599,7 +604,7 @@ class BackendZ3(Backend):
             return self._abstract_fp_encoded_val(ctx, arg_ast)
         elif op_name == 'INTERNAL' and self._abstract_string_check(ctx, ast):
             # Quirk in how z3 encodes string constants
-            return self._string_constant_from_ast(ctx, ast, decl)
+            return self._string_constant_from_ast(ctx, decl)
         else:
             raise BackendError("Unable to abstract Z3 object to primitive")
 
@@ -609,7 +614,8 @@ class BackendZ3(Backend):
         else:
             return int(z3.Z3_get_numeral_string(ctx, ast))
 
-    def _abstract_fp_val(self, ctx, ast, op_name):
+    @staticmethod
+    def _abstract_fp_val(ctx, ast, op_name):
         if op_name == 'FPVal':
             # TODO: do better than this
             fp_mantissa = float(z3.Z3_fpa_get_numeral_significand_string(ctx, ast))
@@ -632,7 +638,8 @@ class BackendZ3(Backend):
         else:
             raise BackendError("Called _abstract_fp_val with unknown type")
 
-    def _abstract_fp_encoded_val(self, ctx, ast):
+    @staticmethod
+    def _abstract_fp_encoded_val(ctx, ast):
         decl = z3.Z3_get_app_decl(ctx, ast)
         decl_num = z3.Z3_get_decl_kind(ctx, decl)
         op_name = op_map[z3_op_nums[decl_num]]
@@ -673,7 +680,8 @@ class BackendZ3(Backend):
         value = (fp_sign << (ebits + sbits)) | (fp_exp << sbits) | fp_mantissa
         return value
 
-    def _abstract_string_check(self, ctx, ast):
+    @staticmethod
+    def _abstract_string_check(ctx, ast):
         # Check whether ast encodes a string constant
         ast_sort = z3.Z3_get_sort(ctx, ast)
         ast_sort_kind = z3.Z3_get_sort_kind(ctx, ast_sort)
@@ -691,7 +699,7 @@ class BackendZ3(Backend):
         return False
 
     @staticmethod
-    def _string_constant_from_ast(ctx, ast, decl):
+    def _string_constant_from_ast(ctx, decl):
         # Get Z3-encoded string constants
         # see https://stackoverflow.com/a/58829514/3154996
         if z3.Z3_get_decl_num_parameters(ctx, decl) != 1:
@@ -953,7 +961,7 @@ class BackendZ3(Backend):
         raise Exception("This shouldn't be called. Bug Yan.")
 
     @condom
-    def simplify(self, expr):  #pylint:disable=arguments-differ
+    def simplify(self, expr):  #pylint:disable=arguments-renamed
         if expr._simplified:
             return expr
 
@@ -991,7 +999,11 @@ class BackendZ3(Backend):
         return z3.simplify(e).eq(z3.BoolVal(True, ctx=self._context))
 
     def _solution(self, expr, v, extra_constraints=(), solver=None, model_callback=None):
-        return self._satisfiable(extra_constraints=(expr == v,) + tuple(extra_constraints), solver=solver, model_callback=model_callback)
+        return self._satisfiable(
+            extra_constraints=(expr == v,) + tuple(extra_constraints),
+            solver=solver,
+            model_callback=model_callback
+        )
 
     #
     # Some Z3 passthroughs
@@ -1338,7 +1350,6 @@ class BackendZ3(Backend):
 z3_op_names = [ _ for _ in dir(z3) if _.startswith('Z3_OP') ]
 z3_op_nums = { getattr(z3, _): _ for _ in z3_op_names }
 
-#pylint:disable=bad-continuation
 op_map = {
     # Boolean
     'Z3_OP_TRUE': 'True',
@@ -1489,9 +1500,8 @@ from ..ast.base import Base
 from ..ast.bv import BV, BVV
 from ..ast.bool import BoolV, Bool
 from ..ast.fp import FP, FPV
-from ..ast.strings import StringV, StringS
 from ..operations import backend_operations, backend_fp_operations, backend_strings_operations
-from ..fp import FSort, RM, RM_NearestTiesEven, RM_NearestTiesAwayFromZero, RM_TowardsPositiveInf, RM_TowardsNegativeInf, RM_TowardsZero
+from ..fp import FSort, RM
 from ..errors import ClaripyError, BackendError, ClaripyOperationError
 from .. import _all_operations
 
