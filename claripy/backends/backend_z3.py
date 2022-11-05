@@ -443,6 +443,8 @@ class BackendZ3(Backend):
             return BoolV(False)
         elif op_name.startswith('RM_'):
             return RM(op_name)
+        elif op_name == "INTERNAL":
+            return StringV(z3.SeqRef(ast).as_string())
         elif op_name == 'BitVecVal':
             bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
             if z3.Z3_get_numeral_uint64(ctx, ast, self._c_uint64_p):
@@ -519,33 +521,29 @@ class BackendZ3(Backend):
         if append_children:
             args.extend(children)
 
-        if z3_op_nums[decl_num] == 'Z3_OP_INTERNAL' and not args:
-            # special case for Z3 string constants
-            a = self._string_constant_from_ast(ctx, decl)
-        else:
-            # hmm.... honestly not sure what to do here
-            result_ty = op_type_map[z3_op_nums[decl_num]]
-            ty = type(args[-1])
+        # hmm.... honestly not sure what to do here
+        result_ty = op_type_map[z3_op_nums[decl_num]]
+        ty = type(args[-1])
 
-            if type(result_ty) is str:
-                err = "Unknown Z3 error in abstraction (result_ty == '%s'). Update your version of Z3, and, if the problem persists, open a claripy issue." % result_ty
-                l.error(err)
-                raise BackendError(err)
+        if type(result_ty) is str:
+            err = "Unknown Z3 error in abstraction (result_ty == '%s'). Update your version of Z3, and, if the problem persists, open a claripy issue." % result_ty
+            l.error(err)
+            raise BackendError(err)
 
-            if op_name == 'If':
-                # If is polymorphic and thus must be handled specially
-                ty = type(args[1])
+        if op_name == 'If':
+            # If is polymorphic and thus must be handled specially
+            ty = type(args[1])
 
-                a = ty('If', tuple(args), length=args[1].length)
-            elif hasattr(ty, op_name) or hasattr(_all_operations, op_name):
-                op = getattr(ty if hasattr(ty, op_name) else _all_operations, op_name)
-                if op.calc_length is not None:
-                    length = op.calc_length(*args)
-                    a = result_ty(op_name, tuple(args), length=length)
-                else:
-                    a = result_ty(op_name, tuple(args))
+            a = ty('If', tuple(args), length=args[1].length)
+        elif hasattr(ty, op_name) or hasattr(_all_operations, op_name):
+            op = getattr(ty if hasattr(ty, op_name) else _all_operations, op_name)
+            if op.calc_length is not None:
+                length = op.calc_length(*args)
+                a = result_ty(op_name, tuple(args), length=length)
             else:
                 a = result_ty(op_name, tuple(args))
+        else:
+            a = result_ty(op_name, tuple(args))
 
         self._ast_cache[h] = (a, ast)
         z3.Z3_inc_ref(ctx, ast)
@@ -603,11 +601,11 @@ class BackendZ3(Backend):
             # update 6 jan 2020: idk if this is true anymore
             arg_ast = z3.Z3_get_app_arg(ctx, ast, 0)
             return self._abstract_fp_encoded_val(ctx, arg_ast)
-        elif op_name == 'INTERNAL' and self._abstract_string_check(ctx, ast):
-            # Quirk in how z3 encodes string constants
-            return self._string_constant_from_ast(ctx, decl)
-        else:
-            raise BackendError("Unable to abstract Z3 object to primitive")
+        elif op_name == 'INTERNAL':
+            seq = z3.SeqRef(ast)
+            if seq.is_string():
+                return seq.as_string()
+        raise BackendError("Unable to abstract Z3 object to primitive")
 
     def _abstract_bv_val(self, ctx, ast):
         if z3.Z3_get_numeral_uint64(ctx, ast, self._c_uint64_p):
@@ -680,37 +678,6 @@ class BackendZ3(Backend):
 
         value = (fp_sign << (ebits + sbits)) | (fp_exp << sbits) | fp_mantissa
         return value
-
-    @staticmethod
-    def _abstract_string_check(ctx, ast):
-        # Check whether ast encodes a string constant
-        ast_sort = z3.Z3_get_sort(ctx, ast)
-        ast_sort_kind = z3.Z3_get_sort_kind(ctx, ast_sort)
-        if ast_sort_kind == z3.Z3_SEQ_SORT:
-            # At this point we know ast encodes some kind of sequence
-            seq_basis_sort = z3.Z3_get_seq_sort_basis(ctx, ast_sort)
-            seq_basis_sort_kind = z3.Z3_get_sort_kind(ctx, seq_basis_sort)
-            if seq_basis_sort_kind == z3.Z3_BV_SORT:
-                # At this point we know ast encodes a sequence of BVs
-                seq_basis_width = z3.Z3_get_bv_sort_size(ctx, seq_basis_sort)
-                if seq_basis_width == 8:
-                    # At this point we know ast encodes a sequence of 8-bit BVs
-                    # so we have a string! (per z3's definition of a string)
-                    return True
-        return False
-
-    @staticmethod
-    def _string_constant_from_ast(ctx, decl):
-        # Get Z3-encoded string constants
-        # see https://stackoverflow.com/a/58829514/3154996
-        if z3.Z3_get_decl_num_parameters(ctx, decl) != 1:
-            raise BackendError("Weird Z3 model")
-        if z3.Z3_get_decl_parameter_kind(ctx, decl, 0) != z3.Z3_PARAMETER_SYMBOL:
-            raise BackendError("Weird Z3 model")
-        symb = z3.Z3_get_decl_symbol_parameter(ctx, decl, 0)
-        if z3.Z3_get_symbol_kind(ctx, symb) != z3.Z3_STRING_SYMBOL:
-            raise BackendError("Weird Z3 model")
-        return z3.Z3_get_symbol_string(ctx, symb).encode().decode('unicode_escape')
 
     def solver(self, timeout=None, max_memory=None):
         if not self.reuse_z3_solver or getattr(self._tls, 'solver', None) is None:
@@ -1457,6 +1424,7 @@ op_map = {
 from ..ast.base import Base
 from ..ast.bv import BV, BVV
 from ..ast.bool import BoolV, Bool
+from ..ast.strings import StringV
 from ..ast.fp import FP, FPV
 from ..operations import backend_operations, backend_fp_operations, backend_strings_operations
 from ..fp import FSort, RM
