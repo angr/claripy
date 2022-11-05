@@ -863,7 +863,6 @@ class BackendZ3(Backend):
 
         constraints = [self.convert(e) for e in extra_constraints]
         comment = "max" if is_max else "min"
-        new_constraints = []
 
         GE = operator.ge if signed else z3.UGE
         LE = operator.le if signed else z3.ULE
