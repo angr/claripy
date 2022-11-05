@@ -1465,6 +1465,7 @@ from ..ast.base import Base
 from ..ast.bv import BV, BVV
 from ..ast.bool import BoolV, Bool
 from ..ast.fp import FP, FPV
+from ..ast.string import String
 from ..operations import backend_operations, backend_fp_operations, backend_strings_operations
 from ..fp import FSort, RM
 from ..errors import ClaripyError, BackendError, ClaripyOperationError
