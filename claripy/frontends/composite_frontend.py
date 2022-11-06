@@ -1,3 +1,4 @@
+from typing import Set, TYPE_CHECKING
 import logging
 l = logging.getLogger("claripy.frontends.composite_frontend")
 
@@ -7,6 +8,10 @@ symbolic_count = itertools.count()
 
 from .constrained_frontend import ConstrainedFrontend
 from claripy.ast.strings import String
+
+if TYPE_CHECKING:
+    from claripy import SolverCompositeChild
+
 
 class CompositeFrontend(ConstrainedFrontend):
     def __init__(self, template_frontend, template_frontend_string, track=False, **kwargs):
@@ -98,7 +103,7 @@ class CompositeFrontend(ConstrainedFrontend):
         return existing_solvers
 
     @staticmethod
-    def _names_for(names=None, lst=None, lst2=None, e=None, v=None):
+    def _names_for(names=None, lst=None, lst2=None, e=None, v=None) -> Set[str]:
         if names is None:
             names = set()
         if e is not None and isinstance(e, Base):
@@ -118,9 +123,33 @@ class CompositeFrontend(ConstrainedFrontend):
     def _merged_solver_for(self, *args, **kwargs):
         return self._solver_for_names(self._names_for(*args, **kwargs))
 
-    def _solver_for_names(self, names):
+    def _solver_for_names(self, names: Set[str]) -> 'SolverCompositeChild':
+        """
+        Get a merged child solver for variables specified in `names`.
+
+        :param names:   A set of variable names.
+        :return:        A composite child solver.
+        """
+
         l.debug("composite_solver._merged_solver_for() running with %d names", len(names))
-        solvers = self._solvers_for_variables(names)
+
+        # compute a transitive closure for all variable names
+        all_names = set(names)
+        new_names = names
+        solvers = set()
+        while True:
+            tmp_solvers = self._solvers_for_variables(new_names)
+            solvers |= set(tmp_solvers)
+            all_names |= new_names
+            tmp_names = set()
+            for solver in solvers:
+                tmp_names |= solver.variables
+            new_names = tmp_names.difference(all_names)
+            if not new_names:
+                break
+
+        solvers = list(solvers)
+
         if len(solvers) == 0:
             if any(var for var in names if var.startswith(String.STRING_TYPE_IDENTIFIER)):
                 l.debug("... creating new solver for strings")
