@@ -1,4 +1,5 @@
 import os
+import sys
 import ctypes
 import logging
 import numbers
@@ -789,7 +790,7 @@ class BackendZ3(Backend):
         return model
 
     def _satisfiable(self, extra_constraints=(), solver=None, model_callback=None):
-        global solve_count
+        global solve_count  # pylint: disable=global-statement
 
         solve_count += 1
 
@@ -812,7 +813,7 @@ class BackendZ3(Backend):
 
     @condom
     def _batch_eval(self, exprs, n, extra_constraints=(), solver=None, model_callback=None):
-        global solve_count
+        global solve_count  # pylint: disable=global-statement
 
         result_values = [ ]
 
