@@ -1,8 +1,16 @@
 import unittest
 import claripy
 
+
 class TestZ3(unittest.TestCase):
-    def test_extrema(self):
+    """
+    A class used for testing z3
+    """
+    @staticmethod
+    def test_extrema():
+        """
+        Test the _extrema function within the z3 backend
+        """
         z = claripy.backend_manager.backends.z3
 
         s = z.solver()
@@ -23,6 +31,7 @@ class TestZ3(unittest.TestCase):
             # >=
             assert z.min(x, solver=s, extra_constraints=(x >= i,)) == i
             assert z.max(x, solver=s, extra_constraints=(x >= i,)) == rng[1]
+
 
 if __name__ == '__main__':
     unittest.main()
