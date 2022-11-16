@@ -247,7 +247,6 @@ class Base:
     def __reduce__(self):
         # HASHCONS: these attributes key the cache
         # BEFORE CHANGING THIS, SEE ALL OTHER INSTANCES OF "HASHCONS" IN THIS FILE
-        breakpoint()
         return _d, (self._hash, self.__class__, (self.op, self.args, self.length, self.variables, self.symbolic, self.annotations, _minus_zero(self.op, self.args)))
 
     def __init__(self, *args, **kwargs):
