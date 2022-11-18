@@ -357,6 +357,8 @@ class BackendZ3(Backend):
 
     @condom
     def StringS(self, ast):
+        # Maybe this should be an error? Warning for now to support reliant code
+        l.warning("Converting claripy StringS' to z3 looses length information.")
         return z3.String(ast.args[0], ctx=self._context)
     #
     # Conversions
@@ -490,12 +492,7 @@ class BackendZ3(Backend):
                         symbolic=True,
                         length=sort.length)
             elif z3.Z3_is_string_sort(ctx, z3_sort):
-                return String('StringS',
-                        (symbol_str, False),
-                        length=8*
-                        variables={ symbol_str },
-                        symbolic=True)
-
+                raise BackendError("Z3 backend does not support string symbols")
             else:
                 raise BackendError("Unknown z3 term type %d...?" % symbol_ty)
 
@@ -1465,7 +1462,6 @@ from ..ast.base import Base
 from ..ast.bv import BV, BVV
 from ..ast.bool import BoolV, Bool
 from ..ast.fp import FP, FPV
-from ..ast.string import String
 from ..operations import backend_operations, backend_fp_operations, backend_strings_operations
 from ..fp import FSort, RM
 from ..errors import ClaripyError, BackendError, ClaripyOperationError
