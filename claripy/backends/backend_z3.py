@@ -619,7 +619,7 @@ class BackendZ3(Backend):
             # TODO: do better than this
             fp_mantissa = float(z3.Z3_fpa_get_numeral_significand_string(ctx, ast))
             fp_exp = int(z3.Z3_fpa_get_numeral_exponent_string(ctx, ast, False))
-            fp_sign_c = ctypes.c_int()
+            fp_sign_c = ctypes.c_int()  # pylint: disable=no-value-for-parameter
             z3.Z3_fpa_get_numeral_sign(ctx, ast, ctypes.byref(fp_sign_c))
             fp_sign = -1 if fp_sign_c.value != 0 else 1
             value = fp_sign * fp_mantissa * (2 ** fp_exp)
@@ -650,7 +650,7 @@ class BackendZ3(Backend):
             # TODO: do better than this
             fp_mantissa = int(z3.Z3_fpa_get_numeral_significand_string(ctx, ast))
             fp_exp = int(z3.Z3_fpa_get_numeral_exponent_string(ctx, ast, True))
-            fp_sign_c = ctypes.c_int()
+            fp_sign_c = ctypes.c_int()  # pylint: disable=no-value-for-parameter
             z3.Z3_fpa_get_numeral_sign(ctx, ast, ctypes.byref(fp_sign_c))
             fp_sign = 1 if fp_sign_c.value != 0 else 0
         elif op_name == 'MinusZero':
