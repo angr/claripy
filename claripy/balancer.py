@@ -1,3 +1,4 @@
+from typing import Set
 import logging
 import operator
 
@@ -316,9 +317,9 @@ class Balancer:
     # Truism extractor
     #
 
-    def _unpack_truisms(self, c):
+    def _unpack_truisms(self, c) -> Set:
         """
-        Given a constraint, _unpack_truisms() returns a set of constraints that must be True
+        Given a constraint, _unpack_truisms() returns a set of constraints that must be True for
         this constraint to be True.
         """
 
@@ -344,7 +345,7 @@ class Balancer:
         if all(vals):
             raise ClaripyBalancerUnsatError()
         elif vals.count(False) == 1:
-            return { self._unpack_truisms(vals[vals.index(False)]) }
+            return self._unpack_truisms(c.args[vals.index(False)])
         else:
             return set()
 
