@@ -120,20 +120,20 @@ class SmtLibSolverTestCongruency(unittest.TestCase):
         (assert (<= 0 ( str.indexof recv_input_4_1024 " \r\n" 0)))
         (assert (<= 0 ( str.indexof recv_input_4_1024 " \r\n" (+ ( str.indexof recv_input_4_1024 " \r\n" 0) 1))))
         (assert (<= 0 ( str.indexof recv_input_4_1024 " \r\n" (+ ( str.indexof recv_input_4_1024 " \r\n" (+ ( str.indexof recv_input_4_1024 " \r\n" 0) 1)) 1))))
-        (assert (= "GET" 
-        ( str.substr 
-            ( str.substr 
-                recv_input_4_1024 
-                (+ 
-                    ( str.indexof recv_input_4_1024 " \r\n" (+ ( str.indexof recv_input_4_1024 " \r\n" 0) 1)) 
-                    1) 
-                ( str.indexof 
-                    recv_input_4_1024 
-                    " \r\n" 
+        (assert (= "GET"
+        ( str.substr
+            ( str.substr
+                recv_input_4_1024
+                (+
+                    ( str.indexof recv_input_4_1024 " \r\n" (+ ( str.indexof recv_input_4_1024 " \r\n" 0) 1))
+                    1)
+                ( str.indexof
+                    recv_input_4_1024
+                    " \r\n"
                     (+ ( str.indexof recv_input_4_1024 " \r\n" (+ ( str.indexof recv_input_4_1024 " \r\n" 0) 1)) 1)
                 )
-            ) 
-            10 
+            )
+            10
             1014)))
         (check-sat)
         '''
