@@ -80,7 +80,7 @@ def test_widened_guy():
     assert r[0][0] is w
     assert claripy.backends.vsa.min(r[0][1]) == 0
     all_vals = r[0][1]._model_vsa.eval(1000)
-    assert set(all_vals) == set([4294967295, 0, 1])
+    assert set(all_vals) == {4294967295, 0, 1}
 
 def test_overflow():
     x = claripy.BVS('x', 32)
@@ -90,7 +90,7 @@ def test_overflow():
     #mn,mx = claripy.backends.vsa.min(r[0][1]), claripy.backends.vsa.max(r[0][1])
     assert s
     assert r[0][0] is x
-    assert set(claripy.backends.vsa.eval(r[0][1], 1000)) == set([4294967286, 4294967287, 4294967288, 4294967289, 4294967290, 4294967291, 4294967292, 4294967293, 4294967294, 4294967295, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    assert set(claripy.backends.vsa.eval(r[0][1], 1000)) == {4294967286, 4294967287, 4294967288, 4294967289, 4294967290, 4294967291, 4294967292, 4294967293, 4294967294, 4294967295, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 
     #print("0 <= x + 10")
     #s,r = claripy.balancer.Balancer(claripy.backends.vsa, 0 <= x + 10).compat_ret

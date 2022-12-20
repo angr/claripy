@@ -17,7 +17,7 @@ class SMTParser:
     def expect(self, *allowed):
         t = self.tokens.consume()
         if t not in allowed:
-            raise PysmtSyntaxError("Invalid token, expected any of {}, got '{}'".format(allowed, t))
+            raise PysmtSyntaxError(f"Invalid token, expected any of {allowed}, got '{t}'")
         return t
 
     def expect_assignment_tuple(self):

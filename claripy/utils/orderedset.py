@@ -1,4 +1,3 @@
-
 import collections.abc
 
 
@@ -56,8 +55,8 @@ class OrderedSet(collections.abc.MutableSet):
 
     def __repr__(self):
         if not self:
-            return '%s()' % (self.__class__.__name__,)
-        return '%s(%r)' % (self.__class__.__name__, list(self))
+            return '{}()'.format(self.__class__.__name__)
+        return '{}({!r})'.format(self.__class__.__name__, list(self))
 
     def __eq__(self, other):
         if isinstance(other, OrderedSet):

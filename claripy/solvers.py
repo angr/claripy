@@ -16,7 +16,7 @@ class Solver(
     frontends.FullFrontend
 ):
     def __init__(self, backend=backends.z3, **kwargs):
-        super(Solver, self).__init__(backend, **kwargs)
+        super().__init__(backend, **kwargs)
 
 class SolverCacheless(
     frontend_mixins.ConstraintFixerMixin,
@@ -28,7 +28,7 @@ class SolverCacheless(
     frontends.FullFrontend
 ):
     def __init__(self, backend=backends.z3, **kwargs):
-        super(SolverCacheless, self).__init__(backend, **kwargs)
+        super().__init__(backend, **kwargs)
 
 class SolverReplacement(
     frontend_mixins.ConstraintFixerMixin,
@@ -38,7 +38,7 @@ class SolverReplacement(
 ):
     def __init__(self, actual_frontend=None, **kwargs):
         actual_frontend = Solver() if actual_frontend is None else actual_frontend
-        super(SolverReplacement, self).__init__(actual_frontend, **kwargs)
+        super().__init__(actual_frontend, **kwargs)
 
 class SolverHybrid(
     frontend_mixins.ConstraintFixerMixin,
@@ -61,7 +61,7 @@ class SolverHybrid(
             actual_frontend=SolverVSA(),
             complex_auto_replace=complex_auto_replace, replace_constraints=replace_constraints,
         ) if approximate_frontend is None else approximate_frontend
-        super(SolverHybrid, self).__init__(
+        super().__init__(
             exact_frontend, approximate_frontend, approximate_first=approximate_first, **kwargs
         )
 
@@ -72,7 +72,7 @@ class SolverVSA(
     frontends.LightFrontend
 ):
     def __init__(self, **kwargs):
-        super(SolverVSA, self).__init__(backends.vsa, **kwargs)
+        super().__init__(backends.vsa, **kwargs)
 
 class SolverConcrete(
     frontend_mixins.ConstraintFixerMixin,
@@ -81,7 +81,7 @@ class SolverConcrete(
     frontends.LightFrontend
 ):
     def __init__(self, **kwargs):
-        super(SolverConcrete, self).__init__(backends.concrete, **kwargs)
+        super().__init__(backends.concrete, **kwargs)
 
 class SolverStrings(
     # TODO: Figure ot if we need to use all these mixins
@@ -95,7 +95,7 @@ class SolverStrings(
     frontends.FullFrontend,
 ):
     def __init__(self, backend, *args, **kwargs):
-        super(SolverStrings, self).__init__(backend, *args, **kwargs)
+        super().__init__(backend, *args, **kwargs)
 
 #
 # Composite solving
@@ -109,7 +109,7 @@ class SolverCompositeChild(
     frontends.FullFrontend
 ):
     def __init__(self, backend=backends.z3, **kwargs):
-        super(SolverCompositeChild, self).__init__(backend, **kwargs)
+        super().__init__(backend, **kwargs)
 
     def __repr__(self):
         return "<SolverCompositeChild with %d variables>" % len(self.variables)
@@ -131,7 +131,7 @@ class SolverComposite(
         template_solver = SolverCompositeChild(track=track) if template_solver is None else template_solver
         template_solver_string = SolverCompositeChild(track=track, backend=backends.z3) if \
             template_solver_string is None else template_solver_string
-        super(SolverComposite, self).__init__(template_solver, template_solver_string, track=track, **kwargs)
+        super().__init__(template_solver, template_solver_string, track=track, **kwargs)
 
     def __repr__(self):
         return "<SolverComposite %x, %d children>" % (id(self), len(self._solver_list))

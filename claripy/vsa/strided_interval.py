@@ -464,7 +464,7 @@ class StridedInterval(BackendObject):
     #
 
     def __hash__(self):
-        return hash(('%x %x %x %x' % (self.bits, self.lower_bound, self.upper_bound, self.stride), self._reversed, self.uninitialized))
+        return hash(('{:x} {:x} {:x} {:x}'.format(self.bits, self.lower_bound, self.upper_bound, self.stride), self._reversed, self.uninitialized))
 
     def _normalize_top(self):
         if self.lower_bound == self._modular_add(self.upper_bound, 1, self.bits) and self.stride == 1:
@@ -1711,7 +1711,7 @@ class StridedInterval(BackendObject):
                 return StridedInterval.top(bits, uninitialized=uninit_flag)
 
         else:
-            raise Exception('We shouldn\'t see this case: %s * %s' % (a, b))
+            raise Exception('We shouldn\'t see this case: {} * {}'.format(a, b))
 
     @staticmethod
     def _wrapped_unsigned_div(a, b):

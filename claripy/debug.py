@@ -1,4 +1,3 @@
-
 # to enable debug mode, please set _DEBUG to True via the set_debug method.
 _DEBUG = True
 

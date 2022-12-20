@@ -4,15 +4,15 @@
 
 class CompositedCacheMixin:
     def __init__(self, *args, **kwargs):
-        super(CompositedCacheMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._merged_solvers = { }
 
     def _blank_copy(self, c):
-        super(CompositedCacheMixin, self)._blank_copy(c)
+        super()._blank_copy(c)
         c._merged_solvers = { }
 
     def _copy(self, c):
-        super(CompositedCacheMixin, self)._copy(c)
+        super()._copy(c)
         c._merged_solvers = dict(self._merged_solvers)
 
     def __setstate__(self, base_state):
@@ -41,14 +41,14 @@ class CompositedCacheMixin:
             return r
         except KeyError:
             #misses += 1
-            s = super(CompositedCacheMixin, self)._solver_for_names(names)
+            s = super()._solver_for_names(names)
             self._merged_solvers[n] = s
             return s
 
     def downsize(self):
-        super(CompositedCacheMixin, self).downsize()
+        super().downsize()
         self._merged_solvers = { }
 
     def _store_child(self, s, **kwargs):
         self._remove_cached(s.variables)
-        return super(CompositedCacheMixin, self)._store_child(s, **kwargs)
+        return super()._store_child(s, **kwargs)

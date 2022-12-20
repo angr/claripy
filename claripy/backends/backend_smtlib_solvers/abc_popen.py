@@ -18,9 +18,9 @@ def get_version():
         return True, None, None # True, version_match.group(1), None
 
     except subprocess.CalledProcessError as ex:
-        return False, None, "Not found, error: {}".format(ex)
+        return False, None, f"Not found, error: {ex}"
     except OSError as ex:
-        return False, None, "Not found, error: {}".format(ex)
+        return False, None, f"Not found, error: {ex}"
 
 
 IS_INSTALLED, VERSION, ERROR = get_version()
@@ -29,7 +29,7 @@ class ABCProxy(PopenSolverProxy):
     def __init__(self):
         self.installed = False
         p = None
-        super(ABCProxy, self).__init__(p)
+        super().__init__(p)
 
     def create_process(self):
         if not IS_INSTALLED:

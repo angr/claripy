@@ -102,7 +102,7 @@ class RegionAnnotation(Annotation):
         return hash((self.region_id, self.region_base_addr, hash(self.offset)))
 
     def __repr__(self):
-        return "<RegionAnnotation %s:%#08x>" % (self.region_id, self.offset)
+        return "<RegionAnnotation {}:{:#08x}>".format(self.region_id, self.offset)
 
 class ValueSet(BackendObject):
     """
@@ -282,7 +282,7 @@ class ValueSet(BackendObject):
     def __repr__(self):
         s = ""
         for region, si in self._regions.items():
-            s = "%s: %s" % (region, si)
+            s = "{}: {}".format(region, si)
         return "(" + s + ")"
 
     def __len__(self):
@@ -601,7 +601,7 @@ class ValueSet(BackendObject):
                 new_vs._set_si(region, self._region_base_addrs[region], si.concat(b.get_si(region)))
 
         else:
-            raise ClaripyVSAOperationError('ValueSet.concat() got an unsupported operand %s (type %s)' % (b, type(b)))
+            raise ClaripyVSAOperationError('ValueSet.concat() got an unsupported operand {} (type {})'.format(b, type(b)))
 
         return new_vs
 

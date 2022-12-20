@@ -141,7 +141,7 @@ class BackendConcrete(Backend):
         elif isinstance(e, strings.StringV):
             return StringV(e.value)
         else:
-            raise BackendError("Couldn't abstract object of type {}".format(type(e)))
+            raise BackendError(f"Couldn't abstract object of type {type(e)}")
 
     def _cardinality(self, b):
         # if we got here, it's a cardinality of 1
