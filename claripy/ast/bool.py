@@ -4,7 +4,7 @@ from ..ast.base import Base, _make_name, ASTCacheKey
 
 l = logging.getLogger('claripy.ast.bool')
 
-_boolv_cache = dict()
+_boolv_cache = {}
 
 # This is a hilarious hack to get around some sort of bug in z3's python bindings, where
 # under some circumstances stuff gets destructed out of order

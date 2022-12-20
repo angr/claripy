@@ -1980,7 +1980,7 @@ class StridedInterval(BackendObject):
             # Cut from both north pole and south pole
             si1_psplit = self._psplit()
             si2_psplit = o._psplit()
-            all_resulting_intervals = list()
+            all_resulting_intervals = []
 
             for si1 in si1_psplit:
                 for si2 in si2_psplit:
@@ -2042,7 +2042,7 @@ class StridedInterval(BackendObject):
         if len(splitted_si) == 0:
             return StridedInterval.empty(self.bits)
 
-        result_interval = list()
+        result_interval = []
         for si in splitted_si:
             lb = ~si.upper_bound
             ub = ~si.lower_bound
@@ -2076,7 +2076,7 @@ class StridedInterval(BackendObject):
         integers.
         """
         s = self
-        result_interval = list()
+        result_interval = []
 
         for u in s._ssplit():
             for v in t._ssplit():
@@ -2584,7 +2584,7 @@ class StridedInterval(BackendObject):
             # Since there are both positive and negative numbers, there must be two bounds after nsplit
             # assert len(numbers) == 2
 
-            all_resulting_intervals = list()
+            all_resulting_intervals = []
 
             assert len(numbers) > 0
 

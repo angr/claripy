@@ -84,7 +84,7 @@ class ReplacementFrontend(ConstrainedFrontend):
         self._replacement_cache = weakref.WeakKeyDictionary(self._replacements)
 
     def clear_replacements(self):
-        self._replacements = dict()
+        self._replacements = {}
         self._replacement_cache = weakref.WeakKeyDictionary(self._replacements)
 
     def _replacement(self, old):

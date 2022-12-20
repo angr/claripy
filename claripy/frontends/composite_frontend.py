@@ -389,7 +389,7 @@ class CompositeFrontend(ConstrainedFrontend):
 
     def unsat_core(self, extra_constraints=()):
         if self.satisfiable(extra_constraints=extra_constraints):
-            return tuple()
+            return ()
 
         cores = [ ]
 
