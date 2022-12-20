@@ -199,7 +199,7 @@ class MaybeResult(BoolResult):
         if self._op is None:
             return '<Maybe>'
         else:
-            return '<Maybe({}, {})>'.format(self._op, self._args)
+            return f'<Maybe({self._op}, {self._args})>'
 
     def __bool__(self):
         return False

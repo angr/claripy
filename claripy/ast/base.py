@@ -40,7 +40,7 @@ class ASTCacheKey:
         return type(self) is type(other) and self.ast._hash == other.ast._hash
 
     def __repr__(self):
-        return '<Key {} {}>'.format(self.ast._type_name(), self.ast.__repr__(inner=True))
+        return f'<Key {self.ast._type_name()} {self.ast.__repr__(inner=True)}>'
 
 #
 # AST variable naming
@@ -954,7 +954,7 @@ class Base:
         if not isinstance(old, Base) or not isinstance(new, Base):
             raise ClaripyReplacementError('replacements must be AST nodes')
         if type(old) is not type(new):
-            raise ClaripyReplacementError('cannot replace type {} ast with type {} ast'.format(type(old), type(new)))
+            raise ClaripyReplacementError(f'cannot replace type {type(old)} ast with type {type(new)} ast')
 
     def _identify_vars(self, all_vars, counter):
         if self.op == 'BVS':

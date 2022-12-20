@@ -28,7 +28,7 @@ def _expr_to_smtlib(e, daggify=True):
     :return string: smt-lib representation of the symbol
     """
     if e.is_symbol():
-        return "(declare-fun {} {})".format(e.symbol_name(), e.symbol_type().as_smtlib())
+        return f"(declare-fun {e.symbol_name()} {e.symbol_type().as_smtlib()})"
     else:
         return "(assert %s)" % e.to_smtlib(daggify=daggify)
 
