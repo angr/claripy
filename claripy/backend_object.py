@@ -7,7 +7,7 @@ class BackendObject:
     Backend objects that *don't* derive from this class need to be wrapped in a type-I claripy.ast.Base.
     """
 
-    __slots__ = tuple()
+    __slots__ = ()
 
     def to_claripy(self):
         """

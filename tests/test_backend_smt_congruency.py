@@ -71,7 +71,7 @@ class SmtLibSolverTestCongruency(unittest.TestCase):
             before_sat_check = time.time()
             results[s]['claimed_sat'] = s.satisfiable(extra_constraints=constraints)
             results[s]['solve_time'] = time.time() - before_sat_check
-            results[s]['claimed_solutions'] = tuple()
+            results[s]['claimed_solutions'] = ()
 
             if results[s]['claimed_sat']:
                 before_eval = time.time()

@@ -11,7 +11,7 @@ l = logging.getLogger("claripy.backends.backend_concrete")
 
 class BackendConcrete(Backend):
 
-    __slots__ = tuple()
+    __slots__ = ()
 
     def __init__(self):
         Backend.__init__(self)
