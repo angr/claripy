@@ -2391,12 +2391,10 @@ class StridedInterval(BackendObject):
                 if self.lower_bound < 0:
                     # how this should happen ?
                     logger.warning("Lower bound values is less than 0")
-                    import ipdb; ipdb.set_trace()
                     l = StridedInterval._to_negative(l, tok)
                 if self.upper_bound < 0:
                     # how this should happen ?
                     logger.warning("Upper bound value is less than 0")
-                    import ipdb; ipdb.set_trace()
                     u = StridedInterval._to_negative(u, tok)
                 return StridedInterval(bits=tok, stride=self.stride,
                                        lower_bound=l,
