@@ -33,10 +33,10 @@ def _debug_iterator(i):
 
 class DebugMixin:
     def __init__(self, *args, **kwargs):
-        super(DebugMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def __getattribute__(self, a):
-        o = super(DebugMixin, self).__getattribute__(a)
+        o = super().__getattribute__(a)
         if a.startswith("__"):
             return o
         elif hasattr(o, '__call__'):

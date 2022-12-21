@@ -7,7 +7,7 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
     elif type(arg_types) is type: #pylint:disable=unidiomatic-typecheck
         expected_num_args = None
     else:
-        raise ClaripyOperationError("op {} got weird arg_types".format(name))
+        raise ClaripyOperationError(f"op {name} got weird arg_types")
 
     def _type_fixer(args):
         num_args = len(args)

@@ -5,7 +5,7 @@ l = logging.getLogger("claripy.frontends.cache_mixin")
 
 class ConstraintExpansionMixin:
     def eval(self, e, n, extra_constraints=(), exact=None, **kwargs):
-        results = super(ConstraintExpansionMixin, self).eval(
+        results = super().eval(
             e, n,
             extra_constraints=extra_constraints,
             exact=exact,
@@ -21,21 +21,21 @@ class ConstraintExpansionMixin:
         return results
 
     def max(self, e, extra_constraints=(), exact=None, signed=False, **kwargs):
-        m = super(ConstraintExpansionMixin, self).max(e, extra_constraints=extra_constraints, exact=exact,
+        m = super().max(e, extra_constraints=extra_constraints, exact=exact,
                                                       signed=signed, **kwargs)
         if len(extra_constraints) == 0:
             self.add([SLE(e, m) if signed else ULE(e, m)], invalidate_cache=False)
         return m
 
     def min(self, e, extra_constraints=(), exact=None, signed=False, **kwargs):
-        m = super(ConstraintExpansionMixin, self).min(e, extra_constraints=extra_constraints, exact=exact,
+        m = super().min(e, extra_constraints=extra_constraints, exact=exact,
                                                       signed=signed, **kwargs)
         if len(extra_constraints) == 0:
             self.add([SGE(e, m) if signed else UGE(e, m)], invalidate_cache=False)
         return m
 
     def solution(self, e, v, extra_constraints=(), exact=None, **kwargs):
-        b = super(ConstraintExpansionMixin, self).solution(
+        b = super().solution(
             e, v,
             extra_constraints=extra_constraints,
             exact=exact,

@@ -6,6 +6,6 @@ class ConstraintFixerMixin:
             return [ ]
 
         constraints = [ BoolV(c) if isinstance(c, bool) else c for c in constraints ]
-        return super(ConstraintFixerMixin, self).add(constraints, **kwargs)
+        return super().add(constraints, **kwargs)
 
 from .. import BoolV

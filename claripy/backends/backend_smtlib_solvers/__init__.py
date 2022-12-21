@@ -12,7 +12,7 @@ from pysmt.smtlib.parser import Tokenizer
 from pysmt.shortcuts import NotEquals
 
 
-class AbstractSMTLibSolverProxy(object):
+class AbstractSMTLibSolverProxy:
     def write(self, smt):
         raise NotImplementedError
 
@@ -50,7 +50,7 @@ class AbstractSMTLibSolverProxy(object):
 
 class PopenSolverProxy(AbstractSMTLibSolverProxy):
     def __init__(self, p):
-        super(PopenSolverProxy, self).__init__()
+        super().__init__()
         self.p = p
         self.constraints = []
 
@@ -77,7 +77,7 @@ class SMTLibSolverBackend(BackendSMTLibBase):
     def __init__(self, *args, **kwargs):
         kwargs['solver_required'] = True
         self.smt_script_log_dir = kwargs.pop('smt_script_log_dir', None)
-        super(SMTLibSolverBackend, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def solver(self, timeout=None, max_memory=None): #pylint:disable=no-self-use,unused-argument
         """
@@ -119,7 +119,7 @@ class SMTLibSolverBackend(BackendSMTLibBase):
         smt_script = self._get_satisfiability_smt_script(constraints=csts, variables=vars)
 
         if self.smt_script_log_dir is not None:
-            fname = 'check-sat_{}.smt2'.format(hashlib.md5(smt_script.encode()).hexdigest())
+            fname = f'check-sat_{hashlib.md5(smt_script.encode()).hexdigest()}.smt2'
 
             with open(os.path.join(self.smt_script_log_dir, fname), 'wb') as f:
                 f.write(smt_script.encode())
@@ -129,7 +129,7 @@ class SMTLibSolverBackend(BackendSMTLibBase):
 
         sat = solver.read_sat().upper()
         if sat not in {'SAT', 'UNSAT', 'UNKNOWN'}:
-            raise ValueError("Solver error, don't understand (check-sat) response: {}".format(repr(sat)))
+            raise ValueError(f"Solver error, don't understand (check-sat) response: {repr(sat)}")
         return sat.upper()
 
     def _check_satisfiability(self, extra_constraints=(), solver=None, model_callback=None, extra_variables=()):
@@ -147,7 +147,7 @@ class SMTLibSolverBackend(BackendSMTLibBase):
         vars, csts = self._get_all_vars_and_constraints(solver=solver, e_c=extra_constraints, e_v=extra_variables)
         smt_script = self._get_full_model_smt_script(constraints=csts, variables=vars)
         if self.smt_script_log_dir is not None:
-            fname = 'get-model_{}.smt2'.format(hashlib.md5(smt_script.encode()).hexdigest())
+            fname = f'get-model_{hashlib.md5(smt_script.encode()).hexdigest()}.smt2'
             with open(os.path.join(self.smt_script_log_dir, fname), 'wb') as f:
                 f.write(smt_script.encode())
 

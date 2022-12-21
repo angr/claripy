@@ -716,7 +716,7 @@ class BackendZ3(Backend):
 
     def _add(self, s, c, track=False):
         if track:
-            already_tracked = set(str(impl.children()[0]) for impl in s.assertions())
+            already_tracked = {str(impl.children()[0]) for impl in s.assertions()}
             for constraint in c:
                 name = str(hash(constraint))
                 if name not in already_tracked:

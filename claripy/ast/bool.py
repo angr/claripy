@@ -103,13 +103,13 @@ def If(*args):
             convert = getattr(ty, '_from_' + type(args[1]).__name__)
             args[1] = convert(args[2], args[1])
         else:
-            raise ClaripyTypeError("can't convert {} to {}".format(type(args[1]), ty))
+            raise ClaripyTypeError(f"can't convert {type(args[1])} to {ty}")
     if not isinstance(args[2], ty):
         if hasattr(ty, '_from_' + type(args[2]).__name__):
             convert = getattr(ty, '_from_' + type(args[2]).__name__)
             args[2] = convert(args[1], args[2])
         else:
-            raise ClaripyTypeError("can't convert {} to {}".format(type(args[2]), ty))
+            raise ClaripyTypeError(f"can't convert {type(args[2])} to {ty}")
 
     if is_true(args[0]):
         return args[1].append_annotations(args[0].annotations)

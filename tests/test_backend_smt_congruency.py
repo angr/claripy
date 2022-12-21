@@ -48,7 +48,7 @@ class SmtLibSolverTestCongruency(unittest.TestCase):
             for var, val in model:
                 new = new.replace(var, val)
             self.assertTrue(new.is_true(),
-                            "Either model is incomplete or wrong! Constraint: {}, Model: {}".format(c, model))
+                            f"Either model is incomplete or wrong! Constraint: {c}, Model: {model}")
 
     def is_model_correct(self, csts, model):
         for c in csts:

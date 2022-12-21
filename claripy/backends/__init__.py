@@ -765,7 +765,7 @@ class Backend:
 
     def default_op(self, expr):
         # pylint: disable=unused-argument
-        raise BackendError('Backend %s does not support operation %s' % (self, expr.op))
+        raise BackendError(f'Backend {self} does not support operation {expr.op}')
 
 from ..errors import BackendError, ClaripyRecursionError, BackendUnsupportedError
 from .backend_z3 import BackendZ3

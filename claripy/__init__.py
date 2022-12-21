@@ -65,7 +65,7 @@ _backend_manager.backends._register_backend(_backends_module.BackendVSA(), 'vsa'
 if not os.environ.get('WORKER', False) and os.environ.get('REMOTE', False):
     try:
         _backend_z3 = _backends_module.backendremote.BackendRemote()
-    except socket.error:
+    except OSError:
         raise ImportError("can't connect to backend")
 else:
     _backend_z3 = _backends_module.BackendZ3()
