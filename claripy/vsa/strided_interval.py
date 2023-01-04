@@ -464,7 +464,7 @@ class StridedInterval(BackendObject):
     #
 
     def __hash__(self):
-        return hash(('%x %x %x %x' % (self.bits, self.lower_bound, self.upper_bound, self.stride), self._reversed, self.uninitialized))
+        return hash((f'{self.bits:x} {self.lower_bound:x} {self.upper_bound:x} {self.stride:x}', self._reversed, self.uninitialized))
 
     def _normalize_top(self):
         if self.lower_bound == self._modular_add(self.upper_bound, 1, self.bits) and self.stride == 1:
@@ -1711,7 +1711,7 @@ class StridedInterval(BackendObject):
                 return StridedInterval.top(bits, uninitialized=uninit_flag)
 
         else:
-            raise Exception('We shouldn\'t see this case: %s * %s' % (a, b))
+            raise Exception(f'We shouldn\'t see this case: {a} * {b}')
 
     @staticmethod
     def _wrapped_unsigned_div(a, b):
@@ -1980,7 +1980,7 @@ class StridedInterval(BackendObject):
             # Cut from both north pole and south pole
             si1_psplit = self._psplit()
             si2_psplit = o._psplit()
-            all_resulting_intervals = list()
+            all_resulting_intervals = []
 
             for si1 in si1_psplit:
                 for si2 in si2_psplit:
@@ -2042,7 +2042,7 @@ class StridedInterval(BackendObject):
         if len(splitted_si) == 0:
             return StridedInterval.empty(self.bits)
 
-        result_interval = list()
+        result_interval = []
         for si in splitted_si:
             lb = ~si.upper_bound
             ub = ~si.lower_bound
@@ -2076,7 +2076,7 @@ class StridedInterval(BackendObject):
         integers.
         """
         s = self
-        result_interval = list()
+        result_interval = []
 
         for u in s._ssplit():
             for v in t._ssplit():
@@ -2391,12 +2391,10 @@ class StridedInterval(BackendObject):
                 if self.lower_bound < 0:
                     # how this should happen ?
                     logger.warning("Lower bound values is less than 0")
-                    import ipdb; ipdb.set_trace()
                     l = StridedInterval._to_negative(l, tok)
                 if self.upper_bound < 0:
                     # how this should happen ?
                     logger.warning("Upper bound value is less than 0")
-                    import ipdb; ipdb.set_trace()
                     u = StridedInterval._to_negative(u, tok)
                 return StridedInterval(bits=tok, stride=self.stride,
                                        lower_bound=l,
@@ -2584,7 +2582,7 @@ class StridedInterval(BackendObject):
             # Since there are both positive and negative numbers, there must be two bounds after nsplit
             # assert len(numbers) == 2
 
-            all_resulting_intervals = list()
+            all_resulting_intervals = []
 
             assert len(numbers) > 0
 

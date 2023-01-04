@@ -12,7 +12,7 @@ def compare_sorts(f):
     @functools.wraps(f)
     def compare_guard(self, o):
         if self.sort != o.sort:
-            raise TypeError("FPVs are differently-sorted ({} and {})".format(self.sort, o.sort))
+            raise TypeError(f"FPVs are differently-sorted ({self.sort} and {o.sort})")
         return f(self, o)
 
     return compare_guard
@@ -86,7 +86,7 @@ class FSort:
         elif n == 64:
             return FSORT_DOUBLE
         else:
-            raise ClaripyOperationError('{} is not a valid FSort size'.format(n))
+            raise ClaripyOperationError(f'{n} is not a valid FSort size')
 
     @staticmethod
     def from_params(exp, mantissa):
@@ -236,7 +236,7 @@ class FPV(BackendObject):
         return self.value >= o.value
 
     def __repr__(self):
-        return 'FPV({:f}, {})'.format(self.value, self.sort)
+        return f'FPV({self.value:f}, {self.sort})'
 
 def fpToFP(a1, a2, a3=None):
     """
@@ -345,7 +345,7 @@ def fpToSBV(rm, fp, size):
     except (ValueError, OverflowError):
         return BVV(0, size)
     except Exception as ex:
-        print("Unhandled error during floating point rounding! {}".format(ex))
+        print(f"Unhandled error during floating point rounding! {ex}")
         raise
 
 def fpToUBV(rm, fp, size):

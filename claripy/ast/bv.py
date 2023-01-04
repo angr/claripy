@@ -8,7 +8,7 @@ from ..utils import deprecated
 
 l = logging.getLogger("claripy.ast.bv")
 
-_bvv_cache = dict()
+_bvv_cache = {}
 
 # This is a hilarious hack to get around some sort of bug in z3's python bindings, where
 # under some circumstances stuff gets destructed out of order

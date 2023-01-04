@@ -48,7 +48,7 @@ class SmtLibSolverTestCongruency(unittest.TestCase):
             for var, val in model:
                 new = new.replace(var, val)
             self.assertTrue(new.is_true(),
-                            "Either model is incomplete or wrong! Constraint: {}, Model: {}".format(c, model))
+                            f"Either model is incomplete or wrong! Constraint: {c}, Model: {model}")
 
     def is_model_correct(self, csts, model):
         for c in csts:
@@ -71,7 +71,7 @@ class SmtLibSolverTestCongruency(unittest.TestCase):
             before_sat_check = time.time()
             results[s]['claimed_sat'] = s.satisfiable(extra_constraints=constraints)
             results[s]['solve_time'] = time.time() - before_sat_check
-            results[s]['claimed_solutions'] = tuple()
+            results[s]['claimed_solutions'] = ()
 
             if results[s]['claimed_sat']:
                 before_eval = time.time()
@@ -120,20 +120,20 @@ class SmtLibSolverTestCongruency(unittest.TestCase):
         (assert (<= 0 ( str.indexof recv_input_4_1024 " \r\n" 0)))
         (assert (<= 0 ( str.indexof recv_input_4_1024 " \r\n" (+ ( str.indexof recv_input_4_1024 " \r\n" 0) 1))))
         (assert (<= 0 ( str.indexof recv_input_4_1024 " \r\n" (+ ( str.indexof recv_input_4_1024 " \r\n" (+ ( str.indexof recv_input_4_1024 " \r\n" 0) 1)) 1))))
-        (assert (= "GET" 
-        ( str.substr 
-            ( str.substr 
-                recv_input_4_1024 
-                (+ 
-                    ( str.indexof recv_input_4_1024 " \r\n" (+ ( str.indexof recv_input_4_1024 " \r\n" 0) 1)) 
-                    1) 
-                ( str.indexof 
-                    recv_input_4_1024 
-                    " \r\n" 
+        (assert (= "GET"
+        ( str.substr
+            ( str.substr
+                recv_input_4_1024
+                (+
+                    ( str.indexof recv_input_4_1024 " \r\n" (+ ( str.indexof recv_input_4_1024 " \r\n" 0) 1))
+                    1)
+                ( str.indexof
+                    recv_input_4_1024
+                    " \r\n"
                     (+ ( str.indexof recv_input_4_1024 " \r\n" (+ ( str.indexof recv_input_4_1024 " \r\n" 0) 1)) 1)
                 )
-            ) 
-            10 
+            )
+            10
             1014)))
         (check-sat)
         '''

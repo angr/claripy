@@ -167,12 +167,12 @@ def test_wrapped_intervals():
     # Addition with overflowing cardinality
     si1 = claripy.SI(bits=8, stride=1, lower_bound=0, upper_bound=0xFE)
     si2 = claripy.SI(bits=8, stride=1, lower_bound=0xFE, upper_bound=0xFF)
-    assert vsa_model((si1 + si2)).is_top
+    assert vsa_model(si1 + si2).is_top
 
     # Addition that shouldn't get a TOP
     si1 = claripy.SI(bits=8, stride=1, lower_bound=0, upper_bound=0xFE)
     si2 = claripy.SI(bits=8, stride=1, lower_bound=0, upper_bound=0)
-    assert not vsa_model((si1 + si2)).is_top
+    assert not vsa_model(si1 + si2).is_top
 
     #
     # Subtraction

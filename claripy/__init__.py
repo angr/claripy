@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # pylint: disable=F0401,W0401,W0603,
 
-__version__ = "9.2.26.dev0"
+__version__ = "9.2.33.dev0"
 
 if bytes is str:
     raise Exception("This module is designed for python 3 only. Please install an older version to use python 2.")
@@ -65,7 +65,7 @@ _backend_manager.backends._register_backend(_backends_module.BackendVSA(), 'vsa'
 if not os.environ.get('WORKER', False) and os.environ.get('REMOTE', False):
     try:
         _backend_z3 = _backends_module.backendremote.BackendRemote()
-    except socket.error:
+    except OSError:
         raise ImportError("can't connect to backend")
 else:
     _backend_z3 = _backends_module.BackendZ3()

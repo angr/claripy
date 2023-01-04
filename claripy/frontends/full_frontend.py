@@ -228,7 +228,7 @@ class FullFrontend(ConstrainedFrontend):
     def unsat_core(self, extra_constraints=()):
         if self.satisfiable(extra_constraints=extra_constraints):
             # all constraints are satisfied
-            return tuple()
+            return ()
 
         unsat_core = self._solver_backend.unsat_core(self._get_solver())
 

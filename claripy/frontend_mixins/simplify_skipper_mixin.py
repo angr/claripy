@@ -1,14 +1,14 @@
 class SimplifySkipperMixin:
     def __init__(self, *args, **kwargs):
-        super(SimplifySkipperMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._simplified = True
 
     def _blank_copy(self, c):
-        super(SimplifySkipperMixin, self)._blank_copy(c)
+        super()._blank_copy(c)
         c._simplified = True
 
     def _copy(self, c):
-        super(SimplifySkipperMixin, self)._copy(c)
+        super()._copy(c)
         c._simplified = self._simplified
 
     def __getstate__(self):
@@ -23,7 +23,7 @@ class SimplifySkipperMixin:
     #
 
     def add(self, *args, **kwargs):
-        added = super(SimplifySkipperMixin, self).add(*args, **kwargs)
+        added = super().add(*args, **kwargs)
         if len(added) > 0:
             self._simplified = False
         return added
@@ -33,4 +33,4 @@ class SimplifySkipperMixin:
             return self.constraints
         else:
             self._simplified = True
-            return super(SimplifySkipperMixin, self).simplify(*args, **kwargs)
+            return super().simplify(*args, **kwargs)

@@ -13,14 +13,14 @@ def get_version():
         version_match = re.match('This is CVC4 version (.*)\n', version_string)
 
         if not version_match:
-            return False, None, "Found malformed version string: {}".format(version_string)
+            return False, None, f"Found malformed version string: {version_string}"
 
         return True, version_match.group(1), None
 
     except subprocess.CalledProcessError as ex:
-        return False, None, "Not found, error: {}".format(ex)
+        return False, None, f"Not found, error: {ex}"
     except OSError as ex:
-        return False, None, "Not found, error: {}".format(ex)
+        return False, None, f"Not found, error: {ex}"
 
 
 IS_INSTALLED, VERSION, ERROR = get_version()
@@ -32,7 +32,7 @@ class CVC4Proxy(PopenSolverProxy):
         self.max_memory = max_memory  # TODO: not used
         self.installed = False
         p = None
-        super(CVC4Proxy, self).__init__(p)
+        super().__init__(p)
 
     def create_process(self):
         # spawn the subprocess
@@ -40,7 +40,7 @@ class CVC4Proxy(PopenSolverProxy):
             raise MissingSolverError('CVC4 not found! Please install CVC4 before using this backend')
         cmd = ['cvc4', '--lang=smt', '-q', '--strings-exp']
         if self.timeout is not None:
-            cmd += ['--tlimit-per={}'.format(self.timeout)]
+            cmd += [f'--tlimit-per={self.timeout}']
         p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.installed = True
         return p

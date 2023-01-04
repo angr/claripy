@@ -40,7 +40,7 @@ class ASTCacheKey:
         return type(self) is type(other) and self.ast._hash == other.ast._hash
 
     def __repr__(self):
-        return '<Key %s %s>' % (self.ast._type_name(), self.ast.__repr__(inner=True))
+        return f'<Key {self.ast._type_name()} {self.ast.__repr__(inner=True)}>'
 
 #
 # AST variable naming
@@ -644,7 +644,7 @@ class Base:
         inner_repr = self._op_repr(op, args, inner, length, details, inner_infix_use_par)
 
         if not inner:
-            return "<{} {}>".format(self._type_name(), inner_repr)
+            return f"<{self._type_name()} {inner_repr}>"
         else:
             return inner_repr
 
@@ -680,27 +680,27 @@ class Base:
 
         if details < Base.MID_REPR:
             if op == 'If':
-                value = 'if {} then {} else {}'.format(args[0], args[1], args[2])
-                return '({})'.format(value) if inner else value
+                value = f'if {args[0]} then {args[1]} else {args[2]}'
+                return f'({value})' if inner else value
 
             elif op == 'Not':
-                return '!{}'.format(args[0])
+                return f'!{args[0]}'
 
             elif op == 'Extract':
-                return '{}[{}:{}]'.format(args[2], args[0], args[1])
+                return f'{args[2]}[{args[0]}:{args[1]}]'
 
             elif op == 'ZeroExt':
-                value = '0#{} .. {}'.format(args[0], args[1])
-                return '({})'.format(value) if inner else value
+                value = f'0#{args[0]} .. {args[1]}'
+                return f'({value})' if inner else value
 
             elif op in operations.prefix:
                 assert len(args) == 1
-                value = '{}{}'.format(operations.prefix[op], args[0])
-                return '({})'.format(value) if inner and inner_infix_use_par else value
+                value = f'{operations.prefix[op]}{args[0]}'
+                return f'({value})' if inner and inner_infix_use_par else value
 
             elif op in operations.infix:
-                value = ' {} '.format(operations.infix[op]).join(args)
-                return '({})'.format(value) if inner and inner_infix_use_par else value
+                value = f' {operations.infix[op]} '.join(args)
+                return f'({value})' if inner and inner_infix_use_par else value
 
         return '{}({})'.format(op, ', '.join(map(str, args)))
 
@@ -945,7 +945,7 @@ class Base:
         if not isinstance(old, Base) or not isinstance(new, Base):
             raise ClaripyReplacementError('replacements must be AST nodes')
         if type(old) is not type(new):
-            raise ClaripyReplacementError('cannot replace type %s ast with type %s ast' % (type(old), type(new)))
+            raise ClaripyReplacementError(f'cannot replace type {type(old)} ast with type {type(new)} ast')
 
     def _identify_vars(self, all_vars, counter):
         if self.op == 'BVS':
