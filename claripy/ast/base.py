@@ -61,7 +61,9 @@ def _d(h, cls, state):
     It exists to work around the fact that pickle will (normally) call __new__() with no arguments during deserialization.
     For ASTs, this does not work.
     """
-    op, args, length, variables, symbolic, annotations = state
+    op, args, length, variables, symbolic, annotations, minus0 = state
+    if minus0:
+        args = (-0.0, *args[1:])
     return cls.__new__(cls, op, args, length=length, variables=variables, symbolic=symbolic, annotations=annotations, hash=h)
 
 
@@ -99,7 +101,7 @@ class Base:
     MID_REPR=1
     FULL_REPR=2
 
-    def __new__(cls, op, args, add_variables=None, hash=None, **kwargs): #pylint:disable=redefined-builtin
+    def __new__(cls, op, args, add_variables=None, **kwargs): #pylint:disable=redefined-builtin
         """
         This is called when you create a new Base object, whether directly or through an operation.
         It finalizes the arguments (see the _finalize function, above) and then computes
@@ -211,64 +213,41 @@ class Base:
             ))
 
         kwargs['annotations'] = annotations
-
-        cache = cls._hash_cache
-        if hash is not None:
-            h = hash
-        elif op in {'BVS', 'BVV', 'BoolS', 'BoolV', 'FPS', 'FPV'} and not annotations:
-            if op == "FPV" and a_args[0] == 0.0 and math.copysign(1, a_args[0]) < 0:
-                # Python does not distinguish between +0.0 and -0.0 so we add sign to tuple to distinguish
-                h = (op, kwargs.get('length', None), ("-",) + a_args)
-            elif op == "FPV" and math.isnan(a_args[0]):
-                # cannot compare nans
-                h = (op, kwargs.get('length', None), ('nan',) + a_args[1:])
-            else:
-                h = (op, kwargs.get('length', None), a_args)
-
-            cache = cls._leaf_cache
-        else:
-            h = Base._calc_hash(op, a_args, kwargs) if hash is None else hash
-        self = cache.get(h, None)
-        if self is None:
-            self = super().__new__(cls)
-            depth = arg_max_depth + 1
-            self.__a_init__(op, a_args, depth=depth,
-                            uneliminatable_annotations=uneliminatable_annotations,
-                            relocatable_annotations=relocatable_annotations,
-                            **kwargs)
-            self._hash = h
-            cache[h] = self
-        #else:
-        #   if self.args != a_args or self.op != op or self.variables != kwargs['variables']:
-        #       raise Exception("CRAP -- hash collision")
-
-        return self
+        return cls.__init_with_annotations__(
+            op,
+            a_args,
+            arg_max_depth + 1,
+            uneliminatable_annotations,
+            relocatable_annotations,
+            **kwargs
+        )
 
     @classmethod
-    def __init_with_annotations__(cls, op, a_args, depth=None, uneliminatable_annotations=None, relocatable_annotations=None,
-                                  **kwargs):
-
-        cache = cls._hash_cache
-        h = Base._calc_hash(op, a_args, kwargs)
+    def __init_with_annotations__(cls, op, a_args, depth=None, uneliminatable_annotations=None,
+                                  relocatable_annotations=None, hash=None, **kwargs):
+        cache = (
+            cls._leaf_cache
+            if (op in {'BVS', 'BVV', 'BoolS', 'BoolV', 'FPS', 'FPV'} and not kwargs.get('annotations', None))
+            else cls._hash_cache
+        )
+        h = Base._calc_hash(op, a_args, kwargs) if hash is None else hash
         self = cache.get(h, None)
-        if self is not None:
-            return self
 
-        self = super().__new__(cls)
-        self.__a_init__(op, a_args,
-                        depth=depth,
-                        uneliminatable_annotations=uneliminatable_annotations,
-                        relocatable_annotations=relocatable_annotations, **kwargs)
-
-        self._hash = h
-        cache[h] = self
+        if self is None:
+            self = super().__new__(cls)
+            self.__a_init__(op, a_args,
+                            depth=depth,
+                            uneliminatable_annotations=uneliminatable_annotations,
+                            relocatable_annotations=relocatable_annotations, **kwargs)
+            self._hash = h
+            cache[h] = self
 
         return self
 
     def __reduce__(self):
         # HASHCONS: these attributes key the cache
         # BEFORE CHANGING THIS, SEE ALL OTHER INSTANCES OF "HASHCONS" IN THIS FILE
-        return _d, (self._hash, self.__class__, (self.op, self.args, self.length, self.variables, self.symbolic, self.annotations))
+        return _d, (self._hash, self.__class__, (self.op, self.args, self.length, self.variables, self.symbolic, self.annotations, _minus_zero(self.op, self.args)))
 
     def __init__(self, *args, **kwargs):
         pass
@@ -286,27 +265,38 @@ class Base:
         We do it using md5 to avoid hash collisions.
         (hash(-1) == hash(-2), for example)
         """
-        args_tup = tuple(a if type(a) in (int, float) else getattr(a, '_hash', hash(a)) for a in args)
-        # HASHCONS: these attributes key the cache
-        # BEFORE CHANGING THIS, SEE ALL OTHER INSTANCES OF "HASHCONS" IN THIS FILE
+        ans = keywords.get('annotations', None)
+        length: int = keywords.get('length', None)
 
-        to_hash = Base._ast_serialize(op, args_tup, keywords)
-        if to_hash is None:
-            # fall back to pickle.dumps
-            to_hash = (
-                op, args_tup,
-                str(keywords.get('length', None)),
-                hash(keywords['variables']),
-                keywords['symbolic'],
-                hash(keywords.get('annotations', None)),
-            )
-            to_hash = pickle.dumps(to_hash, -1)
+        # Adjustments to args to force different hashes on known collisions
+        minus0: bool = _minus_zero(op, args)
+
+        # Fast path for leaves (also fix for +0.0 vs -0.0)
+        args_tup = tuple(a if type(a) in (int, float) else getattr(a, '_hash', hash(a)) for a in args)
+        if op in {'BVS', 'BVV', 'BoolS', 'BoolV', 'FPS', 'FPV'} and not ans:
+            # TODO: this is slow for the fast path. Move cache lookup here and rename function
+            to_hash = pickle.dumps((op, length, args_tup, minus0), -1)
+        else:
+            # HASHCONS: these attributes key the cache
+            # BEFORE CHANGING THIS, SEE ALL OTHER INSTANCES OF "HASHCONS" IN THIS FILE
+            to_hash = Base._ast_serialize(op, args_tup, minus0, keywords)
+            if to_hash is None:
+                # fall back to pickle.dumps
+                to_hash = (
+                    op, args_tup,
+                    str(length),
+                    hash(keywords['variables']),
+                    keywords['symbolic'],
+                    hash(ans),
+                    minus0,
+                )
+                to_hash = pickle.dumps(to_hash, -1)
 
         # Why do we use md5 when it's broken? Because speed is more important
         # than cryptographic integrity here. Then again, look at all those
         # allocations we're doing here... fast python is painful.
         hd = md5.md5(to_hash).digest()
-        return md5_unpacker.unpack(hd)[0] # 64 bits
+        return md5_unpacker.unpack(hd)[0]  # 64 bits
 
     @staticmethod
     def _arg_serialize(arg) -> Optional[bytes]:
@@ -349,12 +339,13 @@ class Base:
         return None
 
     @staticmethod
-    def _ast_serialize(op: str, args_tup, keywords) -> Optional[bytes]:
+    def _ast_serialize(op: str, args_tup, minus0: bool, keywords) -> Optional[bytes]:
         """
         Serialize the AST and get a bytestring for hashing.
 
         :param op:          The operator.
         :param args_tup:    A tuple of arguments.
+        :param minus0:      A bool stating this is an FPV where args[0] is -0.0
         :param keywords:    A dict of keywords.
         :return:            The serialized bytestring.
         """
@@ -377,7 +368,7 @@ class Base:
         else:
             annotations = b'\xf9'
 
-        return op.encode() + serialized_args + length + variables + symbolic + annotations
+        return op.encode() + serialized_args + length + variables + symbolic + annotations + Base._arg_serialize(minus0)
 
     #pylint:disable=attribute-defined-outside-init
     def __a_init__(self, op, args, variables=None, symbolic=None, length=None, simplified=0, errored=None,
@@ -631,7 +622,7 @@ class Base:
         :returns:                   A string representing the AST
         """
         if max_depth is not None and max_depth <= 0:
-                return '<...>'
+            return '<...>'
 
         elif self.op in operations.reversed_ops:
             op = operations.reversed_ops[self.op]
@@ -1233,6 +1224,12 @@ def simplify(e):
                 s = s.annotate(*annotations)
 
         return s
+
+def _minus_zero(op, args) -> bool:
+    """
+    :returns: True iff op==FPV and args[0] is -0.0
+    """
+    return op == "FPV" and args[0] == 0.0 and math.copysign(1, args[0]) < 0
 
 
 from ..errors import BackendError, ClaripyOperationError, ClaripyReplacementError
