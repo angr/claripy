@@ -8,8 +8,20 @@ l = logging.getLogger("claripy.frontends.replacement_frontend")
 
 from .constrained_frontend import ConstrainedFrontend
 
+
 class ReplacementFrontend(ConstrainedFrontend):
-    def __init__(self, actual_frontend, allow_symbolic=None, replacements=None, replacement_cache=None, unsafe_replacement=None, complex_auto_replace=None, auto_replace=None, replace_constraints=None, **kwargs):
+    def __init__(
+        self,
+        actual_frontend,
+        allow_symbolic=None,
+        replacements=None,
+        replacement_cache=None,
+        unsafe_replacement=None,
+        complex_auto_replace=None,
+        auto_replace=None,
+        replace_constraints=None,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
         self._actual_frontend = actual_frontend
         self._allow_symbolic = True if allow_symbolic is None else allow_symbolic
@@ -135,7 +147,7 @@ class ReplacementFrontend(ConstrainedFrontend):
             self._replacements,
             self._actual_frontend,
             self._validation_frontend,
-            super().__getstate__()
+            super().__getstate__(),
         )
 
     def __setstate__(self, s):
@@ -148,7 +160,7 @@ class ReplacementFrontend(ConstrainedFrontend):
             self._replacements,
             self._actual_frontend,
             self._validation_frontend,
-            base_state
+            base_state,
         ) = s
 
         super().__setstate__(base_state)
@@ -165,7 +177,8 @@ class ReplacementFrontend(ConstrainedFrontend):
         er = self._replacement(e)
         ecr = self._replace_list(extra_constraints)
         r = self._actual_frontend.eval(er, n, extra_constraints=ecr, exact=exact)
-        if self._unsafe_replacement: self._add_solve_result(e, er, r[0])
+        if self._unsafe_replacement:
+            self._add_solve_result(e, er, r[0])
         return r
 
     def batch_eval(self, exprs, n, extra_constraints=(), exact=None):
@@ -181,14 +194,16 @@ class ReplacementFrontend(ConstrainedFrontend):
         er = self._replacement(e)
         ecr = self._replace_list(extra_constraints)
         r = self._actual_frontend.max(er, extra_constraints=ecr, signed=signed, exact=exact)
-        if self._unsafe_replacement: self._add_solve_result(e, er, r)
+        if self._unsafe_replacement:
+            self._add_solve_result(e, er, r)
         return r
 
     def min(self, e, extra_constraints=(), signed=False, exact=None):
         er = self._replacement(e)
         ecr = self._replace_list(extra_constraints)
         r = self._actual_frontend.min(er, extra_constraints=ecr, signed=signed, exact=exact)
-        if self._unsafe_replacement: self._add_solve_result(e, er, r)
+        if self._unsafe_replacement:
+            self._add_solve_result(e, er, r)
         return r
 
     def solution(self, e, v, extra_constraints=(), exact=None):
@@ -216,19 +231,23 @@ class ReplacementFrontend(ConstrainedFrontend):
 
     def _concrete_value(self, e):
         c = super()._concrete_value(e)
-        if c is not None: return c
+        if c is not None:
+            return c
 
         cr = self._replacement(e)
         for b in backends._eager_backends:
-            try: return b.eval(cr, 1)[0]
-            except BackendError: pass
+            try:
+                return b.eval(cr, 1)[0]
+            except BackendError:
+                pass
         return None
 
     def _concrete_constraint(self, e):
         c = super()._concrete_value(e)
-        if c is not None: return c
+        if c is not None:
+            return c
 
-        #if er.is_false():
+        # if er.is_false():
         #   raise UnsatError("Replacement frontend received False constraint after replacement.")
         if self._replace_constraints:
             er = self._replacement(e)
@@ -248,13 +267,15 @@ class ReplacementFrontend(ConstrainedFrontend):
                     continue
 
                 if not self._complex_auto_replace:
-                    if rc.op == 'Not':
+                    if rc.op == "Not":
                         self.add_replacement(c.args[0], false, replace=False, promote=True, invalidate_cache=True)
-                    elif rc.op == '__eq__' and rc.args[0].symbolic ^ rc.args[1].symbolic:
+                    elif rc.op == "__eq__" and rc.args[0].symbolic ^ rc.args[1].symbolic:
                         old, new = rc.args if rc.args[0].symbolic else rc.args[::-1]
                         self.add_replacement(old, new, replace=False, promote=True, invalidate_cache=True)
                 else:
-                    satisfiable, replacements = Balancer(backends.vsa, rc, validation_frontend=self._validation_frontend).compat_ret
+                    satisfiable, replacements = Balancer(
+                        backends.vsa, rc, validation_frontend=self._validation_frontend
+                    ).compat_ret
                     if not satisfiable:
                         self.add_replacement(rc, false)
                     for old, new in replacements:
@@ -271,7 +292,8 @@ class ReplacementFrontend(ConstrainedFrontend):
         cr = self._replace_list(added)
         if not self._allow_symbolic and any(c.symbolic for c in cr):
             raise ClaripyFrontendError(
-                "symbolic constraints made it into ReplacementFrontend with allow_symbolic=False")
+                "symbolic constraints made it into ReplacementFrontend with allow_symbolic=False"
+            )
         self._actual_frontend.add(cr, **kwargs)
 
         return added

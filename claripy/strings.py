@@ -8,7 +8,7 @@ class StringV(BackendObject):
         self.value = value
 
     def __repr__(self):
-        return 'StringV(%s)' % (self.value)
+        return "StringV(%s)" % (self.value)
 
 
 def StrConcat(*args):
@@ -19,7 +19,7 @@ def StrConcat(*args):
 
     :return:                        the concatenated string
     """
-    new_value = ''.join([arg.value for arg in args])
+    new_value = "".join([arg.value for arg in args])
     return StringV(new_value)
 
 
@@ -33,7 +33,7 @@ def StrSubstr(start_idx, count, initial_string):
 
     :return:                        the substring
     """
-    new_value = initial_string.value[start_idx.value:start_idx.value + count.value]
+    new_value = initial_string.value[start_idx.value : start_idx.value + count.value]
     return StringV(new_value)
 
 
@@ -49,9 +49,7 @@ def StrReplace(initial_string, pattern_to_be_replaced, replacement_pattern):
 
     :return:                        string with replacement
     """
-    new_value = initial_string.value.replace(pattern_to_be_replaced.value,
-                                             replacement_pattern.value,
-                                             1)
+    new_value = initial_string.value.replace(pattern_to_be_replaced.value, replacement_pattern.value, 1)
     return StringV(new_value)
 
 
@@ -89,7 +87,7 @@ def StrPrefixOf(prefix, input_string):
 
     :return:                        True if the input_string starts with prefix else False
     """
-    return re.match(r'^' + prefix.value, input_string.value) is not None
+    return re.match(r"^" + prefix.value, input_string.value) is not None
 
 
 def StrSuffixOf(suffix, input_string):
@@ -101,7 +99,7 @@ def StrSuffixOf(suffix, input_string):
 
     :return :                       True if the input_string ends with suffix else False
     """
-    return re.match(r'.*' + suffix.value + '$', input_string.value) is not None
+    return re.match(r".*" + suffix.value + "$", input_string.value) is not None
 
 
 def StrIndexOf(input_string, substring, startIndex, bitlength):

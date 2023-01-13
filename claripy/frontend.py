@@ -11,8 +11,9 @@ class Frontend:
         pass
 
     def __getstate__(self):
-        return (True) # need to return something so that pickle calls setstate
-    def __setstate__(self, s): #pylint:disable=unused-argument
+        return True  # need to return something so that pickle calls setstate
+
+    def __setstate__(self, s):  # pylint:disable=unused-argument
         return
 
     def branch(self):
@@ -25,10 +26,10 @@ class Frontend:
         self._blank_copy(c)
         return c
 
-    def _blank_copy(self, c): #pylint:disable=no-self-use,unused-argument
+    def _blank_copy(self, c):  # pylint:disable=no-self-use,unused-argument
         return
 
-    def _copy(self, c): #pylint:disable=no-self-use,unused-argument
+    def _copy(self, c):  # pylint:disable=no-self-use,unused-argument
         return
 
     #
@@ -47,8 +48,7 @@ class Frontend:
 
         :return:                        list of concrete ASTs
         """
-        return [ ast.bv.BVV(v, e.size()) for v in self.eval(e, n, extra_constraints=extra_constraints, exact=exact) ]
-
+        return [ast.bv.BVV(v, e.size()) for v in self.eval(e, n, extra_constraints=extra_constraints, exact=exact)]
 
     def finalize(self):
         raise NotImplementedError("finalize() is not implemented")
@@ -207,21 +207,22 @@ class Frontend:
         """
         raise NotImplementedError()
 
-    def downsize(self): #pylint:disable=no-self-use
+    def downsize(self):  # pylint:disable=no-self-use
         pass
 
     #
     # Some utility functions
     #
 
-    def _concrete_value(self, e): #pylint:disable=no-self-use
+    def _concrete_value(self, e):  # pylint:disable=no-self-use
         if isinstance(e, numbers.Number):
             return e
         else:
             return None
+
     _concrete_constraint = _concrete_value
 
-    def _constraint_filter(self, c): #pylint:disable=no-self-use
+    def _constraint_filter(self, c):  # pylint:disable=no-self-use
         return c
 
     @staticmethod
@@ -230,20 +231,20 @@ class Frontend:
         Returns independent constraints, split from this Frontend's `constraints`.
         """
 
-        splitted = [ ]
+        splitted = []
         for i in constraints:
-            splitted.extend(i.split(['And']))
+            splitted.extend(i.split(["And"]))
 
         l.debug("... splitted of size %d", len(splitted))
 
-        concrete_constraints = [ ]
-        variable_connections = { }
-        constraint_connections = { }
-        for n,s in enumerate(splitted):
+        concrete_constraints = []
+        variable_connections = {}
+        constraint_connections = {}
+        for n, s in enumerate(splitted):
             l.debug("... processing constraint with %d variables", len(s.variables))
 
             connected_variables = set(s.variables)
-            connected_constraints = { n }
+            connected_constraints = {n}
 
             if len(connected_variables) == 0:
                 concrete_constraints.append(s)
@@ -262,13 +263,14 @@ class Frontend:
         for v in variable_connections:
             unique_constraint_sets.add((frozenset(variable_connections[v]), frozenset(constraint_connections[v])))
 
-        results = [ ]
-        for v,c_indexes in unique_constraint_sets:
-            results.append((set(v), [ splitted[c] for c in c_indexes ]))
+        results = []
+        for v, c_indexes in unique_constraint_sets:
+            results.append((set(v), [splitted[c] for c in c_indexes]))
 
         if concrete and len(concrete_constraints) > 0:
-            results.append(({ 'CONCRETE' }, concrete_constraints))
+            results.append(({"CONCRETE"}, concrete_constraints))
 
         return results
+
 
 from . import ast

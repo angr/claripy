@@ -1,5 +1,6 @@
 from ..ast.base import Base
 
+
 class Bits(Base):
     """
     A base class for AST types that can be stored as a series of bits. Currently, this is bitvectors and IEEE floats.
@@ -8,7 +9,8 @@ class Bits(Base):
     """
 
     def make_like(self, op, args, **kwargs):
-        if 'length' not in kwargs: kwargs['length'] = self.length
+        if "length" not in kwargs:
+            kwargs["length"] = self.length
         return Base.make_like(self, op, args, **kwargs)
 
     def size(self):
@@ -35,7 +37,7 @@ class Bits(Base):
     @staticmethod
     def _check_replaceability(old, new):
         if old.size() != new.size():
-            raise ClaripyOperationError('replacements must have matching sizes')
+            raise ClaripyOperationError("replacements must have matching sizes")
 
     __len__ = size
 

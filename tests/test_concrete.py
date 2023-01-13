@@ -16,9 +16,9 @@ def test_concrete():
 
     bc = claripy.backends.concrete
     d = claripy.BVV(-1, 32)
-    assert bc.convert(d) == 0xffffffff
+    assert bc.convert(d) == 0xFFFFFFFF
 
-    e = claripy.BVV(2 ** 32 + 1337, 32)
+    e = claripy.BVV(2**32 + 1337, 32)
     assert bc.convert(e) == 1337
 
 
@@ -27,6 +27,6 @@ def test_concrete_fp():
     assert claripy.backends.concrete.eval(f, 2) == (1.0,)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_concrete()
     test_concrete_fp()

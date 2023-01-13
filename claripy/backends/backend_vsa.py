@@ -9,29 +9,40 @@ l = logging.getLogger("claripy.backends.backend_vsa")
 from . import Backend, BackendError
 from ..vsa import RegionAnnotation
 
+
 def arg_filter(f):
     @functools.wraps(f)
-    def filter(*args): #pylint:disable=redefined-builtin
-        if isinstance(args[0], numbers.Number): # pylint:disable=unidiomatic-typecheck
-            raise BackendError('Unsupported argument type %s' % type(args[0]))
+    def filter(*args):  # pylint:disable=redefined-builtin
+        if isinstance(args[0], numbers.Number):  # pylint:disable=unidiomatic-typecheck
+            raise BackendError("Unsupported argument type %s" % type(args[0]))
         return f(*args)
 
     return filter
+
 
 def normalize_arg_order(f):
     @functools.wraps(f)
     def normalizer(*args):
         if len(args) != 2:
-            raise BackendError('Unsupported arguments number %d' % len(args))
+            raise BackendError("Unsupported arguments number %d" % len(args))
 
-        if type(args[0]) not in { StridedInterval, DiscreteStridedIntervalSet, ValueSet }: #pylint:disable=unidiomatic-typecheck
-            if type(args[1]) not in { StridedInterval, DiscreteStridedIntervalSet, ValueSet }: #pylint:disable=unidiomatic-typecheck
-                raise BackendError('Unsupported arguments')
+        if type(args[0]) not in {
+            StridedInterval,
+            DiscreteStridedIntervalSet,
+            ValueSet,
+        }:  # pylint:disable=unidiomatic-typecheck
+            if type(args[1]) not in {
+                StridedInterval,
+                DiscreteStridedIntervalSet,
+                ValueSet,
+            }:  # pylint:disable=unidiomatic-typecheck
+                raise BackendError("Unsupported arguments")
             args = [args[1], args[0]]
 
         return f(*args)
 
     return normalizer
+
 
 def convert_args(f):
     @functools.wraps(f)
@@ -51,6 +62,7 @@ def convert_args(f):
 
     return converter
 
+
 class BackendVSA(Backend):
     def __init__(self):
         Backend.__init__(self)
@@ -58,39 +70,45 @@ class BackendVSA(Backend):
         self._make_expr_ops(set(expression_set_operations), op_class=self)
         self._make_raw_ops(set(backend_operations_vsa_compliant), op_module=BackendVSA)
 
-        self._op_raw['Reverse'] = BackendVSA.Reverse
-        self._op_raw['If'] = self.If
-        self._op_expr['BVV'] = self.BVV
-        self._op_expr['BoolV'] = self.BoolV
-        self._op_expr['BVS'] = self.BVS
+        self._op_raw["Reverse"] = BackendVSA.Reverse
+        self._op_raw["If"] = self.If
+        self._op_expr["BVV"] = self.BVV
+        self._op_expr["BoolV"] = self.BoolV
+        self._op_expr["BVS"] = self.BVS
 
         # reduceable
-        self._op_raw['__add__'] = self._op_add
-        self._op_raw['__sub__'] = self._op_sub
-        self._op_raw['__mul__'] = self._op_mul
-        self._op_raw['__or__'] = self._op_or
-        self._op_raw['__xor__'] = self._op_xor
-        self._op_raw['__and__'] = self._op_and
-        self._op_raw['__mod__'] = self._op_mod
+        self._op_raw["__add__"] = self._op_add
+        self._op_raw["__sub__"] = self._op_sub
+        self._op_raw["__mul__"] = self._op_mul
+        self._op_raw["__or__"] = self._op_or
+        self._op_raw["__xor__"] = self._op_xor
+        self._op_raw["__and__"] = self._op_and
+        self._op_raw["__mod__"] = self._op_mod
 
     @staticmethod
     def _op_add(*args):
         return reduce(operator.__add__, args)
+
     @staticmethod
     def _op_sub(*args):
         return reduce(operator.__sub__, args)
+
     @staticmethod
     def _op_mul(*args):
         return reduce(operator.__mul__, args)
+
     @staticmethod
     def _op_or(*args):
         return reduce(operator.__or__, args)
+
     @staticmethod
     def _op_xor(*args):
         return reduce(operator.__xor__, args)
+
     @staticmethod
     def _op_and(*args):
         return reduce(operator.__and__, args)
+
     @staticmethod
     def _op_mod(*args):
         return reduce(operator.__mod__, args)
@@ -119,7 +137,7 @@ class BackendVSA(Backend):
         elif isinstance(expr, BoolResult):
             return expr.value
         else:
-            raise BackendError('Unsupported type %s' % type(expr))
+            raise BackendError("Unsupported type %s" % type(expr))
 
     def _min(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None):
         # TODO: signed min
@@ -134,7 +152,7 @@ class BackendVSA(Backend):
             return expr.min
 
         else:
-            raise BackendError('Unsupported expr type %s' % type(expr))
+            raise BackendError("Unsupported expr type %s" % type(expr))
 
     def _max(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None):
         # TODO: signed max
@@ -149,7 +167,7 @@ class BackendVSA(Backend):
             return expr.max
 
         else:
-            raise BackendError('Unsupported expr type %s' % type(expr))
+            raise BackendError("Unsupported expr type %s" % type(expr))
 
     def _solution(self, obj, v, extra_constraints=(), solver=None, model_callback=None):
         if isinstance(obj, BoolResult):
@@ -183,22 +201,22 @@ class BackendVSA(Backend):
     #
 
     def simplify(self, e):
-        raise BackendError('nope')
+        raise BackendError("nope")
 
     def _identical(self, a, b):
         if type(a) != type(b):
             return False
         return a.identical(b)
 
-    def _unique(self, obj): #pylint:disable=unused-argument,no-self-use
+    def _unique(self, obj):  # pylint:disable=unused-argument,no-self-use
         if isinstance(obj, StridedInterval):
             return obj.unique
         elif isinstance(obj, ValueSet):
             return obj.unique
         else:
-            raise BackendError('Not supported type of operand %s' % type(obj))
+            raise BackendError("Not supported type of operand %s" % type(obj))
 
-    def _cardinality(self, a): #pylint:disable=unused-argument,no-self-use
+    def _cardinality(self, a):  # pylint:disable=unused-argument,no-self-use
         return a.cardinality
 
     def name(self, a):
@@ -231,14 +249,14 @@ class BackendVSA(Backend):
 
         return bo.apply_annotation(annotation)
 
-    def BVV(self, ast): #pylint:disable=unused-argument,no-self-use
+    def BVV(self, ast):  # pylint:disable=unused-argument,no-self-use
         if ast.args[0] is None:
             return StridedInterval.empty(ast.args[1])
         else:
             return CreateStridedInterval(bits=ast.args[1], stride=0, lower_bound=ast.args[0], upper_bound=ast.args[0])
 
     @staticmethod
-    def BoolV(ast): #pylint:disable=unused-argument
+    def BoolV(ast):  # pylint:disable=unused-argument
         return TrueResult() if ast.args[0] else FalseResult()
 
     @staticmethod
@@ -290,12 +308,19 @@ class BackendVSA(Backend):
         return a.SGE(b)
 
     @staticmethod
-    def BVS(ast): #pylint:disable=unused-argument
+    def BVS(ast):  # pylint:disable=unused-argument
         size = ast.size()
         name, mn, mx, stride, uninitialized, discrete_set, max_card = ast.args
-        return CreateStridedInterval(name=name, bits=size, lower_bound=mn, upper_bound=mx, stride=stride,
-                                     uninitialized=uninitialized, discrete_set=discrete_set,
-                                     discrete_set_max_cardinality=max_card)
+        return CreateStridedInterval(
+            name=name,
+            bits=size,
+            lower_bound=mn,
+            upper_bound=mx,
+            stride=stride,
+            uninitialized=uninitialized,
+            discrete_set=discrete_set,
+            discrete_set_max_cardinality=max_card,
+        )
 
     def If(self, cond, t, f):
         if not self.has_true(cond):
@@ -317,7 +342,7 @@ class BackendVSA(Backend):
         return first
 
     @staticmethod
-    def __rshift__(expr, shift_amount): #pylint:disable=unexpected-special-method-signature
+    def __rshift__(expr, shift_amount):  # pylint:disable=unexpected-special-method-signature
         return expr.__rshift__(shift_amount)
 
     @staticmethod
@@ -328,8 +353,12 @@ class BackendVSA(Backend):
     def Concat(*args):
         ret = None
         for expr in args:
-            if type(expr) not in { StridedInterval, DiscreteStridedIntervalSet, ValueSet }: #pylint:disable=unidiomatic-typecheck
-                raise BackendError('Unsupported expr type %s' % type(expr))
+            if type(expr) not in {
+                StridedInterval,
+                DiscreteStridedIntervalSet,
+                ValueSet,
+            }:  # pylint:disable=unidiomatic-typecheck
+                raise BackendError("Unsupported expr type %s" % type(expr))
 
             ret = ret.concat(expr) if ret is not None else expr
 
@@ -341,8 +370,12 @@ class BackendVSA(Backend):
         high_bit = args[0]
         expr = args[2]
 
-        if type(expr) not in { StridedInterval, DiscreteStridedIntervalSet, ValueSet }: #pylint:disable=unidiomatic-typecheck
-            raise BackendError('Unsupported expr type %s' % type(expr))
+        if type(expr) not in {
+            StridedInterval,
+            DiscreteStridedIntervalSet,
+            ValueSet,
+        }:  # pylint:disable=unidiomatic-typecheck
+            raise BackendError("Unsupported expr type %s" % type(expr))
 
         ret = expr.extract(high_bit, low_bit)
 
@@ -353,8 +386,8 @@ class BackendVSA(Backend):
         new_bits = args[0]
         expr = args[1]
 
-        if type(expr) not in { StridedInterval, DiscreteStridedIntervalSet }: #pylint:disable=unidiomatic-typecheck
-            raise BackendError('Unsupported expr type %s' % type(expr))
+        if type(expr) not in {StridedInterval, DiscreteStridedIntervalSet}:  # pylint:disable=unidiomatic-typecheck
+            raise BackendError("Unsupported expr type %s" % type(expr))
 
         return expr.sign_extend(new_bits + expr.bits)
 
@@ -363,22 +396,26 @@ class BackendVSA(Backend):
         new_bits = args[0]
         expr = args[1]
 
-        if type(expr) not in { StridedInterval, DiscreteStridedIntervalSet }: #pylint:disable=unidiomatic-typecheck
-            raise BackendError('Unsupported expr type %s' % type(expr))
+        if type(expr) not in {StridedInterval, DiscreteStridedIntervalSet}:  # pylint:disable=unidiomatic-typecheck
+            raise BackendError("Unsupported expr type %s" % type(expr))
 
         return expr.zero_extend(new_bits + expr.bits)
 
     @staticmethod
     def Reverse(arg):
-        if type(arg) not in {StridedInterval, DiscreteStridedIntervalSet, ValueSet}: #pylint:disable=unidiomatic-typecheck
-            raise BackendError('Unsupported expr type %s' % type(arg))
+        if type(arg) not in {
+            StridedInterval,
+            DiscreteStridedIntervalSet,
+            ValueSet,
+        }:  # pylint:disable=unidiomatic-typecheck
+            raise BackendError("Unsupported expr type %s" % type(arg))
 
         return arg.reverse()
 
     @convert_args
-    def union(self, ast): #pylint:disable=unused-argument,no-self-use
+    def union(self, ast):  # pylint:disable=unused-argument,no-self-use
         if len(ast.args) != 2:
-            raise BackendError('Incorrect number of arguments (%d) passed to BackendVSA.union().' % len(ast.args))
+            raise BackendError("Incorrect number of arguments (%d) passed to BackendVSA.union()." % len(ast.args))
 
         ret = ast.args[0].union(ast.args[1])
 
@@ -388,9 +425,11 @@ class BackendVSA(Backend):
         return ret
 
     @convert_args
-    def intersection(self, ast): #pylint:disable=unused-argument,no-self-use
+    def intersection(self, ast):  # pylint:disable=unused-argument,no-self-use
         if len(ast.args) != 2:
-            raise BackendError('Incorrect number of arguments (%d) passed to BackendVSA.intersection().' % len(ast.args))
+            raise BackendError(
+                "Incorrect number of arguments (%d) passed to BackendVSA.intersection()." % len(ast.args)
+            )
 
         ret = None
 
@@ -402,9 +441,9 @@ class BackendVSA(Backend):
         return ret
 
     @convert_args
-    def widen(self, ast): #pylint:disable=unused-argument,no-self-use
+    def widen(self, ast):  # pylint:disable=unused-argument,no-self-use
         if len(ast.args) != 2:
-            raise BackendError('Incorrect number of arguments (%d) passed to BackendVSA.widen().' % len(ast.args))
+            raise BackendError("Incorrect number of arguments (%d) passed to BackendVSA.widen()." % len(ast.args))
 
         ret = ast.args[0].widen(ast.args[1])
         if ret is NotImplemented:
@@ -413,15 +452,25 @@ class BackendVSA(Backend):
         return ret
 
     @staticmethod
-    def CreateTopStridedInterval(bits, name=None, uninitialized=False): #pylint:disable=unused-argument,no-self-use
+    def CreateTopStridedInterval(bits, name=None, uninitialized=False):  # pylint:disable=unused-argument,no-self-use
         return StridedInterval.top(bits, name, uninitialized=uninitialized)
 
     def constraint_to_si(self, expr):
         return Balancer(self, expr).compat_ret
 
+
 from ..ast.base import Base
 from ..operations import backend_operations_vsa_compliant, expression_set_operations
-from ..vsa import StridedInterval, CreateStridedInterval, DiscreteStridedIntervalSet, ValueSet, AbstractLocation, BoolResult, TrueResult, FalseResult
+from ..vsa import (
+    StridedInterval,
+    CreateStridedInterval,
+    DiscreteStridedIntervalSet,
+    ValueSet,
+    AbstractLocation,
+    BoolResult,
+    TrueResult,
+    FalseResult,
+)
 from ..balancer import Balancer
 
 BackendVSA.CreateStridedInterval = staticmethod(CreateStridedInterval)

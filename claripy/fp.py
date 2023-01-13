@@ -8,6 +8,7 @@ from enum import Enum
 from .errors import ClaripyOperationError
 from .backend_object import BackendObject
 
+
 def compare_sorts(f):
     @functools.wraps(f)
     def compare_guard(self, o):
@@ -16,6 +17,7 @@ def compare_sorts(f):
         return f(self, o)
 
     return compare_guard
+
 
 def normalize_types(f):
     @functools.wraps(f)
@@ -33,11 +35,11 @@ def normalize_types(f):
 
 class RM(Enum):
     # see https://en.wikipedia.org/wiki/IEEE_754#Rounding_rules
-    RM_NearestTiesEven = 'RM_RNE'
-    RM_NearestTiesAwayFromZero = 'RM_RNA'
-    RM_TowardsZero = 'RM_RTZ'
-    RM_TowardsPositiveInf = 'RM_RTP'
-    RM_TowardsNegativeInf = 'RM_RTN'
+    RM_NearestTiesEven = "RM_RNE"
+    RM_NearestTiesAwayFromZero = "RM_RNA"
+    RM_TowardsZero = "RM_RTZ"
+    RM_TowardsPositiveInf = "RM_RTP"
+    RM_TowardsNegativeInf = "RM_RTN"
 
     @staticmethod
     def default():
@@ -45,19 +47,19 @@ class RM(Enum):
 
     def pydecimal_equivalent_rounding_mode(self):
         return {
-            RM.RM_TowardsPositiveInf:      decimal.ROUND_CEILING,
-            RM.RM_TowardsNegativeInf:      decimal.ROUND_FLOOR,
-            RM.RM_TowardsZero:             decimal.ROUND_DOWN,
-            RM.RM_NearestTiesEven:         decimal.ROUND_HALF_EVEN,
+            RM.RM_TowardsPositiveInf: decimal.ROUND_CEILING,
+            RM.RM_TowardsNegativeInf: decimal.ROUND_FLOOR,
+            RM.RM_TowardsZero: decimal.ROUND_DOWN,
+            RM.RM_NearestTiesEven: decimal.ROUND_HALF_EVEN,
             RM.RM_NearestTiesAwayFromZero: decimal.ROUND_UP,
         }[self]
 
 
-RM_NearestTiesEven          = RM.RM_NearestTiesEven
-RM_NearestTiesAwayFromZero  = RM.RM_NearestTiesAwayFromZero
-RM_TowardsZero              = RM.RM_TowardsZero
-RM_TowardsPositiveInf       = RM.RM_TowardsPositiveInf
-RM_TowardsNegativeInf       = RM.RM_TowardsNegativeInf
+RM_NearestTiesEven = RM.RM_NearestTiesEven
+RM_NearestTiesAwayFromZero = RM.RM_NearestTiesAwayFromZero
+RM_TowardsZero = RM.RM_TowardsZero
+RM_TowardsPositiveInf = RM.RM_TowardsPositiveInf
+RM_TowardsNegativeInf = RM.RM_TowardsNegativeInf
 
 
 class FSort:
@@ -86,7 +88,7 @@ class FSort:
         elif n == 64:
             return FSORT_DOUBLE
         else:
-            raise ClaripyOperationError(f'{n} is not a valid FSort size')
+            raise ClaripyOperationError(f"{n} is not a valid FSort size")
 
     @staticmethod
     def from_params(exp, mantissa):
@@ -97,12 +99,13 @@ class FSort:
         else:
             raise ClaripyOperationError("unrecognized FSort params")
 
-FSORT_FLOAT = FSort('FLOAT', 8, 24)
-FSORT_DOUBLE = FSort('DOUBLE', 11, 53)
+
+FSORT_FLOAT = FSort("FLOAT", 8, 24)
+FSORT_DOUBLE = FSort("DOUBLE", 11, 53)
 
 
 class FPV(BackendObject):
-    __slots__ = ['sort', 'value']
+    __slots__ = ["sort", "value"]
 
     def __init__(self, value, sort):
         if not isinstance(value, float) or sort not in {FSORT_FLOAT, FSORT_DOUBLE}:
@@ -155,12 +158,12 @@ class FPV(BackendObject):
         try:
             return FPV(self.value / o.value, self.sort)
         except ZeroDivisionError:
-            if str(self.value * o.value)[0] == '-':
-                return FPV(float('-inf'), self.sort)
+            if str(self.value * o.value)[0] == "-":
+                return FPV(float("-inf"), self.sort)
             else:
-                return FPV(float('inf'), self.sort)
+                return FPV(float("inf"), self.sort)
 
-    def __floordiv__(self, other): # decline to involve integers in this floating point process
+    def __floordiv__(self, other):  # decline to involve integers in this floating point process
         return self.__truediv__(other)
 
     #
@@ -193,12 +196,12 @@ class FPV(BackendObject):
         try:
             return FPV(o.value / self.value, self.sort)
         except ZeroDivisionError:
-            if str(o.value * self.value)[0] == '-':
-                return FPV(float('-inf'), self.sort)
+            if str(o.value * self.value)[0] == "-":
+                return FPV(float("-inf"), self.sort)
             else:
-                return FPV(float('inf'), self.sort)
+                return FPV(float("inf"), self.sort)
 
-    def __rfloordiv__(self, other): # decline to involve integers in this floating point process
+    def __rfloordiv__(self, other):  # decline to involve integers in this floating point process
         return self.__rtruediv__(other)
 
     #
@@ -236,7 +239,8 @@ class FPV(BackendObject):
         return self.value >= o.value
 
     def __repr__(self):
-        return f'FPV({self.value:f}, {self.sort})'
+        return f"FPV({self.value:f}, {self.sort})"
+
 
 def fpToFP(a1, a2, a3=None):
     """
@@ -257,15 +261,15 @@ def fpToFP(a1, a2, a3=None):
     if isinstance(a1, BVV) and isinstance(a2, FSort):
         sort = a2
         if sort == FSORT_FLOAT:
-            pack, unpack = 'I', 'f'
+            pack, unpack = "I", "f"
         elif sort == FSORT_DOUBLE:
-            pack, unpack = 'Q', 'd'
+            pack, unpack = "Q", "d"
         else:
             raise ClaripyOperationError("unrecognized float sort")
 
         try:
-            packed = struct.pack('<' + pack, a1.value)
-            unpacked, = struct.unpack('<' + unpack, packed)
+            packed = struct.pack("<" + pack, a1.value)
+            (unpacked,) = struct.unpack("<" + unpack, packed)
         except OverflowError as e:
             # struct.pack sometimes overflows
             raise ClaripyOperationError("OverflowError: " + str(e)) from e
@@ -278,6 +282,7 @@ def fpToFP(a1, a2, a3=None):
     else:
         raise ClaripyOperationError("unknown types passed to fpToFP")
 
+
 def fpToFPUnsigned(_rm, thing, sort):
     """
     Returns a FP AST whose value is the same as the unsigned BVV `thing` and
@@ -285,6 +290,7 @@ def fpToFPUnsigned(_rm, thing, sort):
     """
     # thing is a BVV
     return FPV(float(thing.value), sort)
+
 
 def fpToIEEEBV(fpv):
     """
@@ -294,20 +300,21 @@ def fpToIEEEBV(fpv):
     :return:    A BV AST whose bit-pattern is the same as `fpv`
     """
     if fpv.sort == FSORT_FLOAT:
-        pack, unpack = 'f', 'I'
+        pack, unpack = "f", "I"
     elif fpv.sort == FSORT_DOUBLE:
-        pack, unpack = 'd', 'Q'
+        pack, unpack = "d", "Q"
     else:
         raise ClaripyOperationError("unrecognized float sort")
 
     try:
-        packed = struct.pack('<' + pack, fpv.value)
-        unpacked, = struct.unpack('<' + unpack, packed)
+        packed = struct.pack("<" + pack, fpv.value)
+        (unpacked,) = struct.unpack("<" + unpack, packed)
     except OverflowError as e:
         # struct.pack sometimes overflows
         raise ClaripyOperationError("OverflowError: " + str(e)) from e
 
     return BVV(unpacked, fpv.sort.length)
+
 
 def fpFP(sgn, exp, mantissa):
     """
@@ -321,20 +328,21 @@ def fpFP(sgn, exp, mantissa):
     sort = FSort.from_size(concatted.size())
 
     if sort == FSORT_FLOAT:
-        pack, unpack = 'I', 'f'
+        pack, unpack = "I", "f"
     elif sort == FSORT_DOUBLE:
-        pack, unpack = 'Q', 'd'
+        pack, unpack = "Q", "d"
     else:
         raise ClaripyOperationError("unrecognized float sort")
 
     try:
-        packed = struct.pack('<' + pack, concatted.value)
-        unpacked, = struct.unpack('<' + unpack, packed)
+        packed = struct.pack("<" + pack, concatted.value)
+        (unpacked,) = struct.unpack("<" + unpack, packed)
     except OverflowError as e:
         # struct.pack sometimes overflows
         raise ClaripyOperationError("OverflowError: " + str(e)) from e
 
     return FPV(unpacked, sort)
+
 
 def fpToSBV(rm, fp, size):
     try:
@@ -348,13 +356,15 @@ def fpToSBV(rm, fp, size):
         print(f"Unhandled error during floating point rounding! {ex}")
         raise
 
+
 def fpToUBV(rm, fp, size):
     # todo: actually make unsigned
     try:
         rounding_mode = rm.pydecimal_equivalent_rounding_mode()
         val = int(Decimal(fp.value).to_integral_value(rounding_mode))
-        assert val & ((1 << size) - 1) == val, \
-            f"Rounding produced values outside the BV range! rounding {fp.value} with rounding mode {rm} produced {val}"
+        assert (
+            val & ((1 << size) - 1) == val
+        ), f"Rounding produced values outside the BV range! rounding {fp.value} with rounding mode {rm} produced {val}"
         if val < 0:
             val = (1 << size) + val
         return BVV(val, size)
@@ -362,11 +372,13 @@ def fpToUBV(rm, fp, size):
     except (ValueError, OverflowError):
         return BVV(0, size)
 
+
 def fpEQ(a, b):
     """
     Checks if floating point `a` is equal to floating point `b`.
     """
     return a == b
+
 
 def fpNE(a, b):
     """
@@ -374,11 +386,13 @@ def fpNE(a, b):
     """
     return a != b
 
+
 def fpGT(a, b):
     """
     Checks if floating point `a` is greater than floating point `b`.
     """
     return a > b
+
 
 def fpGEQ(a, b):
     """
@@ -386,17 +400,20 @@ def fpGEQ(a, b):
     """
     return a >= b
 
+
 def fpLT(a, b):
     """
     Checks if floating point `a` is less than floating point `b`.
     """
     return a < b
 
+
 def fpLEQ(a, b):
     """
     Checks if floating point `a` is less than or equal to floating point `b`.
     """
     return a <= b
+
 
 def fpAbs(x):
     """
@@ -408,6 +425,7 @@ def fpAbs(x):
     """
     return abs(x)
 
+
 def fpNeg(x):
     """
     Returns the additive inverse of the floating point `x`. So:
@@ -418,11 +436,13 @@ def fpNeg(x):
     """
     return -x
 
+
 def fpSub(_rm, a, b):
     """
     Returns the subtraction of the floating point `a` by the floating point `b`.
     """
     return a - b
+
 
 def fpAdd(_rm, a, b):
     """
@@ -430,11 +450,13 @@ def fpAdd(_rm, a, b):
     """
     return a + b
 
+
 def fpMul(_rm, a, b):
     """
     Returns the multiplication of two floating point numbers, `a` and `b`.
     """
     return a * b
+
 
 def fpDiv(_rm, a, b):
     """
@@ -442,16 +464,19 @@ def fpDiv(_rm, a, b):
     """
     return a / b
 
+
 def fpIsNaN(x):
     """
     Checks whether the argument is a floating point NaN.
     """
     return math.isnan(x)
 
+
 def fpIsInf(x):
     """
     Checks whether the argument is a floating point infinity.
     """
     return math.isinf(x)
+
 
 from .bv import BVV, Concat

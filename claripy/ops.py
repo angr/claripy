@@ -6,9 +6,11 @@ l = logging.getLogger("claripy.ops")
 # AST creation
 #
 
-def AbstractLocation(*args, **kwargs): #pylint:disable=no-self-use
+
+def AbstractLocation(*args, **kwargs):  # pylint:disable=no-self-use
     aloc = vsa.AbstractLocation(*args, **kwargs)
     return aloc
+
 
 #
 # Some operations
@@ -19,7 +21,7 @@ def AbstractLocation(*args, **kwargs): #pylint:disable=no-self-use
 # sigh
 #
 
-#pylint:disable=wildcard-import,unused-wildcard-import
+# pylint:disable=wildcard-import,unused-wildcard-import
 from .ast.base import *
 from .ast.bv import *
 from .ast.fp import *

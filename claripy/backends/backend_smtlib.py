@@ -1,11 +1,34 @@
 # pylint:disable=no-self-use
 import logging
 
-from pysmt.shortcuts import Symbol, String, StrConcat, NotEquals, \
-    StrSubstr, Int, StrLength, StrReplace, \
-    Bool, Or, LT, LE, GT, GE, \
-    StrContains, StrPrefixOf, StrSuffixOf, StrIndexOf, \
-    StrToInt, Ite, EqualsOrIff, Minus, Plus, IntToStr, Not, And
+from pysmt.shortcuts import (
+    Symbol,
+    String,
+    StrConcat,
+    NotEquals,
+    StrSubstr,
+    Int,
+    StrLength,
+    StrReplace,
+    Bool,
+    Or,
+    LT,
+    LE,
+    GT,
+    GE,
+    StrContains,
+    StrPrefixOf,
+    StrSuffixOf,
+    StrIndexOf,
+    StrToInt,
+    Ite,
+    EqualsOrIff,
+    Minus,
+    Plus,
+    IntToStr,
+    Not,
+    And,
+)
 
 from pysmt.typing import STRING, INT, BOOL
 
@@ -32,6 +55,7 @@ def _expr_to_smtlib(e, daggify=True):
     else:
         return "(assert %s)" % e.to_smtlib(daggify=daggify)
 
+
 def _exprs_to_smtlib(*exprs, **kwargs):
     """
     Dump all the variables and all the constraints in an smt-lib format
@@ -41,7 +65,7 @@ def _exprs_to_smtlib(*exprs, **kwargs):
 
     :return string: smt-lib representation of the list of expressions
     """
-    return '\n'.join(_expr_to_smtlib(e, **kwargs) for e in exprs) + '\n'
+    return "\n".join(_expr_to_smtlib(e, **kwargs) for e in exprs) + "\n"
 
 
 def _normalize_arguments(expr_left, expr_right):
@@ -58,41 +82,41 @@ def _normalize_arguments(expr_left, expr_right):
 
 class BackendSMTLibBase(Backend):
     def __init__(self, *args, **kwargs):
-        self.daggify = kwargs.pop('daggify', True)
+        self.daggify = kwargs.pop("daggify", True)
         self.reuse_z3_solver = False
         Backend.__init__(self, *args, **kwargs)
 
         # ------------------- LEAF OPERATIONS -------------------
-        self._op_expr['StringV'] = self.StringV
-        self._op_expr['StringS'] = self.StringS
-        self._op_expr['BoolV'] = self.BoolV
-        self._op_expr['BoolS'] = self.BoolS
-        self._op_expr['BVV'] = self.BVV
-        self._op_expr['BVS'] = self.BVS
+        self._op_expr["StringV"] = self.StringV
+        self._op_expr["StringS"] = self.StringS
+        self._op_expr["BoolV"] = self.BoolV
+        self._op_expr["BoolS"] = self.BoolS
+        self._op_expr["BVV"] = self.BVV
+        self._op_expr["BVS"] = self.BVS
 
         # ------------------- BITVECTOR OPERATIONS -------------------
         # self._op_raw['Extract'] = self._op_raw_extract
         # self._op_raw['Concat'] = self._op_raw_concat
-        self._op_raw['__add__'] = self._op_raw_add
-        self._op_raw['__sub__'] = self._op_raw_sub
+        self._op_raw["__add__"] = self._op_raw_add
+        self._op_raw["__sub__"] = self._op_raw_sub
 
         # ------------------- GENERAL PURPOSE OPERATIONS -------------------
-        self._op_raw['__eq__'] = self._op_raw_eq
-        self._op_raw['__ne__'] = self._op_raw_ne
-        self._op_raw['__lt__'] = self._op_raw_lt
-        self._op_raw['__le__'] = self._op_raw_le
-        self._op_raw['__gt__'] = self._op_raw_gt
-        self._op_raw['__ge__'] = self._op_raw_ge
-        self._op_raw['Or'] = self._op_raw_or
-        self._op_raw['If'] = self._op_raw_if
-        self._op_raw['Not'] = self._op_raw_not
-        self._op_raw['And'] = self._op_raw_and
+        self._op_raw["__eq__"] = self._op_raw_eq
+        self._op_raw["__ne__"] = self._op_raw_ne
+        self._op_raw["__lt__"] = self._op_raw_lt
+        self._op_raw["__le__"] = self._op_raw_le
+        self._op_raw["__gt__"] = self._op_raw_gt
+        self._op_raw["__ge__"] = self._op_raw_ge
+        self._op_raw["Or"] = self._op_raw_or
+        self._op_raw["If"] = self._op_raw_if
+        self._op_raw["Not"] = self._op_raw_not
+        self._op_raw["And"] = self._op_raw_and
 
         # ------------------- STRINGS OPERATIONS -------------------
-        self._op_raw['StrConcat'] = self._op_raw_str_concat
-        self._op_raw['StrSubstr'] = self._op_raw_str_substr
-        self._op_raw['StrLen'] = self._op_raw_str_strlen
-        self._op_raw['StrReplace'] = self._op_raw_str_replace
+        self._op_raw["StrConcat"] = self._op_raw_str_concat
+        self._op_raw["StrSubstr"] = self._op_raw_str_substr
+        self._op_raw["StrLen"] = self._op_raw_str_strlen
+        self._op_raw["StrReplace"] = self._op_raw_str_replace
         self._op_raw["StrContains"] = self._op_raw_str_contains
         self._op_raw["StrPrefixOf"] = self._op_raw_str_prefixof
         self._op_raw["StrSuffixOf"] = self._op_raw_str_suffixof
@@ -118,10 +142,10 @@ class BackendSMTLibBase(Backend):
 
         :return string: smt-lib representation of the script that checks the satisfiability
         """
-        smt_script = '(set-logic ALL)\n'
+        smt_script = "(set-logic ALL)\n"
         smt_script += self._smtlib_exprs(variables)
         smt_script += self._smtlib_exprs(constraints)
-        smt_script += '(check-sat)\n'
+        smt_script += "(check-sat)\n"
         return smt_script
 
     def _get_full_model_smt_script(self, constraints=(), variables=()):
@@ -134,12 +158,12 @@ class BackendSMTLibBase(Backend):
 
         :return string: smt-lib representation of the script that checks the satisfiability
         """
-        smt_script = '(set-logic ALL)\n'
-        smt_script += '(set-option :produce-models true)\n'
+        smt_script = "(set-logic ALL)\n"
+        smt_script += "(set-option :produce-models true)\n"
         smt_script += self._smtlib_exprs(variables)
         smt_script += self._smtlib_exprs(constraints)
-        smt_script += '(check-sat)\n'
-        smt_script += '(get-model)\n'
+        smt_script += "(check-sat)\n"
+        smt_script += "(get-model)\n"
         return smt_script
 
     def _get_all_vars_and_constraints(self, solver=None, e_c=(), e_v=()):
@@ -149,10 +173,10 @@ class BackendSMTLibBase(Backend):
         return sorted_vars, all_csts
 
     def _check_satisfiability(self, extra_constraints=(), solver=None, model_callback=None):
-        raise BackendError('Use a specialized backend for solving SMTLIB formatted constraints!')
+        raise BackendError("Use a specialized backend for solving SMTLIB formatted constraints!")
 
     def _satisfiable(self, extra_constraints=(), solver=None, model_callback=None):
-        raise BackendError('Use a specialized backend for solving SMTLIB formatted constraints!')
+        raise BackendError("Use a specialized backend for solving SMTLIB formatted constraints!")
 
     # ------------------- LEAF OPERATIONS -------------------
 
@@ -180,7 +204,7 @@ class BackendSMTLibBase(Backend):
         return Int(val)
 
     def BVS(self, ast):
-        return Symbol(ast.args[0], INT) #BVType(ast.length))
+        return Symbol(ast.args[0], INT)  # BVType(ast.length))
 
     # ------------------- BITVECTOR OPERATIONS -------------------
     def _op_raw_add(self, *args):

@@ -10,6 +10,7 @@ import os
 import sys
 import socket
 import logging
+
 l = logging.getLogger("claripy")
 l.addHandler(logging.NullHandler())
 
@@ -43,26 +44,32 @@ from .ast.fp import *
 from .ast.bool import *
 from .ast.strings import *
 from . import ast
+
 del BV
 del Bool
 del FP
 del Base
 ast._import()
 
-def BV(name, size, explicit_name=None): #pylint:disable=function-redefined
-    l.critical("DEPRECATION WARNING: claripy.BV is deprecated and will soon be removed. Please use claripy.BVS, instead.")
+
+def BV(name, size, explicit_name=None):  # pylint:disable=function-redefined
+    l.critical(
+        "DEPRECATION WARNING: claripy.BV is deprecated and will soon be removed. Please use claripy.BVS, instead."
+    )
     print("DEPRECATION WARNING: claripy.BV is deprecated and will soon be removed. Please use claripy.BVS, instead.")
     return BVS(name, size, explicit_name=explicit_name)
+
 
 #
 # Initialize the backends
 #
 
 from . import backend_manager as _backend_manager
-_backend_manager.backends._register_backend(_backends_module.BackendConcrete(), 'concrete', True, True)
-_backend_manager.backends._register_backend(_backends_module.BackendVSA(), 'vsa', False, False)
 
-if not os.environ.get('WORKER', False) and os.environ.get('REMOTE', False):
+_backend_manager.backends._register_backend(_backends_module.BackendConcrete(), "concrete", True, True)
+_backend_manager.backends._register_backend(_backends_module.BackendVSA(), "vsa", False, False)
+
+if not os.environ.get("WORKER", False) and os.environ.get("REMOTE", False):
     try:
         _backend_z3 = _backends_module.backendremote.BackendRemote()
     except OSError:
@@ -70,14 +77,16 @@ if not os.environ.get('WORKER', False) and os.environ.get('REMOTE', False):
 else:
     _backend_z3 = _backends_module.BackendZ3()
 
-_backend_manager.backends._register_backend(_backend_z3, 'z3', False, False)
+_backend_manager.backends._register_backend(_backend_z3, "z3", False, False)
 backends = _backend_manager.backends
+
 
 def downsize():
     """
     Clear all temporary data associated with any backend
     """
     backends.downsize()
+
 
 #
 # Frontends
@@ -92,12 +101,15 @@ from .solvers import *
 # Convenient button
 #
 
+
 def reset():
     """
     Attempt to refresh any caching state associated with the module
     """
     downsize()
     from .ast import bv  # pylint:disable=redefined-outer-name
+
     bv._bvv_cache.clear()
+
 
 from .debug import set_debug

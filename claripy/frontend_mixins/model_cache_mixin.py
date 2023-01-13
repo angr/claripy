@@ -6,7 +6,7 @@ from .. import errors
 
 
 class ModelCache:
-    _defaults = { 0, 0.0, True }
+    _defaults = {0, 0.0, True}
 
     def __init__(self, model):
         self.model = model
@@ -14,8 +14,8 @@ class ModelCache:
         self.constraint_only_replacements = weakref.WeakKeyDictionary()
 
     def __hash__(self):
-        if not hasattr(self, '_hash'):
-            self._hash = hash(frozenset(self.model.items())) #pylint:disable=attribute-defined-outside-init
+        if not hasattr(self, "_hash"):
+            self._hash = hash(frozenset(self.model.items()))  # pylint:disable=attribute-defined-outside-init
         return self._hash
 
     def __eq__(self, other):
@@ -34,7 +34,7 @@ class ModelCache:
     #
 
     def filter(self, variables):
-        return ModelCache({ k:self.model[k] for k in self.model if k in variables })
+        return ModelCache({k: self.model[k] for k in self.model if k in variables})
 
     @staticmethod
     def combine(*models):
@@ -46,23 +46,31 @@ class ModelCache:
 
     def _leaf_op(self, a):
         return (
-            all_operations.BVV(self.model.get(a.args[0], 0), a.length) if a.op == 'BVS' else
-            all_operations.BoolV(self.model.get(a.args[0], True)) if a.op == 'BoolS' else
-            all_operations.FPV(self.model.get(a.args[0], 0.0), a.args[1]) if a.op == 'FPS' else
-            all_operations.StringV(self.model.get(a.args[0], "")) if a.op == 'StringS' else
-            a
+            all_operations.BVV(self.model.get(a.args[0], 0), a.length)
+            if a.op == "BVS"
+            else all_operations.BoolV(self.model.get(a.args[0], True))
+            if a.op == "BoolS"
+            else all_operations.FPV(self.model.get(a.args[0], 0.0), a.args[1])
+            if a.op == "FPS"
+            else all_operations.StringV(self.model.get(a.args[0], ""))
+            if a.op == "StringS"
+            else a
         )
 
     def _leaf_op_existonly(self, a):
         return (
-            all_operations.BVV(self.model[a.args[0]], a.length) if a.op == 'BVS' else
-            all_operations.BoolV(self.model[a.args[0]]) if a.op == 'BoolS' else
-            all_operations.FPV(self.model[a.args[0]], a.args[1]) if a.op == 'FPS' else
-            all_operations.StringV(self.model[a.args[0]]) if a.op == 'StringS' else
-            a
+            all_operations.BVV(self.model[a.args[0]], a.length)
+            if a.op == "BVS"
+            else all_operations.BoolV(self.model[a.args[0]])
+            if a.op == "BoolS"
+            else all_operations.FPV(self.model[a.args[0]], a.args[1])
+            if a.op == "FPS"
+            else all_operations.StringV(self.model[a.args[0]])
+            if a.op == "StringS"
+            else a
         )
 
-    def eval_ast(self, ast, allow_unconstrained: bool=True):
+    def eval_ast(self, ast, allow_unconstrained: bool = True):
         """
         Eval the ast, replacing symbols by their last value in the model.
 
@@ -88,7 +96,7 @@ class ModelCache:
         except errors.ClaripyZeroDivisionError:
             return False
 
-    def eval_list(self, asts, allow_unconstrained: bool=True) -> Tuple:
+    def eval_list(self, asts, allow_unconstrained: bool = True) -> Tuple:
         """
         Evaluate a list of ASTs.
 
@@ -156,17 +164,16 @@ class ModelCacheMixin:
     def _trivial_model_optimization(self):
         c = self.constraints[0]
         if not (
-            c.depth == 2 and
-            c.op == '__eq__' and
-            len(c.variables) == 1 and
-            c.args[0].symbolic and not c.args[1].symbolic and
-            c.args[0].op == 'BVS'
+            c.depth == 2
+            and c.op == "__eq__"
+            and len(c.variables) == 1
+            and c.args[0].symbolic
+            and not c.args[1].symbolic
+            and c.args[0].op == "BVS"
         ):
             return
 
-        self._models.add(ModelCache({
-            next(iter(c.args[0].variables)): backends.concrete.eval(c.args[1], 1)[0]
-        }))
+        self._models.add(ModelCache({next(iter(c.args[0].variables)): backends.concrete.eval(c.args[1], 1)[0]}))
         self._eval_exhausted.add(c.args[0].cache_key)
         self._max_exhausted.add(c.args[0].cache_key)
         self._min_exhausted.add(c.args[0].cache_key)
@@ -206,7 +213,7 @@ class ModelCacheMixin:
     def split(self):
         results = super().split()
         for r in results:
-            r._models = { m.filter(r.variables) for m in self._models }
+            r._models = {m.filter(r.variables) for m in self._models}
         return results
 
     def combine(self, others):
@@ -223,11 +230,11 @@ class ModelCacheMixin:
             # We'll need more intelligence here to handle it
             return combined
 
-        model_lists = [ self._models ]
+        model_lists = [self._models]
         model_lists.extend(o._models for o in others)
         combined._models.update(
-            ModelCache.combine(*product) for product in
-            itertools.islice(itertools.product(*model_lists), len(self._models))
+            ModelCache.combine(*product)
+            for product in itertools.islice(itertools.product(*model_lists), len(self._models))
         )
         return combined
 
@@ -236,7 +243,7 @@ class ModelCacheMixin:
         Updates this cache mixin with results discovered by the other split off one.
         """
 
-        acceptable_models = [ m for m in other._models if set(m.model.keys()) == self.variables ]
+        acceptable_models = [m for m in other._models if set(m.model.keys()) == self.variables]
         self._models.update(acceptable_models)
         self._eval_exhausted.update(other._eval_exhausted)
         self._max_exhausted.update(other._max_exhausted)
@@ -275,15 +282,19 @@ class ModelCacheMixin:
         return results
 
     def _get_solutions(self, e, n=None, extra_constraints=(), allow_unconstrained=True):
-        return tuple(v[0] for v in self._get_batch_solutions(
-            [e], n=n, extra_constraints=extra_constraints, allow_unconstrained=allow_unconstrained,
-        ))
-
+        return tuple(
+            v[0]
+            for v in self._get_batch_solutions(
+                [e],
+                n=n,
+                extra_constraints=extra_constraints,
+                allow_unconstrained=allow_unconstrained,
+            )
+        )
 
     #
     # Cached functions
     #
-
 
     def satisfiable(self, extra_constraints=(), **kwargs):
         for _ in self._get_models(extra_constraints=extra_constraints):
@@ -300,16 +311,14 @@ class ModelCacheMixin:
 
         # TODO: faster to concat?
         if len(results) != 0:
-            constraints = (all_operations.And(*[
-                all_operations.Or(*[a!=v for a,v in zip(asts, r)]) for r in results
-            ]),) + tuple(extra_constraints)
+            constraints = (
+                all_operations.And(*[all_operations.Or(*[a != v for a, v in zip(asts, r)]) for r in results]),
+            ) + tuple(extra_constraints)
         else:
             constraints = extra_constraints
 
         try:
-            results.update(super().batch_eval(
-                asts, remaining, extra_constraints=constraints, **kwargs
-            ))
+            results.update(super().batch_eval(asts, remaining, extra_constraints=constraints, **kwargs))
         except UnsatError:
             if len(results) == 0:
                 raise
@@ -324,17 +333,17 @@ class ModelCacheMixin:
         return results
 
     def eval(self, e, n, **kwargs):
-        return tuple( r[0] for r in ModelCacheMixin.batch_eval(self, [e], n=n, **kwargs) )
+        return tuple(r[0] for r in ModelCacheMixin.batch_eval(self, [e], n=n, **kwargs))
 
     def min(self, e, extra_constraints=(), signed=False, **kwargs):
-        cached = [ ]
+        cached = []
         if e.cache_key in self._eval_exhausted or e.cache_key in self._min_exhausted:
             # we set allow_unconstrained to False because we expect all returned values for e are returned by Z3,
             # instead of some arbitrarily assigned concrete values.
             cached = self._get_solutions(e, extra_constraints=extra_constraints, allow_unconstrained=False)
 
         if len(cached) > 0:
-            signed_key = lambda v: v if v < 2**(len(e)-1) else v - 2**len(e)
+            signed_key = lambda v: v if v < 2 ** (len(e) - 1) else v - 2 ** len(e)
             return min(cached, key=signed_key if signed else lambda v: v)
         else:
             m = super().min(e, extra_constraints=extra_constraints, signed=signed, **kwargs)
@@ -343,12 +352,12 @@ class ModelCacheMixin:
             return m
 
     def max(self, e, extra_constraints=(), signed=False, **kwargs):
-        cached = [ ]
+        cached = []
         if e.cache_key in self._eval_exhausted or e.cache_key in self._max_exhausted:
             cached = self._get_solutions(e, extra_constraints=extra_constraints, allow_unconstrained=False)
 
         if len(cached) > 0:
-            signed_key = lambda v: v if v < 2**(len(e)-1) else v - 2**len(e)
+            signed_key = lambda v: v if v < 2 ** (len(e) - 1) else v - 2 ** len(e)
             return max(cached, key=signed_key if signed else lambda v: v)
         else:
             m = super().max(e, extra_constraints=extra_constraints, signed=signed, **kwargs)
@@ -358,8 +367,8 @@ class ModelCacheMixin:
 
     def solution(self, e, v, extra_constraints=(), **kwargs):
         if isinstance(v, Base):
-            cached = self._get_batch_solutions([e,v], extra_constraints=extra_constraints)
-            if any(ec == vc for ec,vc in cached):
+            cached = self._get_batch_solutions([e, v], extra_constraints=extra_constraints)
+            if any(ec == vc for ec, vc in cached):
                 return True
         else:
             cached = self._get_solutions(e, extra_constraints=extra_constraints)

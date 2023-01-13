@@ -65,7 +65,7 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
         if common_ancestor is None:
             merged = self.blank_copy()
             options = []
-            for s,v in zip([self] + others, merge_conditions):
+            for s, v in zip([self] + others, merge_conditions):
                 options.append(And(*([v] + s.constraints)))
             merged.add([Or(*options)])
         else:
@@ -77,7 +77,7 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
     def combine(self, others):
         combined = self.blank_copy()
 
-        combined.add(self.constraints)    # pylint:disable=E1101
+        combined.add(self.constraints)  # pylint:disable=E1101
         for o in others:
             combined.add(o.constraints)
         return combined
@@ -104,17 +104,19 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
         return constraints
 
     def simplify(self):
-        to_simplify = [ c for c in self.constraints if not any(
-            isinstance(a, SimplificationAvoidanceAnnotation) for a in c.annotations
-        ) ]
-        no_simplify = [ c for c in self.constraints if any(
-            isinstance(a, SimplificationAvoidanceAnnotation) for a in c.annotations
-        ) ]
+        to_simplify = [
+            c
+            for c in self.constraints
+            if not any(isinstance(a, SimplificationAvoidanceAnnotation) for a in c.annotations)
+        ]
+        no_simplify = [
+            c for c in self.constraints if any(isinstance(a, SimplificationAvoidanceAnnotation) for a in c.annotations)
+        ]
 
         if len(to_simplify) == 0:
             return self.constraints
 
-        simplified = simplify(And(*to_simplify)).split(['And']) #pylint:disable=no-member
+        simplified = simplify(And(*to_simplify)).split(["And"])  # pylint:disable=no-member
         self.constraints = no_simplify + simplified
         return self.constraints
 
@@ -148,6 +150,7 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
 
     def is_false(self, e, extra_constraints=(), exact=None):
         raise NotImplementedError("is_false() is not implemented")
+
 
 from ..ast.base import simplify
 from ..ast.bool import And, Or

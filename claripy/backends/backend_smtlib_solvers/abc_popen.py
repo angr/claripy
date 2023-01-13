@@ -7,15 +7,16 @@ from ...errors import MissingSolverError
 
 log = logging.getLogger(__name__)
 
+
 def get_version():
     try:
-        version_string = subprocess.check_output(['abc', '--help']).decode('utf-8')
-        #version_match = re.match('This is CVC4 version (.*)\n', version_string)
+        version_string = subprocess.check_output(["abc", "--help"]).decode("utf-8")
+        # version_match = re.match('This is CVC4 version (.*)\n', version_string)
 
-        #if not version_match:
+        # if not version_match:
         #    return False, None, "Found malformed version string: {}".format(version_string)
 
-        return True, None, None # True, version_match.group(1), None
+        return True, None, None  # True, version_match.group(1), None
 
     except subprocess.CalledProcessError as ex:
         return False, None, f"Not found, error: {ex}"
@@ -25,6 +26,7 @@ def get_version():
 
 IS_INSTALLED, VERSION, ERROR = get_version()
 
+
 class ABCProxy(PopenSolverProxy):
     def __init__(self):
         self.installed = False
@@ -33,10 +35,11 @@ class ABCProxy(PopenSolverProxy):
 
     def create_process(self):
         if not IS_INSTALLED:
-            raise MissingSolverError('ABC not found! Please install ABC before using this backend')
-        p = subprocess.Popen(['abc'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            raise MissingSolverError("ABC not found! Please install ABC before using this backend")
+        p = subprocess.Popen(["abc"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.installed = True
         return p
+
 
 class SolverBackendABC(SMTLibSolverBackend):
     def solver(self, timeout=None, max_memory=None):
@@ -46,5 +49,7 @@ class SolverBackendABC(SMTLibSolverBackend):
         """
         return ABCProxy()
 
+
 from ... import backend_manager as backend_manager
-backend_manager.backends._register_backend(SolverBackendABC(), 'smtlib_abc', False, False)
+
+backend_manager.backends._register_backend(SolverBackendABC(), "smtlib_abc", False, False)

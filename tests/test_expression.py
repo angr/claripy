@@ -7,13 +7,13 @@ import claripy
 
 class TestExpression(unittest.TestCase):
     def test_smudging(self):
-        x = claripy.BVS('x', 32)
+        x = claripy.BVS("x", 32)
         y = x + 1
         self.assertTrue(isinstance(y.args[1], claripy.ast.BV))
         self.assertEqual(y.args[1].args[0], 1)
         self.assertEqual(y.args[1].args[1], 32)
 
-        x = claripy.BVS('x', 32)
+        x = claripy.BVS("x", 32)
         y = x * 1
         z = y + 1
         self.assertTrue(isinstance(y.args[1], claripy.ast.BV))
@@ -29,7 +29,7 @@ class TestExpression(unittest.TestCase):
         self.assertEqual(ccc.args[1].args[1].args[0], 2)
         self.assertEqual(ccc.args[1].args[1].args[1], 32)
 
-        x = claripy.BVS('x', 32)
+        x = claripy.BVS("x", 32)
         y = x + "AAAA"
         self.assertTrue(isinstance(y.args[1], claripy.ast.BV))
         self.assertEqual(y.args[1].args[0], 0x41414141)
@@ -56,8 +56,8 @@ class TestExpression(unittest.TestCase):
         self.assertEqual(bc.convert(ee1), 0x0004)
         self.assertEqual(len(ee1), 16)
 
-        ee1 = claripy.BVV(0xfe, 8).sign_extend(8)
-        self.assertEqual(bc.convert(ee1), 0xfffe)
+        ee1 = claripy.BVV(0xFE, 8).sign_extend(8)
+        self.assertEqual(bc.convert(ee1), 0xFFFE)
         self.assertEqual(len(ee1), 16)
 
         xe1 = [bc.convert(i) for i in e1.chop(1)]
@@ -82,7 +82,7 @@ class TestExpression(unittest.TestCase):
         rsum = r + rr
         self.assertEqual(bc.convert(rsum), 0x05050505)
 
-        r = claripy.BVS('x', 32)
+        r = claripy.BVS("x", 32)
         rr = r.reversed
         rrr = rr.reversed
         self.assertIs(r, rrr)
@@ -90,8 +90,8 @@ class TestExpression(unittest.TestCase):
         # test identity
         self.assertIs(r, rrr)
         self.assertIsNot(r, rr)
-        ii = claripy.BVS('ii', 32)
-        ij = claripy.BVS('ij', 32)
+        ii = claripy.BVS("ii", 32)
+        ij = claripy.BVS("ij", 32)
         self.assertIs(ii, ii)
         self.assertIsNot(ii, ij)
 
@@ -109,8 +109,8 @@ class TestExpression(unittest.TestCase):
         self.assertIs(a + a, a + a)
 
         # test replacement
-        old = claripy.BVS('old', 32, explicit_name=True)
-        new = claripy.BVS('new', 32, explicit_name=True)
+        old = claripy.BVS("old", 32, explicit_name=True)
+        new = claripy.BVS("new", 32, explicit_name=True)
         ooo = claripy.BVV(0, 32)
 
         old_formula = claripy.If((old + 1) % 256 == 0, old + 10, old + 20)
@@ -121,20 +121,20 @@ class TestExpression(unittest.TestCase):
         self.assertNotEqual(hash(old_formula), hash(ooo_formula))
         self.assertNotEqual(hash(new_formula), hash(ooo_formula))
 
-        self.assertEqual(old_formula.variables, {'old'})
-        self.assertEqual(new_formula.variables, {'new'})
+        self.assertEqual(old_formula.variables, {"old"})
+        self.assertEqual(new_formula.variables, {"new"})
         self.assertEqual(ooo_formula.variables, ooo.variables)
 
         self.assertTrue(old_formula.symbolic)
         self.assertTrue(new_formula.symbolic)
         self.assertTrue(new_formula.symbolic)
 
-        self.assertEqual(str(old_formula).replace('old', 'new'), str(new_formula))
+        self.assertEqual(str(old_formula).replace("old", "new"), str(new_formula))
         self.assertEqual(bc.convert(ooo_formula), 20)
 
         # test dict replacement
-        old = claripy.BVS('old', 32, explicit_name=True)
-        new = claripy.BVS('new', 32, explicit_name=True)
+        old = claripy.BVS("old", 32, explicit_name=True)
+        new = claripy.BVS("new", 32, explicit_name=True)
         c = (old + 10) - (old + 20)
         d = (old + 1) - (old + 2)
         cr = c.replace_dict({(old + 10).cache_key: (old + 1), (old + 20).cache_key: (old + 2)})
@@ -169,21 +169,21 @@ class TestExpression(unittest.TestCase):
         self.assertIs(rb, rb)
 
         # test some alternate bvv creation methods
-        self.assertIs(claripy.BVV('AAAA'), claripy.BVV(0x41414141, 32))
-        self.assertIs(claripy.BVV('AAAA', 32), claripy.BVV(0x41414141, 32))
-        self.assertIs(claripy.BVV('AB'), claripy.BVV(0x4142, 16))
-        self.assertIs(claripy.BVV('AB', 16), claripy.BVV(0x4142, 16))
+        self.assertIs(claripy.BVV("AAAA"), claripy.BVV(0x41414141, 32))
+        self.assertIs(claripy.BVV("AAAA", 32), claripy.BVV(0x41414141, 32))
+        self.assertIs(claripy.BVV("AB"), claripy.BVV(0x4142, 16))
+        self.assertIs(claripy.BVV("AB", 16), claripy.BVV(0x4142, 16))
         with self.assertRaises(claripy.errors.ClaripyValueError):
-            claripy.BVV('AB', 8)
+            claripy.BVV("AB", 8)
 
     def test_cardinality(self):
-        x = claripy.BVS('x', 32)
-        y = claripy.BVS('y', 32, min=100, max=120)
+        x = claripy.BVS("x", 32)
+        y = claripy.BVS("y", 32, min=100, max=120)
         n = claripy.BVV(10, 32)
         m = claripy.BVV(20, 32)
 
         self.assertEqual(y.cardinality, 21)
-        self.assertEqual(x.cardinality, 2 ** 32)
+        self.assertEqual(x.cardinality, 2**32)
         self.assertEqual(n.cardinality, 1)
         self.assertEqual(m.cardinality, 1)
         self.assertEqual(n.union(m).cardinality, 2)
@@ -208,7 +208,7 @@ class TestExpression(unittest.TestCase):
         self.assertFalse(y.intersection(m).multivalued)
 
     def test_if_stuff(self):
-        x = claripy.BVS('x', 32)
+        x = claripy.BVS("x", 32)
         # y = claripy.BVS('y', 32)
 
         c = claripy.If(x > 10, (claripy.If(x > 10, x * 3, x * 2)), x * 4) + 2
@@ -271,10 +271,14 @@ class TestExpression(unittest.TestCase):
         self.assertEqual(sorted(ss.eval(x, 100)), [3, 9])
         self.assertEqual(sorted(ss.eval(y, 100)), [123])
 
-        itz = claripy.ite_cases([(claripy.And(x == 10, y == 20), 33),
-                                 (claripy.And(x == 1, y == 2), 3),
-                                 (claripy.And(x == 100, y == 200), 333)],
-                                claripy.BVV(0, 32))
+        itz = claripy.ite_cases(
+            [
+                (claripy.And(x == 10, y == 20), 33),
+                (claripy.And(x == 1, y == 2), 3),
+                (claripy.And(x == 100, y == 200), 333),
+            ],
+            claripy.BVV(0, 32),
+        )
         ss = s.branch()
         ss.add(z == itz)
         ss.add(itz != 0)
@@ -283,14 +287,14 @@ class TestExpression(unittest.TestCase):
         self.assertEqual(sorted(ss.eval(y, 100)), [2, 20, 200])
 
     def test_ite_reverse(self):
-        a = claripy.BVS('a', 32)
+        a = claripy.BVS("a", 32)
         cases = [(a == i, claripy.BVV(i, 32)) for i in range(30)]
         ast = claripy.ite_cases(cases, -1)
         ext_cases = list(claripy.reverse_ite_cases(ast))
 
-        assert sum(1 if case.op == 'And' else 0 for case, _ in ext_cases)
+        assert sum(1 if case.op == "And" else 0 for case, _ in ext_cases)
         for case, val in ext_cases:
-            if case.op == 'And':
+            if case.op == "And":
                 assert claripy.is_true(val == -1)
             else:
                 assert any(case is orig_case and val is orig_val for orig_case, orig_val in cases)
@@ -366,17 +370,17 @@ class TestExpression(unittest.TestCase):
         )
 
     def test_rename(self):
-        x1 = claripy.BVS('x', 32)
-        x2 = x1._rename('y')
-        assert x2.variables == frozenset(('y',))
+        x1 = claripy.BVS("x", 32)
+        x2 = x1._rename("y")
+        assert x2.variables == frozenset(("y",))
 
     def test_canonical(self):
-        x1 = claripy.BVS('x', 32)
-        b1 = claripy.BoolS('b')
-        c1 = claripy.BoolS('c')
-        x2 = claripy.BVS('x', 32)
-        b2 = claripy.BoolS('b')
-        c2 = claripy.BoolS('c')
+        x1 = claripy.BVS("x", 32)
+        b1 = claripy.BoolS("b")
+        c1 = claripy.BoolS("c")
+        x2 = claripy.BVS("x", 32)
+        b2 = claripy.BoolS("b")
+        c2 = claripy.BoolS("c")
 
         assert x1.canonicalize()[-1] is x2.canonicalize()[-1]
 
@@ -391,13 +395,13 @@ class TestExpression(unittest.TestCase):
         assert y1.canonicalize()[-1] is y2.canonicalize()[-1]
 
     def test_depth(self):
-        x1 = claripy.BVS('x', 32)
+        x1 = claripy.BVS("x", 32)
         assert x1.depth == 1
         x2 = x1 + 1
         assert x2.depth == 2
 
     def test_multiarg(self):
-        x = claripy.BVS('x', 32)
+        x = claripy.BVS("x", 32)
         o = claripy.BVV(2, 32)
 
         x_add = x + x + x + x
@@ -482,17 +486,17 @@ class TestExpression(unittest.TestCase):
         assert list(solver.eval(a % c, 2)) == [2]
         assert list(solver.eval(a % d, 2)) == [5]
         assert list(solver.eval(b % c, 2)) == [2]
-        assert list(solver.eval(b % d, 2)) == [2 ** 32 - 5]
+        assert list(solver.eval(b % d, 2)) == [2**32 - 5]
 
         # test unsigned
         assert list(solver.eval(a.SDiv(c), 2)) == [1]
-        assert list(solver.eval(a.SDiv(d), 2)) == [2 ** 32 - 1]
-        assert list(solver.eval(b.SDiv(c), 2)) == [2 ** 32 - 1]
+        assert list(solver.eval(a.SDiv(d), 2)) == [2**32 - 1]
+        assert list(solver.eval(b.SDiv(c), 2)) == [2**32 - 1]
         assert list(solver.eval(b.SDiv(d), 2)) == [1]
         assert list(solver.eval(a.SMod(c), 2)) == [2]
         assert list(solver.eval(a.SMod(d), 2)) == [2]
-        assert list(solver.eval(b.SMod(c), 2)) == [2 ** 32 - 2]
-        assert list(solver.eval(b.SMod(d), 2)) == [2 ** 32 - 2]
+        assert list(solver.eval(b.SMod(c), 2)) == [2**32 - 2]
+        assert list(solver.eval(b.SMod(d), 2)) == [2**32 - 2]
 
     def test_arith_shift(self):
         bc = claripy.backends.concrete
@@ -502,36 +506,36 @@ class TestExpression(unittest.TestCase):
         assert bc.convert(a << 32) == 0
         assert bc.convert(a >> 32) == -1
         # neg shift is treated as unsigned
-        assert bc.convert(a << -1) == bc.convert(a << (2 ** 32 - 1))
-        assert bc.convert(a >> -1) == bc.convert(a >> (2 ** 32 - 1))
+        assert bc.convert(a << -1) == bc.convert(a << (2**32 - 1))
+        assert bc.convert(a >> -1) == bc.convert(a >> (2**32 - 1))
 
         solver = claripy.Solver()
         a = claripy.BVS("a", 32)
         solver.add(a == -4)
-        assert list(solver.eval(a << 1, 2)) == [2 ** 32 - 8]
-        assert list(solver.eval(a >> 1, 2)) == [2 ** 32 - 2]
+        assert list(solver.eval(a << 1, 2)) == [2**32 - 8]
+        assert list(solver.eval(a >> 1, 2)) == [2**32 - 2]
         assert list(solver.eval(a << 32, 2)) == [0]
-        assert list(solver.eval(a >> 32, 2)) == [2 ** 32 - 1]
+        assert list(solver.eval(a >> 32, 2)) == [2**32 - 1]
 
         x = claripy.BVS("x", 32)
         y = claripy.BVS("y", 32)
-        assert list(solver.eval(a << -x == a << (2 ** 32 - x), 2)) == [True]
-        assert list(solver.eval(a >> -x == a >> (2 ** 32 - x), 2)) == [True]
+        assert list(solver.eval(a << -x == a << (2**32 - x), 2)) == [True]
+        assert list(solver.eval(a >> -x == a >> (2**32 - x), 2)) == [True]
         solver.add(y >= 32)
         assert list(solver.eval(x << y, 2)) == [0]
-        assert list(solver.eval(x >> y, 2)) == [0, 2 ** 32 - 1]
+        assert list(solver.eval(x >> y, 2)) == [0, 2**32 - 1]
 
     def test_logic_shift_right(self):
         bc = claripy.backends.concrete
         a = claripy.BVV(-4, 32)
-        assert bc.convert(a.LShR(1)) == 0x7fff_fffe
+        assert bc.convert(a.LShR(1)) == 0x7FFF_FFFE
         assert bc.convert(a.LShR(32)) == 0
         assert bc.convert(a.LShR(-1)) == 0
 
         solver = claripy.Solver()
         a = claripy.BVS("a", 32)
         solver.add(a == -4)
-        assert list(solver.eval(a.LShR(1), 2)) == [0x7fff_fffe]
+        assert list(solver.eval(a.LShR(1), 2)) == [0x7FFF_FFFE]
 
         x = claripy.BVS("x", 32)
         y = claripy.BVS("y", 32)
@@ -560,5 +564,5 @@ class TestExpression(unittest.TestCase):
             pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

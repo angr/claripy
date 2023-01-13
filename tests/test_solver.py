@@ -130,9 +130,7 @@ def raw_solver(solver_type, reuse_z3_solver):
     assert len(shards[1].variables) == 1
     if isinstance(s, claripy.frontend_mixins.ConstraintExpansionMixin) or (
         isinstance(s, claripy.frontends.HybridFrontend)
-        and isinstance(
-            s._exact_frontend, claripy.frontend_mixins.ConstraintExpansionMixin
-        )
+        and isinstance(s._exact_frontend, claripy.frontend_mixins.ConstraintExpansionMixin)
     ):  # the hybrid frontend actually uses the exact frontend for the split
         assert {len(shards[0].constraints), len(shards[1].constraints)} == {
             2,
@@ -197,9 +195,7 @@ def raw_solver(solver_type, reuse_z3_solver):
 
     # Batch evaluation
     s.add(y < 24)
-    s.add(
-        z < x
-    )  # Just to make sure x, y, and z belong to the same solver, since batch evaluation does not support the
+    s.add(z < x)  # Just to make sure x, y, and z belong to the same solver, since batch evaluation does not support the
     # situation where expressions belong to more than one solver
     results = s.batch_eval([x, y, z], 20)
     assert set(results) == {
@@ -267,7 +263,6 @@ def raw_solver(solver_type, reuse_z3_solver):
         assert claripy._backends_module.backend_z3.solve_count == count
         assert s.eval(y, 1)[0] == 0
         assert claripy._backends_module.backend_z3.solve_count == count
-
 
 
 def raw_solver_branching(solver_type, reuse_z3_solver):
@@ -385,7 +380,7 @@ def raw_minmax(reuse_z3_solver):
     s = claripy.Solver()
     x = claripy.BVS("x", 32)
 
-    assert s.max(x) == 2 ** 32 - 1
+    assert s.max(x) == 2**32 - 1
     assert s.min(x) == 0
     assert s.satisfiable()
 
@@ -475,18 +470,17 @@ def raw_unsat_core(solver, reuse_z3_solver):
     assert unsat_core[1] is not None
     assert unsat_core[2] is not None
 
+
 #
 # Test Classes
 #
 
-class StandardTests(TestCase):
 
+class StandardTests(TestCase):
     @if_installed
     def test_composite_solver_with_strings(self):
         s = claripy.SolverComposite(
-            template_solver_string=claripy.SolverCompositeChild(
-                backend=claripy.backend_manager.backends.smtlib_cvc4
-            )
+            template_solver_string=claripy.SolverCompositeChild(backend=claripy.backend_manager.backends.smtlib_cvc4)
         )
         x = claripy.BVS("x", 32)
         y = claripy.BVS("y", 32)
@@ -498,18 +492,17 @@ class StandardTests(TestCase):
         assert s.satisfiable()
         assert list(s.eval(str_1, 1)) == ["cavallo"]
 
-
     def test_minmax_with_reuse(self):
         raw_minmax(True)
+
     def test_minmax_without_reuse(self):
         raw_minmax(False)
 
-
     def test_composite_discrepancy_with_reuse(self):
         raw_composite_discrepancy(True)
+
     def test_composite_discrepancy_without_reuse(self):
         raw_composite_discrepancy(False)
-
 
     def test_model(self):
         x = claripy.BVS("x", 32)
@@ -521,7 +514,6 @@ class StandardTests(TestCase):
         s.add(y == 1337)
         assert sorted(s.eval(x, 20)) == list(range(10))
 
-
     def test_unsatness(self):
         x = claripy.BVS("x", 32)
 
@@ -530,7 +522,6 @@ class StandardTests(TestCase):
         assert s.satisfiable()
         s.add(claripy.false)
         assert not s.satisfiable()
-
 
     def test_simplification_annotations(self):
         s = claripy.Solver()
@@ -543,7 +534,6 @@ class StandardTests(TestCase):
         assert len(s.constraints) == 3
         s.simplify()
         assert len(s.constraints) == 2
-
 
     def test_zero_division_in_cache_mixin(self):
         # Bug in the caching backend. See issue #49 on github.
@@ -560,7 +550,6 @@ class StandardTests(TestCase):
         assert s.satisfiable()
         s.add(denum == 3)
         assert not s.satisfiable()
-
 
     def test_composite_solver_branching_optimizations(self):
         s = claripy.SolverComposite()
@@ -594,7 +583,6 @@ class StandardTests(TestCase):
         assert not s2.satisfiable()
         assert not s2.satisfiable()
 
-
     def test_exhaustion(self):
         s = claripy.Solver()
         x = claripy.BVS("x", 32)
@@ -612,52 +600,62 @@ class StandardTests(TestCase):
         s = claripy.Solver()
         x = claripy.BVS("x", 32)
         assert not s.constraints
-        assert s.max(x) == 0xffffffff
+        assert s.max(x) == 0xFFFFFFFF
         assert len(s.constraints) == 1  # ConstraintExpansionMixin will add a new constraint
-        assert s.max(x) == 0xffffffff  # calling it the second time, the cache should not give a different result
+        assert s.max(x) == 0xFFFFFFFF  # calling it the second time, the cache should not give a different result
 
         s = claripy.Solver()
         y = claripy.BVS("y", 32)
         s.add(y == 8)
         assert s.eval(y, n=1)[0] == 8
         assert len(s.constraints) == 1
-        assert s.max(x) == 0xffffffff
-        assert s.max(x) == 0xffffffff
+        assert s.max(x) == 0xFFFFFFFF
+        assert s.max(x) == 0xFFFFFFFF
+
 
 #
 # Multi-Solver test base classes
 #
 
+
 class Base:
     def test_solver_with_reuse(self):
         raw_solver(self.solver, True)
+
     def test_solver_without_reuse(self):
         raw_solver(self.solver, False)
 
     def test_solver_branching_with_reuse(self):
         raw_solver_branching(self.solver, True)
+
     def test_solver_branching_without_reuse(self):
         raw_solver_branching(self.solver, False)
 
     def test_combine_with_reuse(self):
         raw_combine(self.solver, True)
+
     def test_combine_without_reuse(self):
         raw_combine(self.solver, False)
 
     def test_ancestor_merge_with_reuse(self):
         raw_ancestor_merge(self.solver, True)
+
     def test_ancestor_merge_without_reuse(self):
         raw_ancestor_merge(self.solver, False)
+
 
 class UnsatCore(Base):
     def test_unsat_core_with_reuse(self):
         raw_unsat_core(self.solver, True)
+
     def test_unsat_core_without_reuse(self):
         raw_unsat_core(self.solver, False)
+
 
 #
 # Multi-Solver test base classes
 #
+
 
 class TestSolver(TestCase, UnsatCore):
     solver = claripy.Solver
@@ -668,6 +666,7 @@ class TestSolverReplacement(TestCase, Base):
 
     def test_replacement_solver_with_reuse(self):
         raw_replacement_solver(True)
+
     def test_replacement_solver_without_reuse(self):
         raw_replacement_solver(False)
 
@@ -677,6 +676,7 @@ class TestHybrid(TestCase, UnsatCore):
 
     def test_hybrid_solver_with_reuse(self):
         raw_hybrid_solver(True)
+
     def test_hybrid_solver_without_reuse(self):
         raw_hybrid_solver(False)
 
@@ -686,6 +686,7 @@ class TestComposite(TestCase, UnsatCore):
 
     def test_composite_solver_with_reuse(self):
         raw_composite_solver(True)
+
     def test_composite_solver_without_reuse(self):
         raw_composite_solver(False)
 
@@ -705,11 +706,11 @@ class TestComposite(TestCase, UnsatCore):
         s.add(bb != 0)
         s.add(aa[15:0] != 0)
         s.add(claripy.If(aa[15:0] >= 0x1, claripy.BVV(0x1, 32), claripy.BVV(0x0, 32)) == 1)
-        s.add(0xfffffff + cc + bb == 0)
+        s.add(0xFFFFFFF + cc + bb == 0)
         s.add(claripy.If((claripy.If(bb == 0x0, bb, dd) | ee) == 0, claripy.BVV(1, 1), claripy.BVV(0, 1)) != 1)
         # print(s._solvers)
 
-        s.add(dd == 0xb)
+        s.add(dd == 0xB)
         s.simplify()
         # print(s._solvers)
 

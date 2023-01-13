@@ -11,7 +11,9 @@ class EagerResolutionMixin:
                 pass
 
         return None
+
     _concrete_constraint = _concrete_value
+
 
 from .. import backends
 from ..errors import BackendError

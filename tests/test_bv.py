@@ -22,7 +22,7 @@ class TestBv(unittest.TestCase):
 
         d = BVV(255, 8)
         assert Extract(1, 0, d) == 3
-        assert SignExt(8, d).value == 2 ** 16 - 1
+        assert SignExt(8, d).value == 2**16 - 1
         assert ZeroExt(8, d).size() == 16
         assert ZeroExt(8, d).value == 255
 
@@ -43,9 +43,9 @@ class TestBv(unittest.TestCase):
         assert ~zero == 255
 
     def test_get_byte(self):
-        a = claripy.BVV(0xabcdef12, 32)
-        assert a.get_byte(0).args[0] == 0xab
-        assert a.get_byte(1).args[0] == 0xcd
+        a = claripy.BVV(0xABCDEF12, 32)
+        assert a.get_byte(0).args[0] == 0xAB
+        assert a.get_byte(1).args[0] == 0xCD
 
         try:
             assert a.get_byte(4).args[0]
@@ -59,11 +59,11 @@ class TestBv(unittest.TestCase):
         assert b.get_byte(0).args[1] == 8
 
     def test_get_bytes(self):
-        a = claripy.BVV(0xabcdef12, 32)
-        assert a.get_bytes(0, 1).args[0] == 0xab
-        assert a.get_bytes(0, 2).args[0] == 0xabcd
+        a = claripy.BVV(0xABCDEF12, 32)
+        assert a.get_bytes(0, 1).args[0] == 0xAB
+        assert a.get_bytes(0, 2).args[0] == 0xABCD
 
-        assert a.get_bytes(1, 1).args[0] == 0xcd
+        assert a.get_bytes(1, 1).args[0] == 0xCD
 
         try:
             assert a.get_bytes(4, 1).args[0]
@@ -75,12 +75,12 @@ class TestBv(unittest.TestCase):
         assert a.get_bytes(0, 0).args[0] == 0
         assert a.get_bytes(0, 0).args[1] == 0
 
-        b = claripy.BVV(0x3f0, 10)
+        b = claripy.BVV(0x3F0, 10)
         assert b.get_bytes(0, 1).args[0] == 0x3
         assert b.get_bytes(0, 1).args[1] == 8
-        assert b.get_bytes(0, 2).args[0] == 0x3f0
+        assert b.get_bytes(0, 2).args[0] == 0x3F0
         assert b.get_bytes(0, 2).args[1] == 16
-        assert b.get_bytes(1, 1).args[0] == 0xf0
+        assert b.get_bytes(1, 1).args[0] == 0xF0
         assert b.get_bytes(1, 1).args[1] == 8
 
     def test_zero_length(self):
@@ -105,19 +105,19 @@ class TestBv(unittest.TestCase):
                 elif hasattr(claripy, op):
                     getattr(claripy, op)(va, vb)
                 else:
-                    raise Exception('Operation %s does not exist.' % op)
-                raise Exception('The expected exception is not raised.')
+                    raise Exception("Operation %s does not exist." % op)
+                raise Exception("The expected exception is not raised.")
             except Exception as ex:  # pylint:disable=broad-except
                 assert type(ex) is ClaripyZeroDivisionError
 
-        _check_exception(a, b, '__truediv__')
-        _check_exception(a, b, '__floordiv__')
-        _check_exception(a, b, '__mod__')
-        _check_exception(b, a, '__rtruediv__')
-        _check_exception(b, a, '__rfloordiv__')
-        _check_exception(b, a, '__rmod__')
-        _check_exception(a, b, 'SMod')
-        _check_exception(a, b, 'SDiv')
+        _check_exception(a, b, "__truediv__")
+        _check_exception(a, b, "__floordiv__")
+        _check_exception(a, b, "__mod__")
+        _check_exception(b, a, "__rtruediv__")
+        _check_exception(b, a, "__rfloordiv__")
+        _check_exception(b, a, "__rmod__")
+        _check_exception(a, b, "SMod")
+        _check_exception(a, b, "SDiv")
 
     def test_type_errors(self):
         self.assertRaises(TypeError, lambda: claripy.BVV(None))
@@ -130,8 +130,8 @@ class TestBv(unittest.TestCase):
         self.assertRaises(TypeError, lambda: claripy.BVS(None, 3))
         self.assertRaises(TypeError, lambda: claripy.BVS(3, 3))
         self.assertRaises(TypeError, lambda: claripy.BVS(3, None))
-        self.assertRaises(TypeError, lambda: claripy.BVS('asdf', None))
+        self.assertRaises(TypeError, lambda: claripy.BVS("asdf", None))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

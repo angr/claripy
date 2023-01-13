@@ -5,7 +5,7 @@ class Annotation:
     """
 
     @property
-    def eliminatable(self): #pylint:disable=no-self-use
+    def eliminatable(self):  # pylint:disable=no-self-use
         """
         Returns whether this annotation can be eliminated in a simplification.
 
@@ -14,7 +14,7 @@ class Annotation:
         return True
 
     @property
-    def relocatable(self): #pylint:disable=no-self-use
+    def relocatable(self):  # pylint:disable=no-self-use
         """
         Returns whether this annotation can be relocated in a simplification.
 
@@ -22,7 +22,7 @@ class Annotation:
         """
         return False
 
-    def relocate(self, src, dst): #pylint:disable=no-self-use,unused-argument
+    def relocate(self, src, dst):  # pylint:disable=no-self-use,unused-argument
         """
         This is called when an annotation has to be relocated because of simplifications.
 
@@ -49,9 +49,11 @@ class Annotation:
         """
         return self
 
+
 #
 # Some built-in annotations
 #
+
 
 class SimplificationAvoidanceAnnotation(Annotation):
     @property
