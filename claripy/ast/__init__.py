@@ -1,5 +1,6 @@
-#pylint:disable=redefined-outer-name
+# pylint:disable=redefined-outer-name
 from typing import TYPE_CHECKING
+
 # Mypy is severely confused by this delayed import trickery, but works if we just pretend that the import
 # happens here already
 if TYPE_CHECKING:

@@ -2,26 +2,29 @@ import claripy
 import pickle
 
 import logging
-l = logging.getLogger('claripy.test.serial')
+
+l = logging.getLogger("claripy.test.serial")
+
 
 def test_pickle_ast():
     bz = claripy.backends.z3
 
     a = claripy.BVV(1, 32)
-    b = claripy.BVS('x', 32, explicit_name=True)
+    b = claripy.BVS("x", 32, explicit_name=True)
 
-    c = a+b
-    assert bz.convert(c).__module__ == 'z3.z3'
-    assert str(bz.convert(c)), '1 + x'
+    c = a + b
+    assert bz.convert(c).__module__ == "z3.z3"
+    assert str(bz.convert(c)), "1 + x"
 
     c_copy = pickle.loads(pickle.dumps(c, -1))
     assert c_copy is c
-    assert bz.convert(c_copy).__module__ == 'z3.z3'
-    assert str(bz.convert(c_copy)) == '1 + x'
+    assert bz.convert(c_copy).__module__ == "z3.z3"
+    assert str(bz.convert(c_copy)) == "1 + x"
+
 
 def test_pickle_frontend():
     s = claripy.Solver()
-    x = claripy.BVS('x', 32)
+    x = claripy.BVS("x", 32)
 
     s.add(x == 1)
     assert s.eval(x, 10), (1,)
@@ -29,10 +32,12 @@ def test_pickle_frontend():
     ss = pickle.dumps(s)
     del s
     import gc
+
     gc.collect()
 
     s = pickle.loads(ss)
     assert s.eval(x, 10), (1,)
+
 
 def test_identity():
     l.info("Running test_identity")
@@ -40,7 +45,61 @@ def test_identity():
     a = claripy.BVV(1, 32)
     b = claripy.BVS("x", 32)
     c = a + b
-    d = a+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b
+    d = (
+        a
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+        + b
+    )
 
     l.debug("Storing!")
     c_info = pickle.dumps(c)
@@ -71,7 +130,8 @@ def test_identity():
     assert old_constraint_sets == new_constraint_sets
     assert str(s.variables) == str(ss.variables)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     test_pickle_ast()
     test_pickle_frontend()
     test_identity()

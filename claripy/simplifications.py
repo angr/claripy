@@ -10,29 +10,29 @@ from functools import reduce
 class SimplificationManager:
     def __init__(self):
         self._simplifiers = {
-            'Reverse': self.bv_reverse_simplifier,
-            'And': self.boolean_and_simplifier,
-            'Or': self.boolean_or_simplifier,
-            'Not': self.boolean_not_simplifier,
-            'Extract': self.extract_simplifier,
-            'Concat': self.concat_simplifier,
-            'If': self.if_simplifier,
-            '__lshift__': self.lshift_simplifier,
-            '__rshift__': self.rshift_simplifier,
-            'LShR': self.lshr_simplifier,
-            '__eq__': self.eq_simplifier,
-            '__ne__': self.ne_simplifier,
-            '__or__': self.bitwise_or_simplifier,
-            '__and__': self.bitwise_and_simplifier,
-            '__xor__': self.bitwise_xor_simplifier,
-            '__add__': self.bitwise_add_simplifier,
-            '__sub__': self.bitwise_sub_simplifier,
-            '__mul__': self.bitwise_mul_simplifier,
-            'ZeroExt': self.zeroext_simplifier,
-            'SignExt': self.signext_simplifier,
-            'fpToIEEEBV': self.fptobv_simplifier,
-            'fpToFP': self.fptofp_simplifier,
-            'StrReverse': self.str_reverse_simplifier,
+            "Reverse": self.bv_reverse_simplifier,
+            "And": self.boolean_and_simplifier,
+            "Or": self.boolean_or_simplifier,
+            "Not": self.boolean_not_simplifier,
+            "Extract": self.extract_simplifier,
+            "Concat": self.concat_simplifier,
+            "If": self.if_simplifier,
+            "__lshift__": self.lshift_simplifier,
+            "__rshift__": self.rshift_simplifier,
+            "LShR": self.lshr_simplifier,
+            "__eq__": self.eq_simplifier,
+            "__ne__": self.ne_simplifier,
+            "__or__": self.bitwise_or_simplifier,
+            "__and__": self.bitwise_and_simplifier,
+            "__xor__": self.bitwise_xor_simplifier,
+            "__add__": self.bitwise_add_simplifier,
+            "__sub__": self.bitwise_sub_simplifier,
+            "__mul__": self.bitwise_mul_simplifier,
+            "ZeroExt": self.zeroext_simplifier,
+            "SignExt": self.signext_simplifier,
+            "fpToIEEEBV": self.fptobv_simplifier,
+            "fpToFP": self.fptofp_simplifier,
+            "StrReverse": self.str_reverse_simplifier,
         }
 
     def simplify(self, op, args):
@@ -56,7 +56,7 @@ class SimplificationManager:
     # The simplifiers.
     #
 
-    #pylint:disable=inconsistent-return-statements
+    # pylint:disable=inconsistent-return-statements
 
     @staticmethod
     def if_simplifier(cond, if_true, if_false):
@@ -75,17 +75,21 @@ class SimplificationManager:
 
         orig_args = args
         args = list(args)
-        #length = sum(arg.length for arg in args)
+        # length = sum(arg.length for arg in args)
         simplified = False
 
         if any(a.symbolic for a in args):
             i = 1
             # here, we concatenate any consecutive concrete terms
             while i < len(args):
-                previous = args[i-1]
+                previous = args[i - 1]
                 current = args[i]
 
-                if not (previous.symbolic or current.symbolic) and backends.concrete.handles(previous) and backends.concrete.handles(current):
+                if (
+                    not (previous.symbolic or current.symbolic)
+                    and backends.concrete.handles(previous)
+                    and backends.concrete.handles(current)
+                ):
                     concatted = ast.all_operations.Concat(previous, current)
                     # If the concrete arguments to concat have non-relocatable annotations attached,
                     # we may not be able to simplify the concrete concat. This check makes sure we don't
@@ -96,7 +100,7 @@ class SimplificationManager:
                     # up with the same args that we started with. But because we only eliminate the concat later,
                     # the simplified variable would still be set to True after this loop which is wrong.
                     if concatted.op != "Concat":
-                        args[i-1:i+1] = (concatted,)
+                        args[i - 1 : i + 1] = (concatted,)
                         continue
 
                 i += 1
@@ -111,9 +115,9 @@ class SimplificationManager:
             if current.length == 0:
                 args.pop(i)
                 simplified = True
-            elif current.op == 'Concat':
+            elif current.op == "Concat":
                 simplified = True
-                args[i:i+1] = current.args
+                args[i : i + 1] = current.args
                 i += len(current.args)
             else:
                 i += 1
@@ -124,14 +128,14 @@ class SimplificationManager:
         prev_left = None
         prev_right = None
         while i < len(args):
-            if args[i].op != 'Extract':
+            if args[i].op != "Extract":
                 prev_var = None
                 prev_left = None
                 prev_right = None
                 i += 1
             elif prev_var is args[i].args[2] and prev_right == args[i].args[0] + 1:
                 prev_right = args[i].args[1]
-                args[i-1:i+1] = [ ast.all_operations.Extract(prev_left, prev_right, prev_var) ]
+                args[i - 1 : i + 1] = [ast.all_operations.Extract(prev_left, prev_right, prev_var)]
                 simplified = True
             else:
                 prev_left = args[i].args[0]
@@ -140,8 +144,8 @@ class SimplificationManager:
                 i += 1
 
         # if any(a.op == 'Reverse' for a in args):
-        #	  simplified = True
-        #	  args = [a.reversed for a in args]
+        # 	  simplified = True
+        # 	  args = [a.reversed for a in args]
 
         if simplified:
             return ast.all_operations.Concat(*args)
@@ -170,7 +174,7 @@ class SimplificationManager:
     def lshift_simplifier(val, shift):
         if (shift == 0).is_true():
             return val
-        if val.op == '__lshift__':
+        if val.op == "__lshift__":
             real_val, inner_shift = val.args
             return real_val << (inner_shift + shift)
 
@@ -188,15 +192,15 @@ class SimplificationManager:
         if isinstance(b, ast.Bool) and a is ast.false:
             return ast.all_operations.Not(b)
 
-        if a.op == 'Reverse' and b.op == 'Reverse':
+        if a.op == "Reverse" and b.op == "Reverse":
             return a.args[0] == b.args[0]
 
         # simple canonicalization
-        if a.op == 'BVV' and b.op != 'BVV':
+        if a.op == "BVV" and b.op != "BVV":
             return b == a
 
         # TODO: all these ==/!= might really slow things down...
-        if a.op == 'If':
+        if a.op == "If":
             if a.args[1] is b and ast.all_operations.is_true(a.args[2] != b):
                 # (If(c, x, y) == x, x != y) -> c
                 return a.args[0]
@@ -204,11 +208,11 @@ class SimplificationManager:
                 # (If(c, x, y) == y, x != y) -> !c
                 return ast.all_operations.Not(a.args[0])
             # elif a._claripy.is_true(a.args[1] == b) and a._claripy.is_true(a.args[2] == b):
-            #	  return a._claripy.true
+            # 	  return a._claripy.true
             # elif a._claripy.is_true(a.args[1] != b) and a._claripy.is_true(a.args[2] != b):
-            #	  return a._claripy.false
+            # 	  return a._claripy.false
 
-        if b.op == 'If':
+        if b.op == "If":
             if b.args[1] is a and ast.all_operations.is_true(b.args[2] != b):
                 # (x == If(c, x, y)) -> c
                 return b.args[0]
@@ -216,9 +220,9 @@ class SimplificationManager:
                 # (y == If(c, x, y)) -> !c
                 return ast.all_operations.Not(b.args[0])
             # elif b._claripy.is_true(b.args[1] == a) and b._claripy.is_true(b.args[2] == a):
-            #	  return b._claripy.true
+            # 	  return b._claripy.true
             # elif b._claripy.is_true(b.args[1] != a) and b._claripy.is_true(b.args[2] != a):
-            #	  return b._claripy.false
+            # 	  return b._claripy.false
 
         # Masking and comparing against a constant
         simp = SimplificationManager.and_mask_comparing_against_constant_simplifier(operator.__eq__, a, b)
@@ -253,10 +257,10 @@ class SimplificationManager:
         if a is b:
             return ast.false
 
-        if a.op == 'Reverse' and b.op == 'Reverse':
+        if a.op == "Reverse" and b.op == "Reverse":
             return a.args[0] != b.args[0]
 
-        if a.op == 'If':
+        if a.op == "If":
             if a.args[2] is b and ast.all_operations.is_true(a.args[1] != b):
                 # (If(c, x, y) == x, x != y) -> c
                 return a.args[0]
@@ -264,11 +268,11 @@ class SimplificationManager:
                 # (If(c, x, y) == y, x != y) -> !c
                 return ast.all_operations.Not(a.args[0])
             # elif a._claripy.is_true(a.args[1] == b) and a._claripy.is_true(a.args[2] == b):
-            #	  return a._claripy.false
+            # 	  return a._claripy.false
             # elif a._claripy.is_true(a.args[1] != b) and a._claripy.is_true(a.args[2] != b):
-            #	  return a._claripy.true
+            # 	  return a._claripy.true
 
-        if b.op == 'If':
+        if b.op == "If":
             if b.args[2] is a and ast.all_operations.is_true(b.args[1] != a):
                 # (x == If(c, x, y)) -> c
                 return b.args[0]
@@ -276,9 +280,9 @@ class SimplificationManager:
                 # (y == If(c, x, y)) -> !c
                 return ast.all_operations.Not(b.args[0])
             # elif b._claripy.is_true(b.args[1] != a) and b._claripy.is_true(b.args[2] != a):
-            #	  return b._claripy.true
+            # 	  return b._claripy.true
             # elif b._claripy.is_true(b.args[1] == a) and b._claripy.is_true(b.args[2] == a):
-            #	  return b._claripy.false
+            # 	  return b._claripy.false
 
         # Masking and comparing against a constant
         simp = SimplificationManager.and_mask_comparing_against_constant_simplifier(operator.__ne__, a, b)
@@ -310,7 +314,7 @@ class SimplificationManager:
 
     @staticmethod
     def bv_reverse_simplifier(body):
-        if body.op == 'Reverse':
+        if body.op == "Reverse":
             # Reverse(Reverse(x)) ==> x
             return body.args[0]
 
@@ -318,13 +322,11 @@ class SimplificationManager:
             # Reverse(byte) ==> byte
             return body
 
-        if body.op == 'Concat':
-            if all(a.op == 'Extract' for a in body.args):
+        if body.op == "Concat":
+            if all(a.op == "Extract" for a in body.args):
                 first_ast = body.args[0].args[2]
-                for i,a in enumerate(body.args):
-                    if not (first_ast is a.args[2]
-                            and a.args[0] == ((i + 1) * 8 - 1)
-                            and a.args[1] == i * 8):
+                for i, a in enumerate(body.args):
+                    if not (first_ast is a.args[2] and a.args[0] == ((i + 1) * 8 - 1) and a.args[1] == i * 8):
                         break
                 else:
                     upper_bound = body.args[-1].args[0]
@@ -335,12 +337,12 @@ class SimplificationManager:
             if all(a.length == 8 for a in body.args):
                 return body.make_like(body.op, body.args[::-1], simplify=True)
 
-        if body.op == 'Concat':
-            if all(a.op == 'Reverse' for a in body.args):
+        if body.op == "Concat":
+            if all(a.op == "Reverse" for a in body.args):
                 if all(a.length % 8 == 0 for a in body.args):
                     return body.make_like(body.op, [a.args[0] for a in reversed(body.args)], simplify=True)
 
-        if body.op == 'Extract' and body.args[2].op == 'Reverse':
+        if body.op == "Extract" and body.args[2].op == "Reverse":
             # Reverse(Extract(hi, lo, Reverse(x))) ==> Extract(bits-lo-1, bits-hi-1, x)
             # Holds only when (hi+1) and lo are multiples of 8 (or, multiples of bits_per_byte if we really want to
             # suppport cLEMENCy)
@@ -359,7 +361,7 @@ class SimplificationManager:
         new_args = [None] * len(args)
         ctr = 0
         for a in args:
-            if a.op == 'BoolV':
+            if a.op == "BoolV":
                 if a.is_false():
                     return ast.all_operations.false
             else:
@@ -373,8 +375,8 @@ class SimplificationManager:
         if len(new_args) < len(args):
             return ast.all_operations.And(*new_args)
 
-        flattened = SimplificationManager._flatten_simplifier('And', SimplificationManager._deduplicate_filter, *args)
-        if flattened.op != 'And':
+        flattened = SimplificationManager._flatten_simplifier("And", SimplificationManager._deduplicate_filter, *args)
+        if flattened.op != "And":
             return flattened
 
         fargs = flattened.args if flattened is not None else args
@@ -414,9 +416,9 @@ class SimplificationManager:
             other = arg.args[1] if arg.args[0] is target_var else arg.args[0] if arg.args[1] is target_var else None
             if other is None:
                 return flattened
-            if arg.op == '__eq__':
+            if arg.op == "__eq__":
                 eq_list.append(other)
-            elif arg.op == '__ne__':
+            elif arg.op == "__ne__":
                 ne_list.append(other)
             else:
                 return flattened
@@ -425,7 +427,7 @@ class SimplificationManager:
             return flattened
         if any(any(ne is eq for eq in eq_list) for ne in ne_list):
             return ast.all_operations.false
-        if all(v.op == 'BVV' for v in eq_list) and all(v.op == 'BVV' for v in ne_list):
+        if all(v.op == "BVV" for v in eq_list) and all(v.op == "BVV" for v in ne_list):
             mustbe = eq_list[0]
             if any(eq.args[0] != mustbe.args[0] for eq in eq_list):
                 return ast.all_operations.false
@@ -449,7 +451,7 @@ class SimplificationManager:
         if len(new_args) < len(args):
             return ast.all_operations.Or(*new_args)
 
-        return SimplificationManager._flatten_simplifier('Or', SimplificationManager._deduplicate_filter, *args)
+        return SimplificationManager._flatten_simplifier("Or", SimplificationManager._deduplicate_filter, *args)
 
     @staticmethod
     def _flatten_simplifier(op_name, filter_func, *args, **kwargs):
@@ -457,15 +459,17 @@ class SimplificationManager:
         if any(not anno.relocatable for anno in itertools.chain.from_iterable(arg.annotations for arg in args)):
             return None
 
-        new_args = tuple(itertools.chain.from_iterable(
-            (a.args if isinstance(a, ast.Base) and a.op == op_name and len(a.args) < 1000 else (a,)) for a in args
-        ))
+        new_args = tuple(
+            itertools.chain.from_iterable(
+                (a.args if isinstance(a, ast.Base) and a.op == op_name and len(a.args) < 1000 else (a,)) for a in args
+            )
+        )
 
         # try to collapse multiple concrete args
         value_args = []
         other_args = []
         for arg in new_args:
-            if getattr(arg, 'op', None) == 'BVV':
+            if getattr(arg, "op", None) == "BVV":
                 value_args.append(arg)
             else:
                 other_args.append(arg)
@@ -476,39 +480,44 @@ class SimplificationManager:
         variables = frozenset(itertools.chain.from_iterable(a.variables for a in args if isinstance(a, ast.Base)))
         if filter_func:
             new_args = filter_func(new_args)
-        if not new_args and 'initial_value' in kwargs:
-            return kwargs['initial_value']
+        if not new_args and "initial_value" in kwargs:
+            return kwargs["initial_value"]
         # if a single arg is left, don't create an op for it
         if len(new_args) == 1:
             return new_args[0]
-        return next(a for a in args if isinstance(a, ast.Base)).make_like(op_name, new_args,
-                                                                          variables=variables,
-                                                                          simplify=False)
+        return next(a for a in args if isinstance(a, ast.Base)).make_like(
+            op_name, new_args, variables=variables, simplify=False
+        )
 
     @staticmethod
     def bitwise_add_simplifier(*args):
-        if len(args) == 2 and args[1].op == 'BVV' and args[0].op == '__sub__' and args[0].args[1].op == 'BVV':
+        if len(args) == 2 and args[1].op == "BVV" and args[0].op == "__sub__" and args[0].args[1].op == "BVV":
             # flatten add over sub
             # (x - y) + z ==> x - (y - z)
             return args[0].args[0] - (args[0].args[1] - args[1])
-        return SimplificationManager._flatten_simplifier('__add__', lambda new_args: tuple(a for a in new_args if a.op != 'BVV' or a.args[0] != 0), *args, initial_value=ast.all_operations.BVV(0, len(args[0])))
+        return SimplificationManager._flatten_simplifier(
+            "__add__",
+            lambda new_args: tuple(a for a in new_args if a.op != "BVV" or a.args[0] != 0),
+            *args,
+            initial_value=ast.all_operations.BVV(0, len(args[0])),
+        )
         return None
 
     @staticmethod
     def bitwise_mul_simplifier(*args):
-        return SimplificationManager._flatten_simplifier('__mul__', None, *args)
+        return SimplificationManager._flatten_simplifier("__mul__", None, *args)
 
     @staticmethod
     def bitwise_sub_simplifier(a, b):
-        if b.op == 'BVV':
+        if b.op == "BVV":
             # many optimizations if b is concrete - effectively flattening
             if b.args[0] == 0:
                 return a
-            elif a.op == '__sub__' and a.args[1].op == 'BVV':
+            elif a.op == "__sub__" and a.args[1].op == "BVV":
                 # flatten right-heavy trees
                 # (x - y) - z ==> x - (y + z)
                 return a.args[0] - (a.args[1] + b)
-            elif a.op == '__add__' and a.args[-1].op == 'BVV':
+            elif a.op == "__add__" and a.args[-1].op == "BVV":
                 # flatten sub over add
                 # (x + y) - z ==> x + (y - z)
                 if len(a.args) == 2:
@@ -524,55 +533,71 @@ class SimplificationManager:
     # and recognize b-bit z=signedmin(q,r) from this idiom:
     # s=r-q;t=q^r;u=s^r;v=u&t;w=v^s;x=rshift(w,b-1);y=x&t;z=q^y
     @staticmethod
-    def bitwise_xor_simplifier_minmax(a,b):
-        q,y = a,b
-        if y.op != '__and__':
-            q,y = b,a
-            if y.op != '__and__': return
+    def bitwise_xor_simplifier_minmax(a, b):
+        q, y = a, b
+        if y.op != "__and__":
+            q, y = b, a
+            if y.op != "__and__":
+                return
 
-        if len(y.args) != 2: return
-        x,t = y.args
-        if t.op != '__xor__':
-            t,x = y.args
-            if t.op != '__xor__': return
+        if len(y.args) != 2:
+            return
+        x, t = y.args
+        if t.op != "__xor__":
+            t, x = y.args
+            if t.op != "__xor__":
+                return
 
-        if x.op != '__rshift__': return
-        w,dist = x.args
+        if x.op != "__rshift__":
+            return
+        w, dist = x.args
 
         bits = a.size()
-        if dist is not ast.all_operations.BVV(bits - 1,bits): return
-        if w.op != '__xor__': return
+        if dist is not ast.all_operations.BVV(bits - 1, bits):
+            return
+        if w.op != "__xor__":
+            return
 
-        if len(w.args) != 2: return
-        v,s = w.args
-        if s.op != '__sub__':
-            s,v = w.args
-            if s.op != '__sub__': return
+        if len(w.args) != 2:
+            return
+        v, s = w.args
+        if s.op != "__sub__":
+            s, v = w.args
+            if s.op != "__sub__":
+                return
 
-        if v.op != '__and__': return
-        if len(v.args) != 2: return
-        u,t2 = v.args
+        if v.op != "__and__":
+            return
+        if len(v.args) != 2:
+            return
+        u, t2 = v.args
         if t2 is not t:
-            t2,u = v.args
-            if t2 is not t: return
+            t2, u = v.args
+            if t2 is not t:
+                return
 
-        if u.op != '__xor__': return
+        if u.op != "__xor__":
+            return
 
-        if len(t.args) != 2: return
-        q2,r = t.args
+        if len(t.args) != 2:
+            return
+        q2, r = t.args
         if q2 is not q:
-            r,q2 = t.args
-            if q2 is not q: return
+            r, q2 = t.args
+            if q2 is not q:
+                return
 
         if (u.args[0] is s and u.args[1] is q) or (u.args[0] is q and u.args[1] is s):
-            if not (s.args[0] is q and s.args[1] is r): return
-            cond = ast.all_operations.SLE(q,r)
-            return ast.all_operations.If(cond,r,q)
+            if not (s.args[0] is q and s.args[1] is r):
+                return
+            cond = ast.all_operations.SLE(q, r)
+            return ast.all_operations.If(cond, r, q)
 
         if (u.args[0] is s and u.args[1] is r) or (u.args[0] is r and u.args[1] is s):
-            if not (s.args[0] is r and s.args[1] is q): return
-            cond = ast.all_operations.SLE(q,r)
-            return ast.all_operations.If(cond,q,r)
+            if not (s.args[0] is r and s.args[1] is q):
+                return
+            cond = ast.all_operations.SLE(q, r)
+            return ast.all_operations.If(cond, q, r)
 
     @staticmethod
     def bitwise_xor_simplifier(a, b, *args):
@@ -584,8 +609,9 @@ class SimplificationManager:
             elif a is b or (a == b).is_true():
                 return ast.all_operations.BVV(0, a.size())
 
-            result = SimplificationManager.bitwise_xor_simplifier_minmax(a,b)
-            if result is not None: return result
+            result = SimplificationManager.bitwise_xor_simplifier_minmax(a, b)
+            if result is not None:
+                return result
 
         def _flattening_filter(args):
             # since a ^ a == 0, we can safely remove those from args
@@ -603,7 +629,9 @@ class SimplificationManager:
                     res.append(arg)
             return tuple(res)
 
-        return SimplificationManager._flatten_simplifier('__xor__', _flattening_filter, a, b, *args, initial_value=ast.all_operations.BVV(0, a.size()))
+        return SimplificationManager._flatten_simplifier(
+            "__xor__", _flattening_filter, a, b, *args, initial_value=ast.all_operations.BVV(0, a.size())
+        )
 
     @staticmethod
     def bitwise_or_simplifier(a, b, *args):
@@ -621,7 +649,9 @@ class SimplificationManager:
             if a is b:
                 return a
 
-        return SimplificationManager._flatten_simplifier('__or__', SimplificationManager._deduplicate_filter, a, b, *args)
+        return SimplificationManager._flatten_simplifier(
+            "__or__", SimplificationManager._deduplicate_filter, a, b, *args
+        )
 
     @staticmethod
     def bitwise_and_simplifier(a, b, *args):
@@ -631,9 +661,9 @@ class SimplificationManager:
             if r is not None:
                 return r
             # we do not use (a == 2 ** a.size()-1).is_true() to avoid creating redundant ASTs
-            if a.op == "BVV" and a.args[0] == 2**a.size()-1:
+            if a.op == "BVV" and a.args[0] == 2 ** a.size() - 1:
                 return b
-            if b.op == "BVV" and b.args[0] == 2**b.size()-1:
+            if b.op == "BVV" and b.args[0] == 2 ** b.size() - 1:
                 return a
             if a is b:
                 return a
@@ -655,43 +685,45 @@ class SimplificationManager:
                     # yes!
                     return ast.all_operations.ZeroExt(a.args[0].size(), a.args[1])
 
-        return SimplificationManager._flatten_simplifier('__and__', SimplificationManager._deduplicate_filter, a, b, *args)
+        return SimplificationManager._flatten_simplifier(
+            "__and__", SimplificationManager._deduplicate_filter, a, b, *args
+        )
 
     @staticmethod
     def boolean_not_simplifier(body):
-        if body.op == '__eq__':
+        if body.op == "__eq__":
             return body.args[0] != body.args[1]
-        elif body.op == '__ne__':
+        elif body.op == "__ne__":
             return body.args[0] == body.args[1]
 
-        if body.op == 'Not':
+        if body.op == "Not":
             return body.args[0]
 
-        if body.op == 'SLT':
+        if body.op == "SLT":
             return ast.all_operations.SGE(body.args[0], body.args[1])
-        elif body.op == 'SLE':
+        elif body.op == "SLE":
             return ast.all_operations.SGT(body.args[0], body.args[1])
-        elif body.op == 'SGT':
+        elif body.op == "SGT":
             return ast.all_operations.SLE(body.args[0], body.args[1])
-        elif body.op == 'SGE':
+        elif body.op == "SGE":
             return ast.all_operations.SLT(body.args[0], body.args[1])
 
-        if body.op == 'ULT':
+        if body.op == "ULT":
             return ast.all_operations.UGE(body.args[0], body.args[1])
-        elif body.op == 'ULE':
+        elif body.op == "ULE":
             return ast.all_operations.UGT(body.args[0], body.args[1])
-        elif body.op == 'UGT':
+        elif body.op == "UGT":
             return ast.all_operations.ULE(body.args[0], body.args[1])
-        elif body.op == 'UGE':
+        elif body.op == "UGE":
             return ast.all_operations.ULT(body.args[0], body.args[1])
 
-        if body.op == '__lt__':
+        if body.op == "__lt__":
             return ast.all_operations.UGE(body.args[0], body.args[1])
-        elif body.op == '__le__':
+        elif body.op == "__le__":
             return ast.all_operations.UGT(body.args[0], body.args[1])
-        elif body.op == '__gt__':
+        elif body.op == "__gt__":
             return ast.all_operations.ULE(body.args[0], body.args[1])
-        elif body.op == '__ge__':
+        elif body.op == "__ge__":
             return ast.all_operations.ULT(body.args[0], body.args[1])
 
     @staticmethod
@@ -699,7 +731,7 @@ class SimplificationManager:
         if n == 0:
             return e
 
-        if e.op == 'ZeroExt':
+        if e.op == "ZeroExt":
             # ZeroExt(A, ZeroExt(B, x)) ==> ZeroExt(A + B, x)
             return e.make_like(e.op, (n + e.args[0], e.args[1]), length=n + e.size(), simplify=True)
 
@@ -716,10 +748,10 @@ class SimplificationManager:
         if high - low + 1 == val.size():
             return val
 
-        if (val.op == 'SignExt' or val.op == 'ZeroExt') and low == 0 and high + 1 == val.args[1].size():
+        if (val.op == "SignExt" or val.op == "ZeroExt") and low == 0 and high + 1 == val.args[1].size():
             return val.args[1]
 
-        if val.op == 'ZeroExt':
+        if val.op == "ZeroExt":
             extending_bits = val.args[0]
             if extending_bits == 0:
                 val = val.args[1]
@@ -728,12 +760,12 @@ class SimplificationManager:
 
         # Reverse(concat(a, b)) -> concat(Reverse(b), Reverse(a))
         # a and b must have lengths that are a multiple of 8
-        if val.op == 'Reverse' and val.args[0].op == 'Concat' and all(a.length % 8 == 0 for a in val.args[0].args):
+        if val.op == "Reverse" and val.args[0].op == "Concat" and all(a.length % 8 == 0 for a in val.args[0].args):
             val = ast.all_operations.Concat(*reversed([a.reversed for a in val.args[0].args]))
 
         # Reading one byte from a reversed ast can be converted to reading the corresponding byte from the original ast
         # No Reverse is required then
-        if val.op == 'Reverse' and high - low + 1 == 8 and low % 8 == 0:
+        if val.op == "Reverse" and high - low + 1 == 8 and low % 8 == 0:
             byte_pos = low // 8
             new_byte_pos = val.length // 8 - byte_pos - 1
 
@@ -743,7 +775,7 @@ class SimplificationManager:
 
             return ast.all_operations.Extract(high, low, val)
 
-        if val.op == 'Concat':
+        if val.op == "Concat":
             pos = val.length
             high_i, low_i, high_loc, low_loc = None, None, None, None
             for i, v in enumerate(val.args):
@@ -755,7 +787,7 @@ class SimplificationManager:
                     low_loc = low - (pos - v.length)
                 pos -= v.length
 
-            used = list(val.args[high_i:low_i + 1])
+            used = list(val.args[high_i : low_i + 1])
 
             # if we have only one part, we can avoid creating a new concat
             if len(used) == 1:
@@ -779,28 +811,29 @@ class SimplificationManager:
 
             return ast.all_operations.Concat(*used)
 
-        if val.op == 'Extract':
+        if val.op == "Extract":
             _, inner_low = val.args[:2]
             new_low = inner_low + low
             new_high = new_low + (high - low)
             return (val.args[2])[new_high:new_low]
 
-        if val.op == 'Reverse' and val.args[0].op == 'Concat' and all(a.length % 8 == 0 for a in val.args[0].args):
-            val = val.make_like('Concat',
-                                tuple(reversed([a.reversed for a in val.args[0].args])),
-                                simplify=True,
+        if val.op == "Reverse" and val.args[0].op == "Concat" and all(a.length % 8 == 0 for a in val.args[0].args):
+            val = val.make_like(
+                "Concat",
+                tuple(reversed([a.reversed for a in val.args[0].args])),
+                simplify=True,
             )[high:low]
             if not val.symbolic:
                 return val
 
         # if all else fails, convert Extract(Reverse(...)) to Reverse(Extract(...))
         # if val.op == 'Reverse' and (high + 1) % 8 == 0 and low % 8 == 0:
-        #	  print("saw reverse, converting")
-        #	  inner_length = val.args[0].length
-        #	  try:
-        #		  return val.args[0][(inner_length - 1 - low):(inner_length - 1 - low - (high - low))].reversed
-        #	  except ClaripyOperationError:
-        #		  __import__('ipdb').set_trace()
+        # 	  print("saw reverse, converting")
+        # 	  inner_length = val.args[0].length
+        # 	  try:
+        # 		  return val.args[0][(inner_length - 1 - low):(inner_length - 1 - low - (high - low))].reversed
+        # 	  except ClaripyOperationError:
+        # 		  __import__('ipdb').set_trace()
 
         if val.op in extract_distributable:
             all_args = tuple(a[high:low] for a in val.args)
@@ -813,12 +846,12 @@ class SimplificationManager:
     # oh gods
     @staticmethod
     def fptobv_simplifier(the_fp):
-        if the_fp.op == 'fpToFP' and len(the_fp.args) == 2:
+        if the_fp.op == "fpToFP" and len(the_fp.args) == 2:
             return the_fp.args[0]
 
     @staticmethod
     def fptofp_simplifier(*args):
-        if len(args) == 2 and args[0].op == 'fpToIEEEBV':
+        if len(args) == 2 and args[0].op == "fpToIEEEBV":
             to_bv, sort = args
             if sort == fp.FSORT_FLOAT and to_bv.length == 32:
                 return to_bv.args[0]
@@ -841,23 +874,23 @@ class SimplificationManager:
         """
 
         # is the second argument a BVV?
-        if b.op != 'BVV':
+        if b.op != "BVV":
             return None
 
         # is it a rotate-shift?
-        if a.op != '__or__' or len(a.args) != 2:
+        if a.op != "__or__" or len(a.args) != 2:
             return None
         a_0, a_1 = a.args
 
-        if a_0.op != '__lshift__':
+        if a_0.op != "__lshift__":
             return None
-        if a_1.op != 'LShR':
+        if a_1.op != "LShR":
             return None
         a_00, a_01 = a_0.args
         a_10, a_11 = a_1.args
         if not a_00 is a_10:
             return None
-        if a_01.op != 'BVV' or a_11.op != 'BVV':
+        if a_01.op != "BVV" or a_11.op != "BVV":
             return None
         lshift_ = a_01.args[0]
         rshift_ = a_11.args[0]
@@ -868,16 +901,16 @@ class SimplificationManager:
         # is the second argument a mask?
         # Note: the following check can be further loosen if we want to support more masks.
         if bitwidth == 32:
-            m = ((b.args[0] << rshift_) & 0xffffffff) | (b.args[0] >> lshift_)
-            if m != 0xffff:
+            m = ((b.args[0] << rshift_) & 0xFFFFFFFF) | (b.args[0] >> lshift_)
+            if m != 0xFFFF:
                 return None
-        else: # bitwidth == 64
-            m = ((b.args[0] << rshift_) & 0xffffffffffffffff) | (b.args[0] >> lshift_)
-            if m != 0xffffffff:
+        else:  # bitwidth == 64
+            m = ((b.args[0] << rshift_) & 0xFFFFFFFFFFFFFFFF) | (b.args[0] >> lshift_)
+            if m != 0xFFFFFFFF:
                 return None
 
         # Show our power!
-        masked_a = (a_00 & m)
+        masked_a = a_00 & m
         expr = (masked_a << lshift_) | (masked_a >> rshift_)
         return expr
 
@@ -895,7 +928,7 @@ class SimplificationManager:
 
         If the high bits of A are 0, `& mask` can be eliminated.
         """
-        if op in (operator.__eq__, operator.__ne__) and a.op == '__and__' and len(a.args) == 2 and b.op == "BVV":
+        if op in (operator.__eq__, operator.__ne__) and a.op == "__and__" and len(a.args) == 2 and b.op == "BVV":
             a_arg0, a_arg1 = a.args
             if a_arg1.op == "BVV":
                 # it's a constant mask
@@ -928,16 +961,16 @@ class SimplificationManager:
                             # originally, b was 8-bit aligned. Can we keep the size of the new expression 8-byte aligned?
                             if (b_highbit_idx + 1) % 8 != 0:
                                 b_highbit_idx += 8 - (b_highbit_idx + 1) % 8
-                        b_lower = b[b_highbit_idx : 0]
+                        b_lower = b[b_highbit_idx:0]
                         if mask_allones:
                             # yes!
-                            return op(a_arg0[b_highbit_idx : 0], b_lower)
+                            return op(a_arg0[b_highbit_idx:0], b_lower)
                         else:
                             # nope
                             if b_highbit_idx == b.size() - 1:
                                 # no change is happening
                                 return None
-                            return op(a_arg0[b_highbit_idx : 0] & a_arg1.args[0], b_lower)
+                            return op(a_arg0[b_highbit_idx:0] & a_arg1.args[0], b_lower)
                     elif b_higher_bits_are_0 is False:
                         return ast.all_operations.false if op is operator.__eq__ else ast.all_operations.true
 
@@ -1020,21 +1053,24 @@ class SimplificationManager:
         return None
 
 
-SIMPLE_OPS = ('Concat', 'SignExt', 'ZeroExt')
+SIMPLE_OPS = ("Concat", "SignExt", "ZeroExt")
 
 extract_distributable = {
-    '__and__', '__rand__',
-    '__or__', '__ror__',
-    '__xor__', '__rxor__',
+    "__and__",
+    "__rand__",
+    "__or__",
+    "__ror__",
+    "__xor__",
+    "__rxor__",
 }
 
 flattenable = {
-    '__and__',
-    '__or__',
-    '__xor__',
-    '__mul__',
-    'And',
-    'Or',
+    "__and__",
+    "__or__",
+    "__xor__",
+    "__mul__",
+    "And",
+    "Or",
 }
 
 from .backend_manager import backends

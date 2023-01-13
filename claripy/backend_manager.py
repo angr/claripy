@@ -1,10 +1,10 @@
 class BackendManager:
     def __init__(self):
-        self._eager_backends = [ ]
-        self._quick_backends = [ ]
-        self._all_backends = [ ]
-        self._backends_by_type = { }
-        self._backends_by_name = { }
+        self._eager_backends = []
+        self._quick_backends = []
+        self._all_backends = []
+        self._backends_by_type = {}
+        self._backends_by_name = {}
 
     def _register_backend(self, b, name, eager, quick):
         self._backends_by_name[name] = b
@@ -25,5 +25,6 @@ class BackendManager:
     def downsize(self):
         for b in self._all_backends:
             b.downsize()
+
 
 backends = BackendManager()

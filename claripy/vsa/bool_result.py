@@ -1,5 +1,6 @@
 from ..backend_object import BackendObject
 
+
 class BoolResult(BackendObject):
     def __init__(self, op=None, args=None):
         self._op = op
@@ -35,7 +36,7 @@ class BoolResult(BackendObject):
     def union(self, other):
         raise NotImplementedError()
 
-    def size(self): #pylint:disable=no-self-use
+    def size(self):  # pylint:disable=no-self-use
         return None
 
     @staticmethod
@@ -73,12 +74,13 @@ class BoolResult(BackendObject):
 
         return o is False or (isinstance(o, FalseResult))
 
+
 class TrueResult(BoolResult):
     cardinality = 1
 
     @property
     def value(self):
-        return (True, )
+        return (True,)
 
     def identical(self, other):
         return isinstance(other, TrueResult)
@@ -116,17 +118,18 @@ class TrueResult(BoolResult):
             return NotImplemented
 
     def __repr__(self):
-        return '<True>'
+        return "<True>"
 
     def __bool__(self):
         return True
+
 
 class FalseResult(BoolResult):
     cardinality = 1
 
     @property
     def value(self):
-        return (False, )
+        return (False,)
 
     def identical(self, other):
         return isinstance(other, FalseResult)
@@ -149,7 +152,7 @@ class FalseResult(BoolResult):
         return other
 
     def __repr__(self):
-        return '<False>'
+        return "<False>"
 
     def union(self, other):
         if other is True or type(other) is TrueResult:
@@ -163,6 +166,7 @@ class FalseResult(BoolResult):
 
     def __bool__(self):
         return False
+
 
 class MaybeResult(BoolResult):
     cardinality = 2
@@ -197,13 +201,12 @@ class MaybeResult(BoolResult):
 
     def __repr__(self):
         if self._op is None:
-            return '<Maybe>'
+            return "<Maybe>"
         else:
-            return f'<Maybe({self._op}, {self._args})>'
+            return f"<Maybe({self._op}, {self._args})>"
 
     def __bool__(self):
         return False
-
 
 
 from ..errors import BackendError, ClaripyValueError

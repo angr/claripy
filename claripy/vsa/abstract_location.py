@@ -1,5 +1,6 @@
 from ..backend_object import BackendObject
 
+
 class Segment:
     def __init__(self, offset, size=0):
         self.offset = offset
@@ -8,12 +9,13 @@ class Segment:
     def __repr__(self):
         return "Seg (%s [ %d ])" % (hex(self.offset), self.size)
 
+
 class AbstractLocation(BackendObject):
     def __init__(self, bbl_key, stmt_id, region_id, segment_list=None, region_offset=None, size=None):
         self._bbl_key = -1 if bbl_key is None else bbl_key
         self._stmt_id = -1 if stmt_id is None else stmt_id
         self._region_id = region_id
-        self._segment_list = [ ] if not segment_list else segment_list[ :: ]
+        self._segment_list = [] if not segment_list else segment_list[::]
 
         if region_offset and size:
             self._add_segment(region_offset, size)
@@ -62,7 +64,7 @@ class AbstractLocation(BackendObject):
             if s.offset + s.size >= t.offset:
                 # They should be merged!
                 new_s = Segment(s.offset, max(s.offset + s.size, t.offset + t.size) - s.offset)
-                self._segment_list[ i : i + 2 ] = [ new_s ]
+                self._segment_list[i : i + 2] = [new_s]
 
             else:
                 i += 1
@@ -91,8 +93,7 @@ class AbstractLocation(BackendObject):
         return updated
 
     def copy(self):
-        return AbstractLocation(self._bbl_key, self._stmt_id, self._region_id,
-                                self._segment_list)
+        return AbstractLocation(self._bbl_key, self._stmt_id, self._region_id, self._segment_list)
 
     def merge(self, other):
         merged = False
@@ -113,8 +114,8 @@ class AbstractLocation(BackendObject):
         return False
 
     def __repr__(self):
-        return '(%xh, %d) %s' % (
+        return "(%xh, %d) %s" % (
             (self.basicblock_key if self.basicblock_key is not None else -1),
             (self.statement_id if self.statement_id is not None else -1),
-            self._segment_list
+            self._segment_list,
         )

@@ -6,6 +6,7 @@ import numbers
 from ..backend_object import BackendObject
 from ..annotation import Annotation
 
+
 def normalize_types_two_args(f):
     @functools.wraps(f)
     def normalizer(self, region, o):
@@ -16,11 +17,12 @@ def normalize_types_two_args(f):
             raise ClaripyValueError("BoolResult can't handle AST objects directly")
 
         if not isinstance(o, StridedInterval):
-            raise ClaripyVSAOperationError('Unsupported operand type %s' % type(o))
+            raise ClaripyVSAOperationError("Unsupported operand type %s" % type(o))
 
         return f(self, region, o)
 
     return normalizer
+
 
 def normalize_types_one_arg(f):
     @functools.wraps(f)
@@ -34,6 +36,7 @@ def normalize_types_one_arg(f):
         return f(self, o)
 
     return normalizer
+
 
 vs_id_ctr = itertools.count()
 
@@ -92,7 +95,7 @@ class RegionAnnotation(Annotation):
         :return: The new annotation that should be applied on the new AST
         """
 
-        raise ClaripyVSAError('RegionAnnotation is not relocatable')
+        raise ClaripyVSAError("RegionAnnotation is not relocatable")
 
     #
     # Overriding base methods
@@ -103,6 +106,7 @@ class RegionAnnotation(Annotation):
 
     def __repr__(self):
         return f"<RegionAnnotation {self.region_id}:{self.offset:#08x}>"
+
 
 class ValueSet(BackendObject):
     """
@@ -120,9 +124,9 @@ class ValueSet(BackendObject):
         :param val: an initial offset
         """
 
-        self._name = 'VS_%d' % next(vs_id_ctr) if name is None else name
+        self._name = "VS_%d" % next(vs_id_ctr) if name is None else name
         if bits is None:
-            raise ClaripyVSAError('bits must be specified when creating a ValueSet.')
+            raise ClaripyVSAError("bits must be specified when creating a ValueSet.")
 
         self._bits = bits
 
@@ -137,9 +141,9 @@ class ValueSet(BackendObject):
         if region is not None and region_base_addr is not None and val is not None:
             if isinstance(region_base_addr, numbers.Number):
                 # Convert it to a StridedInterval
-                region_base_addr = StridedInterval(bits=self._bits, stride=1,
-                                                   lower_bound=region_base_addr,
-                                                   upper_bound=region_base_addr)
+                region_base_addr = StridedInterval(
+                    bits=self._bits, stride=1, lower_bound=region_base_addr, upper_bound=region_base_addr
+                )
 
             if isinstance(val, numbers.Number):
                 val = StridedInterval(bits=bits, stride=0, lower_bound=val, upper_bound=val)
@@ -202,12 +206,12 @@ class ValueSet(BackendObject):
             si = StridedInterval(bits=self.bits, stride=0, lower_bound=si, upper_bound=si)
 
         if isinstance(region_base_addr, numbers.Number):
-            region_base_addr = StridedInterval(bits=self.bits, stride=0, lower_bound=region_base_addr,
-                                               upper_bound=region_base_addr
-                                               )
+            region_base_addr = StridedInterval(
+                bits=self.bits, stride=0, lower_bound=region_base_addr, upper_bound=region_base_addr
+            )
 
         if not isinstance(si, StridedInterval):
-            raise ClaripyVSAOperationError('Unsupported type %s for si' % type(si))
+            raise ClaripyVSAOperationError("Unsupported type %s for si" % type(si))
 
         self._regions[region] = si
         self._region_base_addrs[region] = region_base_addr
@@ -216,9 +220,9 @@ class ValueSet(BackendObject):
     def _merge_si(self, region, region_base_addr, si):
 
         if isinstance(region_base_addr, numbers.Number):
-            region_base_addr = StridedInterval(bits=self.bits, stride=0, lower_bound=region_base_addr,
-                                               upper_bound=region_base_addr
-                                               )
+            region_base_addr = StridedInterval(
+                bits=self.bits, stride=0, lower_bound=region_base_addr, upper_bound=region_base_addr
+            )
 
         if region not in self._regions:
             self._set_si(region, region_base_addr, si)
@@ -331,7 +335,7 @@ class ValueSet(BackendObject):
         :return: A StridedInterval or a ValueSet.
         """
 
-        deltas = [ ]
+        deltas = []
 
         # TODO: Handle more cases
 
@@ -465,8 +469,8 @@ class ValueSet(BackendObject):
                 return MaybeResult()
             return FalseResult()
         elif isinstance(other, StridedInterval):
-            if 'global' in self.regions:
-                return self.regions['global'] == other
+            if "global" in self.regions:
+                return self.regions["global"] == other
             else:
                 return FalseResult()
         else:
@@ -480,7 +484,7 @@ class ValueSet(BackendObject):
         :return: True/False/Maybe
         """
 
-        return ~ (self == other)
+        return ~(self == other)
 
     def __le__(self, other):
         return MaybeResult()
@@ -514,7 +518,7 @@ class ValueSet(BackendObject):
 
         if signed:
             # How are you going to deal with a negative pointer?
-            raise ClaripyVSAOperationError('`signed` cannot be True when calling ValueSet.eval().')
+            raise ClaripyVSAOperationError("`signed` cannot be True when calling ValueSet.eval().")
 
         results = []
 
@@ -575,13 +579,12 @@ class ValueSet(BackendObject):
         if high_bit - low_bit + 1 == self.bits:
             return self.copy()
 
-        if ('global' in self._regions and len(self._regions.keys()) > 1) or \
-            len(self._regions.keys()) > 0:
+        if ("global" in self._regions and len(self._regions.keys()) > 1) or len(self._regions.keys()) > 0:
             si_ret = StridedInterval.top(high_bit - low_bit + 1)
 
         else:
-            if 'global' in self._regions:
-                si = self._regions['global']
+            if "global" in self._regions:
+                si = self._regions["global"]
                 si_ret = si.extract(high_bit, low_bit)
 
             else:
@@ -601,7 +604,7 @@ class ValueSet(BackendObject):
                 new_vs._set_si(region, self._region_base_addrs[region], si.concat(b.get_si(region)))
 
         else:
-            raise ClaripyVSAOperationError(f'ValueSet.concat() got an unsupported operand {b} (type {type(b)})')
+            raise ClaripyVSAOperationError(f"ValueSet.concat() got an unsupported operand {b} (type {type(b)})")
 
         return new_vs
 

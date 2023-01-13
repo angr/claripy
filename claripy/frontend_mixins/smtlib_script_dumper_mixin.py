@@ -6,6 +6,7 @@ from ..frontends.constrained_frontend import ConstrainedFrontend
 
 l = logging.getLogger(__name__)
 
+
 class SMTLibScriptDumperMixin:
     def get_smtlib_script_satisfiability(self, extra_constraints=(), extra_variables=()):
         """
@@ -26,5 +27,6 @@ class SMTLibScriptDumperMixin:
     #     return self._solver_backend.__class__.__name__ == 'BackendZ3', ConstrainedFrontend.merge(
     #         self, others, merge_conditions, common_ancestor=common_ancestor
     #     )[1]
+
 
 from ..errors import BackendError, ClaripyFrontendError

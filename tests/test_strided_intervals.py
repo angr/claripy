@@ -1,8 +1,9 @@
 import logging
 
-from  claripy.vsa import StridedInterval
+from claripy.vsa import StridedInterval
 
 l = logging.getLogger("angr_tests")
+
 
 def check_si_fields(si, stride, lb, ub):
     lb &= si.max_int(si.bits)
@@ -36,8 +37,8 @@ def test_division():
     # simple case 3
     op1 = StridedInterval(bits=4, stride=1, lower_bound=3, upper_bound=-2)
     op2 = StridedInterval(bits=4, stride=1, lower_bound=-2, upper_bound=-2)
-    #udiv:  <4>0x1[0x0, 0x1]
-    #sdiv:  <4>0x1[0xc, 0x4]
+    # udiv:  <4>0x1[0x0, 0x1]
+    # sdiv:  <4>0x1[0xc, 0x4]
     assert check_si_fields(op1.udiv(op2), 1, 0, 1)
     assert check_si_fields(op1.sdiv(op2), 1, 12, 4)
 
@@ -48,29 +49,27 @@ def test_division():
     assert op1.sdiv(op2).is_empty
     assert op1.udiv(op2).is_empty
 
-
     # Both in 0-hemisphere
     op1 = StridedInterval(bits=4, stride=1, lower_bound=1, upper_bound=3)
     op2 = StridedInterval(bits=4, stride=1, lower_bound=4, upper_bound=6)
-    #udiv: <4>0x0[0x0, 0x0]
-    #sdiv: <4>0x0[0x0, 0x0]
+    # udiv: <4>0x0[0x0, 0x0]
+    # sdiv: <4>0x0[0x0, 0x0]
     assert check_si_fields(op1.udiv(op2), 0, 0, 0)
     assert check_si_fields(op1.sdiv(op2), 0, 0, 0)
-
 
     # Both in 1-hemisphere
     op1 = StridedInterval(bits=4, stride=1, lower_bound=-6, upper_bound=-4)
     op2 = StridedInterval(bits=4, stride=1, lower_bound=-3, upper_bound=-1)
-    #sdiv: <4>0x1[0x1, 0x6]
-    #udiv: <4>0x0[0x0, 0x0]
+    # sdiv: <4>0x1[0x1, 0x6]
+    # udiv: <4>0x0[0x0, 0x0]
     assert check_si_fields(op1.sdiv(op2), 1, 1, 6)
     assert check_si_fields(op1.udiv(op2), 0, 0, 0)
 
     # one in 0-hemisphere and one in 1-hemisphere
     op1 = StridedInterval(bits=4, stride=1, lower_bound=1, upper_bound=4)
     op2 = StridedInterval(bits=4, stride=1, lower_bound=-5, upper_bound=-1)
-    #sdiv: <4>0x1[0xc, 0xf]
-    #udiv: <4>0x0[0x0, 0x0]
+    # sdiv: <4>0x1[0xc, 0xf]
+    # udiv: <4>0x0[0x0, 0x0]
     assert check_si_fields(op1.sdiv(op2), 1, 12, 15)
     assert check_si_fields(op1.udiv(op2), 0, 0, 0)
 
@@ -80,32 +79,32 @@ def test_division():
     # Both in 0-hemisphere
     op1 = StridedInterval(bits=4, stride=1, lower_bound=1, upper_bound=3)
     op2 = StridedInterval(bits=4, stride=1, lower_bound=0, upper_bound=6)
-    #sdiv: <4>0x1[0x0, 0x3]
-    #udiv: <4>0x1[0x0, 0x3]
+    # sdiv: <4>0x1[0x0, 0x3]
+    # udiv: <4>0x1[0x0, 0x3]
     assert check_si_fields(op1.sdiv(op2), 1, 0, 3)
     assert check_si_fields(op1.udiv(op2), 1, 0, 3)
 
     # Both in 1-hemisphere
     op1 = StridedInterval(bits=4, stride=1, lower_bound=-6, upper_bound=-4)
     op2 = StridedInterval(bits=4, stride=1, lower_bound=-7, upper_bound=-1)
-    #sdiv: <4>0x1[0x0, 0x6]
-    #udiv: <4>0x1[0x0, 0x1]
+    # sdiv: <4>0x1[0x0, 0x6]
+    # udiv: <4>0x1[0x0, 0x1]
     assert check_si_fields(op1.sdiv(op2), 1, 0, 6)
     assert check_si_fields(op1.udiv(op2), 1, 0, 1)
 
     # case b Fig 2
     op1 = StridedInterval(bits=4, stride=1, lower_bound=3, upper_bound=-6)
     op2 = StridedInterval(bits=4, stride=1, lower_bound=7, upper_bound=5)
-    #sdiv: <4>0x1[0x0, 0xf]
-    #udiv: <4>0x1[0x0, 0xa]
+    # sdiv: <4>0x1[0x0, 0xf]
+    # udiv: <4>0x1[0x0, 0xa]
     assert check_si_fields(op1.sdiv(op2), 1, 0, 15)
     assert check_si_fields(op1.udiv(op2), 1, 0, 10)
 
     # case c Fig 2
     op1 = StridedInterval(bits=4, stride=1, lower_bound=3, upper_bound=-6)
     op2 = StridedInterval(bits=4, stride=1, lower_bound=-2, upper_bound=5)
-    #sdiv: <4>0x1[0x0, 0xe]
-    #udiv: <4>0x1[0x0, 0xa]
+    # sdiv: <4>0x1[0x0, 0xe]
+    # udiv: <4>0x1[0x0, 0xa]
     assert check_si_fields(op1.sdiv(op2), 1, 0, 14)
     assert check_si_fields(op1.udiv(op2), 1, 0, 10)
 
@@ -174,13 +173,11 @@ def test_multiplication():
     # <4>0x0[0x0, 0x0]
     assert check_si_fields(op1.mul(op2), 0, 0, 0)
 
-
     # Both in 0-hemisphere
     op1 = StridedInterval(bits=4, stride=1, lower_bound=1, upper_bound=3)
     op2 = StridedInterval(bits=4, stride=1, lower_bound=4, upper_bound=6)
     # Result: <4>0x1[0x4, 0x2]
     assert check_si_fields(op1.mul(op2), 1, 4, 2)
-
 
     # Both in 1-hemisphere
     op1 = StridedInterval(bits=4, stride=1, lower_bound=-6, upper_bound=-4)
@@ -248,14 +245,12 @@ def test_multiplication():
     assert check_si_fields(op1.mul(op2), 1, 0, 15)
 
 
-
 def test_subtraction():
     # Basic Interval Tests
     op1 = StridedInterval(bits=4, stride=1, lower_bound=-2, upper_bound=7)
     op2 = StridedInterval(bits=4, stride=1, lower_bound=0, upper_bound=-6)
     # Result should be TOP
     assert check_si_fields(op1.sub(op2), 1, 0, 15)
-
 
     op1 = StridedInterval(bits=4, stride=1, lower_bound=1, upper_bound=7)
     op2 = StridedInterval(bits=4, stride=1, lower_bound=2, upper_bound=6)
@@ -302,7 +297,6 @@ def test_add():
     op2 = StridedInterval(bits=4, stride=1, lower_bound=0, upper_bound=-6)
     # Result should be TOP
     assert check_si_fields(op1.add(op2), 1, 0, 15)
-
 
     op1 = StridedInterval(bits=4, stride=1, lower_bound=1, upper_bound=7)
     op2 = StridedInterval(bits=4, stride=1, lower_bound=2, upper_bound=6)

@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
 import logging
+
 l = logging.getLogger("claripy.frontends.light_frontend")
 
 from .constrained_frontend import ConstrainedFrontend
+
 
 class LightFrontend(ConstrainedFrontend):
     def __init__(self, solver_backend, **kwargs):
@@ -81,8 +83,8 @@ class LightFrontend(ConstrainedFrontend):
 
     def satisfiable(self, extra_constraints=(), exact=None):
         if any(
-            self.is_false(c, extra_constraints=extra_constraints, exact=exact) for c in
-            reversed(self.constraints + list(extra_constraints))
+            self.is_false(c, extra_constraints=extra_constraints, exact=exact)
+            for c in reversed(self.constraints + list(extra_constraints))
         ):
             return False
         else:
@@ -93,9 +95,11 @@ class LightFrontend(ConstrainedFrontend):
     #
 
     def merge(self, others, merge_conditions, common_ancestor=None):
-        return self._solver_backend.__class__.__name__ == 'BackendZ3', ConstrainedFrontend.merge(
-            self, others, merge_conditions, common_ancestor=common_ancestor
-        )[1]
+        return (
+            self._solver_backend.__class__.__name__ == "BackendZ3",
+            ConstrainedFrontend.merge(self, others, merge_conditions, common_ancestor=common_ancestor)[1],
+        )
+
 
 from ..errors import BackendError, ClaripyFrontendError
 from ..backend_manager import backends

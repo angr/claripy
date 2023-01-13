@@ -6,7 +6,8 @@ l = logging.getLogger("claripy.frontends.full_frontend")
 
 from ..frontend import Frontend
 
-_VALIDATE_BALANCER=False
+_VALIDATE_BALANCER = False
+
 
 class HybridFrontend(Frontend):
     def __init__(self, exact_frontend, approximate_frontend, approximate_first=False, **kwargs):
@@ -25,7 +26,6 @@ class HybridFrontend(Frontend):
 
         if _VALIDATE_BALANCER:
             c._approximate_frontend._validation_frontend = self._exact_frontend
-
 
     def _copy(self, c):
         self._exact_frontend._copy(c._exact_frontend)
@@ -63,7 +63,7 @@ class HybridFrontend(Frontend):
     #
 
     def _do_call(self, f_name, *args, **kwargs):
-        exact = kwargs.pop('exact', True)
+        exact = kwargs.pop("exact", True)
 
         # if approximating, try the approximation backend
         if exact is False:
@@ -83,47 +83,47 @@ class HybridFrontend(Frontend):
         exact_used, solutions = self._do_call(f_name, e, n + 1, exact=False, *args, **kwargs)
 
         if exact_used is False and len(solutions) > n:
-            if any(getattr(c, 'variables', set()) & e.variables for c in self.constraints):
+            if any(getattr(c, "variables", set()) & e.variables for c in self.constraints):
                 _, _solutions = self._do_call(f_name, e, n + 1, exact=True, *args, **kwargs)
                 return _solutions[:n] if len(_solutions) < len(solutions) else solutions[:n]
 
         return solutions[:n]
 
     def satisfiable(self, extra_constraints=(), exact=None):
-        return self._hybrid_call('satisfiable', extra_constraints=extra_constraints, exact=exact)
+        return self._hybrid_call("satisfiable", extra_constraints=extra_constraints, exact=exact)
 
     def eval_to_ast(self, e, n, extra_constraints=(), exact=None):
         if self._approximate_first and exact is None and n > 2:
-            return self._approximate_first_call('eval_to_ast', e, n, extra_constraints=extra_constraints)
-        return self._hybrid_call('eval_to_ast', e, n, extra_constraints=extra_constraints, exact=exact)
+            return self._approximate_first_call("eval_to_ast", e, n, extra_constraints=extra_constraints)
+        return self._hybrid_call("eval_to_ast", e, n, extra_constraints=extra_constraints, exact=exact)
 
     def eval(self, e, n, extra_constraints=(), exact=None):
         if self._approximate_first and exact is None and n > 2:
-            return self._approximate_first_call('eval', e, n, extra_constraints=extra_constraints)
-        return self._hybrid_call('eval', e, n, extra_constraints=extra_constraints, exact=exact)
+            return self._approximate_first_call("eval", e, n, extra_constraints=extra_constraints)
+        return self._hybrid_call("eval", e, n, extra_constraints=extra_constraints, exact=exact)
 
     def batch_eval(self, e, n, extra_constraints=(), exact=None):
         if self._approximate_first and exact is None and n > 2:
-            return self._approximate_first_call('batch_eval', e, n, extra_constraints=extra_constraints)
-        return self._hybrid_call('batch_eval', e, n, extra_constraints=extra_constraints, exact=exact)
+            return self._approximate_first_call("batch_eval", e, n, extra_constraints=extra_constraints)
+        return self._hybrid_call("batch_eval", e, n, extra_constraints=extra_constraints, exact=exact)
 
     def max(self, e, extra_constraints=(), signed=False, exact=None):
-        return self._hybrid_call('max', e, extra_constraints=extra_constraints, signed=signed, exact=exact)
+        return self._hybrid_call("max", e, extra_constraints=extra_constraints, signed=signed, exact=exact)
 
     def min(self, e, extra_constraints=(), signed=False, exact=None):
-        return self._hybrid_call('min', e, extra_constraints=extra_constraints, signed=signed, exact=exact)
+        return self._hybrid_call("min", e, extra_constraints=extra_constraints, signed=signed, exact=exact)
 
     def solution(self, e, v, extra_constraints=(), exact=None):
-        return self._hybrid_call('solution', e, v, extra_constraints=extra_constraints, exact=exact)
+        return self._hybrid_call("solution", e, v, extra_constraints=extra_constraints, exact=exact)
 
     def is_true(self, e, extra_constraints=(), exact=None):
-        return self._hybrid_call('is_true', e, extra_constraints=extra_constraints, exact=exact)
+        return self._hybrid_call("is_true", e, extra_constraints=extra_constraints, exact=exact)
 
     def is_false(self, e, extra_constraints=(), exact=None):
-        return self._hybrid_call('is_false', e, extra_constraints=extra_constraints, exact=exact)
+        return self._hybrid_call("is_false", e, extra_constraints=extra_constraints, exact=exact)
 
     def unsat_core(self, extra_constraints=()):
-        return self._hybrid_call('unsat_core', extra_constraints=extra_constraints)
+        return self._hybrid_call("unsat_core", extra_constraints=extra_constraints)
 
     #
     # Lifecycle
@@ -145,12 +145,14 @@ class HybridFrontend(Frontend):
         other_exact = [o._exact_frontend for o in others]
         other_approximate = [o._approximate_frontend for o in others]
         e_merged, new_exact = self._exact_frontend.merge(
-            other_exact, merge_conditions,
-            common_ancestor=common_ancestor._exact_frontend if common_ancestor is not None else None
+            other_exact,
+            merge_conditions,
+            common_ancestor=common_ancestor._exact_frontend if common_ancestor is not None else None,
         )
         new_approximate = self._approximate_frontend.merge(
-            other_approximate, merge_conditions,
-            common_ancestor=common_ancestor._approximate_frontend if common_ancestor is not None else None
+            other_approximate,
+            merge_conditions,
+            common_ancestor=common_ancestor._approximate_frontend if common_ancestor is not None else None,
         )[-1]
         return (e_merged, HybridFrontend(new_exact, new_approximate))
 

@@ -8,7 +8,7 @@ class TestFallbackAbstraction(unittest.TestCase):
         bz = claripy.backends.z3
 
         a = claripy.BVV(5, 32)
-        b = claripy.BVS('x', 32, explicit_name=True)
+        b = claripy.BVS("x", 32, explicit_name=True)
         c = a + b
         d = 5 + b
         e = b + 5
@@ -31,14 +31,14 @@ class TestFallbackAbstraction(unittest.TestCase):
         self.assertRaises(claripy.errors.BackendError, claripy.backends.concrete.convert, e)
         self.assertRaises(claripy.errors.BackendError, claripy.backends.concrete.convert, f)
 
-        assert str(bz.convert(b)) == 'x'
-        assert bz.convert(b).__module__ == 'z3.z3'
+        assert str(bz.convert(b)) == "x"
+        assert bz.convert(b).__module__ == "z3.z3"
 
-        assert str(bz.convert(c)) == '5 + x'
-        assert str(bz.convert(d)) == '5 + x'
-        assert str(bz.convert(e)) == 'x + 5'
-        assert str(bz.convert(f)) == 'x + x'
+        assert str(bz.convert(c)) == "5 + x"
+        assert str(bz.convert(d)) == "5 + x"
+        assert str(bz.convert(e)) == "x + 5"
+        assert str(bz.convert(f)) == "x + x"
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

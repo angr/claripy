@@ -6,6 +6,7 @@ class TestZ3(unittest.TestCase):
     """
     A class used for testing z3
     """
+
     @staticmethod
     def test_extrema():
         """
@@ -16,7 +17,10 @@ class TestZ3(unittest.TestCase):
         s = z.solver()
         x = claripy.BVS("x", 8)
 
-        rng = (0, 2**x.length - 1,)
+        rng = (
+            0,
+            2**x.length - 1,
+        )
         assert z.satisfiable(solver=s)
         assert z.min(x, solver=s) == rng[0]
         assert z.max(x, solver=s) == rng[1]
@@ -33,5 +37,5 @@ class TestZ3(unittest.TestCase):
             assert z.max(x, solver=s, extra_constraints=(x >= i,)) == rng[1]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

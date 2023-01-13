@@ -7,8 +7,8 @@ import claripy
 
 class TestFp(unittest.TestCase):
     def test_nan(self):
-        a = claripy.FPS('a', claripy.FSORT_FLOAT)
-        b = claripy.BVS('b', 32)
+        a = claripy.FPS("a", claripy.FSORT_FLOAT)
+        b = claripy.BVS("b", 32)
 
         s1 = claripy.Solver()
         s1.add((a + 1).isNaN())
@@ -18,16 +18,16 @@ class TestFp(unittest.TestCase):
         s2 = claripy.Solver()
         s2.add(b.raw_to_fp().isNaN())
         res = s2.eval(b, 1)[0]
-        assert res & 0xff800000 == 0x7f800000 and res & 0x007fffff != 0
+        assert res & 0xFF800000 == 0x7F800000 and res & 0x007FFFFF != 0
 
         s3 = claripy.Solver()
         s3.add(a.isNaN())
         res = s3.eval(a.raw_to_bv(), 1)[0]
-        assert res & 0xff800000 == 0x7f800000 and res & 0x007fffff != 0
+        assert res & 0xFF800000 == 0x7F800000 and res & 0x007FFFFF != 0
 
     def test_nan_set(self):
-        v0 = claripy.FPV(float('nan'), claripy.FSORT_DOUBLE)
-        v1 = claripy.FPV(float('nan'), claripy.FSORT_DOUBLE)
+        v0 = claripy.FPV(float("nan"), claripy.FSORT_DOUBLE)
+        v1 = claripy.FPV(float("nan"), claripy.FSORT_DOUBLE)
 
         assert v0 is v1
 
@@ -63,8 +63,8 @@ class TestFp(unittest.TestCase):
         edd = s.eval(dd.to_bv(), 1)[0]
         edd2 = s.eval(dd.to_fp(claripy.FSORT_FLOAT).to_fp(claripy.FSORT_DOUBLE).to_bv(), 1)[0]
         assert edd != edd2
-        assert edd2 == 0x4237b4c7c0000000
+        assert edd2 == 0x4237B4C7C0000000
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

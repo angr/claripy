@@ -2,7 +2,8 @@ from typing import Set
 import logging
 import operator
 
-l = logging.getLogger('claripy.balancer')
+l = logging.getLogger("claripy.balancer")
+
 
 class Balancer:
     """
@@ -13,11 +14,11 @@ class Balancer:
     def __init__(self, helper, c, validation_frontend=None):
         self._helper = helper
         self._validation_frontend = validation_frontend
-        self._truisms = [ ]
+        self._truisms = []
         self._processed_truisms = set()
         self._identified_assumptions = set()
-        self._lower_bounds = { }
-        self._upper_bounds = { }
+        self._lower_bounds = {}
+        self._upper_bounds = {}
 
         self._queue_truism(c.ite_excavated)
 
@@ -25,7 +26,7 @@ class Balancer:
         try:
             self._doit()
         except ClaripyBalancerUnsatError:
-            self.bounds = { }
+            self.bounds = {}
             self.sat = False
         except BackendError:
             l.debug("Backend error in balancer.", exc_info=True)
@@ -41,9 +42,9 @@ class Balancer:
             min_int = 0
             mn = self._lower_bounds.get(k, min_int)
             mx = self._upper_bounds.get(k, max_int)
-            bound_si = BVS('bound', len(k.ast), min=mn, max=mx)
+            bound_si = BVS("bound", len(k.ast), min=mn, max=mx)
             l.debug("Yielding bound %s for %s.", bound_si, k.ast)
-            if k.ast.op == 'Reverse':
+            if k.ast.op == "Reverse":
                 yield (k.ast.args[0], k.ast.intersection(bound_si).reversed)
             else:
                 yield (k.ast, k.ast.intersection(bound_si))
@@ -90,7 +91,7 @@ class Balancer:
         si = backends.vsa.convert(a)
         mx = self._max(a)
         mn = self._min(a)
-        return BVS('bounds', len(a), min=mn, max=mx, stride=si._stride)
+        return BVS("bounds", len(a), min=mn, max=mx, stride=si._stride)
 
     @staticmethod
     def _cardinality(a):
@@ -113,7 +114,7 @@ class Balancer:
             bounds = converted._unsigned_bounds()
         else:
             bounds = converted._signed_bounds()
-        return min(mn for mn,mx in bounds)
+        return min(mn for mn, mx in bounds)
 
     @staticmethod
     def _max(a, signed=False):
@@ -132,7 +133,7 @@ class Balancer:
             bounds = converted._unsigned_bounds()
         else:
             bounds = converted._signed_bounds()
-        return max(mx for mn,mx in bounds)
+        return max(mx for mn, mx in bounds)
 
     def _range(self, a, signed=False):
         return (self._min(a, signed=signed), self._max(a, signed=signed))
@@ -147,10 +148,16 @@ class Balancer:
 
     def _align_truism(self, truism):
         outer_aligned = self._align_ast(truism)
-        inner_aligned = outer_aligned.make_like(outer_aligned.op, (self._align_ast(outer_aligned.args[0]),) + outer_aligned.args[1:])
+        inner_aligned = outer_aligned.make_like(
+            outer_aligned.op, (self._align_ast(outer_aligned.args[0]),) + outer_aligned.args[1:]
+        )
 
         if not backends.vsa.identical(inner_aligned, truism):
-            l.critical("ERROR: the balancer is messing up an AST. This must be looked into. Please submit the binary and script to the angr project, if possible. Outer op is %s and inner op is %s.", truism.op, truism.args[0].op)
+            l.critical(
+                "ERROR: the balancer is messing up an AST. This must be looked into. Please submit the binary and script to the angr project, if possible. Outer op is %s and inner op is %s.",
+                truism.op,
+                truism.args[0].op,
+            )
             return truism
 
         return inner_aligned
@@ -180,7 +187,7 @@ class Balancer:
             raise ClaripyBalancerError("unable to reverse comparison %s (missing from 'opposites')" % a.op)
 
         try:
-            if new_op.startswith('__'):
+            if new_op.startswith("__"):
                 op = getattr(operator, new_op)
             else:
                 op = getattr(_all_operations, new_op)
@@ -198,18 +205,18 @@ class Balancer:
             return a.make_like(a.op, tuple(sorted(a.args, key=lambda v: -self._cardinality(v))))
         else:
             try:
-                op = getattr(self, '_align_'+a.op)
+                op = getattr(self, "_align_" + a.op)
             except AttributeError:
                 return a
             return op(a)
 
     def _align___sub__(self, a):
-        cardinalities = [ self._cardinality(v) for v in a.args ]
+        cardinalities = [self._cardinality(v) for v in a.args]
         if max(cardinalities) == cardinalities[0]:
             return a
 
         adjusted = tuple(operator.__neg__(v) for v in a.args[1:]) + a.args[:1]
-        return a.make_like('__add__', tuple(sorted(adjusted, key=lambda v: -self._cardinality(v))))
+        return a.make_like("__add__", tuple(sorted(adjusted, key=lambda v: -self._cardinality(v))))
 
     #
     # Find bounds
@@ -290,7 +297,6 @@ class Balancer:
             return swapped
         return t
 
-
     #
     # Assumptions management
     #
@@ -302,16 +308,16 @@ class Balancer:
         assumed to be true. For example, `x <= 10` would return `x >= 0`.
         """
 
-        if t.op in ('__le__', '__lt__', 'ULE', 'ULT'):
-            return [ t.args[0] >= 0 ]
-        elif t.op in ('__ge__', '__gt__', 'UGE', 'UGT'):
-            return [ t.args[0] <= 2**len(t.args[0])-1 ]
-        elif t.op in ('SLE', 'SLT'):
-            return [ _all_operations.SGE(t.args[0], -(1 << (len(t.args[0])-1))) ]
-        elif t.op in ('SGE', 'SGT'):
-            return [ _all_operations.SLE(t.args[0], (1 << (len(t.args[0])-1)) - 1) ]
+        if t.op in ("__le__", "__lt__", "ULE", "ULT"):
+            return [t.args[0] >= 0]
+        elif t.op in ("__ge__", "__gt__", "UGE", "UGT"):
+            return [t.args[0] <= 2 ** len(t.args[0]) - 1]
+        elif t.op in ("SLE", "SLT"):
+            return [_all_operations.SGE(t.args[0], -(1 << (len(t.args[0]) - 1)))]
+        elif t.op in ("SGE", "SGT"):
+            return [_all_operations.SLE(t.args[0], (1 << (len(t.args[0]) - 1)) - 1)]
         else:
-            return [ ]
+            return []
 
     #
     # Truism extractor
@@ -324,7 +330,7 @@ class Balancer:
         """
 
         try:
-            op = getattr(self, '_unpack_truisms_'+c.op)
+            op = getattr(self, "_unpack_truisms_" + c.op)
         except AttributeError:
             return set()
         return op(c)
@@ -333,15 +339,15 @@ class Balancer:
         return set.union(*[self._unpack_truisms(a) for a in c.args])
 
     def _unpack_truisms_Not(self, c):
-        if c.args[0].op == 'And':
+        if c.args[0].op == "And":
             return self._unpack_truisms(_all_operations.Or(*[_all_operations.Not(a) for a in c.args[0].args]))
-        elif c.args[0].op == 'Or':
+        elif c.args[0].op == "Or":
             return self._unpack_truisms(_all_operations.And(*[_all_operations.Not(a) for a in c.args[0].args]))
         else:
             return set()
 
     def _unpack_truisms_Or(self, c):
-        vals = [ is_false(v) for v in c.args ]
+        vals = [is_false(v) for v in c.args]
         if all(vals):
             raise ClaripyBalancerUnsatError()
         elif vals.count(False) == 1:
@@ -353,20 +359,20 @@ class Balancer:
     # Dealing with constraints
     #
 
-    comparison_info = { }
+    comparison_info = {}
     # Tuples look like (is_lt, is_eq, is_unsigned)
-    comparison_info['SLT'] = (True, False, False)
-    comparison_info['SLE'] = (True, True, False)
-    comparison_info['SGT'] = (False, False, False)
-    comparison_info['SGE'] = (False, True, False)
-    comparison_info['ULT'] = (True, False, True)
-    comparison_info['ULE'] = (True, True, True)
-    comparison_info['UGT'] = (False, False, True)
-    comparison_info['UGE'] = (False, True, True)
-    comparison_info['__lt__'] = comparison_info['ULT']
-    comparison_info['__le__'] = comparison_info['ULE']
-    comparison_info['__gt__'] = comparison_info['UGT']
-    comparison_info['__ge__'] = comparison_info['UGE']
+    comparison_info["SLT"] = (True, False, False)
+    comparison_info["SLE"] = (True, True, False)
+    comparison_info["SGT"] = (False, False, False)
+    comparison_info["SGE"] = (False, True, False)
+    comparison_info["ULT"] = (True, False, True)
+    comparison_info["ULE"] = (True, True, True)
+    comparison_info["UGT"] = (False, False, True)
+    comparison_info["UGE"] = (False, True, True)
+    comparison_info["__lt__"] = comparison_info["ULT"]
+    comparison_info["__le__"] = comparison_info["ULE"]
+    comparison_info["__gt__"] = comparison_info["UGT"]
+    comparison_info["__ge__"] = comparison_info["UGE"]
 
     #
     # Simplification routines
@@ -406,7 +412,7 @@ class Balancer:
 
     @staticmethod
     def _balance_Reverse(truism):
-        if truism.op in ['__eq__', '__ne__']:
+        if truism.op in ["__eq__", "__ne__"]:
             return truism.make_like(truism.op, (truism.args[0].args[0], truism.args[1].reversed))
         else:
             return truism
@@ -418,7 +424,7 @@ class Balancer:
         new_lhs = truism.args[0].args[0]
         old_rhs = truism.args[1]
         other_adds = truism.args[0].args[1:]
-        new_rhs = truism.args[0].make_like('__sub__', (old_rhs,) + other_adds)
+        new_rhs = truism.args[0].make_like("__sub__", (old_rhs,) + other_adds)
         return truism.make_like(truism.op, (new_lhs, new_rhs))
 
     @staticmethod
@@ -428,17 +434,17 @@ class Balancer:
         new_lhs = truism.args[0].args[0]
         old_rhs = truism.args[1]
         other_adds = truism.args[0].args[1:]
-        new_rhs = truism.args[0].make_like('__add__', (old_rhs,) + other_adds)
+        new_rhs = truism.args[0].make_like("__add__", (old_rhs,) + other_adds)
         return truism.make_like(truism.op, (new_lhs, new_rhs))
 
     @staticmethod
     def _balance_ZeroExt(truism):
         num_zeroes, inner = truism.args[0].args
-        other_side = truism.args[1][len(truism.args[1])-1:len(truism.args[1])-num_zeroes]
+        other_side = truism.args[1][len(truism.args[1]) - 1 : len(truism.args[1]) - num_zeroes]
 
         if is_true(other_side == 0):
             # We can safely eliminate this layer of ZeroExt
-            new_args = (inner, truism.args[1][len(truism.args[1])-num_zeroes-1:0])
+            new_args = (inner, truism.args[1][len(truism.args[1]) - num_zeroes - 1 : 0])
             return truism.make_like(truism.op, new_args)
 
         return truism
@@ -446,13 +452,13 @@ class Balancer:
     @staticmethod
     def _balance_SignExt(truism):
         num_zeroes = truism.args[0].args[0]
-        left_side = truism.args[0][len(truism.args[1])-1:len(truism.args[1])-num_zeroes]
-        other_side = truism.args[1][len(truism.args[1])-1:len(truism.args[1])-num_zeroes]
+        left_side = truism.args[0][len(truism.args[1]) - 1 : len(truism.args[1]) - num_zeroes]
+        other_side = truism.args[1][len(truism.args[1]) - 1 : len(truism.args[1]) - num_zeroes]
 
-        #TODO: what if this is a set value, but *not* the same as other_side
+        # TODO: what if this is a set value, but *not* the same as other_side
         if backends.vsa.identical(left_side, other_side):
             # We can safely eliminate this layer of ZeroExt
-            new_args = (truism.args[0].args[1], truism.args[1][len(truism.args[1])-num_zeroes-1:0])
+            new_args = (truism.args[0].args[1], truism.args[1][len(truism.args[1]) - num_zeroes - 1 : 0])
             return truism.make_like(truism.op, new_args)
 
         return truism
@@ -462,15 +468,15 @@ class Balancer:
         high, low, inner = truism.args[0].args
         inner_size = len(inner)
 
-        if high < inner_size-1:
-            left_msb = inner[inner_size-1:high+1]
+        if high < inner_size - 1:
+            left_msb = inner[inner_size - 1 : high + 1]
             left_msb_zero = is_true(left_msb == 0)
         else:
             left_msb = None
             left_msb_zero = None
 
         if low > 0:
-            left_lsb = inner[high-1:0]
+            left_lsb = inner[high - 1 : 0]
             left_lsb_zero = is_true(left_lsb == 0)
         else:
             left_lsb = None
@@ -489,7 +495,7 @@ class Balancer:
             new_right = _all_operations.Concat(truism.args[1], BVV(0, len(left_lsb)))
             return truism.make_like(truism.op, (new_left, new_right))
 
-        if low == 0 and truism.args[1].op == 'BVV' and truism.op not in {'SGE', 'SLE', 'SGT', 'SLT'}:
+        if low == 0 and truism.args[1].op == "BVV" and truism.op not in {"SGE", "SLE", "SGT", "SLT"}:
             # single-valued rhs value with an unsigned operator
             # Eliminate Extract on lhs and zero-extend the value on rhs
             new_left = inner
@@ -516,10 +522,10 @@ class Balancer:
                 v >>= 1
             if low_ones == 0:
                 # this should probably never happen
-                new_left = truism.args[0].make_like('BVV', (0, truism.args[0].size()))
+                new_left = truism.args[0].make_like("BVV", (0, truism.args[0].size()))
                 return truism.make_like(truism.op, (new_left, truism.args[1]))
 
-            if op0.op == 'ZeroExt' and op0.args[0] + low_ones == op0.size():
+            if op0.op == "ZeroExt" and op0.args[0] + low_ones == op0.size():
                 # ZeroExt(56, a) & 0xff == a  if a.size() == 8
                 # we can safely remove __and__
                 new_left = op0
@@ -531,15 +537,15 @@ class Balancer:
     def _balance_Concat(truism):
         size = len(truism.args[0])
         left_msb = truism.args[0].args[0]
-        right_msb = truism.args[1][size-1:size-len(left_msb)]
+        right_msb = truism.args[1][size - 1 : size - len(left_msb)]
 
         if is_true(left_msb == 0) and is_true(right_msb == 0):
             # we can cut these guys off!
             remaining_left = _all_operations.Concat(*truism.args[0].args[1:])
-            remaining_right = truism.args[1][size-len(left_msb)-1:0]
+            remaining_right = truism.args[1][size - len(left_msb) - 1 : 0]
             return truism.make_like(truism.op, (remaining_left, remaining_right))
         else:
-            #TODO: handle non-zero single-valued cases
+            # TODO: handle non-zero single-valued cases
             return truism
 
     def _balance___lshift__(self, truism):
@@ -566,7 +572,7 @@ class Balancer:
         condition, true_expr, false_expr = truism.args[0].args
 
         try:
-            if truism.op.startswith('__'):
+            if truism.op.startswith("__"):
                 true_condition = getattr(operator, truism.op)(true_expr, truism.args[1])
                 false_condition = getattr(operator, truism.op)(false_expr, truism.args[1])
             else:
@@ -627,16 +633,16 @@ class Balancer:
         is_lt, is_equal, is_unsigned = self.comparison_info[truism.op]
 
         size = len(truism.args[0])
-        int_max = 2**size-1 if is_unsigned else 2**(size-1)-1
-        int_min = -2**(size-1)
+        int_max = 2**size - 1 if is_unsigned else 2 ** (size - 1) - 1
+        int_min = -(2 ** (size - 1))
 
         left_min = self._min(truism.args[0], signed=not is_unsigned)
         left_max = self._max(truism.args[0], signed=not is_unsigned)
         right_min = self._min(truism.args[1], signed=not is_unsigned)
         right_max = self._max(truism.args[1], signed=not is_unsigned)
 
-        bound_max = right_max if is_equal else (right_max-1 if is_lt else right_max+1)
-        bound_min = right_min if is_equal else (right_min-1 if is_lt else right_min+1)
+        bound_max = right_max if is_equal else (right_max - 1 if is_lt else right_max + 1)
+        bound_min = right_min if is_equal else (right_min - 1 if is_lt else right_min + 1)
 
         if is_lt and bound_max < int_min:
             # if the bound max is negative and we're unsigned less than, we're fucked
@@ -676,9 +682,9 @@ class Balancer:
             max_int = vsa.StridedInterval.max_int(len(rhs))
 
             if val == 0:
-                self._add_lower_bound(lhs, val+1)
+                self._add_lower_bound(lhs, val + 1)
             elif val == max_int or val == -1:
-                self._add_upper_bound(lhs, max_int-1)
+                self._add_upper_bound(lhs, max_int - 1)
 
     def _handle_If(self, truism):
         if is_false(truism.args[2]):
@@ -699,8 +705,14 @@ class Balancer:
     _handle_SGT = _handle_comparison
     _handle_SGE = _handle_comparison
 
-def is_true(a): return backends.vsa.is_true(a)
-def is_false(a): return backends.vsa.is_false(a)
+
+def is_true(a):
+    return backends.vsa.is_true(a)
+
+
+def is_false(a):
+    return backends.vsa.is_false(a)
+
 
 from .errors import ClaripyBalancerError, ClaripyBalancerUnsatError, ClaripyOperationError, BackendError
 from .ast.base import Base

@@ -13,6 +13,7 @@ class SolveBlockMixin:
 
     def __getstate__(self):
         return self.can_solve, super().__getstate__()
+
     def __setstate__(self, s):
         self.can_solve, base_state = s
         super().__setstate__(base_state)

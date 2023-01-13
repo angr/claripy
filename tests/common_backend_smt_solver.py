@@ -11,7 +11,8 @@ def if_installed(f, *args, **kwargs):
     try:
         return f(*args, **kwargs)
     except claripy.errors.MissingSolverError:
-        return skip('Missing Solver')(f)
+        return skip("Missing Solver")(f)
+
 
 KEEP_TEST_PERFORMANT = True
 
@@ -53,19 +54,19 @@ class SmtLibSolverTestBase(TestSMTLibBackend):
     def test_substr(self):
         str_symbol = claripy.StringS("symb_subst", 4, explicit_name=True)
         solver = self.get_solver()
-        solver.add(claripy.StrSubstr(1, 2, str_symbol) == claripy.StringV('o'))
+        solver.add(claripy.StrSubstr(1, 2, str_symbol) == claripy.StringV("o"))
         self.assertTrue(solver.satisfiable())
         results = solver.eval(str_symbol, 2 if KEEP_TEST_PERFORMANT else 100)
         self.assertEqual(len(results), 2 if KEEP_TEST_PERFORMANT else 100)
         for s in results:
-            self.assertTrue(s[1:2] == 'o')
+            self.assertTrue(s[1:2] == "o")
 
     @if_installed
     def test_substr_simplification(self):
         str_concrete = claripy.StringV("concrete")
         solver = self.get_solver()
         # TODO: Make sure that semantics of Substr match the ones of SMTLib substr
-        solver.add(claripy.StrSubstr(1, 2, str_concrete) == claripy.StringV('on'))
+        solver.add(claripy.StrSubstr(1, 2, str_concrete) == claripy.StringV("on"))
         self.assertTrue(solver.satisfiable())
         result = solver.eval(str_concrete, 2)
         self.assertEqual(list(result), ["concrete"])
@@ -111,7 +112,7 @@ class SmtLibSolverTestBase(TestSMTLibBackend):
         self.assertTrue(solver.satisfiable())
 
         result = solver.eval(str_symb, 4 if KEEP_TEST_PERFORMANT else 100)
-        self.assertTrue('concrete' not in result)
+        self.assertTrue("concrete" not in result)
 
     @if_installed
     def test_length(self):
@@ -133,22 +134,20 @@ class SmtLibSolverTestBase(TestSMTLibBackend):
         self.assertTrue(solver.satisfiable())
 
         result = solver.eval(str_concrete, 2)
-        self.assertEqual(['concrete'], list(result))
+        self.assertEqual(["concrete"], list(result))
         for r in result:
             self.assertTrue(len(r) == 8)
-
 
     @if_installed
     def test_or(self):
         str_symb = claripy.StringS("Symb_or", 4, explicit_name=True)
         solver = self.get_solver()
-        res = claripy.Or((str_symb == claripy.StringV("abc")),
-                         (str_symb == claripy.StringV("ciao")))
+        res = claripy.Or((str_symb == claripy.StringV("abc")), (str_symb == claripy.StringV("ciao")))
         solver.add(res)
         self.assertTrue(solver.satisfiable())
 
         result = solver.eval(str_symb, 3 if KEEP_TEST_PERFORMANT else 100)
-        self.assertEqual({'ciao', 'abc'}, set(result))
+        self.assertEqual({"ciao", "abc"}, set(result))
 
     @if_installed
     def test_lt_etc(self):
@@ -170,10 +169,10 @@ class SmtLibSolverTestBase(TestSMTLibBackend):
         solver = self.get_solver()
         bv1 = claripy.BVV(1, 32)
         bv2 = claripy.BVV(2, 32)
-        res = claripy.StrSubstr(bv1, bv2, str_symbol) == claripy.StringV('on')
+        res = claripy.StrSubstr(bv1, bv2, str_symbol) == claripy.StringV("on")
         solver.add(res)
         self.assertTrue(solver.satisfiable())
-        self.assertEqual('on', solver.eval(str_symbol, 1)[0][1:3])
+        self.assertEqual("on", solver.eval(str_symbol, 1)[0][1:3])
 
     @if_installed
     def test_substr_BV_symbolic_index(self):
@@ -181,18 +180,18 @@ class SmtLibSolverTestBase(TestSMTLibBackend):
         solver = self.get_solver()
         start = claripy.BVS("start_idx", 32)
         count = claripy.BVS("count", 32)
-        res = claripy.StrSubstr(start, count, str_symbol) == claripy.StringV('on')
+        res = claripy.StrSubstr(start, count, str_symbol) == claripy.StringV("on")
         solver.add(res)
         self.assertTrue(solver.satisfiable())
-        self.assertEqual('on', solver.eval(str_symbol, 1, extra_constraints=(start == 0, count == 2))[0][0:2])
-        self.assertEqual('on', solver.eval(str_symbol, 1, extra_constraints=(start == 1, count == 2))[0][1:3])
-        self.assertEqual('on', solver.eval(str_symbol, 1, extra_constraints=(start == 2, count == 2))[0][2:4])
+        self.assertEqual("on", solver.eval(str_symbol, 1, extra_constraints=(start == 0, count == 2))[0][0:2])
+        self.assertEqual("on", solver.eval(str_symbol, 1, extra_constraints=(start == 1, count == 2))[0][1:3])
+        self.assertEqual("on", solver.eval(str_symbol, 1, extra_constraints=(start == 2, count == 2))[0][2:4])
 
-        self.assertEqual('on', solver.eval(str_symbol, 1, extra_constraints=(start == 2, count == 3))[0][2:4])
-        self.assertEqual('on', solver.eval(str_symbol, 1, extra_constraints=(start == 2, count == 4))[0][2:4])
+        self.assertEqual("on", solver.eval(str_symbol, 1, extra_constraints=(start == 2, count == 3))[0][2:4])
+        self.assertEqual("on", solver.eval(str_symbol, 1, extra_constraints=(start == 2, count == 4))[0][2:4])
 
-        self.assertEqual('on', solver.eval(str_symbol, 1, extra_constraints=(start == 0, count == 3))[0])
-        self.assertEqual('on', solver.eval(str_symbol, 1, extra_constraints=(start == 1, count == 4))[0][1:])
+        self.assertEqual("on", solver.eval(str_symbol, 1, extra_constraints=(start == 0, count == 3))[0])
+        self.assertEqual("on", solver.eval(str_symbol, 1, extra_constraints=(start == 1, count == 4))[0][1:])
 
     @if_installed
     def test_substr_BV_mixed_index(self):
@@ -200,12 +199,12 @@ class SmtLibSolverTestBase(TestSMTLibBackend):
         solver = self.get_solver()
         start = claripy.BVS("symb_subst_start_idx", 32, explicit_name=True)
         count = claripy.BVV(2, 32)
-        res = claripy.StrSubstr(start, count, str_symbol) == claripy.StringV('on')
+        res = claripy.StrSubstr(start, count, str_symbol) == claripy.StringV("on")
         solver.add(res)
         self.assertTrue(solver.satisfiable())
-        self.assertEqual('on', solver.eval(str_symbol, 1, extra_constraints=(start == 0,))[0][0:2])
-        self.assertEqual('on', solver.eval(str_symbol, 1, extra_constraints=(start == 1,))[0][1:3])
-        self.assertEqual('on', solver.eval(str_symbol, 1, extra_constraints=(start == 2,))[0][2:4])
+        self.assertEqual("on", solver.eval(str_symbol, 1, extra_constraints=(start == 0,))[0][0:2])
+        self.assertEqual("on", solver.eval(str_symbol, 1, extra_constraints=(start == 1,))[0][1:3])
+        self.assertEqual("on", solver.eval(str_symbol, 1, extra_constraints=(start == 2,))[0][2:4])
 
     @if_installed
     def test_contains(self):
@@ -216,7 +215,7 @@ class SmtLibSolverTestBase(TestSMTLibBackend):
         self.assertTrue(solver.satisfiable())
         solutions = solver.eval(str_symb, 4 if KEEP_TEST_PERFORMANT else 100)
         for sol in solutions:
-            self.assertTrue('an' in sol)
+            self.assertTrue("an" in sol)
 
     @if_installed
     def test_contains_simplification(self):
@@ -239,7 +238,7 @@ class SmtLibSolverTestBase(TestSMTLibBackend):
 
         solutions = solver.eval(str_symb, 4 if KEEP_TEST_PERFORMANT else 100)
         for sol in solutions:
-            self.assertTrue(sol.startswith('an'))
+            self.assertTrue(sol.startswith("an"))
 
     @if_installed
     def test_suffix(self):
@@ -251,7 +250,7 @@ class SmtLibSolverTestBase(TestSMTLibBackend):
 
         solutions = solver.eval(str_symb, 4 if KEEP_TEST_PERFORMANT else 100)
         for sol in solutions:
-            self.assertTrue(sol.endswith('an'))
+            self.assertTrue(sol.endswith("an"))
 
     @if_installed
     def test_prefix_simplification(self):
@@ -287,7 +286,7 @@ class SmtLibSolverTestBase(TestSMTLibBackend):
 
         solutions = solver.eval(str_symb, 4 if KEEP_TEST_PERFORMANT else 100)
         for sol in solutions:
-            self.assertEqual('an', sol[target_idx:target_idx+2])
+            self.assertEqual("an", sol[target_idx : target_idx + 2])
 
         self.assertEqual((target_idx,), solver.eval(res, 2))
 
@@ -320,8 +319,7 @@ class SmtLibSolverTestBase(TestSMTLibBackend):
 
         strs = solver.eval(str_symb, 10 if KEEP_TEST_PERFORMANT else 100)
         for s in strs:
-            self.assertTrue(32 < s.index('an') < 38)
-
+            self.assertTrue(32 < s.index("an") < 38)
 
     @if_installed
     def test_str_to_int(self):
