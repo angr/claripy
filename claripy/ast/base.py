@@ -4,14 +4,17 @@ import math
 import os
 import struct
 import weakref
-from collections import OrderedDict, deque
+from collections import OrderedDict, deque, Counter
 from itertools import chain
+
 from typing import Optional, Generic, TypeVar, overload, TYPE_CHECKING, List, Iterable, Iterator, Tuple
 
 if TYPE_CHECKING:
     from .bool import Bool
     from .fp import FP
     from ..annotation import Annotation
+
+from past.builtins import long
 
 try:
     import cPickle as pickle
@@ -118,6 +121,9 @@ class Base:
         "_relocatable_annotations",
         "depth",
         "__weakref__",
+        "_variable_paths",
+        "_canonical_hash",
+        "_ret_size"
     ]
     _hash_cache = weakref.WeakValueDictionary()
     _leaf_cache = weakref.WeakValueDictionary()
@@ -377,6 +383,71 @@ class Base:
         hd = md5.md5(to_hash).digest()
         return md5_unpacker.unpack(hd)[0]  # 64 bits
 
+    def canonical_hash(self):
+        """
+        Calculates a structural hash for this AST.
+        If two ASTs differ only in variable names, ordering of commutative
+        operations, and presence of reversible operations, this function
+        *should* output the same hash for both.
+        :return: A hash representing the structure of this AST
+        """
+
+        if self._canonical_hash is not None:
+            return self._canonical_hash
+
+        if self.op in operations.backend_symbol_creation_operations:
+            path = ((self.op, 0),)
+            counter = Counter()
+            counter[path] += 1
+            self._variable_paths = OrderedDict()
+            self._variable_paths[self] = counter
+            can_hash = hash((self.op,) + tuple(long(hash(t)) for t in self.args[1:]))
+        elif self.op in operations.backend_creation_operations:
+            self._variable_paths = OrderedDict()
+            can_hash = hash((self.op,) + tuple(long(hash(t)) for t in self.args))
+        else:
+            if self.op in operations.nonstandard_reversible_operations:
+                new_op = operations.nonstandard_reversible_operations[self.op]
+                new_args = self.args[::-1]
+            else:
+                new_op = self.op
+                new_args = self.args
+
+            canonical_args = list(t.canonical_hash() if isinstance(t, Base) else long(hash(t))
+                                  for t in new_args)
+
+
+            tmp_var_paths = OrderedDict()
+
+            for index, arg in enumerate(new_args):
+                if not isinstance(arg, Base):
+                    continue
+                for var in arg._variable_paths:
+                    if var not in tmp_var_paths:
+                        tmp_var_paths[var] = Counter()
+                    i = None if new_op in operations.commutative_operations else index
+                    tmp_var_paths[var].update({
+                            ((new_op, i),) + path: count
+                            for path, count in arg._variable_paths[var].items()
+                        })
+
+            modified_args = zip(canonical_args, ([tmp_var_paths[var]
+                                                  for var in arg._variable_paths]
+                                                 if isinstance(arg, Base) else None
+                                                 for arg in new_args))
+
+            sorted_args = sorted(zip(new_args, modified_args), key=lambda x: str(x[1]))
+            sorted_hashes = [a[1][0] for a in sorted_args]
+
+            self._variable_paths = tmp_var_paths
+
+            nameless = sorted([sorted(paths.items()) for paths in self._variable_paths.values()])
+            to_hash = pickle.dumps(str(sorted_hashes) + str(nameless), -1)
+            can_hash = md5_unpacker.unpack(md5.md5(to_hash).digest())[0]
+
+        self._canonical_hash = long(can_hash)
+        return self._canonical_hash
+
     @staticmethod
     def _arg_serialize(arg) -> Optional[bytes]:
         if arg is None:
@@ -466,6 +537,7 @@ class Base:
         depth=None,
         uneliminatable_annotations=None,
         relocatable_annotations=None,
+        _ret_size=None
     ):  # pylint:disable=unused-argument
         """
         Initializes an AST. Takes the same arguments as ``Base.__new__()``
@@ -499,6 +571,10 @@ class Base:
 
         self._uninitialized = uninitialized
         self._uc_alloc_depth = uc_alloc_depth
+
+        self._variable_paths = None
+        self._canonical_hash = None
+        self._ret_size = _ret_size
 
         if len(self.args) == 0:
             raise ClaripyOperationError("AST with no arguments!")
@@ -1065,16 +1141,51 @@ class Base:
                 if isinstance(arg, Base):
                     arg._identify_vars(all_vars, counter)
 
-    def canonicalize(self: T, var_map=None, counter=None) -> T:
-        counter = itertools.count() if counter is None else counter
-        var_map = {} if var_map is None else var_map
 
-        for v in self.leaf_asts():
-            if v.cache_key not in var_map and v.op in {"BVS", "BoolS", "FPS"}:
-                new_name = "canonical_%d" % next(counter)
-                var_map[v.cache_key] = v._rename(new_name)
+    def _normalize_names(self, _counter=None):
+        if _counter is None:
+            _counter = itertools.count()
 
-        return var_map, counter, self.replace_dict(var_map)
+        if self.op in operations.backend_symbol_creation_operations:
+            return self._rename("var_%d" % next(_counter))
+
+        new_args = []
+        for arg in self.args:
+            if isinstance(arg, Base):
+                new_args.append(arg._normalize_names(_counter=_counter))
+            else:
+                new_args.append(arg)
+
+        return self.swap_args(new_args)
+
+    def canonicalize(self, rename=True):
+        """
+        Standardizes the ordering and naming of arguments to the entire tree.
+        If two ASTs differ only in variable names, ordering of commutative
+        operations, and presence of reversible operations, this function
+        *should* output the same AST for both.
+        If you are only looking to check if two ASTs are canonically the
+        same, use canonical_hash as it is significantly (usually 10x) faster.
+        :param rename: Whether or not to perform the variable renaming step
+                       after sorting the args.
+        :return: A new, canonical AST
+        """
+        new = self
+        if not (self.op in operations.backend_symbol_creation_operations or \
+                self.op in operations.backend_creation_operations):
+
+            if self.op in operations.nonstandard_reversible_operations:
+                new = new.make_like(operations.nonstandard_reversible_operations[self.op],
+                                    new.args[::-1])
+
+            if self.op in operations.commutative_operations:
+                new_args = sorted((a.canonicalize(rename=False) for a in self.args),
+                              key=lambda x: x.canonical_hash())
+                new = self.swap_args(new_args)
+
+        if rename:
+            new = new._normalize_names()
+        return new
 
     #
     # This code handles burrowing ITEs deeper into the ast and excavating

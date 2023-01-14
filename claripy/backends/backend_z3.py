@@ -165,7 +165,9 @@ class BackendZ3(Backend):
         # and the operations
         all_ops = backend_fp_operations | backend_operations
         all_ops |= backend_strings_operations - {"StrIsDigit"}
-        for o in all_ops - {"BVV", "BoolV", "FPV", "FPS", "BitVec", "StringV"}:
+        all_ops |= {"FuncDecl"}
+        all_ops |= {"MemoryLoad"}
+        for o in all_ops - {"BVV", "BoolV", "FPV", "FPS", "BitVec", "StringV", "FuncDecl", "MemoryLoad"}:
             self._op_raw[o] = getattr(self, "_op_raw_" + o)
         self._op_raw["Xor"] = self._op_raw_Xor
 
@@ -186,6 +188,8 @@ class BackendZ3(Backend):
         self._op_expr["BoolS"] = self.BoolS
         self._op_expr["StringV"] = self.StringV
         self._op_expr["StringS"] = self.StringS
+        self._op_expr["FuncDecl"] = self.FuncDecl
+        self._op_expr["MemoryLoad"] = self.MemoryLoad
 
         self._op_raw["__floordiv__"] = self._op_div
         self._op_raw["__mod__"] = self._op_mod
@@ -375,6 +379,28 @@ class BackendZ3(Backend):
         l.warning("Converting claripy StringS' to z3 looses length information.")
         return z3.String(ast.args[0], ctx=self._context)
 
+    @condom
+    def FuncDecl(self, ast):
+        func_name = ast.op
+        func_args = ast.args
+        func_args_z3 = self.convert_list(func_args)
+        func_sig = [arg.sort() for arg in func_args_z3]
+        func_sig.append(z3.BitVecSort(ast.length, self._context))
+        func = z3.Function(func_name, *func_sig)
+        func_result = func(*func_args_z3)
+        return func_result
+
+    @condom
+    def MemoryLoad(self, ast):
+        func_name = ast.op
+        func_args = ast.args
+        func_args_z3 = self.convert_list(func_args)
+        func_sig = [arg.sort() for arg in func_args_z3]
+        func_sig.append(z3.BitVecSort(ast.length, self._context))
+        func = z3.Function(func_name, *func_sig)
+        func_result = func(*func_args_z3)
+        return func_result
+
     #
     # Conversions
     #
@@ -451,6 +477,7 @@ class BackendZ3(Backend):
 
         append_children = True
 
+        decl_name_str = _z3_decl_name_str(ctx, decl)
         if op_name == "True":
             return BoolV(True)
         elif op_name == "False":
@@ -473,7 +500,38 @@ class BackendZ3(Backend):
             val = self._abstract_fp_val(ctx, ast, op_name)
             return FPV(val, sort)
 
-        elif op_name == "UNINTERPRETED" and num_args == 0:  # symbolic value
+        elif op_name == "UNINTERPRETED" and decl_name_str.decode().startswith("Func_"):
+            symbol_name = decl_name_str
+            symbol_str = symbol_name.decode()
+            symbol_ty = z3.Z3_get_sort_kind(ctx, z3_sort)
+            bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
+
+            # if len(children) == 0:
+            #     bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
+            #     ast_args = (symbol_str, None, None, None, False, False, None)
+            #
+            #     return BV('BVS',
+            #             ast_args,
+            #             length=bv_size,
+            #             variables={symbol_str},
+            #             symbolic=True,
+            #             encoded_name=symbol_name)
+            # else:
+            args = [symbol_str]
+            args.extend(children)
+            func = Func(op=symbol_str, args=args, _ret_size=bv_size)
+            func_result = func.func_op(*args)
+            if len(func_result.args) > 0 and symbol_str in str(func_result.args[0]):
+                func_result.args = func_result.args[1:]
+            return func_result
+
+        elif op_name == "UNINTERPRETED" and decl_name_str.decode() == "MemoryLoad":
+            bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
+            MemoryLoad_decl = MemoryLoad(op="MemoryLoad", args=children, _ret_size=bv_size)
+            MemoryLoad_result = MemoryLoad_decl.op(*children)
+            return MemoryLoad_result
+
+        elif op_name == "UNINTERPRETED" and num_args == 0: # symbolic value
             symbol_name = _z3_decl_name_str(ctx, decl)
             symbol_str = symbol_name.decode()
             symbol_ty = z3.Z3_get_sort_kind(ctx, z3_sort)
@@ -1421,6 +1479,7 @@ from ..ast.bv import BV, BVV
 from ..ast.bool import BoolV, Bool
 from ..ast.strings import StringV
 from ..ast.fp import FP, FPV
+from ..ast.func import Func, MemoryLoad
 from ..operations import backend_operations, backend_fp_operations, backend_strings_operations
 from ..fp import FSort, RM
 from ..errors import ClaripyError, BackendError, ClaripyOperationError
