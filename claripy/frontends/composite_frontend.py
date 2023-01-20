@@ -322,7 +322,7 @@ class CompositeFrontend(ConstrainedFrontend):
                 # skip solvers covered by extra constraints (they were checked above)
                 continue
 
-            if self._solvers[min(iter(s.variables))] is not s:
+            if len(s.variables) == 0 or self._solvers[min(iter(s.variables))] is not s:
                 # this happens when a parent solver didn't check all unchecked solvers, and we have stale
                 # child solvers in the unchecked list
                 continue
