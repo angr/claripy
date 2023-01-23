@@ -10,7 +10,8 @@ from .bv import BV, BVS, BVV
 
 class String(Bits):
     """
-    Base class that represent the AST of a String object and implements all the operation useful to create and modify the AST.
+    Base class that represent the AST of a String object and implements all the operation useful to create and modify
+    the AST.
 
     Do not instantiate this class directly, instead use StringS or StringV to construct a symbol or value, and then use
     operations to construct more complicated expressions.

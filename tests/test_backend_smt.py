@@ -232,7 +232,8 @@ class TestSMTLibBackend(unittest.TestCase):
     def test_or(self):
         correct_script = """(set-logic ALL)
 (declare-fun {0}Symb_or () String)
-(assert (let ((.def_0 (= {0}Symb_or "ciao"))) (let ((.def_1 (= {0}Symb_or "abc"))) (let ((.def_2 (or .def_1 .def_0))) .def_2))))
+(assert (let ((.def_0 (= {0}Symb_or "ciao"))) (let ((.def_1 (= {0}Symb_or "abc")))
+    (let ((.def_2 (or .def_1 .def_0))) .def_2))))
 (check-sat)
 """.format(
             String.STRING_TYPE_IDENTIFIER

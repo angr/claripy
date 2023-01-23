@@ -5,3 +5,21 @@ build-backend = "setuptools.build_meta"
 [tool.black]
 line-length = 120
 target-version = ['py38']
+
+[tool.ruff]
+line-length = 120
+extend-ignore = [
+	"F401", "F403", "E402", # No import checks
+	"E741", # Variable names
+	"E731", # Allow lambdas
+	# "E501", # No line length check
+
+	# TODO: Enable these!
+	"F841", # dead code
+
+	# TODO: BUG! This hides bugs!
+	"F821", # name not found (maybe because we directly edit globals() or import later :( )
+
+	"F405", # name may be undefined, or defined from star imports
+	"F811", # redefinition of unused
+]

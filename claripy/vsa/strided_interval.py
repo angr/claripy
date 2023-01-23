@@ -324,7 +324,8 @@ class StridedInterval(BackendObject):
 
     For more details, please refer to relevant papers like TIE and WYSINWYE.
 
-    This implementation is signedness-agostic, please refer to [1] *Signedness-Agnostic Program Analysis: Precise Integer
+    This implementation is signedness-agostic, please refer to:
+    [1] *Signedness-Agnostic Program Analysis: Precise Integer
     Bounds for Low-Level Code* by Jorge A. Navas, etc. for more details.
     Note that this implementation only takes hint from [1]. Such a work has been improved to be more precise
     (and still sound) when dealing with strided intervals.
@@ -2555,13 +2556,13 @@ class StridedInterval(BackendObject):
         In a sign-agnostic implementation of strided-intervals a number can be signed or unsigned both.
         Given a SI, we must pay attention how we extend its lower bound and upper bound.
         Assuming that the lower bound is in the left emishpere (positive number).
-        Let's assume first that the SI is signed and its upper bound is in the right emisphere. Extending it with leading
-        1s (i.e., its MSB)  is correct given that its values would be preserved.
+        Let's assume first that the SI is signed and its upper bound is in the right emisphere.
+        Extending it with leading 1s (i.e., its MSB) is correct given that its values would be preserved.
         On the other hand if the number is unsigned we should not replicate its MSB, since this would increase the value
-        of the upper bound in the new interval. In this case the correct approach would be to add 0 in front of the number,
-        i.e., moving it to the left emisphere. But this approach wouldn't be correct in the first scenario (signed SI).
-        The solution in this case is extend the upper bound with 1s. This gives us an overapproximation of the original
-        SI.
+        of the upper bound in the new interval. In this case the correct approach would be to add 0 in front of the
+        number, i.e., moving it to the left emisphere. But this approach wouldn't be correct in the first scenario
+        (signed SI). The solution in this case is extend the upper bound with 1s. This gives us an overapproximation of
+        the original SI.
 
         Extending this intuition, the implementation follows the below rules:
         (UB: upper bound, LB: lower bound, RE: right emisphere, LE: left emisphere)

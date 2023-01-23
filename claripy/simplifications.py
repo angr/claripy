@@ -887,7 +887,7 @@ class SimplificationManager:
             return None
         a_00, a_01 = a_0.args
         a_10, a_11 = a_1.args
-        if not a_00 is a_10:
+        if a_00 is not a_10:
             return None
         if a_01.op != "BVV" or a_11.op != "BVV":
             return None
@@ -957,7 +957,8 @@ class SimplificationManager:
 
                         b_highbit_idx = b.size() - 1 - zero_bits
                         if b.size() % 8 == 0:
-                            # originally, b was 8-bit aligned. Can we keep the size of the new expression 8-byte aligned?
+                            # originally, b was 8-bit aligned.
+                            # Can we keep the size of the new expression 8-byte aligned?
                             if (b_highbit_idx + 1) % 8 != 0:
                                 b_highbit_idx += 8 - (b_highbit_idx + 1) % 8
                         b_lower = b[b_highbit_idx:0]

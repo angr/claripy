@@ -60,7 +60,6 @@ class SmtLibSolverTestCongruency(unittest.TestCase):
 
     def _collect_generic_solver_test_data(self, variables, constraints):
         solvers = self.get_solvers()
-        vars = list(variables)
 
         results = defaultdict(dict)
         results["variables"] = variables
@@ -88,7 +87,6 @@ class SmtLibSolverTestCongruency(unittest.TestCase):
         return dict(results)
 
     def _generic_consistency_check(self, results):
-        vs = results["variables"]
         cs = results["constraints"]
 
         for solver in results["solvers"]:
@@ -120,7 +118,8 @@ class SmtLibSolverTestCongruency(unittest.TestCase):
         (assert (< ( str.indexof recv_input_4_1024 "\r\n\r\n" 0) 0))
         (assert (<= 0 ( str.indexof recv_input_4_1024 " \r\n" 0)))
         (assert (<= 0 ( str.indexof recv_input_4_1024 " \r\n" (+ ( str.indexof recv_input_4_1024 " \r\n" 0) 1))))
-        (assert (<= 0 ( str.indexof recv_input_4_1024 " \r\n" (+ ( str.indexof recv_input_4_1024 " \r\n" (+ ( str.indexof recv_input_4_1024 " \r\n" 0) 1)) 1))))
+        (assert (<= 0 ( str.indexof recv_input_4_1024 " \r\n" (+ ( str.indexof recv_input_4_1024 " \r\n" (+ (
+            str.indexof recv_input_4_1024 " \r\n" 0) 1)) 1))))
         (assert (= "GET"
         ( str.substr
             ( str.substr
@@ -149,7 +148,6 @@ class SmtLibSolverTestCongruency(unittest.TestCase):
         sep_idx_1 = field_sep_idx(recv_input)
         sep_idx_2 = field_sep_idx(recv_input, start_idx=sep_idx_1 + 1)
         sep_idx_3 = field_sep_idx(recv_input, start_idx=sep_idx_2 + 1)
-        sep_idx_4 = field_sep_idx(recv_input, start_idx=sep_idx_3 + 1)
 
         constraints.append(sep_idx_1 >= 0)
         constraints.append(sep_idx_2 >= 0)

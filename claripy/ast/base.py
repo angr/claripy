@@ -61,7 +61,8 @@ def _make_name(name, size, explicit_name=False, prefix=""):
 def _d(h, cls, state):
     """
     This function is the deserializer for ASTs.
-    It exists to work around the fact that pickle will (normally) call __new__() with no arguments during deserialization.
+    It exists to work around the fact that pickle will (normally) call __new__()
+    with no arguments during deserialization.
     For ASTs, this does not work.
     """
     op, args, length, variables, symbolic, annotations = state
@@ -1272,7 +1273,7 @@ class Base:
         """
         The depth of allocation by lazy-initialization. It's only used in under-constrained symbolic execution mode.
 
-        :returns:                   An integer indicating the allocation depth, or None if it's not from lazy-initialization.
+        :returns: An integer indicating the allocation depth, or None if it's not from lazy-initialization.
         """
         # TODO: It should definitely be moved to the proposed Annotation backend.
 

@@ -213,25 +213,9 @@ class FullFrontend(ConstrainedFrontend):
 
     def is_true(self, e, extra_constraints=(), exact=None):
         return e.is_true()
-        # try:
-        #   return self._solver_backend.is_true(
-        #       e, extra_constraints=extra_constraints,
-        #       solver=self._get_solver(), model_callback=self._model_hook
-        #   )
-        # except BackendError:
-        #   e_type, value, traceback = sys.exc_info()
-        #   raise ClaripyFrontendError, "Backend error during _is_true: %s('%s')" % (str(e_type), str(value)), traceback
 
     def is_false(self, e, extra_constraints=(), exact=None):
         return e.is_false()
-        # try:
-        #   return self._solver_backend.is_false(
-        #       e, extra_constraints=extra_constraints,
-        #       solver=self._get_solver(), model_callback=self._model_hook
-        #   )
-        # except BackendError:
-        #   e_type, value, traceback = sys.exc_info()
-        #   raise ClaripyFrontendError, "Backend error during _is_false: %s('%s')" % (str(e_type), str(value)), traceback
 
     def unsat_core(self, extra_constraints=()):
         if self.satisfiable(extra_constraints=extra_constraints):
