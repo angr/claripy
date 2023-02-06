@@ -10,6 +10,7 @@ l = logging.getLogger("claripy.ast.bv")
 
 _bvv_cache = {}
 
+
 # This is a hilarious hack to get around some sort of bug in z3's python bindings, where
 # under some circumstances stuff gets destructed out of order
 def cleanup():
@@ -345,7 +346,6 @@ def ESI(bits, **kwargs):
 
 
 def ValueSet(bits, region=None, region_base_addr=None, value=None, name=None, val=None):
-
     # Backward compatibility
     if value is None and val is not None:
         value = val
@@ -379,7 +379,6 @@ VS = ValueSet
 def DSIS(
     name=None, bits=0, lower_bound=None, upper_bound=None, stride=None, explicit_name=None, to_conv=None, max_card=None
 ):
-
     if to_conv is not None:
         si = vsa.CreateStridedInterval(bits=to_conv.size(), to_conv=to_conv)
         return SI(

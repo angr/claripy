@@ -30,7 +30,6 @@ def test_contradiction():
 
 
 def test_branching_replacement_solver():
-
     #
     # Simple case: replaceable thing first
     #

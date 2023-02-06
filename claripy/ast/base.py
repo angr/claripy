@@ -301,7 +301,6 @@ class Base:
     def __init_with_annotations__(
         cls, op, a_args, depth=None, uneliminatable_annotations=None, relocatable_annotations=None, **kwargs
     ):
-
         cache = cls._hash_cache
         h = Base._calc_hash(op, a_args, kwargs)
         self = cache.get(h, None)
@@ -809,7 +808,6 @@ class Base:
         """
         ast_queue = deque([iter(self.args)])
         while ast_queue:
-
             try:
                 ast = next(ast_queue[-1])
             except StopIteration:
@@ -830,7 +828,6 @@ class Base:
 
         ast_queue = deque([self])
         while ast_queue:
-
             ast = ast_queue.pop()
             if isinstance(ast, Base) and id(ast.cache_key) not in seen:
                 seen.add(id(ast.cache_key))
@@ -998,7 +995,6 @@ class Base:
                     repl = replacements[ast.cache_key]
 
                 elif ast.variables >= variable_set:
-
                     if ast.op in operations.leaf_operations:
                         repl = leaf_operation(ast)
                         if repl is not ast:

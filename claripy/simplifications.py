@@ -69,7 +69,6 @@ class SimplificationManager:
 
     @staticmethod
     def concat_simplifier(*args):
-
         if len(args) == 1:
             return args[0]
 

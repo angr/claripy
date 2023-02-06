@@ -146,7 +146,6 @@ def test_eagerness():
 
 
 def test_ast_hash_should_consider_relocatable_annotations():
-
     relocatable_anno = AnnotationC("a", 2)
     const = claripy.BVV(1337, 32)
     x0 = claripy.BVS("x", 32).annotate(relocatable_anno)
