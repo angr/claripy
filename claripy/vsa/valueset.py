@@ -218,7 +218,6 @@ class ValueSet(BackendObject):
         self._si = self._si.union(region_base_addr + si)
 
     def _merge_si(self, region, region_base_addr, si):
-
         if isinstance(region_base_addr, numbers.Number):
             region_base_addr = StridedInterval(
                 bits=self.bits, stride=0, lower_bound=region_base_addr, upper_bound=region_base_addr
@@ -515,7 +514,6 @@ class ValueSet(BackendObject):
     #
 
     def eval(self, n, signed=False):
-
         if signed:
             # How are you going to deal with a negative pointer?
             raise ClaripyVSAOperationError("`signed` cannot be True when calling ValueSet.eval().")

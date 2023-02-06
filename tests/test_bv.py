@@ -98,7 +98,6 @@ class TestBv(unittest.TestCase):
         b = BVV(0, 32)
 
         def _check_exception(va, vb, op):
-
             try:
                 if hasattr(va, op):
                     getattr(va, op)(vb)

@@ -2493,7 +2493,6 @@ class StridedInterval(BackendObject):
 
     @normalize_types
     def concat(self, b):
-
         # Zero-extend
         a = self.nameless_copy()
         a._bits += b.bits
@@ -2515,7 +2514,6 @@ class StridedInterval(BackendObject):
 
     @reversed_processor
     def extract(self, high_bit, low_bit):
-
         assert low_bit >= 0
 
         bits = high_bit - low_bit + 1
@@ -2531,7 +2529,6 @@ class StridedInterval(BackendObject):
         return ret.normalize()
 
     def _unrev_extract(self, high_bit, low_bit):
-
         assert low_bit >= 0
 
         bits = high_bit - low_bit + 1

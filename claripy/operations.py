@@ -118,7 +118,6 @@ union_counter = itertools.count()
 
 
 def preprocess_union(*args, **kwargs):
-
     #
     # When we union two values, we implicitly create a new symbolic, multi-valued
     # variable, because a union is essentially an ITE with an unconstrained

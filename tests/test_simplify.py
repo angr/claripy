@@ -52,7 +52,6 @@ def test_simplification():
 
 
 def test_rotate_shift_mask_simplification():
-
     a = claripy.BVS("N", 32, max=0xC, min=0x1)
     extend_ = claripy.BVS("extend", 32, uninitialized=True)
     a_ext = extend_.concat(a)
@@ -66,7 +65,6 @@ def test_rotate_shift_mask_simplification():
 
 
 def test_reverse_extract_reverse_simplification():
-
     # without the reverse_extract_reverse simplifier, loading dx from rdx will result in the following complicated
     # expression:
     #   Reverse(Extract(63, 48, Reverse(BVS('rdx', 64))))
@@ -82,7 +80,6 @@ def test_reverse_extract_reverse_simplification():
 
 
 def test_reverse_concat_reverse_simplification():
-
     # Reverse(Concat(Reverse(a), Reverse(b))) = Concat(b, a)
 
     a = claripy.BVS("a", 32)
@@ -159,7 +156,6 @@ def test_mask_eq_constant():
 
 
 def test_and_mask_comparing_against_constant_simplifier():
-
     # A & mask == b  ==>  Extract(_, _, A) == Extract(_, _, b) iff high bits of a and b are zeros
     a = claripy.BVS("a", 8)
     b = claripy.BVV(0x10, 32)
@@ -190,7 +186,6 @@ def test_and_mask_comparing_against_constant_simplifier():
 
 
 def test_zeroext_extract_comparing_against_constant_simplifier():
-
     a = claripy.BVS("a", 8, explicit_name=True)
     b = claripy.BVV(0x28, 16)
 
