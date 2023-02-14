@@ -377,7 +377,7 @@ class SimplificationManager:
         flattened = SimplificationManager._flatten_simplifier("And", SimplificationManager._deduplicate_filter, *args)
         if flattened is None:
             return None
-        
+
         if flattened.op != "And":
             return flattened
 
