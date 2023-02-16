@@ -498,7 +498,8 @@ class CompositeFrontend(ConstrainedFrontend):
         for ns in noncommon_solvers:
             l.debug("... %d", len(ns))
             if len(ns) == 0:
-                pass
+                s = self._template_frontend.blank_copy()
+                combined_noncommons.append(s)
             elif len(ns) == 1:
                 combined_noncommons.append(ns[0])
             else:

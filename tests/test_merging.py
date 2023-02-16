@@ -117,6 +117,12 @@ class TestMerging(unittest.TestCase):
         smm_1.add(wxy != 0x000204)
         self.assertFalse(smm_1.satisfiable())
 
+        s3 = solver_type()
+        s3.add(w == 0)
+        s4 = solver_type()
+        _, sm = s3.merge([s4], [m == 0, m == 1])
+        self.assertEqual(len(sm.eval(w, 2)), 2)
+
 
 if __name__ == "__main__":
     unittest.main()
