@@ -26,7 +26,7 @@ jobs:
       - name: Build coverage
         run: cd docs && make coverage
       - name: Test coverage
-        run: >
+        run: |
           if [ -s docs/_build/coverage/python.txt ]; then
             echo "Doc coverage is missing for the for:"
             cat docs/_build/coverage/python.txt
