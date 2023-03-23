@@ -1,7 +1,7 @@
 #!/bin/bash -eux
 
 # Args
-DEBUG_MODE="${1}"
+NAME="${1}"
 HEADERS="${2}"
 shift 2
 
@@ -9,17 +9,14 @@ shift 2
 /usr/local/bin/binder \
 	--config="./binder/clari.conf" \
 	\
-	--stl \
 	-v \
-	--root-module clari \
+	--single-file \
+	--include-pybind11-stl \
+	--root-module "${NAME}" \
 	--prefix "/output" \
 	"${HEADERS}" \
 	-- \
 	"$@" \
-	\
-	-DDEBUG="${DEBUG_MODE}" \
-	-DDEBUGMODE="${DEBUG_MODE}" \
-	\
 	-ffile-prefix-map="/native/"=/ \
 	-Werror \
 	-Wno-error=cpp \

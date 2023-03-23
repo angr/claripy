@@ -1,5 +1,9 @@
 #!/bin/bash -eu
 
+# Config
+NAME="clari"
+DEBUG_MODE=0
+
 # Sanity check
 if [[ "${VIRTUAL_ENV:-}" == "" && "${FORCE_GEN:-}" != 1 ]]; then
 	echo "Run from the venv with z3 installed"
@@ -7,16 +11,16 @@ if [[ "${VIRTUAL_ENV:-}" == "" && "${FORCE_GEN:-}" != 1 ]]; then
 	exit 1
 fi
 
-# Config
+# Python packages
 Z3="$(python3 -c "import z3, os; print(os.path.dirname(z3.__file__))")/include"
 PY="$(python3 -c 'from distutils.sysconfig import get_python_inc as f; print(f())')"
 
 # Dirs
 BINDER_D="$( cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd )"
 API_D="$(realpath "${BINDER_D}/../")"
+AUTOGEN="${API_D}/autogen.cpp"
 NATIVE="$(realpath "${API_D}/../../")"
-OUTPUT="${BINDER_D}/raw_output"
-AUTOGEN="${BINDER_D}/autogen.cpp"
+OUTPUT="${BINDER_D}/raw"
 
 # Prep
 echo "Removing old bindings"
@@ -43,8 +47,13 @@ docker run --rm \
 	-v "${BINDER_D}:/binder:ro" \
 	-v "${OUTPUT}:/output" \
 	`# Run binder` \
- 	-it zwimer/binder:14 \
-	"/binder/cmd.sh" 0 "/native/src/api/headers.hpp" "${INCLUDES[@]}"
+	-it zwimer/binder:15 \
+	"/binder/cmd.sh" \
+		"${NAME}" \
+		"/native/src/api/headers.hpp" \
+		-DDEBUG="${DEBUG_MODE}" \
+		-DDEBUGMODE="${DEBUG_MODE}" \
+		"${INCLUDES[@]}"
 set +x
 echo "Bindings generated"
 
@@ -54,7 +63,16 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
 	chmod -N "${OUTPUT}"
 fi
 
-# Rm old autogen
+# Autogen
 echo "Removing outdated ${AUTOGEN}"
 rm "${AUTOGEN}" || true
-echo "Run cmake to recreate autogen.cpp"
+echo "Recreating autogen.cpp"
+set -x
+python3 format.py \
+	"${OUTPUT}" \
+	"${AUTOGEN}" \
+	"${NAME}" \
+	"API::Binder" \
+	`# Includes` \
+	"manual.hpp" \
+	"headers.hpp"
