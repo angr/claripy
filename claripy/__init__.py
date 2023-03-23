@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 # pylint: disable=F0401,W0401,W0603,
 
-__version__ = "9.2.12.dev0"
+from pathlib import Path
+with (Path(__file__).parents[1] / "VERSION").open("r") as f:
+    __version__ = f.read().strip()
+del Path
 
 if bytes is str:
     raise Exception("This module is designed for python 3 only. Please install an older version to use python 2.")

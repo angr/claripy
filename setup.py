@@ -221,7 +221,7 @@ def run_cmd_no_fail(*args: Union[str, Path], **kwargs: Any) -> int:
             print(rc.stdout)
         if rc.stderr:
             print(rc.stderr, file=sys.stderr)
-        raise RuntimeError(f"{args[0].parent} failed with return code: {rc.returncode}")
+        raise RuntimeError(f"{args[0]} failed with return code: {rc.returncode}")
     return rc
 
 
@@ -691,9 +691,8 @@ class Z3(Library):
     Z3 has no dependencies; it should be pre-installed
     """
 
-    _root = Path(z3.__file__).parent
-    include_dir: Path = _root / "include"
-    lib = SharedLib("libz3", _root / "lib")
+    root = Path(z3.__file__).parent
+    lib = SharedLib("libz3", root / "lib")
 
     def __init__(self):
         super().__init__({}, {}, {"Z3 library": self.lib})
@@ -809,9 +808,7 @@ class Clari(Library):
             "GMPDIR": GMP.lib_dir,
             "GMP_INCLUDE_DIR": GMP.include_dir,
             "Boost_INCLUDE_DIRS": Boost.root,
-            "Z3_ACQUISITION_MODE": "PATH",
-            "Z3_INCLUDE_DIR": Z3.include_dir,
-            "Z3_LIB": z3_built,
+            "Z3_ROOT": Z3.root,
         }
         for i, k in config.items():
             if isinstance(k, bool):
