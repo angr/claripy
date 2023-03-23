@@ -556,7 +556,7 @@ namespace Backend::Z3 {
                 case Z3_OP_FALSE:
                     return false;
 
-                    // Conversions
+                // Conversions
                 case Z3_OP_BNUM: {
                     const auto x { Abs::BV::num_primtive(b_obj) };
 #define M_G_CASE(TYPE)                                                                             \
@@ -583,8 +583,26 @@ namespace Backend::Z3 {
                     }
                     return std::get<float>(x);
                 }
+                case Z3_OP_FPA_TO_IEEE_BV: {
+                    UTIL_ASSERT(
+                        Error::Backend::Abstraction, rhfpu,
+                        "rewriter.hi_fp_unspecified is set to true, this should not be triggered");
+#ifdef DEBUG
+                    UTIL_ASSERT(Util::Err::Size, b_obj.num_args() > 0,
+                                "num_args should be at least one!");
+#endif
+                    const auto a0 { b_obj.arg(0) };
+                    const auto var { Abs::FP::num_primitive_raw(a0) };
+                    static_assert(std::variant_size_v<decltype(var)> == 2, "Case needs updating");
+                    switch (var.index()) {
+                        case 0: return std::get<0>(var);
+                        case 1: return std::get<1>(var);
+                        default:
+                            UTIL_THROW(Util::Err::Unknown, "Bad variant index");
+                    }
+                }
 
-                    // FP Constants
+                // FP Constants
                 case Z3_OP_FPA_MINUS_ZERO: // fallthrough
                 case Z3_OP_FPA_MINUS_INF:  // fallthrough
                 case Z3_OP_FPA_PLUS_ZERO:  // fallthrough
@@ -609,7 +627,7 @@ namespace Backend::Z3 {
                     if (LIKELY(width == Mode::FP::flt)) {
                         return nan<float>;
                     }
-                    UTIL_THROW(Util::Err::NotSupported, "Unsupported fp primitive width");
+                    UTIL_THROW(Error::Backend::Unsupported, "Unsupported fp primitive width");
                     // @todo: Fill in
 #if 0
                     UTIL_ASSERT(Error::Backend::Abstraction, not Z3::rhfpu,
@@ -642,28 +660,8 @@ namespace Backend::Z3 {
                         return res;
 #endif
                 }
-                case Z3_OP_FPA_TO_IEEE_BV: {
-                    UTIL_ASSERT(
-                        Error::Backend::Abstraction, rhfpu,
-                        "rewriter.hi_fp_unspecified is set to true, this should not be triggered");
-#ifdef DEBUG
-                    UTIL_ASSERT(Util::Err::Size, b_obj.num_args() > 0,
-                                "num_args should be at least one!");
-#endif
-                    const auto a0 { b_obj.arg(0) };
-                    const auto var { Abs::FP::num_primitive(a0) };
-                    static_assert(std::variant_size_v<decltype(var)> == 2, "Case needs updating");
-                    switch (var.index()) {
-                        case 0:
-                            return std::get<0>(var);
-                        case 1:
-                            return std::get<1>(var);
-                        default:
-                            UTIL_THROW(Util::Err::Unknown, "Bad variant index");
-                    }
-                }
 
-                    // String
+                // String
                 case Z3_OP_INTERNAL: {
                     UTIL_ASSERT(Error::Backend::Abstraction, string_check(b_obj),
                                 "b_obj is not a string as expected");

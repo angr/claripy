@@ -443,10 +443,10 @@ namespace Backend::Z3 {
                 throw Util::Err::NotSupported("This is not yet supported");
             }
 
-            /** Abstraction function for Z3_OP_FPA_NUM to a primtive type
+            /** Abstraction function for Z3_OP_FPA_NUM to an integer holding a fp representation
              *  Note: this function can only handle 32 bit and 64 bit floats
              */
-            static std::variant<double, float> num_primitive(const z3::expr &b_obj) {
+            static std::variant<U64, uint32_t> num_primitive_raw(const z3::expr &b_obj) {
                 const auto &ctx { b_obj.ctx() };
 
                 // To extend this function to handle bigger floats, we need to use these functions:
@@ -472,29 +472,45 @@ namespace Backend::Z3 {
                 const auto width { z3_sort_to_fp_width(sort) };
                 namespace FP = Mode::FP;
                 if (LIKELY(width == FP::dbl)) {
-                    const U64 to_val { (Util::widen<U64, true>(sign) << FP::dbl.no_sign_width()) |
+                    return U64 { (Util::widen<U64, true>(sign) << FP::dbl.no_sign_width()) |
                                        static_cast<U64>(mantissa) |
                                        (Util::unsign(static_cast<I64>(exp))
                                         << FP::dbl.mantissa_raw()) };
-                    // If nothing went wrong, this reinterpret_cast should be safe
-                    double ret; // NOLINT
-                    UTIL_TYPE_PUN_ONTO(&ret, &to_val);
-                    return ret;
                 }
                 if (LIKELY(width == FP::flt)) {
-                    const uint32_t to_val { (Util::unsign(sign) << FP::flt.no_sign_width()) |
+                    return uint32_t { (Util::unsign(sign) << FP::flt.no_sign_width()) |
                                             Util::narrow<uint32_t>(mantissa) |
                                             (Util::narrow<uint32_t, true>(exp)
                                              << FP::flt.mantissa_raw()) };
-                    // If nothing went wrong, this reinterpret_cast should be safe
-                    float ret; // NOLINT
-                    UTIL_TYPE_PUN_ONTO(&ret, &to_val);
-                    return ret;
                 }
                 UTIL_THROW(
-                    Util::Err::NotSupported,
+                    Error::Backend::Unsupported,
                     "Cannot create a value for this unknown floating point standard.\nZ3_sort: ",
                     sort);
+            }
+
+            /** Abstraction function for Z3_OP_FPA_NUM to a primtive type
+             *  Note: this function can only handle 32 bit and 64 bit floats
+             */
+            static std::variant<double, float> num_primitive(const z3::expr &b_obj) {
+                using InV = std::variant<U64, uint32_t>;
+                const InV v { num_primitive_raw(b_obj) };
+                switch (v.index()) {
+#define M_CASE(I_TYPE, F_TYPE) case (Util::Type::index<InV, I_TYPE>): { \
+    F_TYPE rv; \
+    UTIL_TYPE_PUN_ONTO(&rv, &std::get<I_TYPE>(v)); \
+    return rv; \
+                }
+                    M_CASE(U64, double);
+                    M_CASE(uint32_t, float);
+#undef M_CASE
+                    default:
+                        UTIL_THROW(
+                            Util::Err::NotSupported,
+                            "Unexpected variant index returned from num_primitive_raw: ",
+                            v.index());
+                }
+
             }
 
             /** Abstraction function for Z3_OP_FPA_NUM */

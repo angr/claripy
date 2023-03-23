@@ -17,9 +17,8 @@ namespace Backend::Z3 {
         inline BoolTactic(z3::context &c) : ctx { c }, tactics { mk_tactics(c) } {}
         /** Run the tactics on the given z3::expr */
         z3::expr operator()(const z3::expr &in) {
-            auto in2 = in.simplify();
             z3::goal goal { ctx };
-            goal.add(in2);
+            goal.add(in);
             const auto ar { tactics.apply(goal) };
             return to_expr(ar);
         }

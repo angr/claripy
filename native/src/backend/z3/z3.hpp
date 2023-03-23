@@ -16,6 +16,7 @@
 namespace Backend::Z3 {
 
     // Z3 global settings
+    // TODO: maybe static init function? Instead of this. Incorporate set_main
     UTIL_RUN_FUNCTION_BEFORE_MAIN(z3::set_param, "rewriter.hi_fp_unspecified", rhfpu);
 
     /** The Z3 backend
