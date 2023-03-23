@@ -23,13 +23,13 @@ void bool_tactic() {
     const auto c3 { Create::or_({ not_x, y }) };
 
     // And
+    // (x || ~y) && (x || y) && (~x || y) where y = true
     const auto statement { Create::and_({ c1, c2, c3 }) };
 
     // Simplify
     const auto simp { z3.simplify(statement.get()) };
 
     // Solution
-    // x && y = x && true = x
     const auto sol { x }; // NOLINT
 
     // Verify equality
