@@ -6,13 +6,17 @@ from pathlib import Path
 import logging
 import sys
 
+# Load Z3 shared object (clari does not know where it is)
+__import__("z3")
+
 # TODO: find a better way, pybind11 doesn't seem to play well with relative imports
 old = sys.path
 sys.path = [str(Path(__file__).parent / "lib")]
-import clari
-
-sys.path = old
-del old
+try:
+    import clari
+finally:
+    sys.path = old
+    del old
 
 
 config_log = logging.getLogger(__file__)
