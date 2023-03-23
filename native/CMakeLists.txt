@@ -93,6 +93,12 @@ option( ENABLE_CET "Builds with CET fcf-protection, requires ENABLE_SECURITY" OF
 # Override what the compiler says about it handling RTTI
 default(RTTI_OVERRIDE FALSE)
 
+### Z3 Options ###
+
+# The path to the Z3 root (must contain a lib and include directory)
+# Might look like ~/.virtualenvs/claripy/lib/python3.11/site-packages/z3
+default( Z3_ROOT "/path/to/z3/" )
+
 ### Backward Options ###
 
 # Require backend to use a backend lib
@@ -130,123 +136,6 @@ default(BOOST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/boost")
 # Does not matter if BOOST_URL is not ""
 default(BOOST_FORCE_CLEAN_DOWNLOAD OFF)
 
-
-#################################################
-#                  Z3 Options                   #
-#################################################
-
-
-# The name of the z3 make target
-set( Z3_MAKE_TARGET "z3" )
-
-# Defines how the z3 library is acquired
-# The supported options are:
-#  SYSTEM   - Looks for a z3 library in common library directories
-#  DOWNLOAD - Download and extract a compressed directory given a URL
-#  PATH     - Define the library to be loaded from some file path
-#  BUILD    - Build z3 either from a local directory or git link (local will be prioritized)
-# Note that for all modes, the output must be a directory containing a 'bin' and 'include' directory
-# The 'bin' directory should include the shared library clari can link to
-# The 'include' directory should include the header files clari can use
-default( Z3_ACQUISITION_MODE SYSTEM )
-
-# If on, forces re-creation of Z3 links and such
-# If on and Z3_ACQUISITION_MODE is BUILD, forces a rebuild of libz3
-# For build: Note: It is recommended that you reconfigure cmake after a libz3 build
-# otherwise libz3 may re-build every time make is invoked as it is using an old configuration
-default( Z3_FORCE_CLEAN OFF )
-
-# This option is used to help locate the Z3 library.
-# If left undefined cmake will attempt to locate it automatically
-# If necessary, a message will be printed out explaining this variable should be set
-#set(Z3_LIB_EXTENSION ".so")
-
-
-# Depending on the mode selected, only one of the groups of options below will be relevant
-
-
-#########################
-### Z3 System Options ### (Only relevant if Z3_ACQUISITION_MODE is SYSTEM)
-#########################
-
-if (Z3_ACQUISITION_MODE STREQUAL SYSTEM)
-
-	# The path to the include directory (z3 header files)
-	# This directory will by symlinked into the build directory for read-only usage
-	# Claricpp is coded to use z3 headers as non-system headers, so this is necessary
-	default( Z3_INCLUDE_DIR "/path/to/system/z3-headers/" )
-
-endif()
-
-#####################
-## Z3 Path Options ## (Only relevant if Z3_ACQUISITION_MODE is PATH)
-#####################
-
-if (Z3_ACQUISITION_MODE STREQUAL PATH)
-
-	# The path to the Z3 library
-	# On Mac this will probably be a dynamic library (.dylib)
-	# On Linux this will probably be a shared object (.so)
-	# On Windows this will probably be a dynamic link library (.dll)
-	default( Z3_LIB "/path/to/z3/library.so" )
-
-	# The path to the include directory (z3 header files)
-	# This directory will by symlinked into the build directory for read-only usage
-	# Claricpp is coded to use z3 headers as non-system headers, so this is necessary
-	default( Z3_INCLUDE_DIR "/path/to/z3-headers/" )
-
-endif()
-
-#########################
-## Z3 Download Options ## (Only relevant if Z3_ACQUISITION_MODE is DOWNLOAD)
-#########################
-
-if (Z3_ACQUISITION_MODE STREQUAL DOWNLOAD)
-
-	# The link to download z3 from
-	# The link must be the compressed z3 install directory containing 'bin' and 'include'
-	default( Z3_DOWNLOAD_LINK
-		# "https://github.com/Z3Prover/z3/releases/download/z3-4.8.10/z3-4.8.10-x64-ubuntu-18.04.zip"
-		"https://github.com/Z3Prover/z3/releases/download/z3-4.8.10/z3-4.8.10-x64-osx-10.15.7.zip"
-	)
-
-	# Optionally provide the hash of the compressed file
-	# If this is done, the hash will be checked after download for security
-	# If this is not desired, leave these variable undefined
-	default( Z3_DOWNLOAD_HASH "750773630d05cc7c6e4e92be937bfdc6" )
-	default( Z3_DOWNLOAD_HASH_TYPE "MD5" )
-
-	# Other required download settings
-	option( Z3_DOWNLOAD_TLS_VERIFY "Specify whether to verify the server certificate for https:// urls" ON )
-	option( Z3_DOWNLOAD_SHOW_PROGRESS "Show download progress while downloading." OFF )
-	set( Z3_DOWNLOAD_TIMEOUT_SECONDS 120 )
-
-endif()
-
-######################
-## Z3 Build Options ## (Only relevant if Z3_ACQUISITION_MODE is BUILD)
-######################
-
-if (Z3_ACQUISITION_MODE STREQUAL BUILD)
-
-	# Specify the repo and commit that should be used to build Z3
-	# Z3_GIT_COMMIT can be a branch, tag, or commit hash
-	default( Z3_REPO_LINK "https://github.com/Z3Prover/z3" )
-	default( Z3_GIT_COMMIT "master" )
-
-	# Build z3 in release or debug mode
-	option( Z3_BUILD_RELEASE_MODE "ON to build z3 in release mode, OFF for debug mode" ON )
-
-	# The number of cores used to compile z3 (think of this as make -j<this>)
-	# Note: this will override whatever is passed to make during the build
-	# This is because make doesn't give a way for subprocess builds to reuse this job limit
-	if(NOT DEFINED Z3_NUM_CORES)
-		include(ProcessorCount)
-		ProcessorCount(Z3_NUM_CORES)
-		math(EXPR Z3_NUM_CORES "${Z3_NUM_CORES}-2") # Set Z3_NUM_CORES to: $(nproc) - 2
-	endif()
-
-endif()
 
 #################################################
 #                                               #
@@ -296,7 +185,8 @@ include(GMP) # Boost multiprecision backend
 
 # Other dependencies
 include(Backward)
-include(z3)
+set(Z3_INCLUDE_DIR "${Z3_ROOT}/include")
+find_library(Z3_LIBRARY z3 PATHS "${Z3_ROOT}/lib" REQUIRED NO_DEFAULT_PATH)
 
 # Static Analysis
 include(StaticAnalsis)
@@ -559,7 +449,7 @@ if (NOT GMP_INCLUDE_DIR STREQUAL "")
 	target_include_directories("${CLARI}" SYSTEM BEFORE PUBLIC "${GMP_INCLUDE_DIR}")
 endif()
 target_link_libraries("${CLARI}"
-	PUBLIC "${Z3_LINK_TARGET}"
+	PUBLIC "${Z3_LIBRARY}"
 	PUBLIC "${GMP_LIBRARIES}" # Boost multiprecision backend
 	# PUBLIC dl (only necessary if using native backtraces; Backward handles it's own dependencies)
 )
