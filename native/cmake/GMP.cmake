@@ -16,8 +16,11 @@
 
 # This file has been modified
 
-
-find_path(GMP_INCLUDES NAMES gmp.h PATHS "${GMPDIR}")
+if (GMP_INCLUDE_DIR STREQUAL "")
+	find_path(GMP_INCLUDES NAMES gmp.h PATHS "${GMPDIR}")
+else()
+	set(GMP_INCLUDES "${GMP_INCLUDE_DIR}")
+endif()
 
 # Set GMP_FIND_VERSION to 5.1.0 if no minimum version is specified
 if(NOT GMP_FIND_VERSION)
@@ -71,7 +74,11 @@ if(GMP_INCLUDES)
 	endif()
 endif()
 
-find_library(GMP_LIBRARIES gmp PATHS "${GMPDIR}" REQUIRED)
+if (GMPDIR STREQUAL "")
+	find_library(GMP_LIBRARIES gmp PATHS "${GMPDIR}" REQUIRED)
+else()
+	find_library(GMP_LIBRARIES gmp PATHS "${GMPDIR}" REQUIRED NO_DEFAULT_PATH)
+endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GMP DEFAULT_MSG
