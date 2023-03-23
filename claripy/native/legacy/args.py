@@ -2,6 +2,7 @@
 Define a function used to generate the .args of a claripy AST
 """
 from typing import Type, Tuple, List, Dict, Any
+import math # For debugging
 
 from .data_types import LegacyData
 from .fp import rm_cpp_to_py, width_cpp_to_py
@@ -25,13 +26,21 @@ def _to_py_arg(x: Any, children: Dict[int, "claripy.ast.Base"]) -> Any:
         return width_cpp_to_py(x)
     return x
 
+def _chk_eq_value(a: Any, b: Any) -> bool:
+    """
+    Return true if a and b are the same
+    """
+    if isinstance(a, float) and math.isnan(a) and isinstance(b, float) and math.isnan(b):
+        return True
+    return hash(a) == hash(b)
+
 def _chk_eq_args(a: List[Any], l: LegacyData) -> None:
     """
     Verify the cpp args were generated properly (they should be the same as the python args)
     TODO: THIS METHOD SHOULD BE DELETED
     """
     b: List[Any] = l.py_args
-    if len(a) != len(b) or any(hash(i) != hash(k) for i, k in zip(a, b)):
+    if len(a) != len(b) or any(not _chk_eq_value(*i) for i in zip(a, b)):
         print("Diff args!")
         print("Native: a")
         print("Python: b")
