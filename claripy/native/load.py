@@ -50,10 +50,9 @@ class Load:
             "is available via x.hash; the signed variant is returned by hash(x)"
         )
         clari.API.add_source_root(src_root)
-        clari.API.set_main()
+        clari.Backend.Z3.Z3.set_main()
         # These are only for initial config, no need to expose them
         del clari.API.add_source_root
-        del clari.API.set_main
 
     def establish_link(self, *, logger):
         """
