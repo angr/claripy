@@ -29,7 +29,7 @@ class String(Bits):
         :param length: The string bit length
         """
         super().__init__(*args, length=length, **kwargs)
-        self.string_length: int = length // 8
+        self.string_length: int = self.length // 8
 
     def __getitem__(self, rng):
         """
