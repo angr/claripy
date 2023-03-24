@@ -16,7 +16,7 @@ class String(Bits):
     operations to construct more complicated expressions.
     """
 
-    __slots__ = ('string_length',)
+    # __slots__ = ('string_length',)
 
     # Identifier used by composite solver in order to identify if a certain constraints contains
     # variables of type string... In this case cvc4 would handle the solving part.
@@ -26,11 +26,9 @@ class String(Bits):
     GENERATED_BVS_IDENTIFIER = 'BVS_'
     MAX_LENGTH = 10000
 
-    def __init__(self, *args, **kwargs):
-        str_len = kwargs['length']
-        kwargs['length'] *= 8
-        super().__init__(*args, **kwargs)
-        self.string_length = str_len
+    def __init__(self, *args, length: int, **kwargs):
+        super().__init__(*args, length=length, **kwargs)
+        self.string_length = self.length // 8
 
     def __getitem__(self, rng):
         '''
@@ -133,7 +131,7 @@ def StringS(name, size, uninitialized=False, explicit_name=False, **kwargs):
     :returns:                    The String object representing the symbolic string
     """
     n = _make_name(String.STRING_TYPE_IDENTIFIER + name, size, False if explicit_name is None else explicit_name)
-    result = String("StringS", (n, uninitialized), length=size, symbolic=True, eager_backends=None, uninitialized=uninitialized, variables={n}, **kwargs)
+    result = String("StringS", (n, uninitialized), length=8*size, symbolic=True, eager_backends=None, uninitialized=uninitialized, variables={n}, **kwargs)
     return result
 
 def StringV(value, length=None, **kwargs):
@@ -151,7 +149,7 @@ def StringV(value, length=None, **kwargs):
     if length < len(value):
         raise ValueError("Can't make a concrete string value longer than the specified length!")
 
-    result = String("StringV", (value, len(value)), length=length, **kwargs)
+    result = String("StringV", (value, len(value)), length=8*length, **kwargs)
     return result
 
 StrConcat = operations.op('StrConcat', String, String, calc_length=operations.str_concat_length_calc, bound=False)

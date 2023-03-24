@@ -43,7 +43,7 @@ class BV(Bits):
             11111111111111111111111111111100
     """
 
-    __slots__ = ()
+    # __slots__ = ()
 
     def chop(self, bits=1):
         """

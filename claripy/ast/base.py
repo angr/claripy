@@ -7,6 +7,8 @@ import weakref
 from collections import OrderedDict, deque
 from typing import Optional
 
+from .. import clari
+
 try:
     import cPickle as pickle
 except ImportError:
@@ -35,7 +37,8 @@ class ASTCacheKey:
         return hash(self.ast)
 
     def __eq__(self, other):
-        return type(self) is type(other) and self.ast._hash == other.ast._hash
+        return type(self) is type(other) and hash(self.ast) == hash(other.ast)
+        # return type(self) is type(other) and self.ast._hash == other.ast._hash
 
     def __repr__(self):
         return '<Key %s %s>' % (self.ast._type_name(), self.ast.__repr__(inner=True))
@@ -81,10 +84,10 @@ class Base:
     :ivar args:                     The arguments that are being used
     """
 
-    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_hash', '_simplified', '_cached_encoded_name',
-                  '_cache_key', '_errored', '_eager_backends', 'length', '_excavated', '_burrowed', '_uninitialized',
-                  '_uc_alloc_depth', 'annotations', 'simplifiable', '_uneliminatable_annotations', '_relocatable_annotations',
-                  'depth', '__weakref__']
+    # __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_hash', '_simplified', '_cached_encoded_name',
+    #               '_cache_key', '_errored', '_eager_backends', 'length', '_excavated', '_burrowed', '_uninitialized',
+    #               '_uc_alloc_depth', 'annotations', 'simplifiable', '_uneliminatable_annotations', '_relocatable_annotations',
+    #               'depth', '__weakref__']
     _hash_cache = weakref.WeakValueDictionary()
     _leaf_cache = weakref.WeakValueDictionary()
 
@@ -95,6 +98,9 @@ class Base:
     LITE_REPR=0
     MID_REPR=1
     FULL_REPR=2
+
+    _hash_cpp_to_py = {}
+    _hash_py_to_cpp = {}
 
     def __new__(cls, op, args, add_variables=None, hash=None, **kwargs): #pylint:disable=redefined-builtin
         """
@@ -229,11 +235,11 @@ class Base:
         if self is None:
             self = super(Base, cls).__new__(cls)
             depth = arg_max_depth + 1
+            self._hash = h
             self.__a_init__(op, a_args, depth=depth,
                             uneliminatable_annotations=uneliminatable_annotations,
                             relocatable_annotations=relocatable_annotations,
                             **kwargs)
-            self._hash = h
             cache[h] = self
         #else:
         #   if self.args != a_args or self.op != op or self.variables != kwargs['variables']:
@@ -368,12 +374,12 @@ class Base:
 
         # HASHCONS: these attributes key the cache
         # BEFORE CHANGING THIS, SEE ALL OTHER INSTANCES OF "HASHCONS" IN THIS FILE
-        self.op = op
-        self.args = args if type(args) is tuple else tuple(args)
-        self.length = length
+        self.op = op # TODO: from claricpp
+        # self.args = args if type(args) is tuple else tuple(args)
+        # self.length = length
         self.variables = frozenset(variables) if type(variables) is not frozenset else variables
         self.symbolic = symbolic
-        self.annotations = annotations
+        # self.annotations = annotations
         self._uneliminatable_annotations = uneliminatable_annotations
         self._relocatable_annotations = relocatable_annotations
 
@@ -393,16 +399,59 @@ class Base:
         self._uninitialized = uninitialized
         self._uc_alloc_depth = uc_alloc_depth
 
-        if len(self.args) == 0:
+        if len(args) == 0:
             raise ClaripyOperationError("AST with no arguments!")
+
+        # Claricpp
+        kwargs = {"annotations": annotations} if annotations is not None else None
+        self._native, self._legacy = clari.Legacy.create(Base, op, args, length, kwargs) # Test if can construct
+        # DEBUGGING CHECKS TODO: remove
+        assert length == self.length, f"length mistmatch: {length} vs {self.length} {self}"
+        assert self.annotations == annotations, "claripy/claricpp annotations mistmatch"
+        _ = self.args # Args check internally
+        # Hash check
+        py = self._hash if isinstance(self._hash, int) else hash(self._hash)
+        if py not in self._hash_py_to_cpp:
+            self._hash_py_to_cpp[py] = hash(self)
+        assert self._hash_py_to_cpp[py] == hash(self), "claripy/claricpp mistmatch"
+        if hash(self) not in self._hash_cpp_to_py:
+            self._hash_cpp_to_py[hash(self)] = py
+        assert self._hash_cpp_to_py[hash(self)] == py, "claripy/claricpp mistmatch"
+
+    ### Claricpp ###
+
+    def __hash__(self):
+        return self._native.hash
+
+    @property
+    def args(self):
+        if not hasattr(self, "_native_args"):
+            self._native_args = clari.Legacy.args(self) # slow + error checking
+        return self._native_args
+
+    @property
+    def annotations(self):
+        if not hasattr(self, "_annotations"):
+            d = self._native.dict
+            self._annotations = d.get("annotations", None) if d else None
+        return self._annotations
+
+    @property
+    def length(self):
+        if isinstance(self._native, clari.Expr.Bool):
+            return None
+        return self._native.bit_length
+
+    ### Claricpp End ###
+
 
     #pylint:enable=attribute-defined-outside-init
 
-    def __hash__(self):
-        res = self._hash
-        if type(self._hash) is not int:
-            res = hash(self._hash)
-        return res
+    # def __hash__(self):
+    #     res = self._hash
+    #     if type(self._hash) is not int:
+    #         res = hash(self._hash)
+    #     return res
 
     @property
     def cache_key(self):

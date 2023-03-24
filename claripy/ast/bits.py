@@ -6,14 +6,7 @@ class Bits(Base):
 
     :ivar length:       The length of this value in bits.
     """
-    __slots__ = ['length']
-
-    def __init__(self, *args, **kwargs):
-        length = kwargs.pop('length', None)
-        if length is None:
-            raise ClaripyOperationError("length of Bits must not be None")
-
-        self.length = length
+    # __slots__ = ['length']
 
     def make_like(self, op, args, **kwargs):
         if 'length' not in kwargs: kwargs['length'] = self.length
