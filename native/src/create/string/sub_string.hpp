@@ -27,7 +27,7 @@ namespace Create::String {
                 switch (prim.index()) {
 #define M_GET(TYPE)                                                                                \
     case Util::Type::index<decltype(prim), TYPE>:                                                  \
-        return static_cast<U64>(std::get<TYPE>(prim))
+        return CHAR_BIT * static_cast<U64>(std::get<TYPE>(prim))
                     M_GET(uint8_t);
                     M_GET(uint16_t);
                     M_GET(uint32_t);

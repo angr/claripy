@@ -117,6 +117,9 @@ def _ctor_args(op: str, cpp_type: type, py_args: List[Any], length: Optional[int
     # Special cases
     if op == "BoolS":
         return (py_args[0],)
+    elif op == "StringV":
+        assert len(py_args) >= 1 and py_args[1]*8 == length, "sanity check" # TODO: for debugging; remove me
+        return (py_args[0], length)
     elif op in {'BVS', 'FPS', 'FPV', 'VSS', 'StringS'}:
         assert length is not None, f"{op} should have a length"
         return (py_args[0], length)

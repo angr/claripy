@@ -50,7 +50,7 @@ template <bool Literal> void sub_string_b() {
 
     // Size check
     if constexpr (Literal) {
-        UNITTEST_ASSERT(exp_down->bit_length == b_value);
+        UNITTEST_ASSERT(exp_down->bit_length == CHAR_BIT * b_value);
     }
     else {
         UNITTEST_ASSERT(exp_down->bit_length == c_down->bit_length);

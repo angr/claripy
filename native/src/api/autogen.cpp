@@ -2,28 +2,28 @@
 #include "headers.hpp"
 
 
-#include <sstream> // __str__
-#include <pybind11/pybind11.h>
-#include <stdexcept>
-#include <vector>
-#include <algorithm>
-#include <streambuf>
-#include <cstddef>
-#include <iterator>
-#include <map>
-#include <z3++.h>
 #include <locale>
-#include <memory>
-#include <variant>
+#include <z3++.h>
 #include <ostream>
-#include <pybind11/stl.h>
 #include <utility>
+#include <streambuf>
+#include <exception>
+#include <vector>
+#include <string>
+#include <pybind11/pybind11.h>
+#include <variant>
+#include <sstream> // __str__
+#include <memory>
+#include <pybind11/stl.h>
+#include <cstddef>
 #include <stack>
+#include <map>
+#include <stdexcept>
 #include <functional>
 #include <optional>
-#include <string>
-#include <exception>
+#include <iterator>
 #include <ios>
+#include <algorithm>
 
 
 
@@ -1051,8 +1051,8 @@ void bind_unknown_unknown_29(std::function< pybind11::module &(std::string const
 	M("Create").def("literal_string", (class std::shared_ptr<const class Expr::Base> (*)(std::string, class std::optional<class pybind11::dict>)) &Create::literal_string, "C++: Create::literal_string(std::string, class std::optional<class pybind11::dict>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("data"), pybind11::arg("d"));
 
 	// Create::literal_string(std::string, const unsigned long long, class std::optional<class pybind11::dict>) file: line:50
-	M("Create").def("literal_string", [](std::string const & a0, const unsigned long long & a1) -> std::shared_ptr<const class Expr::Base> { return Create::literal_string(a0, a1); }, "", pybind11::arg("data"), pybind11::arg("byte_length"));
-	M("Create").def("literal_string", (class std::shared_ptr<const class Expr::Base> (*)(std::string, const unsigned long long, class std::optional<class pybind11::dict>)) &Create::literal_string, "Create a String Expr with a Literal op with a specific size\n  Note: data is implicitly padded with 0s on the right to meet length\n  Note: length is taken in as a byte length, not a bit length\n\nC++: Create::literal_string(std::string, const unsigned long long, class std::optional<class pybind11::dict>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("data"), pybind11::arg("byte_length"), pybind11::arg("d"));
+	M("Create").def("literal_string", [](std::string const & a0, const unsigned long long & a1) -> std::shared_ptr<const class Expr::Base> { return Create::literal_string(a0, a1); }, "", pybind11::arg("data"), pybind11::arg("bit_length"));
+	M("Create").def("literal_string", (class std::shared_ptr<const class Expr::Base> (*)(std::string, const unsigned long long, class std::optional<class pybind11::dict>)) &Create::literal_string, "Create a String Expr with a Literal op with a specific size\n  Note: data is implicitly padded with 0s on the right to meet length\n  Note: length is taken in as a bit length, not a bit length\n\nC++: Create::literal_string(std::string, const unsigned long long, class std::optional<class pybind11::dict>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("data"), pybind11::arg("bit_length"), pybind11::arg("d"));
 
 	// Create::literal_fp(const double, const unsigned long long, class std::optional<class pybind11::dict>) file: line:65
 	M("Create").def("literal_fp", [](const double & a0, const unsigned long long & a1) -> std::shared_ptr<const class Expr::Base> { return Create::literal_fp(a0, a1); }, "", pybind11::arg("data"), pybind11::arg("bit_length"));
@@ -1146,9 +1146,9 @@ void bind_unknown_unknown_33(std::function< pybind11::module &(std::string const
 	M("Create").def("symbol_bool", [](std::string const & a0) -> std::shared_ptr<const class Expr::Base> { return Create::symbol_bool(a0); }, "", pybind11::arg("name"));
 	M("Create").def("symbol_bool", (class std::shared_ptr<const class Expr::Base> (*)(std::string, class std::optional<class pybind11::dict>)) &Create::symbol_bool, "Create a Bool Expr with a symbol op \n\nC++: Create::symbol_bool(std::string, class std::optional<class pybind11::dict>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("name"), pybind11::arg("d"));
 
-	// Create::symbol_string(std::string, const unsigned long long, class std::optional<class pybind11::dict>) file: line:49
-	M("Create").def("symbol_string", [](std::string const & a0, const unsigned long long & a1) -> std::shared_ptr<const class Expr::Base> { return Create::symbol_string(a0, a1); }, "", pybind11::arg("name"), pybind11::arg("byte_length"));
-	M("Create").def("symbol_string", (class std::shared_ptr<const class Expr::Base> (*)(std::string, const unsigned long long, class std::optional<class pybind11::dict>)) &Create::symbol_string, "Create a String Expr with a symbol op\n  Note: length is taken in as a byte length, not a bit length\n\nC++: Create::symbol_string(std::string, const unsigned long long, class std::optional<class pybind11::dict>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("name"), pybind11::arg("byte_length"), pybind11::arg("d"));
+	// Create::symbol_string(std::string, const unsigned long long, class std::optional<class pybind11::dict>) file: line:48
+	M("Create").def("symbol_string", [](std::string const & a0, const unsigned long long & a1) -> std::shared_ptr<const class Expr::Base> { return Create::symbol_string(a0, a1); }, "", pybind11::arg("name"), pybind11::arg("bit_length"));
+	M("Create").def("symbol_string", (class std::shared_ptr<const class Expr::Base> (*)(std::string, const unsigned long long, class std::optional<class pybind11::dict>)) &Create::symbol_string, "Create a String Expr with a symbol op\n\nC++: Create::symbol_string(std::string, const unsigned long long, class std::optional<class pybind11::dict>) --> class std::shared_ptr<const class Expr::Base>", pybind11::arg("name"), pybind11::arg("bit_length"), pybind11::arg("d"));
 
 	// Create::symbol_bv(std::string, const unsigned long long, class std::optional<class pybind11::dict>) file: line:145
 	M("Create").def("symbol_bv", [](std::string const & a0, const unsigned long long & a1) -> std::shared_ptr<const class Expr::Base> { return Create::symbol_bv(a0, a1); }, "", pybind11::arg("name"), pybind11::arg("bit_length"));

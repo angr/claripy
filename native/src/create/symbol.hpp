@@ -44,12 +44,11 @@ namespace Create {
     }
 
     /** Create a String Expr with a symbol op
-     *  Note: length is taken in as a byte length, not a bit length
      */
-    inline Expr::BasePtr symbol_string(std::string name, const U64 byte_length,
+    inline Expr::BasePtr symbol_string(std::string name, const U64 bit_length,
                                        Expr::OpPyDict d = {}) {
         return Expr::factory<Expr::String>(true, Op::factory<Op::Symbol>(std::move(name)),
-                                           std::move(d), CHAR_BIT * byte_length);
+                                           std::move(d), bit_length);
     }
 
 #define M_BITS_TYPE(TYPE, NAME)                                                                    \
