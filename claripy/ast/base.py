@@ -378,7 +378,7 @@ class Base:
         # self.args = args if type(args) is tuple else tuple(args)
         # self.length = length
         self.variables = frozenset(variables) if type(variables) is not frozenset else variables
-        self.symbolic = symbolic
+        # self.symbolic = symbolic
         # self.annotations = annotations
         self._uneliminatable_annotations = uneliminatable_annotations
         self._relocatable_annotations = relocatable_annotations
@@ -408,6 +408,7 @@ class Base:
         # DEBUGGING CHECKS TODO: remove
         assert length == self.length, f"length mistmatch: {length} vs {self.length} {self}"
         assert self.annotations == annotations, "claripy/claricpp annotations mistmatch"
+        assert self._native.symbolic == symbolic, "claripy/claricpp mistmatch"
         _ = self.args # Args check internally
         # Hash check
         py = self._hash if isinstance(self._hash, int) else hash(self._hash)
@@ -421,7 +422,9 @@ class Base:
     ### Claricpp ###
 
     def __hash__(self):
-        return self._native.hash
+        if not hasattr(self, "_real_hash"):
+            self._real_hash = hash((hash(self._native.hash), self.annotations))
+        return self._real_hash
 
     @property
     def args(self):
@@ -435,6 +438,10 @@ class Base:
             d = self._native.dict
             self._annotations = d.get("annotations", None) if d else None
         return self._annotations
+
+    @property
+    def symbolic(self):
+        return self._native.symbolic
 
     @property
     def length(self):
