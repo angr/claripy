@@ -764,7 +764,8 @@ class Clari(Library):
                  no_lib: bool = False,
                  docs: bool = False,
                  debug: bool = False,
-                 tests: bool = False):
+                 tests: bool = False,
+                 memcheck: bool = False):
         # Options
         self._build_lib: bool = not no_lib
         self._build_tests: bool = tests
@@ -772,6 +773,7 @@ class Clari(Library):
         self._build_doc: bool = docs
         self._build_api: bool = api
         self._no_build: bool = no_build
+        self._memcheck: bool = memcheck
         # Config
         chk: RawChk = {} if (self._build_tests or self._build_doc) else {
             self._lib.name: self._lib,
@@ -802,7 +804,7 @@ class Clari(Library):
             # Disable options
             "CPP_CHECK": False,
             "CLANG_TIDY": False,
-            "ENABLE_MEMCHECK": False,
+            "ENABLE_MEMCHECK": self._memcheck,
             "LWYU": False,
             # Library config
             "GMPDIR": GMP.lib_dir,
@@ -866,7 +868,7 @@ class Clari(Library):
             shutil.copytree(native / "src", tmp / "src", ignore=ign)
             # Install
             print("Installing output source...")
-            tmp.rename(self._out_native_src)
+            shutil.move(tmp, self._out_native_src)
 
     def _clean(self, level: CleanLevel) -> None:
         if level.implies(CleanLevel.INSTALL):
@@ -906,6 +908,7 @@ class Native(Command):
         ("docs", None, docs_msg),
         ("override", None, "Ignore options sanity checks. Do not do this"),
         ("tests", "t", "Build Clari unit tests"),
+        ("memcheck", None, "Build Clari memcheck unit tests, requirest --tests"),
         ("run-tests", None, "Run Clari tests"),
         ("debug", "d", "Prefers debug mode to release mode while building"),
         ("clean=", "c", "Runs clean at the given level first"),
@@ -938,6 +941,8 @@ class Native(Command):
             msgs.append("--run-tests will likely fail without --no-build")
         if self.args.run_test and not self.args.tests:
             raise RuntimeError("--run-tests will likely fail without --tests")
+        if self.args.memcheck and not self.args.tests:
+            raise RuntimeError("--memcheck requires --tests")
         if self.args.no_lib and not self.args.no_api:
             msgs.append("--no-lib will likely fail without --no-api; unless --no-build is passed")
         if self.args.no_lib and self.args.tests:
@@ -953,7 +958,7 @@ class Native(Command):
 
     def run(self) -> None:
         # Construct the main class and determine the function name
-        wanted: Tuple[str] = ("no_lib", "docs", "tests", "debug", "no_build")
+        wanted: Tuple[str] = ("no_lib", "docs", "tests", "debug", "no_build", "memcheck")
         params: Dict[str, str] = {i: k for i, k in self.args.items() if i in wanted}
         instance = Clari(**params, api=not self.args.no_api)
         fname: str = "build" if self.args.no_install else "install"
