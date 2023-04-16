@@ -66,7 +66,7 @@ namespace Backend::Z3 {
         /**********************************************************/
 
         /** Abstraction function for Z3_OP_INTERNAL to a primitive */
-        static CCSC internal_primitive(const z3::expr &b, const z3::func_decl &decl) {
+        static const char * internal_primitive(const z3::expr &b, const z3::func_decl &decl) {
 #if 1
             const auto &ctx { b.ctx() };
             if (UNLIKELY((Z3_get_decl_num_parameters(ctx, decl) != 1) ||

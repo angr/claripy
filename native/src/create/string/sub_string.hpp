@@ -33,6 +33,8 @@ namespace Create::String {
                     M_GET(uint32_t);
                     M_GET(U64);
 #undef M_GET
+                    default:
+                        UTIL_THROW(Util::Err::BadVariantAccess, "Bad variant");
                 }
             }
             return Expr::bit_length(full_string);

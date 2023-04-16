@@ -302,9 +302,11 @@ endif()
 
 # Allow linking to claricpp for testing purposes when built with debug
 # This should not be done for release builds, pybind11 items should be hidden!
-# Specifically, pybind11 normally forces -fvisibility=hidden
+# Specifically, pybind11 might force -fvisibility=hidden
 if(CMAKE_BUILD_TYPE MATCHES Debug)
 	set(CMAKE_CXX_VISIBILITY_PRESET "default")
+	add_compile_options("-Wno-error=attributes")
+	message("Allowing attrbute warnings are not errors in debug mode; they allow testing.")
 endif()
 
 

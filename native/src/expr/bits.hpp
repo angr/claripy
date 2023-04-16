@@ -18,8 +18,8 @@ namespace Expr {
       protected:
         /** Protected Constructor */
         explicit inline Bits(const Hash::Hash h, const CUID::CUID &c, const bool sym,
-                             Op::BasePtr &&o, OpPyDict &&d, const U64 bit_length) noexcept
-            : Base { h, c, sym, std::move(o), std::move(d) }, BitLength { bit_length } {}
+                             Op::BasePtr &&o, OpPyDict &&d, const U64 bit_len) noexcept
+            : Base { h, c, sym, std::move(o), std::move(d) }, BitLength { bit_len } {}
 
 
         /** Pure virtual destructor */

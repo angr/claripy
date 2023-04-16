@@ -11,9 +11,6 @@
 
 namespace Op {
 
-    // Forward declare
-    inline std::ostream &operator<<(std::ostream &, const PrimVar &);
-
     /** The op class Literal */
     class Literal final : public Base {
         OP_FINAL_INIT(Literal, "");

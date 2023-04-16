@@ -13,8 +13,8 @@
 template <typename Base> class PyO final : public Base {
   public:
     /** Constructor */
-    inline PyO(pybind11::object &&py, const U64 bit_length)
-        : Base { Util::unsign(pybind11::hash(py)), bit_length }, rep { std::move(py) } {
+    inline PyO(pybind11::object &&py, const U64 bit_len)
+        : Base { Util::unsign(pybind11::hash(py)), bit_len }, rep { std::move(py) } {
         const bool has_repr { pybind11::hasattr(std::get<pybind11::object>(rep), "__repr__") };
         UTIL_ASSERT(API::Err::Usage, has_repr, "Python Object must have __repr__ defined");
     }
