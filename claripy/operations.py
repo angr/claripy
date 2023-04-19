@@ -339,7 +339,7 @@ backend_other_operations = {"If"}
 
 backend_arithmetic_operations = {"SDiv", "SMod"}
 
-backend_func_operations = {'FuncDecl'}
+backend_func_operations = {"FuncDecl", "MemoryLoad"}
 
 backend_operations = (
         backend_comparator_operations
