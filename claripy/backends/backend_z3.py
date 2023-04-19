@@ -822,7 +822,12 @@ class BackendZ3(Backend):
         model = {}
         for m_f in z3_model:
             n = _z3_decl_name_str(m_f.ctx.ctx, m_f.ast).decode()
-            m = m_f()
+            # Deal with cases when argument number is 0 or greater than 0
+            if m_f.arity() == 0:
+                m = m_f()
+            else:
+                m = m_f(*[z3.Const("arg_%d" % i, m_f.domain(i)) for i in range(m_f.arity())])
+
             me = z3_model.eval(m, model_completion=True)
             model[n] = self._abstract_to_primitive(me.ctx.ctx, me.ast)
 
