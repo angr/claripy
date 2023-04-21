@@ -10,31 +10,31 @@ from functools import reduce
 class SimplificationManager:
     def __init__(self):
         self._simplifiers = {
-            'Reverse': self.bv_reverse_simplifier,
-            'And': self.boolean_and_simplifier,
-            'Or': self.boolean_or_simplifier,
-            'Not': self.boolean_not_simplifier,
-            'Extract': self.extract_simplifier,
-            'Concat': self.concat_simplifier,
-            'If': self.if_simplifier,
-            '__lshift__': self.lshift_simplifier,
-            '__rshift__': self.rshift_simplifier,
-            'LShR': self.lshr_simplifier,
-            '__eq__': self.eq_simplifier,
-            '__ne__': self.ne_simplifier,
-            '__ge__': self.ge_simplifier,
-            '__or__': self.bitwise_or_simplifier,
-            '__and__': self.bitwise_and_simplifier,
-            '__xor__': self.bitwise_xor_simplifier,
-            '__add__': self.bitwise_add_simplifier,
-            '__sub__': self.bitwise_sub_simplifier,
-            '__mul__': self.bitwise_mul_simplifier,
-            'ZeroExt': self.zeroext_simplifier,
-            'SignExt': self.signext_simplifier,
-            'fpToIEEEBV': self.fptobv_simplifier,
-            'fpToFP': self.fptofp_simplifier,
-            'StrReverse': self.str_reverse_simplifier,
-            '__invert__': self.invert_simplifier,
+            "Reverse": self.bv_reverse_simplifier,
+            "And": self.boolean_and_simplifier,
+            "Or": self.boolean_or_simplifier,
+            "Not": self.boolean_not_simplifier,
+            "Extract": self.extract_simplifier,
+            "Concat": self.concat_simplifier,
+            "If": self.if_simplifier,
+            "__lshift__": self.lshift_simplifier,
+            "__rshift__": self.rshift_simplifier,
+            "LShR": self.lshr_simplifier,
+            "__eq__": self.eq_simplifier,
+            "__ne__": self.ne_simplifier,
+            "__ge__": self.ge_simplifier,
+            "__or__": self.bitwise_or_simplifier,
+            "__and__": self.bitwise_and_simplifier,
+            "__xor__": self.bitwise_xor_simplifier,
+            "__add__": self.bitwise_add_simplifier,
+            "__sub__": self.bitwise_sub_simplifier,
+            "__mul__": self.bitwise_mul_simplifier,
+            "ZeroExt": self.zeroext_simplifier,
+            "SignExt": self.signext_simplifier,
+            "fpToIEEEBV": self.fptobv_simplifier,
+            "fpToFP": self.fptofp_simplifier,
+            "StrReverse": self.str_reverse_simplifier,
+            "__invert__": self.invert_simplifier,
         }
 
     def simplify(self, op, args):
@@ -205,13 +205,11 @@ class SimplificationManager:
             return a.args[0] == a.args[1] + b
 
         # 1 ^ expr == 0     ->   expr == 1
-        if a.op == '__xor__' and b.op == "BVV" and b.args[0] == 0 and len(a.args) == 2:
-            if a.args[0].op == 'If' and a.args[1].op == "BVV" and a.args[1].args[0] == 1:   # If(expr, v1, v2) ^ 1 == 0
+        if a.op == "__xor__" and b.op == "BVV" and b.args[0] == 0 and len(a.args) == 2:
+            if a.args[0].op == "If" and a.args[1].op == "BVV" and a.args[1].args[0] == 1:  # If(expr, v1, v2) ^ 1 == 0
                 return a.args[0] == 1
-            elif a.args[1].op == 'If' and a.args[0].op == "BVV" and a.args[0].args[0] == 1:  # 1 ^ If(expr, v1, v2) == 0
+            elif a.args[1].op == "If" and a.args[0].op == "BVV" and a.args[0].args[0] == 1:  # 1 ^ If(expr, v1, v2) == 0
                 return a.args[1] == 1
-
-
 
         # TODO: all these ==/!= might really slow things down...
         if a.op == "If":
@@ -299,7 +297,7 @@ class SimplificationManager:
             # 	  return b._claripy.false
 
         # 1 ^ expr != 0     ->   expr == 0
-        if a.op == '__xor__' and b.op == "BVV" and b.args[0] == 0 and len(a.args) == 2:
+        if a.op == "__xor__" and b.op == "BVV" and b.args[0] == 0 and len(a.args) == 2:
             if a.args[1].op == "BVV" and a.args[1].args[0] == 1 and a.args[0].size() == 1:
                 return a.args[0] == 0
             elif a.args[0].op == "BVV" and a.args[0].args[0] == 1 and a.args[1].size() == 1:
@@ -412,11 +410,11 @@ class SimplificationManager:
                     if a.op == "__ge__" and b.op == "__ne__":
                         return ast.all_operations.UGT(a.args[0], a.args[1])
 
-        flattened = SimplificationManager._flatten_simplifier('And', SimplificationManager._deduplicate_filter, *args)
+        flattened = SimplificationManager._flatten_simplifier("And", SimplificationManager._deduplicate_filter, *args)
         if flattened is None:
             return None
 
-        if flattened.op != 'And':
+        if flattened.op != "And":
             return flattened
 
         fargs = flattened.args
@@ -727,11 +725,17 @@ class SimplificationManager:
 
             # if(cond0, 1, 0) & if(cond1, 1, 0)  ->  if(cond0 & cond1, 1, 0)
             if a.op == "If" and b.op == "If":
-                if (a.args[1] == ast.all_operations.BVV(1,1)).is_true() and (a.args[2] == ast.all_operations.BVV(0, 1)).is_true() \
-                        and (b.args[1] == ast.all_operations.BVV(1,1)).is_true() and (b.args[2] == ast.all_operations.BVV(0, 1)).is_true():
+                if (
+                    (a.args[1] == ast.all_operations.BVV(1, 1)).is_true()
+                    and (a.args[2] == ast.all_operations.BVV(0, 1)).is_true()
+                    and (b.args[1] == ast.all_operations.BVV(1, 1)).is_true()
+                    and (b.args[2] == ast.all_operations.BVV(0, 1)).is_true()
+                ):
                     cond0 = a.args[0]
                     cond1 = b.args[0]
-                    return ast.all_operations.If(cond0 & cond1, ast.all_operations.BVV(1,1), ast.all_operations.BVV(0, 1))
+                    return ast.all_operations.If(
+                        cond0 & cond1, ast.all_operations.BVV(1, 1), ast.all_operations.BVV(0, 1)
+                    )
 
         return SimplificationManager._flatten_simplifier(
             "__and__", SimplificationManager._deduplicate_filter, a, b, *args
@@ -896,11 +900,11 @@ class SimplificationManager:
             ifcond, iftrue, iffalse = val.args
             if iftrue.op == "BVV" and iffalse.op == "BVV":
                 # extract from iftrue and iffalse
-                return ast.bool.If(ifcond, iftrue[high: low], iffalse[high: low])
+                return ast.bool.If(ifcond, iftrue[high:low], iffalse[high:low])
 
         # invert(expr)[0:0]   ->   invert(expr[0:0])
         if val.op == "__invert__":
-            return ast.BV.__invert__(val.args[0][high: low])
+            return ast.BV.__invert__(val.args[0][high:low])
 
     # oh gods
     @staticmethod
@@ -1110,12 +1114,12 @@ class SimplificationManager:
                     # unsat
                     return ast.all_operations.false if op is operator.__eq__ else ast.all_operations.true
 
-            if a.op == "Concat" and len(a.args) == 2 and a.args[0].args[0] == 0:   # make sure high bits of a are zeros
+            if a.op == "Concat" and len(a.args) == 2 and a.args[0].args[0] == 0:  # make sure high bits of a are zeros
                 a_zero_bits = a.args[0].args[1]
                 b_highbits = b[b.size() - 1 : b.size() - a_zero_bits]
                 if (b_highbits == 0).is_true():
                     # we can get rid of Concat
-                    return op(a.args[1], b[b.size() - a_zero_bits - 1: 0])
+                    return op(a.args[1], b[b.size() - a_zero_bits - 1 : 0])
                 elif (b_highbits == 0).is_false():
                     # unsat
                     return ast.all_operations.false if op is operator.__eq__ else ast.all_operations.true
