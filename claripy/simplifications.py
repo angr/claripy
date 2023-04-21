@@ -1110,7 +1110,7 @@ class SimplificationManager:
                     # unsat
                     return ast.all_operations.false if op is operator.__eq__ else ast.all_operations.true
 
-            if a.op == "Concat" and a.args[0].args[0] == 0:   # make sure high bits of a are zeros
+            if a.op == "Concat" and len(a.args) == 2 and a.args[0].args[0] == 0:   # make sure high bits of a are zeros
                 a_zero_bits = a.args[0].args[1]
                 b_highbits = b[b.size() - 1 : b.size() - a_zero_bits]
                 if (b_highbits == 0).is_true():
