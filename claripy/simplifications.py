@@ -668,7 +668,12 @@ class SimplificationManager:
             return tuple(res)
 
         return SimplificationManager._flatten_simplifier(
-            "__xor__", _flattening_filter, a, b, *args, initial_value=ast.all_operations.BVV(0, a.size())
+            "__xor__",
+            _flattening_filter,
+            a,
+            b,
+            *args,
+            initial_value=ast.all_operations.BVV(0, a.size()),
         )
 
     @staticmethod
@@ -734,7 +739,9 @@ class SimplificationManager:
                     cond0 = a.args[0]
                     cond1 = b.args[0]
                     return ast.all_operations.If(
-                        cond0 & cond1, ast.all_operations.BVV(1, 1), ast.all_operations.BVV(0, 1)
+                        cond0 & cond1,
+                        ast.all_operations.BVV(1, 1),
+                        ast.all_operations.BVV(0, 1),
                     )
 
         return SimplificationManager._flatten_simplifier(
@@ -1115,7 +1122,9 @@ class SimplificationManager:
                     # unsat
                     return ast.all_operations.false if op is operator.__eq__ else ast.all_operations.true
 
-            if a.op == "Concat" and len(a.args) == 2 and a.args[0].args[0] == 0:  # make sure high bits of a are zeros
+            if (
+                a.op == "Concat" and len(a.args) == 2 and a.args[0].op == "BVV" and a.args[0].args[0] == 0
+            ):  # make sure high bits of a are zeros
                 a_zero_bits = a.args[0].args[1]
                 b_highbits = b[b.size() - 1 : b.size() - a_zero_bits]
                 if (b_highbits == 0).is_true():
