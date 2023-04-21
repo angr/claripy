@@ -222,6 +222,49 @@ def test_zeroext_extract_comparing_against_constant_simplifier():
     assert expr is not (dd == claripy.BVV(0xFFFF, 23))
 
 
+def test_one_xor_exp_eq_zero():
+    var1 = claripy.FPV(150, claripy.fp.FSORT_DOUBLE)
+    var2 = claripy.FPS("test", claripy.fp.FSORT_DOUBLE)
+    result = var1 <= var2
+    expr = claripy.BVV(1, 1) ^ (claripy.If(result, claripy.BVV(1, 1), claripy.BVV(0, 1))) == claripy.BVV(0, 1)
+
+    assert expr is result
+
+
+def test_bitwise_and_if():
+    e = claripy.BVS("e", 8)
+    cond1 = e >= 5
+    cond2 = e != 5
+    ifcond1 = claripy.If(cond1, claripy.BVV(1, 1), claripy.BVV(0, 1))
+    ifcond2 = claripy.If(cond2, claripy.BVV(1, 1), claripy.BVV(0, 1))
+    result = claripy.If(e > 5, claripy.BVV(1, 1), claripy.BVV(0, 1))
+    assert ifcond1 & ifcond2 is result
+
+
+def test_invert_if():
+    cond = claripy.BoolS("cond")
+    expr = ~(claripy.If(cond, claripy.BVV(1, 1), claripy.BVV(0, 1)))
+    result = claripy.If(claripy.Not(cond), claripy.BVV(1, 1), claripy.BVV(0, 1))
+    assert expr is result
+
+
+def test_sub_constant():
+    expr = claripy.BVS("expr", 32)
+    assert (expr - 5 == 0) is (expr == 5)
+
+
+def test_extract():
+    cond = claripy.BoolS("cond")
+    expr = claripy.If(cond, claripy.BVV(1, 32), claripy.BVV(0, 32))[0:0]
+    result = claripy.If(cond, claripy.BVV(1, 1), claripy.BVV(0, 1))
+    assert expr is result
+
+    e = claripy.BVS("e", 32)
+    expr2 = (~e)[0:0]  # pylint:disable=unsubscriptable-object
+    result2 = ~(e[0:0])
+    assert expr2 is result2
+
+
 def perf():
     import timeit  # pylint:disable=import-outside-toplevel
 
@@ -251,3 +294,8 @@ if __name__ == "__main__":
     test_mask_eq_constant()
     test_and_mask_comparing_against_constant_simplifier()
     test_zeroext_extract_comparing_against_constant_simplifier()
+    test_one_xor_exp_eq_zero()
+    test_bitwise_and_if()
+    test_invert_if()
+    test_sub_constant()
+    test_extract()
