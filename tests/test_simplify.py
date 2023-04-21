@@ -228,7 +228,7 @@ def test_one_xor_exp_eq_zero():
     result = var1 <= var2
     expr = claripy.BVV(1, 1) ^ (claripy.If(result, claripy.BVV(1, 1), claripy.BVV(0, 1))) == claripy.BVV(0, 1)
 
-    nose.tools.assert_is(expr, result)
+    assert expr is result
 
 
 def test_bitwise_and_if():
@@ -238,14 +238,14 @@ def test_bitwise_and_if():
     ifcond1 = claripy.If(cond1, claripy.BVV(1, 1), claripy.BVV(0, 1))
     ifcond2 = claripy.If(cond2, claripy.BVV(1, 1), claripy.BVV(0, 1))
     result = claripy.If(e > 5, claripy.BVV(1, 1), claripy.BVV(0, 1))
-    nose.tools.assert_is(ifcond1 & ifcond2, result)
+    assert ifcond1 & ifcond2 is result
 
 
 def test_invert_if():
     cond = claripy.BoolS("cond")
     expr = ~(claripy.If(cond, claripy.BVV(1, 1), claripy.BVV(0, 1)))
     result = claripy.If(claripy.Not(cond), claripy.BVV(1, 1), claripy.BVV(0, 1))
-    nose.tools.assert_is(expr, result)
+    assert expr is result
 
 
 def test_sub_constant():
