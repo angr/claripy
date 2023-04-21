@@ -206,9 +206,9 @@ class SimplificationManager:
 
         # 1 ^ expr == 0     ->   expr == 1
         if a.op == "__xor__" and b.op == "BVV" and b.args[0] == 0 and len(a.args) == 2:
-            if a.args[0].op == "If" and a.args[1].op == "BVV" and a.args[1].args[0] == 1:  # If(expr, v1, v2) ^ 1 == 0
+            if a.args[1].op == "BVV" and a.args[1].args[0] == 1:  # expr ^ 1 == 0
                 return a.args[0] == 1
-            elif a.args[1].op == "If" and a.args[0].op == "BVV" and a.args[0].args[0] == 1:  # 1 ^ If(expr, v1, v2) == 0
+            elif a.args[0].op == "BVV" and a.args[0].args[0] == 1:  # 1 ^ expr == 0
                 return a.args[1] == 1
 
         # TODO: all these ==/!= might really slow things down...
@@ -298,10 +298,10 @@ class SimplificationManager:
 
         # 1 ^ expr != 0     ->   expr == 0
         if a.op == "__xor__" and b.op == "BVV" and b.args[0] == 0 and len(a.args) == 2:
-            if a.args[1].op == "BVV" and a.args[1].args[0] == 1 and a.args[0].size() == 1:
-                return a.args[0] == 0
-            elif a.args[0].op == "BVV" and a.args[0].args[0] == 1 and a.args[1].size() == 1:
-                return a.args[1] == 0
+            if a.args[1].op == "BVV" and a.args[1].args[0] == 1:
+                return a.args[0] != 1
+            elif a.args[0].op == "BVV" and a.args[0].args[0] == 1:
+                return a.args[1] != 1
 
         # Masking and comparing against a constant
         simp = SimplificationManager.and_mask_comparing_against_constant_simplifier(operator.__ne__, a, b)
@@ -1096,11 +1096,12 @@ class SimplificationManager:
         """
         This simplifier handles the following cases:
 
-            ZeroExt(n, A) == b, and
-            ZeroExt(n, A) != b
+            ZeroExt(n, A) == b,
+            ZeroExt(n, A) != b, and
+            ZeroExt(n, A) >= b
 
-        If the high bits of b are all zeros (in case of __eq__) or have at least one ones (in case of __ne__), ZeroExt
-        can be eliminated.
+        If the high bits of b are all zeros (in case of ==, !=, and >=) or have at least one ones (in case of !=),
+        ZeroExt can be eliminated.
         """
         if op in {operator.__eq__, operator.__ne__, operator.__ge__} and b.op == "BVV":
             if a.op == "ZeroExt":
