@@ -1232,6 +1232,18 @@ class Base:
                 pass
 
     @property
+    def concrete_value(self):
+        return self._model_concrete.value
+
+    @property
+    def cv(self):
+        return self._model_concrete.value
+
+    @property
+    def v(self):
+        return self._model_concrete.value
+
+    @property
     def singlevalued(self):
         return self._first_backend("singlevalued")
 
