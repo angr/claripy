@@ -212,7 +212,7 @@ def BVS(
     discrete_set=False,
     discrete_set_max_card=None,
     **kwargs,
-):
+) -> BV:
     """
     Creates a bit-vector symbol (i.e., a variable).
 
@@ -261,7 +261,7 @@ def BVS(
     )
 
 
-def BVV(value, size=None, **kwargs):
+def BVV(value, size=None, **kwargs) -> BV:
     """
     Creates a bit-vector value (i.e., a concrete value).
 
