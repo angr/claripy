@@ -1,61 +1,10 @@
-from typing import TYPE_CHECKING, TypeVar, Type, Callable, overload, Union, Tuple
 import itertools
 from . import debug as _d
 
-if TYPE_CHECKING:
-    from claripy.ast.base import Base
-    from claripy.ast.bv import BV
-    from claripy.ast.bool import Bool
-    from claripy.ast.fp import FP
-
-T = TypeVar("T", bound="Base")
-CoerceBV = Union[int, "BV"]
-CoerceBool = Union[bool, "Bool"]
-CoerceFP = Union[float, "FP"]
-
-
-@overload
-def op(
-    name: str,
-    arg_types: "Tuple[Type[BV]]",
-    return_type: Type[T],
-    extra_check=...,
-    calc_length=...,
-    do_coerce=...,
-    bound=...,
-) -> Callable[[CoerceBV], T]:
-    ...
-
-
-@overload
-def op(
-    name: str,
-    arg_types: "Tuple[Type[BV], Type[BV]]",
-    return_type: Type[T],
-    extra_check=...,
-    calc_length=...,
-    do_coerce=...,
-    bound=...,
-) -> Callable[[CoerceBV, CoerceBV], T]:
-    ...
-
-
-@overload
-def op(
-    name: str,
-    arg_types: "Tuple[Type[BV], Type[BV], Type[BV]]",
-    return_type: Type[T],
-    extra_check=...,
-    calc_length=...,
-    do_coerce=...,
-    bound=...,
-) -> Callable[[CoerceBV, CoerceBV, CoerceBV], T]:
-    ...
-
 
 def op(
-    name, arg_types, return_type: Type[T], extra_check=None, calc_length=None, do_coerce=True, bound=True
-) -> Callable[..., T]:  # pylint:disable=unused-argument
+    name, arg_types, return_type, extra_check=None, calc_length=None, do_coerce=True, bound=True
+):  # pylint:disable=unused-argument
     if type(arg_types) in (tuple, list):  # pylint:disable=unidiomatic-typecheck
         expected_num_args = len(arg_types)
     elif type(arg_types) is type:  # pylint:disable=unidiomatic-typecheck

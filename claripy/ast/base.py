@@ -9,7 +9,6 @@ from itertools import chain
 from typing import Optional, Generic, TypeVar, overload, TYPE_CHECKING, List, Iterable, Iterator, Tuple
 
 if TYPE_CHECKING:
-    from .bv import BV
     from .bool import Bool
     from .fp import FP
     from ..annotation import Annotation
@@ -69,8 +68,8 @@ def _make_name(name: str, size: int, explicit_name: bool = False, prefix: str = 
 def _d(h, cls, state):
     """
     This function is the deserializer for ASTs.
-    It exists to work around the fact that pickle will (normally) call __new__() with no arguments during deserialization.
-    For ASTs, this does not work.
+    It exists to work around the fact that pickle will (normally) call __new__() with no arguments during
+    deserialization. For ASTs, this does not work.
     """
     op, args, length, variables, symbolic, annotations = state
     return cls.__new__(
@@ -808,7 +807,7 @@ class Base:
                 value = f" {operations.infix[op]} ".join(args)
                 return f"({value})" if inner and inner_infix_use_par else value
 
-        return "{}({})".format(op, ", ".join(map(str, args)))
+        return "{}({})".format(op, ", ".join(str(arg) for arg in args))
 
     def children_asts(self) -> Iterator["Base"]:
         """
@@ -1238,6 +1237,7 @@ class Base:
                 return getattr(b, what)(self)
             except BackendError:
                 pass
+        return None
 
     @property
     @overload
@@ -1309,7 +1309,8 @@ class Base:
         """
         The depth of allocation by lazy-initialization. It's only used in under-constrained symbolic execution mode.
 
-        :returns:                   An integer indicating the allocation depth, or None if it's not from lazy-initialization.
+        :returns:                   An integer indicating the allocation depth, or None if it's not from
+                                    lazy-initialization.
         """
         # TODO: It should definitely be moved to the proposed Annotation backend.
 
