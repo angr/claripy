@@ -5,7 +5,6 @@ import threading
 from .constrained_frontend import ConstrainedFrontend
 
 if TYPE_CHECKING:
-    from ..ast.base import Base
     from ..ast.bv import BV
     from ..ast.bool import Bool
     from ..ast.fp import FP
@@ -118,7 +117,7 @@ class FullFrontend(ConstrainedFrontend):
         except BackendError as e:
             raise ClaripyFrontendError("Backend error during solve") from e
 
-    def satisfiable(self, extra_constraints=(), exact=None) -> bool:
+    def satisfiable(self, extra_constraints: Iterable["Bool"] = (), exact: Optional[bool] = None) -> bool:
         try:
             return self._solver_backend.satisfiable(
                 extra_constraints=extra_constraints, solver=self._get_solver(), model_callback=self._model_hook
