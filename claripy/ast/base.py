@@ -608,7 +608,7 @@ class Base:
     def _apply_to_annotations(self, f):
         return self.make_like(self.op, self.args, annotations=f(self.annotations), skip_child_annotations=True)
 
-    def append_annotation(self: T, a: Annotation) -> T:
+    def append_annotation(self: T, a: "Annotation") -> T:
         """
         Appends an annotation to this AST.
 
@@ -617,7 +617,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: alist + (a,))
 
-    def append_annotations(self: T, new_tuple: Tuple[Annotation, ...]) -> T:
+    def append_annotations(self: T, new_tuple: Tuple["Annotation", ...]) -> T:
         """
         Appends several annotations to this AST.
 
@@ -626,7 +626,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: alist + new_tuple)
 
-    def annotate(self: T, *args: Annotation, remove_annotations: Optional[Iterable[Annotation]] = None) -> T:
+    def annotate(self: T, *args: "Annotation", remove_annotations: Optional[Iterable["Annotation"]] = None) -> T:
         """
         Appends annotations to this AST.
 
@@ -641,7 +641,7 @@ class Base:
                 lambda alist: tuple(arg for arg in alist if arg not in remove_annotations) + args
             )
 
-    def insert_annotation(self: T, a: Annotation) -> T:
+    def insert_annotation(self: T, a: "Annotation") -> T:
         """
         Inserts an annotation to this AST.
 
@@ -650,7 +650,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: (a,) + alist)
 
-    def insert_annotations(self: T, new_tuple: Tuple[Annotation, ...]) -> T:
+    def insert_annotations(self: T, new_tuple: Tuple["Annotation", ...]) -> T:
         """
         Inserts several annotations to this AST.
 
@@ -659,7 +659,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: new_tuple + alist)
 
-    def replace_annotations(self: T, new_tuple: Tuple[Annotation, ...]) -> T:
+    def replace_annotations(self: T, new_tuple: Tuple["Annotation", ...]) -> T:
         """
         Replaces annotations on this AST.
 
@@ -668,7 +668,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: new_tuple)
 
-    def remove_annotation(self: T, a: Annotation) -> T:
+    def remove_annotation(self: T, a: "Annotation") -> T:
         """
         Removes an annotation from this AST.
 
@@ -677,7 +677,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: tuple(oa for oa in alist if oa != a))
 
-    def remove_annotations(self: T, remove_sequence: Iterable[Annotation]) -> T:
+    def remove_annotations(self: T, remove_sequence: Iterable["Annotation"]) -> T:
         """
         Removes several annotations from this AST.
 

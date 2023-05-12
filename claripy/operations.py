@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from claripy.ast.bool import Bool
     from claripy.ast.fp import FP
 
-T = TypeVar("T", bound=Base)
+T = TypeVar("T", bound="Base")
 CoerceBV = Union[int, "BV"]
 CoerceBool = Union[bool, "Bool"]
 CoerceFP = Union[float, "FP"]

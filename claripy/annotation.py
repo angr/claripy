@@ -28,7 +28,7 @@ class Annotation:
         """
         return False
 
-    def relocate(self, src: Base, dst: Base):  # pylint:disable=no-self-use,unused-argument
+    def relocate(self, src: "Base", dst: "Base"):  # pylint:disable=no-self-use,unused-argument
         """
         This is called when an annotation has to be relocated because of simplifications.
 
