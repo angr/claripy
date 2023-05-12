@@ -42,9 +42,7 @@ class TestFp(unittest.TestCase):
         have different bit representations and hence are different.
         """
 
-        zd = claripy.FPV(0.0, claripy.FSORT_DOUBLE)  # pylint: disable=unused-variable
         nzd = claripy.FPV(-0.0, claripy.FSORT_DOUBLE)
-        zf = claripy.FPV(0.0, claripy.FSORT_FLOAT)  # pylint: disable=unused-variable
         nzf = claripy.FPV(-0.0, claripy.FSORT_FLOAT)
         s = claripy.Solver()
         assert s.eval(nzd.to_bv(), 1)[0] == 0x8000000000000000

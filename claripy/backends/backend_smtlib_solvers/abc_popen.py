@@ -1,7 +1,6 @@
 import subprocess
 import logging
 
-import re
 from . import SMTLibSolverBackend, PopenSolverProxy
 from ...errors import MissingSolverError
 

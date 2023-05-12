@@ -222,16 +222,16 @@ class BackendConcrete(Backend):
 
     # pylint:disable=singleton-comparison
     def _is_true(self, e, extra_constraints=(), solver=None, model_callback=None):
-        return e == True
+        return e is True
 
     def _is_false(self, e, extra_constraints=(), solver=None, model_callback=None):
-        return e == False
+        return e is False
 
     def _has_true(self, e, extra_constraints=(), solver=None, model_callback=None):
-        return e == True
+        return e is True
 
     def _has_false(self, e, extra_constraints=(), solver=None, model_callback=None):
-        return e == False
+        return e is False
 
 
 from ..operations import backend_operations, backend_fp_operations, backend_strings_operations

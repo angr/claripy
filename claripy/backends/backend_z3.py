@@ -538,8 +538,8 @@ class BackendZ3(Backend):
 
         if type(result_ty) is str:
             err = (
-                "Unknown Z3 error in abstraction (result_ty == '%s'). Update your version of Z3, and, if the problem persists, open a claripy issue."
-                % result_ty
+                "Unknown Z3 error in abstraction (result_ty == '%s'). Update your version of Z3, and, if the problem "
+                "persists, open a claripy issue." % result_ty
             )
             l.error(err)
             raise BackendError(err)
