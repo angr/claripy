@@ -481,7 +481,7 @@ class Base:
         self.length = length
         self.variables = frozenset(variables) if type(variables) is not frozenset else variables
         self.symbolic = symbolic
-        self.annotations = annotations
+        self.annotations: Tuple[Annotation] = annotations
         self._uneliminatable_annotations = uneliminatable_annotations
         self._relocatable_annotations = relocatable_annotations
 
@@ -1238,21 +1238,6 @@ class Base:
             except BackendError:
                 pass
         return None
-
-    @property
-    @overload
-    def concrete_value(self: "BV") -> int:
-        ...
-
-    @property
-    @overload
-    def concrete_value(self: "Bool") -> bool:
-        ...
-
-    @property
-    @overload
-    def concrete_value(self: "FP") -> float:
-        ...
 
     @property
     def concrete_value(self):
