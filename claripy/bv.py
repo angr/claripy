@@ -1,9 +1,11 @@
+from __future__ import annotations
 import functools
 import numbers
 
 from .errors import ClaripyOperationError, ClaripyTypeError, ClaripyZeroDivisionError
 from .backend_object import BackendObject
 from . import debug as _d
+from typing import TYPE_CHECKING
 
 
 def compare_bits(f):
@@ -50,7 +52,7 @@ def normalize_types(f):
 class BVV(BackendObject):
     __slots__ = ["bits", "_value", "mod"]
 
-    def __init__(self, value, bits):
+    def __init__(self, value: int, bits: int) -> None:
         if _d._DEBUG:
             if bits < 0 or not isinstance(bits, numbers.Number) or not isinstance(value, numbers.Number):
                 raise ClaripyOperationError("BVV needs a non-negative length and an int value")
@@ -96,34 +98,34 @@ class BVV(BackendObject):
 
     @normalize_types
     @compare_bits
-    def __add__(self, o):
+    def __add__(self, o: BVV) -> BVV:
         return BVV(self.value + o.value, self.bits)
 
     @normalize_types
     @compare_bits
-    def __sub__(self, o):
+    def __sub__(self, o: BVV) -> BVV:
         return BVV(self.value - o.value, self.bits)
 
     @normalize_types
     @compare_bits
-    def __mul__(self, o):
+    def __mul__(self, o: BVV) -> BVV:
         return BVV(self.value * o.value, self.bits)
 
     @normalize_types
     @compare_bits
-    def __mod__(self, o):
+    def __mod__(self, o: BVV) -> BVV:
         if o.value == 0:
             raise ClaripyZeroDivisionError()
         return BVV(self.value % o.value, self.bits)
 
     @normalize_types
     @compare_bits
-    def __floordiv__(self, o):
+    def __floordiv__(self, o: BVV) -> BVV:
         if o.value == 0:
             raise ClaripyZeroDivisionError()
         return BVV(self.value // o.value, self.bits)
 
-    def __truediv__(self, other):
+    def __truediv__(self, other: BVV) -> BVV:
         return self // other  # decline to implicitly have anything to do with floats
 
     #
@@ -147,19 +149,19 @@ class BVV(BackendObject):
 
     @normalize_types
     @compare_bits
-    def __rmod__(self, o):
+    def __rmod__(self, o: BVV):
         if self.value == 0:
             raise ClaripyZeroDivisionError()
         return BVV(o.value % self.value, self.bits)
 
     @normalize_types
     @compare_bits
-    def __rfloordiv__(self, o):
+    def __rfloordiv__(self, o: BVV):
         if self.value == 0:
             raise ClaripyZeroDivisionError()
         return BVV(o.value // self.value, self.bits)
 
-    def __rtruediv__(self, o):
+    def __rtruediv__(self, o: BVV):
         return self.__rfloordiv__(o)
 
     #
@@ -168,34 +170,34 @@ class BVV(BackendObject):
 
     @normalize_types
     @compare_bits
-    def __and__(self, o):
+    def __and__(self, o: BVV) -> BVV:
         return BVV(self.value & o.value, self.bits)
 
     @normalize_types
     @compare_bits
-    def __or__(self, o):
+    def __or__(self, o: BVV) -> BVV:
         return BVV(self.value | o.value, self.bits)
 
     @normalize_types
     @compare_bits
-    def __xor__(self, o):
+    def __xor__(self, o: BVV) -> BVV:
         return BVV(self.value ^ o.value, self.bits)
 
     @normalize_types
     @compare_bits
-    def __lshift__(self, o):
+    def __lshift__(self, o: BVV) -> BVV:
         return BVV(self.value << o.value, self.bits)
 
     @normalize_types
     @compare_bits
-    def __rshift__(self, o):
+    def __rshift__(self, o: BVV) -> BVV:
         # arithmetic shift uses the signed version
         return BVV(self.signed >> o.value, self.bits)
 
-    def __invert__(self):
+    def __invert__(self) -> BVV:
         return BVV(self.value ^ self.mod - 1, self.bits)
 
-    def __neg__(self):
+    def __neg__(self) -> BVV:
         return BVV((-self.value) % self.mod, self.bits)
 
     #
@@ -233,39 +235,39 @@ class BVV(BackendObject):
 
     @normalize_types
     @compare_bits_0_length
-    def __eq__(self, o):
+    def __eq__(self, o: BVV) -> bool:
         return self.value == o.value
 
     @normalize_types
     @compare_bits_0_length
-    def __ne__(self, o):
+    def __ne__(self, o: BVV) -> bool:
         return self.value != o.value
 
     @normalize_types
     @compare_bits
-    def __lt__(self, o):
+    def __lt__(self, o: BVV) -> bool:
         return self.value < o.value
 
     @normalize_types
     @compare_bits
-    def __gt__(self, o):
+    def __gt__(self, o: BVV) -> bool:
         return self.value > o.value
 
     @normalize_types
     @compare_bits
-    def __le__(self, o):
+    def __le__(self, o: BVV) -> bool:
         return self.value <= o.value
 
     @normalize_types
     @compare_bits
-    def __ge__(self, o):
+    def __ge__(self, o: BVV) -> bool:
         return self.value >= o.value
 
     #
     # Conversions
     #
 
-    def size(self):
+    def size(self) -> int:
         return self.bits
 
     def __repr__(self):
@@ -281,19 +283,19 @@ def BitVecVal(value, bits):
     return BVV(value, bits)
 
 
-def ZeroExt(num, o):
+def ZeroExt(num: int, o: BVV) -> BVV:
     return BVV(o.value, o.bits + num)
 
 
-def SignExt(num, o):
+def SignExt(num: int, o: BVV) -> BVV:
     return BVV(o.signed, o.bits + num)
 
 
-def Extract(f, t, o):
+def Extract(f: int, t: int, o: BVV) -> BVV:
     return BVV((o.value >> t) & ((1 << (f + 2 - t)) - 1), f + 1 - t)
 
 
-def Concat(*args):
+def Concat(*args) -> BVV:
     total_bits = 0
     total_value = 0
 
@@ -313,7 +315,7 @@ def RotateLeft(self, bits):
     return (self << bits_smaller) | (LShR(self, (self.size() - bits_smaller)))
 
 
-def Reverse(a):
+def Reverse(a: BVV) -> BVV:
     size = a.size()
     if size == 8:
         return a
@@ -341,7 +343,7 @@ def _reverse_16(v):
     return ((v & 0xFF) << 8) | ((v & 0xFF00) >> 8)
 
 
-def _reverse_32(v):
+def _reverse_32(v: int) -> int:
     return ((v & 0xFF) << 24) | ((v & 0xFF00) << 8) | ((v & 0xFF0000) >> 8) | ((v & 0xFF000000) >> 24)
 
 
@@ -408,7 +410,7 @@ def SGE(self, o):
 
 @normalize_types
 @compare_bits
-def SMod(self, o):
+def SMod(self: BVV, o: BVV) -> BVV:
     # compute the remainder like the % operator in C
     a = self.signed
     b = o.signed
@@ -421,7 +423,7 @@ def SMod(self, o):
 
 @normalize_types
 @compare_bits
-def SDiv(self, o):
+def SDiv(self: BVV, o: BVV) -> BVV:
     # compute the round towards 0 division
     a = self.signed
     b = o.signed
@@ -467,5 +469,5 @@ def If(c, t, f):
 
 @normalize_types
 @compare_bits
-def LShR(a, b):
+def LShR(a: BVV, b: BVV) -> BVV:
     return BVV(a.value >> b.value, a.bits)

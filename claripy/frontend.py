@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import annotations
 import logging
 import numbers
 
@@ -7,29 +8,29 @@ l = logging.getLogger("claripy.frontends.frontend")
 
 
 class Frontend:
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    def __getstate__(self):
+    def __getstate__(self) -> bool:
         return True  # need to return something so that pickle calls setstate
 
-    def __setstate__(self, s):  # pylint:disable=unused-argument
+    def __setstate__(self, s: bool) -> None:  # pylint:disable=unused-argument
         return
 
-    def branch(self):
+    def branch(self) -> Frontend:
         c = self.blank_copy()
         self._copy(c)
         return c
 
-    def blank_copy(self):
+    def blank_copy(self) -> Frontend:
         c = self.__class__.__new__(self.__class__)
         self._blank_copy(c)
         return c
 
-    def _blank_copy(self, c):  # pylint:disable=no-self-use,unused-argument
+    def _blank_copy(self, c: ConstrainedFrontend) -> None:  # pylint:disable=no-self-use,unused-argument
         return
 
-    def _copy(self, c):  # pylint:disable=no-self-use,unused-argument
+    def _copy(self, c: ConstrainedFrontend) -> None:  # pylint:disable=no-self-use,unused-argument
         return
 
     #
@@ -214,7 +215,9 @@ class Frontend:
     # Some utility functions
     #
 
-    def _concrete_value(self, e):  # pylint:disable=no-self-use
+    def _concrete_value(
+        self, e: Union[Bool, DiscreteStridedIntervalSet, BV, int, FP]
+    ) -> Optional[int]:  # pylint:disable=no-self-use
         if isinstance(e, numbers.Number):
             return e
         else:
@@ -222,11 +225,22 @@ class Frontend:
 
     _concrete_constraint = _concrete_value
 
-    def _constraint_filter(self, c):  # pylint:disable=no-self-use
+    def _constraint_filter(
+        self, c: Union[List[Bool], Tuple[Bool, Bool], Tuple[Bool]]
+    ) -> Union[List[Bool], Tuple[Bool, Bool], Tuple[Bool]]:  # pylint:disable=no-self-use
         return c
 
     @staticmethod
-    def _split_constraints(constraints, concrete=True):
+    def _split_constraints(
+        constraints: Union[
+            Tuple[Bool],
+            Tuple[Bool, Bool],
+            Tuple[Bool, Bool, Bool, Bool, Bool, Bool, Bool, Bool, Bool, Bool, Bool, Bool],
+            List[Bool],
+            Tuple[Bool, Bool, Bool],
+        ],
+        concrete: bool = True,
+    ) -> List[Tuple[Set[str], List[Bool]]]:
         """
         Returns independent constraints, split from this Frontend's `constraints`.
         """
@@ -274,3 +288,11 @@ class Frontend:
 
 
 from . import ast
+from typing import TYPE_CHECKING, List, Optional, Set, Tuple, Union
+
+if TYPE_CHECKING:
+    from claripy.ast.bool import Bool
+    from claripy.ast.bv import BV
+    from claripy.ast.fp import FP
+    from claripy.frontends.constrained_frontend import ConstrainedFrontend
+    from claripy.vsa.discrete_strided_interval_set import DiscreteStridedIntervalSet

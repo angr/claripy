@@ -1,8 +1,9 @@
 # pylint:disable=isinstance-second-argument-not-valid-type
+from __future__ import annotations
 import collections
 import itertools
 import operator
-from typing import Optional
+from typing import TYPE_CHECKING, Any, Callable, List, Union, Optional
 
 from functools import reduce
 
@@ -37,13 +38,13 @@ class SimplificationManager:
             "__invert__": self.invert_simplifier,
         }
 
-    def simplify(self, op, args):
+    def simplify(self, op: str, args: Any) -> BV | Bool | None:
         if op not in self._simplifiers:
             return None
         return self._simplifiers[op](*args)
 
     @staticmethod
-    def _deduplicate_filter(args):
+    def _deduplicate_filter(args: Any) -> list[Bool | BV]:
         seen = set()
         new_args = []
         for arg in args:
@@ -70,7 +71,7 @@ class SimplificationManager:
             return if_false
 
     @staticmethod
-    def concat_simplifier(*args):
+    def concat_simplifier(*args) -> BV | None:
         if len(args) == 1:
             return args[0]
 
@@ -154,7 +155,7 @@ class SimplificationManager:
         return
 
     @staticmethod
-    def rshift_simplifier(val, shift):
+    def rshift_simplifier(val: BV, shift: BV) -> BV | None:
         if (shift == 0).is_true():
             return val
         if val.op == "Concat" and (val.args[0] == 0).is_true() and (shift > val.size() - val.args[0].size()).is_true():
@@ -163,7 +164,7 @@ class SimplificationManager:
             return ast.all_operations.BVV(0, val.size())
 
     @staticmethod
-    def lshr_simplifier(val, shift):
+    def lshr_simplifier(val: BV, shift: BV) -> None:
         if (shift == 0).is_true():
             return val
         if val.op == "Concat" and (val.args[0] == 0).is_true() and (shift > val.size() - val.args[0].size()).is_true():
@@ -172,7 +173,7 @@ class SimplificationManager:
             return ast.all_operations.BVV(0, val.size())
 
     @staticmethod
-    def lshift_simplifier(val, shift):
+    def lshift_simplifier(val: BV, shift: BV) -> None:
         if (shift == 0).is_true():
             return val
         if val.op == "__lshift__":
@@ -180,7 +181,7 @@ class SimplificationManager:
             return real_val << (inner_shift + shift)
 
     @staticmethod
-    def eq_simplifier(a, b):
+    def eq_simplifier(a: String | BV, b: String | BV) -> Bool | None:
         if a is b:
             return ast.true
 
@@ -265,7 +266,7 @@ class SimplificationManager:
                     return ast.all_operations.false
 
     @staticmethod
-    def ne_simplifier(a, b):
+    def ne_simplifier(a: String | BV | Bool, b: String | BV | Bool) -> Bool | None:
         if a is b:
             return ast.false
 
@@ -332,14 +333,14 @@ class SimplificationManager:
                     return ast.all_operations.true
 
     @staticmethod
-    def ge_simplifier(a, b):
+    def ge_simplifier(a: BV, b: BV) -> Bool | None:
         # ZeroExt/Concat and comparing against a constant
         simp = SimplificationManager.zeroext_comparing_against_simplifier(operator.__ge__, a, b)
         if simp is not None:
             return simp
 
     @staticmethod
-    def bv_reverse_simplifier(body):
+    def bv_reverse_simplifier(body: BV) -> BV | None:
         if body.op == "Reverse":
             # Reverse(Reverse(x)) ==> x
             return body.args[0]
@@ -380,7 +381,7 @@ class SimplificationManager:
                 return body.make_like(body.op, (new_hi, new_lo, x), simplify=True)
 
     @staticmethod
-    def boolean_and_simplifier(*args):
+    def boolean_and_simplifier(*args) -> Bool:
         if len(args) == 1:
             return args[0]
 
@@ -473,7 +474,7 @@ class SimplificationManager:
         return flattened
 
     @staticmethod
-    def boolean_or_simplifier(*args):
+    def boolean_or_simplifier(*args) -> Bool:
         if len(args) == 1:
             return args[0]
 
@@ -492,7 +493,7 @@ class SimplificationManager:
         return SimplificationManager._flatten_simplifier("Or", SimplificationManager._deduplicate_filter, *args)
 
     @staticmethod
-    def _flatten_simplifier(op_name, filter_func, *args, **kwargs):
+    def _flatten_simplifier(op_name: str, filter_func: Callable | None, *args, **kwargs) -> BV | Bool | None:
         # we cannot further flatten if any top-level argument has non-relocatable annotations
         if any(not anno.relocatable for anno in itertools.chain.from_iterable(arg.annotations for arg in args)):
             return None
@@ -528,7 +529,7 @@ class SimplificationManager:
         )
 
     @staticmethod
-    def bitwise_add_simplifier(*args):
+    def bitwise_add_simplifier(*args) -> BV | None:
         if len(args) == 2 and args[1].op == "BVV" and args[0].op == "__sub__" and args[0].args[1].op == "BVV":
             # flatten add over sub
             # (x - y) + z ==> x - (y - z)
@@ -542,11 +543,11 @@ class SimplificationManager:
         return None
 
     @staticmethod
-    def bitwise_mul_simplifier(*args):
+    def bitwise_mul_simplifier(*args) -> BV:
         return SimplificationManager._flatten_simplifier("__mul__", None, *args)
 
     @staticmethod
-    def bitwise_sub_simplifier(a, b):
+    def bitwise_sub_simplifier(a: BV, b: BV) -> BV | None:
         if b.op == "BVV":
             # many optimizations if b is concrete - effectively flattening
             if b.args[0] == 0:
@@ -571,7 +572,7 @@ class SimplificationManager:
     # and recognize b-bit z=signedmin(q,r) from this idiom:
     # s=r-q;t=q^r;u=s^r;v=u&t;w=v^s;x=rshift(w,b-1);y=x&t;z=q^y
     @staticmethod
-    def bitwise_xor_simplifier_minmax(a, b):
+    def bitwise_xor_simplifier_minmax(a: BV, b: BV) -> None:
         q, y = a, b
         if y.op != "__and__":
             q, y = b, a
@@ -638,7 +639,7 @@ class SimplificationManager:
             return ast.all_operations.If(cond, q, r)
 
     @staticmethod
-    def bitwise_xor_simplifier(a, b, *args):
+    def bitwise_xor_simplifier(a: BV, b: BV, *args) -> BV:
         if not args:
             if a is ast.all_operations.BVV(0, a.size()):
                 return b
@@ -677,7 +678,7 @@ class SimplificationManager:
         )
 
     @staticmethod
-    def bitwise_or_simplifier(a, b, *args):
+    def bitwise_or_simplifier(a: BV, b: BV, *args) -> BV:
         if not args:
             if a is ast.all_operations.BVV(0, a.size()):
                 return b
@@ -697,7 +698,7 @@ class SimplificationManager:
         )
 
     @staticmethod
-    def bitwise_and_simplifier(a, b, *args):
+    def bitwise_and_simplifier(a: BV, b: BV, *args) -> BV | None:
         if not args:
             # try to perform a rotate-shift-mask simplification
             r = SimplificationManager.rotate_shift_mask_simplifier(a, b)
@@ -749,7 +750,7 @@ class SimplificationManager:
         )
 
     @staticmethod
-    def boolean_not_simplifier(body):
+    def boolean_not_simplifier(body: Bool) -> Bool | None:
         if body.op == "__eq__":
             return body.args[0] != body.args[1]
         elif body.op == "__ne__":
@@ -786,7 +787,7 @@ class SimplificationManager:
             return ast.all_operations.ULT(body.args[0], body.args[1])
 
     @staticmethod
-    def zeroext_simplifier(n, e):
+    def zeroext_simplifier(n: int, e: BV) -> None:
         if n == 0:
             return e
 
@@ -795,14 +796,14 @@ class SimplificationManager:
             return e.make_like(e.op, (n + e.args[0], e.args[1]), length=n + e.size(), simplify=True)
 
     @staticmethod
-    def signext_simplifier(n, e):
+    def signext_simplifier(n: int, e: BV) -> None:
         if n == 0:
             return e
 
         # TODO: if top bit is 0, do a zero-extend instead
 
     @staticmethod
-    def extract_simplifier(high, low, val):
+    def extract_simplifier(high: int, low: int, val: BV) -> BV | None:
         # if we're extracting the whole value, return the value
         if high - low + 1 == val.size():
             return val
@@ -915,12 +916,12 @@ class SimplificationManager:
 
     # oh gods
     @staticmethod
-    def fptobv_simplifier(the_fp):
+    def fptobv_simplifier(the_fp: FP) -> None:
         if the_fp.op == "fpToFP" and len(the_fp.args) == 2:
             return the_fp.args[0]
 
     @staticmethod
-    def fptofp_simplifier(*args):
+    def fptofp_simplifier(*args) -> None:
         if len(args) == 2 and args[0].op == "fpToIEEEBV":
             to_bv, sort = args
             if sort == fp.FSORT_FLOAT and to_bv.length == 32:
@@ -929,7 +930,7 @@ class SimplificationManager:
                 return to_bv.args[0]
 
     @staticmethod
-    def rotate_shift_mask_simplifier(a, b):
+    def rotate_shift_mask_simplifier(a: BV, b: BV) -> BV | None:
         """
         Handles the following case:
             ((A << a) | (A >> (_N - a))) & mask, where
@@ -989,13 +990,15 @@ class SimplificationManager:
         return arg
 
     @staticmethod
-    def invert_simplifier(expr):
+    def invert_simplifier(expr: BV) -> BV | None:
         # ~ if(cond then 1 else 0)  ->  if(cond, ~1, ~0)  ->    if(!cond, 1,0)
         if expr.op == "If" and expr.args[1].op == "BVV" and expr.args[1].args[0] == 1 and expr.args[2].args[0] == 0:
             return ast.bool.If(ast.all_operations.Not(expr.args[0]), expr.args[1], expr.args[2])
 
     @staticmethod
-    def and_mask_comparing_against_constant_simplifier(op, a, b):
+    def and_mask_comparing_against_constant_simplifier(
+        op: Callable, a: String | BV | Bool, b: String | BV | Bool
+    ) -> Bool | None:
         """
         This simplifier handles the following case:
 
@@ -1020,7 +1023,7 @@ class SimplificationManager:
                     # the high `zero_bits` bits are zero
                     # check the constant
                     b_higher = b[b.size() - 1 : b.size() - zero_bits]
-                    b_higher_bits_are_0: Optional[bool] = None
+                    b_higher_bits_are_0: bool | None = None
                     if (b_higher == 0).is_true():
                         b_higher_bits_are_0 = True
                     elif (b_higher == 0).is_false():
@@ -1053,7 +1056,9 @@ class SimplificationManager:
         return None
 
     @staticmethod
-    def zeroext_extract_comparing_against_constant_simplifier(op, a, b):
+    def zeroext_extract_comparing_against_constant_simplifier(
+        op: Callable, a: String | BV | Bool, b: String | BV | Bool
+    ) -> None:
         """
         This simplifier handles the following cases:
 
@@ -1099,7 +1104,7 @@ class SimplificationManager:
         return None
 
     @staticmethod
-    def zeroext_comparing_against_simplifier(op, a, b):
+    def zeroext_comparing_against_simplifier(op: Callable, a: String | BV | Bool, b: String | BV | Bool) -> Bool | None:
         """
         This simplifier handles the following cases:
 
@@ -1160,6 +1165,12 @@ flattenable = {
 from .backend_manager import backends
 from . import ast
 from . import fp
+
+if TYPE_CHECKING:
+    from claripy.ast.bool import Bool
+    from claripy.ast.bv import BV
+    from claripy.ast.fp import FP
+    from claripy.ast.strings import String
 
 
 # the actual instance

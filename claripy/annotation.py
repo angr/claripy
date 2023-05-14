@@ -1,3 +1,7 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+
 class Annotation:
     """
     Annotations are used to achieve claripy's goal of being an arithmetic instrumentation engine.
@@ -57,9 +61,9 @@ class Annotation:
 
 class SimplificationAvoidanceAnnotation(Annotation):
     @property
-    def eliminatable(self):
+    def eliminatable(self) -> bool:
         return False
 
     @property
-    def relocatable(self):
+    def relocatable(self) -> bool:
         return False

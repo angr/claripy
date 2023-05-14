@@ -1,17 +1,22 @@
+from __future__ import annotations
 import re
 from .backend_object import BackendObject
 from .bv import BVV
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from claripy.bv import BVV
 
 
 class StringV(BackendObject):
-    def __init__(self, value):
+    def __init__(self, value: str) -> None:
         self.value = value
 
     def __repr__(self):
         return "StringV(%s)" % (self.value)
 
 
-def StrConcat(*args):
+def StrConcat(*args) -> StringV:
     """
     Concatenate a sequence of strings.
 
@@ -23,7 +28,7 @@ def StrConcat(*args):
     return StringV(new_value)
 
 
-def StrSubstr(start_idx, count, initial_string):
+def StrSubstr(start_idx: BVV, count: BVV, initial_string: StringV) -> StringV:
     """
     Return the substring of length `count` starting at `start_idx`.
 
@@ -37,7 +42,7 @@ def StrSubstr(start_idx, count, initial_string):
     return StringV(new_value)
 
 
-def StrReplace(initial_string, pattern_to_be_replaced, replacement_pattern):
+def StrReplace(initial_string: StringV, pattern_to_be_replaced: StringV, replacement_pattern: StringV) -> StringV:
     """
     Return string where the first occurrence of `pattern_to_be_replaced` is replaced with
     `replacement_pattern`.
@@ -53,7 +58,7 @@ def StrReplace(initial_string, pattern_to_be_replaced, replacement_pattern):
     return StringV(new_value)
 
 
-def StrLen(input_string, bitlength):
+def StrLen(input_string: StringV, bitlength: int) -> BVV:
     """
     Return length of the `input_string` in bytes.
 
@@ -65,7 +70,7 @@ def StrLen(input_string, bitlength):
     return BVV(len(input_string.value), bitlength)
 
 
-def StrContains(input_string, substring):
+def StrContains(input_string: StringV, substring: StringV) -> bool:
     """
     Check if `substring` is contained in `input_string`.
 
@@ -78,7 +83,7 @@ def StrContains(input_string, substring):
     return substring.value in input_string.value
 
 
-def StrPrefixOf(prefix, input_string):
+def StrPrefixOf(prefix: StringV, input_string: StringV) -> bool:
     """
     Check if `input_string` starts with `prefix`.
 
@@ -90,7 +95,7 @@ def StrPrefixOf(prefix, input_string):
     return re.match(r"^" + prefix.value, input_string.value) is not None
 
 
-def StrSuffixOf(suffix, input_string):
+def StrSuffixOf(suffix: StringV, input_string: StringV) -> bool:
     """
     Check if `input_string` ends with `suffix`.
 
@@ -102,7 +107,7 @@ def StrSuffixOf(suffix, input_string):
     return re.match(r".*" + suffix.value + "$", input_string.value) is not None
 
 
-def StrIndexOf(input_string, substring, startIndex, bitlength):
+def StrIndexOf(input_string: StringV, substring: StringV, startIndex: BVV, bitlength: int) -> BVV:
     """
     Return the index of the first occurrence of `substring` at or after the `startIndex`, or -1 if
     it is not found.
@@ -123,7 +128,7 @@ def StrIndexOf(input_string, substring, startIndex, bitlength):
         return BVV(-1, bitlength)
 
 
-def StrToInt(input_string, bitlength):
+def StrToInt(input_string: StringV, bitlength: int) -> BVV:
     """
     Return the integer representation of `input_string`.
 
@@ -139,7 +144,7 @@ def StrToInt(input_string, bitlength):
         return BVV(-1, bitlength)
 
 
-def StrIsDigit(input_string):
+def StrIsDigit(input_string: StringV) -> bool:
     """
     Determine whether `input_string` is entirely numeric.
 
@@ -150,7 +155,7 @@ def StrIsDigit(input_string):
     return input_string.value.isdigit()
 
 
-def IntToStr(input_bvv):
+def IntToStr(input_bvv: BVV) -> StringV:
     """
     Return the string representation of `input_bvv`.
 

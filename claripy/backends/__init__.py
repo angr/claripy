@@ -1,9 +1,9 @@
+from __future__ import annotations
 import ctypes
-import weakref
 import operator
 import threading
 import numbers
-
+import weakref
 import logging
 
 l = logging.getLogger("claripy.backend")
@@ -60,7 +60,7 @@ class Backend:
         "_false_cache",
     )
 
-    def __init__(self, solver_required=None):
+    def __init__(self, solver_required: Optional[bool] = None) -> None:
         self._op_raw = {}
         self._op_expr = {}
         self._cache_objects = True
@@ -71,11 +71,11 @@ class Backend:
         self._false_cache = weakref.WeakKeyDictionary()
 
     @property
-    def is_smt_backend(self):
+    def is_smt_backend(self) -> bool:
         return False
 
     @property
-    def _object_cache(self):
+    def _object_cache(self) -> weakref.WeakKeyDictionary:
         try:
             return self._tls.object_cache
         except AttributeError:
@@ -121,7 +121,7 @@ class Backend:
     # can understand.
     #
 
-    def _convert(self, r):  # pylint:disable=W0613,R0201
+    def _convert(self, r: int) -> int:  # pylint:disable=W0613,R0201
         """
         Converts `r` to something usable by this backend.
         """
@@ -148,7 +148,7 @@ class Backend:
         except BackendError:
             return False
 
-    def convert(self, expr):  # pylint:disable=R0201
+    def convert(self, expr: Any) -> Any:  # pylint:disable=R0201
         """
         Resolves a claripy.ast.Base into something usable by the backend.
 
@@ -234,14 +234,14 @@ class Backend:
 
         return arg_queue.pop()
 
-    def convert_list(self, args):
+    def convert_list(self, args: Any) -> List[Any]:
         return [a if isinstance(a, numbers.Number) else self.convert(a) for a in args]
 
     #
     # These functions provide support for applying operations to expressions.
     #
 
-    def call(self, op, args):
+    def call(self, op: str, args: Any) -> Union[BVV, bool, StringV, FPV]:
         """
         Calls operation `op` on args `args` with this backend.
 
@@ -250,7 +250,7 @@ class Backend:
         converted = self.convert_list(args)
         return self._call(op, converted)
 
-    def _call(self, op, args):
+    def _call(self, op: str, args: List[Any]) -> Any:
         """_call
 
         :param op:
@@ -295,7 +295,7 @@ class Backend:
     # These functions simplify expressions.
     #
 
-    def simplify(self, e):
+    def simplify(self, e: Union[BV, Bool]):
         o = self._abstract(self._simplify(self.convert(e)))
         o._simplified = Base.FULL_SIMPLIFY
         return o
@@ -307,7 +307,13 @@ class Backend:
     # Some other helpers
     #
 
-    def is_true(self, e, extra_constraints=(), solver=None, model_callback=None):  # pylint:disable=unused-argument
+    def is_true(
+        self,
+        e: Union[TrueResult, Bool],
+        extra_constraints: Tuple[()] = (),
+        solver: None = None,
+        model_callback: None = None,
+    ) -> bool:  # pylint:disable=unused-argument
         """
         Should return True if `e` can be easily found to be True.
 
@@ -337,7 +343,9 @@ class Backend:
                     self._false_cache[e.cache_key] = False
             return t
 
-    def is_false(self, e, extra_constraints=(), solver=None, model_callback=None):  # pylint:disable=unused-argument
+    def is_false(
+        self, e: Bool, extra_constraints: Tuple[()] = (), solver: None = None, model_callback: None = None
+    ) -> bool:  # pylint:disable=unused-argument
         """
         Should return True if e can be easily found to be False.
 
@@ -394,7 +402,13 @@ class Backend:
         """
         raise BackendError("backend doesn't support _is_true")
 
-    def has_true(self, e, extra_constraints=(), solver=None, model_callback=None):  # pylint:disable=unused-argument
+    def has_true(
+        self,
+        e: Union[MaybeResult, TrueResult, FalseResult],
+        extra_constraints: Tuple[()] = (),
+        solver: None = None,
+        model_callback: None = None,
+    ) -> bool:  # pylint:disable=unused-argument
         """
         Should return True if `e` can possible be True.
 
@@ -412,7 +426,13 @@ class Backend:
             self.convert(e), extra_constraints=extra_constraints, solver=solver, model_callback=model_callback
         )
 
-    def has_false(self, e, extra_constraints=(), solver=None, model_callback=None):  # pylint:disable=unused-argument
+    def has_false(
+        self,
+        e: Union[MaybeResult, TrueResult],
+        extra_constraints: Tuple[()] = (),
+        solver: None = None,
+        model_callback: None = None,
+    ) -> bool:  # pylint:disable=unused-argument
         """
         Should return False if `e` can possibly be False.
 
@@ -469,7 +489,7 @@ class Backend:
         """
         raise BackendError("backend doesn't support solving")
 
-    def add(self, s, c, track=False):
+    def add(self, s: Union[CVC4Proxy, ABCProxy], c: List[Union[Bool, Any]], track: bool = False) -> None:
         """
         This function adds constraints to the backend solver.
 
@@ -489,7 +509,7 @@ class Backend:
         """
         raise BackendError("backend doesn't support solving")
 
-    def unsat_core(self, s):
+    def unsat_core(self, s: Solver) -> List[Bool]:
         """
         This function returns the unsat core from the backend solver.
 
@@ -513,7 +533,14 @@ class Backend:
     # These functions provide evaluation support.
     #
 
-    def eval(self, expr, n, extra_constraints=(), solver=None, model_callback=None):
+    def eval(
+        self,
+        expr: Union[BV, DiscreteStridedIntervalSet, FP, Bool],
+        n: int,
+        extra_constraints: Union[Tuple[Bool], Tuple[()]] = (),
+        solver: Optional[Solver] = None,
+        model_callback: None = None,
+    ) -> Union[Tuple[bool], Tuple[int], Tuple[float], List[int]]:
         """
         This function returns up to `n` possible solutions for expression `expr`.
 
@@ -552,7 +579,14 @@ class Backend:
         """
         raise BackendError("backend doesn't support eval()")
 
-    def batch_eval(self, exprs, n, extra_constraints=(), solver=None, model_callback=None):
+    def batch_eval(
+        self,
+        exprs: List[Union[BV, FP]],
+        n: int,
+        extra_constraints: Union[Tuple[Bool], Tuple[()], Tuple[Bool, Bool]] = (),
+        solver: Optional[Solver] = None,
+        model_callback: Optional[Callable] = None,
+    ) -> List[Union[Tuple[int, int, int], Tuple[int], Tuple[int, int], Tuple[float]]]:
         """
         Evaluate one or multiple expressions.
 
@@ -592,7 +626,14 @@ class Backend:
 
         raise BackendError("backend doesn't support batch_eval()")
 
-    def min(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None):
+    def min(
+        self,
+        expr: BV,
+        extra_constraints: Union[Tuple[Bool], Tuple[Bool, Bool], Tuple[Bool, Bool, Bool], Tuple[()]] = (),
+        signed: bool = False,
+        solver: Optional[Solver] = None,
+        model_callback: Optional[Callable] = None,
+    ) -> int:
         """
         Return the minimum value of `expr`.
 
@@ -631,7 +672,14 @@ class Backend:
         """
         raise BackendError("backend doesn't support min()")
 
-    def max(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None):
+    def max(
+        self,
+        expr: BV,
+        extra_constraints: Union[Tuple[Bool], Tuple[Bool, Bool, Bool], Tuple[()], Tuple[Bool, Bool]] = (),
+        signed: bool = False,
+        solver: Optional[Solver] = None,
+        model_callback: Optional[Callable] = None,
+    ) -> int:
         """
         Return the maximum value of expr.
 
@@ -670,7 +718,12 @@ class Backend:
         """
         raise BackendError("backend doesn't support max()")
 
-    def check_satisfiability(self, extra_constraints=(), solver=None, model_callback=None):
+    def check_satisfiability(
+        self,
+        extra_constraints: Union[Tuple[Bool], Tuple[()]] = (),
+        solver: Optional[Union[CVC4Proxy, Solver]] = None,
+        model_callback: Optional[Callable] = None,
+    ) -> str:
         """
         This function does a constraint check and returns the solvers state
 
@@ -683,7 +736,12 @@ class Backend:
             extra_constraints=self.convert_list(extra_constraints), solver=solver, model_callback=model_callback
         )
 
-    def _check_satisfiability(self, extra_constraints=(), solver=None, model_callback=None):
+    def _check_satisfiability(
+        self,
+        extra_constraints: List[Union[BoolRef, Any]] = (),
+        solver: Optional[Solver] = None,
+        model_callback: Optional[Callable] = None,
+    ) -> str:
         """
         This function does a constraint check and returns the solvers state
 
@@ -698,7 +756,12 @@ class Backend:
             else "UNSAT"
         )
 
-    def satisfiable(self, extra_constraints=(), solver=None, model_callback=None):
+    def satisfiable(
+        self,
+        extra_constraints: Union[Tuple[Bool], Tuple[Bool, Bool], List[BoolRef], Tuple[()]] = (),
+        solver: Optional[Union[CVC4Proxy, Solver, ABCProxy]] = None,
+        model_callback: Optional[Callable] = None,
+    ) -> bool:
         """
         This function does a constraint check and checks if the solver is in a sat state.
 
@@ -724,7 +787,14 @@ class Backend:
         """
         raise BackendError("backend doesn't support solving")
 
-    def solution(self, expr, v, extra_constraints=(), solver=None, model_callback=None):
+    def solution(
+        self,
+        expr: BV,
+        v: Union[BV, int],
+        extra_constraints: Tuple[()] = (),
+        solver: Optional[Solver] = None,
+        model_callback: Optional[Callable] = None,
+    ) -> bool:
         """
         Return True if `v` is a solution of `expr` with the extra constraints, False otherwise.
 
@@ -783,7 +853,7 @@ class Backend:
         """
         raise BackendError("backend doesn't support name()")
 
-    def identical(self, a, b):
+    def identical(self, a: Union[BV, Bool], b: Union[BV, Bool]) -> bool:
         """
         This should return whether `a` is identical to `b`. Of course, this isn't always clear. True should mean that it
         is definitely identical. False eans that, conservatively, it might not be.
@@ -802,7 +872,7 @@ class Backend:
         """
         raise BackendError("backend doesn't support identical()")
 
-    def cardinality(self, a):
+    def cardinality(self, a: Union[BV, Bool]) -> int:
         """
         This should return the maximum number of values that an expression can take on. This should be a strict *over*
         approximation.
@@ -822,10 +892,10 @@ class Backend:
         """
         raise BackendError("backend doesn't support cardinality()")
 
-    def singlevalued(self, a):
+    def singlevalued(self, a: BV) -> bool:
         return self.cardinality(a) == 1
 
-    def multivalued(self, a):
+    def multivalued(self, a: BV) -> bool:
         return self.cardinality(a) > 1
 
     def apply_annotation(self, o, a):  # pylint:disable=no-self-use,unused-argument
@@ -838,7 +908,7 @@ class Backend:
         """
         return o
 
-    def default_op(self, expr):
+    def default_op(self, expr: Union[String, BV, FP, Bool]):
         # pylint: disable=unused-argument
         raise BackendError(f"Backend {self} does not support operation {expr.op}")
 
@@ -849,6 +919,22 @@ from .backend_z3_parallel import BackendZ3Parallel
 from .backend_concrete import BackendConcrete
 from .backend_vsa import BackendVSA
 from ..ast.base import Base
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Tuple, Union
+
+if TYPE_CHECKING:
+    from claripy.ast.bool import Bool
+    from claripy.ast.bv import BV
+    from claripy.ast.fp import FP
+    from claripy.ast.strings import String
+    from claripy.backends.backend_smtlib_solvers.abc_popen import ABCProxy
+    from claripy.backends.backend_smtlib_solvers.cvc4_popen import CVC4Proxy
+    from claripy.bv import BVV
+    from claripy.fp import FPV
+    from claripy.strings import StringV
+    from claripy.vsa.bool_result import FalseResult, MaybeResult, TrueResult
+    from claripy.vsa.discrete_strided_interval_set import DiscreteStridedIntervalSet
+    from weakref import WeakKeyDictionary
+    from z3.z3 import BoolRef, Solver
 
 # If you need support for multiple solvers, please import claripy.backends.backend_smtlib_solvers by yourself
 # from .backend_smtlib_solvers import *

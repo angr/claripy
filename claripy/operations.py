@@ -1,3 +1,4 @@
+from __future__ import annotations
 import itertools
 from . import debug as _d
 
@@ -75,7 +76,9 @@ def op(
     return _op
 
 
-def _handle_annotations(simp, args):
+def _handle_annotations(
+    simp: Optional[Union[String, BV, Bool, FP]], args: Any
+) -> Optional[Union[String, BV, Bool, FP]]:
     if simp is None:
         return None
 
@@ -117,7 +120,7 @@ def reversed_op(op_func):
 union_counter = itertools.count()
 
 
-def preprocess_union(*args, **kwargs):
+def preprocess_union(*args, **kwargs) -> Tuple[Tuple[BV, BV], Dict[str, Optional[Union[int, frozenset]]]]:
     #
     # When we union two values, we implicitly create a new symbolic, multi-valued
     # variable, because a union is essentially an ITE with an unconstrained
@@ -139,15 +142,15 @@ preprocessors = {
 #
 
 
-def length_same_check(*args):
+def length_same_check(*args) -> Tuple[bool, str]:
     return all(a.length == args[0].length for a in args), "args' length must all be equal"
 
 
-def basic_length_calc(*args):
+def basic_length_calc(*args) -> int:
     return args[0].length
 
 
-def extract_check(high, low, bv):
+def extract_check(high: int, low: int, bv: BV) -> Tuple[bool, str]:
     if high < 0 or low < 0:
         return False, "Extract high and low must be nonnegative"
     elif low > high:
@@ -158,15 +161,15 @@ def extract_check(high, low, bv):
     return True, ""
 
 
-def extend_check(amount, value):
+def extend_check(amount: int, value: BV) -> Tuple[bool, str]:
     return amount >= 0, "Extension length must be nonnegative"
 
 
-def concat_length_calc(*args):
+def concat_length_calc(*args) -> int:
     return sum(arg.length for arg in args)
 
 
-def extract_length_calc(high, low, _):
+def extract_length_calc(high: int, low: int, _: BV) -> int:
     return high + 1 - low
 
 
@@ -174,31 +177,31 @@ def str_basic_length_calc(str_1):
     return str_1.length
 
 
-def int_to_str_length_calc(int_val):  # pylint: disable=unused-argument
+def int_to_str_length_calc(int_val: BV) -> int:  # pylint: disable=unused-argument
     return 8 * ast.String.MAX_LENGTH
 
 
-def str_replace_check(*args):
+def str_replace_check(*args) -> Tuple[bool, str]:
     str_1, str_2, _ = args
     if str_1.length < str_2.length:
         return False, "The pattern that has to be replaced is longer than the string itself"
     return True, ""
 
 
-def substr_length_calc(start_idx, count, strval):  # pylint: disable=unused-argument
+def substr_length_calc(start_idx: BV, count: BV, strval: String) -> int:  # pylint: disable=unused-argument
     # FIXME: How can I get the value of a concrete object without a solver
     return strval.length if not count.concrete else 8 * count.args[0]
 
 
-def ext_length_calc(ext, orig):
+def ext_length_calc(ext: int, orig: BV) -> int:
     return orig.length + ext
 
 
-def str_concat_length_calc(*args):
+def str_concat_length_calc(*args) -> int:
     return sum(arg.length for arg in args)
 
 
-def str_replace_length_calc(*args):
+def str_replace_length_calc(*args) -> int:
     str_1, str_2, str_3 = args
     # Return the maximum length that the string can assume after the replace
     # operation
@@ -212,15 +215,17 @@ def str_replace_length_calc(*args):
     return str_1.length - str_2.length + str_3.length
 
 
-def strlen_bv_size_calc(s, bitlength):  # pylint: disable=unused-argument
+def strlen_bv_size_calc(s: String, bitlength: int) -> int:  # pylint: disable=unused-argument
     return bitlength
 
 
-def strindexof_bv_size_calc(s1, s2, start_idx, bitlength):  # pylint: disable=unused-argument
+def strindexof_bv_size_calc(
+    s1: String, s2: String, start_idx: BV, bitlength: int
+) -> int:  # pylint: disable=unused-argument
     return bitlength
 
 
-def strtoint_bv_size_calc(s, bitlength):  # pylint: disable=unused-argument
+def strtoint_bv_size_calc(s: String, bitlength: int) -> int:  # pylint: disable=unused-argument
     return bitlength
 
 
@@ -596,3 +601,10 @@ from .errors import ClaripyOperationError, ClaripyTypeError
 from . import simplifications
 from . import ast
 from . import fp
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union
+
+if TYPE_CHECKING:
+    from claripy.ast.bool import Bool
+    from claripy.ast.bv import BV
+    from claripy.ast.fp import FP
+    from claripy.ast.strings import String

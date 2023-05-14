@@ -1,3 +1,4 @@
+from __future__ import annotations
 import decimal
 import functools
 import math
@@ -42,10 +43,10 @@ class RM(Enum):
     RM_TowardsNegativeInf = "RM_RTN"
 
     @staticmethod
-    def default():
+    def default() -> RM:
         return RM.RM_NearestTiesEven
 
-    def pydecimal_equivalent_rounding_mode(self):
+    def pydecimal_equivalent_rounding_mode(self) -> str:
         return {
             RM.RM_TowardsPositiveInf: decimal.ROUND_CEILING,
             RM.RM_TowardsNegativeInf: decimal.ROUND_FLOOR,
@@ -68,21 +69,21 @@ class FSort:
         self.exp = exp
         self.mantissa = mantissa
 
-    def __eq__(self, other):
+    def __eq__(self, other: FSort) -> bool:
         return self.exp == other.exp and self.mantissa == other.mantissa
 
     def __repr__(self):
         return self.name
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.name, self.exp, self.mantissa))
 
     @property
-    def length(self):
+    def length(self) -> int:
         return self.exp + self.mantissa
 
     @staticmethod
-    def from_size(n):
+    def from_size(n: int) -> FSort:
         if n == 32:
             return FSORT_FLOAT
         elif n == 64:
@@ -107,7 +108,7 @@ FSORT_DOUBLE = FSort("DOUBLE", 11, 53)
 class FPV(BackendObject):
     __slots__ = ["sort", "value"]
 
-    def __init__(self, value, sort):
+    def __init__(self, value: float, sort: FSort) -> None:
         if not isinstance(value, float) or sort not in {FSORT_FLOAT, FSORT_DOUBLE}:
             raise ClaripyOperationError("FPV needs a sort (FSORT_FLOAT or FSORT_DOUBLE) and a float value")
 
@@ -242,7 +243,7 @@ class FPV(BackendObject):
         return f"FPV({self.value:f}, {self.sort})"
 
 
-def fpToFP(a1, a2, a3=None):
+def fpToFP(a1: RM, a2: FPV, a3: Optional[FSort] = None) -> FPV:
     """
     Returns a FP AST and has three signatures:
 
@@ -292,7 +293,7 @@ def fpToFPUnsigned(_rm, thing, sort):
     return FPV(float(thing.value), sort)
 
 
-def fpToIEEEBV(fpv):
+def fpToIEEEBV(fpv: FPV) -> BVV:
     """
     Interprets the bit-pattern of the IEEE754 floating point number `fpv` as a
     bitvector.
@@ -357,7 +358,7 @@ def fpToSBV(rm, fp, size):
         raise
 
 
-def fpToUBV(rm, fp, size):
+def fpToUBV(rm: RM, fp: FPV, size: int) -> BVV:
     # todo: actually make unsigned
     try:
         rounding_mode = rm.pydecimal_equivalent_rounding_mode()
@@ -480,3 +481,7 @@ def fpIsInf(x):
 
 
 from .bv import BVV, Concat
+from typing import TYPE_CHECKING, Optional
+
+if TYPE_CHECKING:
+    from claripy.bv import BVV
