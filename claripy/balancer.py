@@ -1,7 +1,16 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Iterator, List, Optional, Tuple, Union, Set
+from typing import TYPE_CHECKING, Any, Iterator
 import logging
 import operator
+
+from .operations import opposites, commutative_operations
+from . import vsa
+from .backend_manager import backends
+from . import _all_operations
+from .ast.bv import BVV, BVS, BV
+from .ast.bool import Bool
+from .ast.base import Base
+from .errors import ClaripyBalancerError, ClaripyBalancerUnsatError, ClaripyOperationError, BackendError
 
 l = logging.getLogger("claripy.balancer")
 
@@ -155,7 +164,9 @@ class Balancer:
 
         if not backends.vsa.identical(inner_aligned, truism):
             l.critical(
-                "ERROR: the balancer is messing up an AST. This must be looked into. Please submit the binary and script to the angr project, if possible. Outer op is %s and inner op is %s.",
+                "ERROR: the balancer is messing up an AST. This must be looked into. \
+                Please submit the binary and script to the angr project, if possible. \
+                Outer op is %s and inner op is %s.",
                 truism.op,
                 truism.args[0].op,
             )
@@ -184,22 +195,22 @@ class Balancer:
     def _reverse_comparison(a: Bool) -> Bool:
         try:
             new_op = opposites[a.op]
-        except KeyError:
-            raise ClaripyBalancerError("unable to reverse comparison %s (missing from 'opposites')" % a.op)
+        except KeyError as exc:
+            raise ClaripyBalancerError("unable to reverse comparison %s (missing from 'opposites')" % a.op) from exc
 
         try:
             if new_op.startswith("__"):
                 op = getattr(operator, new_op)
             else:
                 op = getattr(_all_operations, new_op)
-        except AttributeError:
-            raise ClaripyBalancerError("unable to reverse comparison %s (AttributeError)" % a.op)
+        except AttributeError as exc:
+            raise ClaripyBalancerError("unable to reverse comparison %s (AttributeError)" % a.op) from exc
 
         try:
             return op(*a.args[::-1])
-        except ClaripyOperationError:
+        except ClaripyOperationError as exc:
             # TODO: copy trace
-            raise ClaripyBalancerError("unable to reverse comparison %s (ClaripyOperationError)" % a.op)
+            raise ClaripyBalancerError("unable to reverse comparison %s (ClaripyOperationError)" % a.op) from exc
 
     def _align_bv(self, a: BV) -> BV:
         if a.op in commutative_operations:
@@ -351,7 +362,7 @@ class Balancer:
         vals = [is_false(v) for v in c.args]
         if all(vals):
             raise ClaripyBalancerUnsatError()
-        elif vals.count(False) == 1:
+        if vals.count(False) == 1:
             return self._unpack_truisms(c.args[vals.index(False)])
         else:
             return set()
@@ -612,7 +623,7 @@ class Balancer:
 
         if is_false(truism):
             raise ClaripyBalancerUnsatError()
-        elif self._cardinality(truism.args[0]) == 1:
+        if self._cardinality(truism.args[0]) == 1:
             # we are down to single-cardinality arguments, so our work is not
             # necessary
             return
@@ -648,7 +659,7 @@ class Balancer:
         if is_lt and bound_max < int_min:
             # if the bound max is negative and we're unsigned less than, we're fucked
             raise ClaripyBalancerUnsatError()
-        elif not is_lt and bound_min > int_max:
+        if not is_lt and bound_min > int_max:
             # if the bound min is too big, we're fucked
             raise ClaripyBalancerUnsatError()
 
@@ -684,7 +695,7 @@ class Balancer:
 
             if val == 0:
                 self._add_lower_bound(lhs, val + 1)
-            elif val == max_int or val == -1:
+            elif val in (max_int, -1):
                 self._add_upper_bound(lhs, max_int - 1)
 
     def _handle_If(self, truism):
@@ -714,15 +725,6 @@ def is_true(a: Bool) -> bool:
 def is_false(a: Bool) -> bool:
     return backends.vsa.is_false(a)
 
-
-from .errors import ClaripyBalancerError, ClaripyBalancerUnsatError, ClaripyOperationError, BackendError
-from .ast.base import Base
-from .ast.bool import Bool
-from .ast.bv import BVV, BVS, BV
-from . import _all_operations
-from .backend_manager import backends
-from . import vsa
-from .operations import opposites, commutative_operations
 
 if TYPE_CHECKING:
     from claripy.ast.bool import Bool

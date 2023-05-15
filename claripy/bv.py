@@ -5,7 +5,6 @@ import numbers
 from .errors import ClaripyOperationError, ClaripyTypeError, ClaripyZeroDivisionError
 from .backend_object import BackendObject
 from . import debug as _d
-from typing import TYPE_CHECKING
 
 
 def compare_bits(f):

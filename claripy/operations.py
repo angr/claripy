@@ -1,5 +1,10 @@
 from __future__ import annotations
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union
 import itertools
+from . import fp
+from . import ast
+from . import simplifications
+from .errors import ClaripyOperationError, ClaripyTypeError
 from . import debug as _d
 
 
@@ -76,9 +81,7 @@ def op(
     return _op
 
 
-def _handle_annotations(
-    simp: Optional[Union[String, BV, Bool, FP]], args: Any
-) -> Optional[Union[String, BV, Bool, FP]]:
+def _handle_annotations(simp: String | BV | Bool | FP | None, args: Any) -> String | BV | Bool | FP | None:
     if simp is None:
         return None
 
@@ -120,7 +123,7 @@ def reversed_op(op_func):
 union_counter = itertools.count()
 
 
-def preprocess_union(*args, **kwargs) -> Tuple[Tuple[BV, BV], Dict[str, Optional[Union[int, frozenset]]]]:
+def preprocess_union(*args, **kwargs) -> tuple[tuple[BV, BV], dict[str, int | frozenset | None]]:
     #
     # When we union two values, we implicitly create a new symbolic, multi-valued
     # variable, because a union is essentially an ITE with an unconstrained
@@ -134,7 +137,7 @@ def preprocess_union(*args, **kwargs) -> Tuple[Tuple[BV, BV], Dict[str, Optional
 
 preprocessors = {
     "union": preprocess_union,
-    #'intersection': preprocess_intersect
+    # 'intersection': preprocess_intersect
 }
 
 #
@@ -142,7 +145,7 @@ preprocessors = {
 #
 
 
-def length_same_check(*args) -> Tuple[bool, str]:
+def length_same_check(*args) -> tuple[bool, str]:
     return all(a.length == args[0].length for a in args), "args' length must all be equal"
 
 
@@ -150,7 +153,7 @@ def basic_length_calc(*args) -> int:
     return args[0].length
 
 
-def extract_check(high: int, low: int, bv: BV) -> Tuple[bool, str]:
+def extract_check(high: int, low: int, bv: BV) -> tuple[bool, str]:
     if high < 0 or low < 0:
         return False, "Extract high and low must be nonnegative"
     elif low > high:
@@ -161,7 +164,7 @@ def extract_check(high: int, low: int, bv: BV) -> Tuple[bool, str]:
     return True, ""
 
 
-def extend_check(amount: int, value: BV) -> Tuple[bool, str]:
+def extend_check(amount: int, value: BV) -> tuple[bool, str]:  # pylint: disable=unused-argument
     return amount >= 0, "Extension length must be nonnegative"
 
 
@@ -181,7 +184,7 @@ def int_to_str_length_calc(int_val: BV) -> int:  # pylint: disable=unused-argume
     return 8 * ast.String.MAX_LENGTH
 
 
-def str_replace_check(*args) -> Tuple[bool, str]:
+def str_replace_check(*args) -> tuple[bool, str]:
     str_1, str_2, _ = args
     if str_1.length < str_2.length:
         return False, "The pattern that has to be replaced is longer than the string itself"
@@ -428,9 +431,9 @@ opposites = {
     "SGT": "SLT",
     "SLE": "SGE",
     "SGE": "SLE",
-    #'__neg__':
-    #'__abs__':
-    #'__invert__':
+    # '__neg__':
+    # '__abs__':
+    # '__invert__':
     "__or__": "__ror__",
     "__ror__": "__or__",
     "__and__": "__rand__",
@@ -583,7 +586,7 @@ op_precedence = {  # based on https://en.cppreference.com/w/c/language/operator_
     "And": 11,
     # precedence: 12
     "Or": 12,
-    #'Concat': '..',
+    # 'Concat': '..',
 }
 
 commutative_operations = {
@@ -597,13 +600,7 @@ commutative_operations = {
     "Xor",
 }
 
-from .errors import ClaripyOperationError, ClaripyTypeError
-from . import simplifications
-from . import ast
-from . import fp
-from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union
-
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pylint: disable=duplicate-code
     from claripy.ast.bool import Bool
     from claripy.ast.bv import BV
     from claripy.ast.fp import FP

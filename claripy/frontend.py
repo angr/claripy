@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
 from __future__ import annotations
+from typing import TYPE_CHECKING, List, Optional, Set, Tuple, Union
 import logging
 import numbers
+from . import ast
 
 l = logging.getLogger("claripy.frontends.frontend")
 
@@ -216,8 +218,8 @@ class Frontend:
     #
 
     def _concrete_value(
-        self, e: Union[Bool, DiscreteStridedIntervalSet, BV, int, FP]
-    ) -> Optional[int]:  # pylint:disable=no-self-use
+        self, e: Bool | DiscreteStridedIntervalSet | BV | int | FP
+    ) -> int | None:  # pylint:disable=no-self-use
         if isinstance(e, numbers.Number):
             return e
         else:
@@ -226,21 +228,21 @@ class Frontend:
     _concrete_constraint = _concrete_value
 
     def _constraint_filter(
-        self, c: Union[List[Bool], Tuple[Bool, Bool], Tuple[Bool]]
-    ) -> Union[List[Bool], Tuple[Bool, Bool], Tuple[Bool]]:  # pylint:disable=no-self-use
+        self, c: list[Bool] | tuple[Bool, Bool] | tuple[Bool]
+    ) -> list[Bool] | tuple[Bool, Bool] | tuple[Bool]:  # pylint:disable=no-self-use
         return c
 
     @staticmethod
     def _split_constraints(
-        constraints: Union[
-            Tuple[Bool],
-            Tuple[Bool, Bool],
-            Tuple[Bool, Bool, Bool, Bool, Bool, Bool, Bool, Bool, Bool, Bool, Bool, Bool],
-            List[Bool],
-            Tuple[Bool, Bool, Bool],
-        ],
+        constraints: (
+            tuple[Bool]
+            | tuple[Bool, Bool]
+            | tuple[Bool, Bool, Bool, Bool, Bool, Bool, Bool, Bool, Bool, Bool, Bool, Bool]
+            | list[Bool]
+            | tuple[Bool, Bool, Bool]
+        ),
         concrete: bool = True,
-    ) -> List[Tuple[Set[str], List[Bool]]]:
+    ) -> list[tuple[set[str], list[Bool]]]:
         """
         Returns independent constraints, split from this Frontend's `constraints`.
         """
@@ -286,9 +288,6 @@ class Frontend:
 
         return results
 
-
-from . import ast
-from typing import TYPE_CHECKING, List, Optional, Set, Tuple, Union
 
 if TYPE_CHECKING:
     from claripy.ast.bool import Bool

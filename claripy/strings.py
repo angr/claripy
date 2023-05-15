@@ -1,8 +1,8 @@
 from __future__ import annotations
 import re
+from typing import TYPE_CHECKING
 from .backend_object import BackendObject
 from .bv import BVV
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from claripy.bv import BVV

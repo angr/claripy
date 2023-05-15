@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import TYPE_CHECKING, Optional
 import decimal
 import functools
 import math
@@ -8,6 +9,7 @@ from enum import Enum
 
 from .errors import ClaripyOperationError
 from .backend_object import BackendObject
+from .bv import BVV, Concat
 
 
 def compare_sorts(f):
@@ -202,7 +204,8 @@ class FPV(BackendObject):
             else:
                 return FPV(float("inf"), self.sort)
 
-    def __rfloordiv__(self, other):  # decline to involve integers in this floating point process
+    # decline to involve integers in this floating point process
+    def __rfloordiv__(self, other):
         return self.__rtruediv__(other)
 
     #
@@ -243,7 +246,7 @@ class FPV(BackendObject):
         return f"FPV({self.value:f}, {self.sort})"
 
 
-def fpToFP(a1: RM, a2: FPV, a3: Optional[FSort] = None) -> FPV:
+def fpToFP(a1: RM, a2: FPV, a3: FSort | None = None) -> FPV:
     """
     Returns a FP AST and has three signatures:
 
@@ -479,9 +482,6 @@ def fpIsInf(x):
     """
     return math.isinf(x)
 
-
-from .bv import BVV, Concat
-from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from claripy.bv import BVV

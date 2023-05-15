@@ -3,9 +3,12 @@ from __future__ import annotations
 import collections
 import itertools
 import operator
-from typing import TYPE_CHECKING, Any, Callable, List, Union, Optional
-
+from typing import TYPE_CHECKING, Any, Callable
 from functools import reduce
+
+from . import fp
+from . import ast
+from .backend_manager import backends
 
 
 class SimplificationManager:
@@ -540,7 +543,6 @@ class SimplificationManager:
             *args,
             initial_value=ast.all_operations.BVV(0, len(args[0])),
         )
-        return None
 
     @staticmethod
     def bitwise_mul_simplifier(*args) -> BV:
@@ -808,7 +810,7 @@ class SimplificationManager:
         if high - low + 1 == val.size():
             return val
 
-        if (val.op == "SignExt" or val.op == "ZeroExt") and low == 0 and high + 1 == val.args[1].size():
+        if val.op in ("SignExt", "ZeroExt") and low == 0 and high + 1 == val.args[1].size():
             return val.args[1]
 
         if val.op == "ZeroExt":
@@ -912,7 +914,7 @@ class SimplificationManager:
 
         # invert(expr)[0:0]   ->   invert(expr[0:0])
         if val.op == "__invert__":
-            return ast.BV.__invert__(val.args[0][high:low])
+            return ~val.args[0][high:low]
 
     # oh gods
     @staticmethod
@@ -1037,7 +1039,8 @@ class SimplificationManager:
 
                         b_highbit_idx = b.size() - 1 - zero_bits
                         if b.size() % 8 == 0:
-                            # originally, b was 8-bit aligned. Can we keep the size of the new expression 8-byte aligned?
+                            # originally, b was 8-bit aligned.
+                            # Can we keep the size of the new expression 8-byte aligned?
                             if (b_highbit_idx + 1) % 8 != 0:
                                 b_highbit_idx += 8 - (b_highbit_idx + 1) % 8
                         b_lower = b[b_highbit_idx:0]
@@ -1162,16 +1165,11 @@ flattenable = {
     "Or",
 }
 
-from .backend_manager import backends
-from . import ast
-from . import fp
-
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pylint: disable=duplicate-code
     from claripy.ast.bool import Bool
     from claripy.ast.bv import BV
     from claripy.ast.fp import FP
     from claripy.ast.strings import String
-
 
 # the actual instance
 simpleton = SimplificationManager()

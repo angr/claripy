@@ -1,10 +1,13 @@
 from __future__ import annotations
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Tuple, Union
 import ctypes
 import operator
 import threading
 import numbers
 import weakref
 import logging
+from ..ast.base import Base
+from ..errors import BackendError, ClaripyRecursionError, BackendUnsupportedError
 
 l = logging.getLogger("claripy.backend")
 
@@ -60,7 +63,7 @@ class Backend:
         "_false_cache",
     )
 
-    def __init__(self, solver_required: Optional[bool] = None) -> None:
+    def __init__(self, solver_required: bool | None = None) -> None:
         self._op_raw = {}
         self._op_expr = {}
         self._cache_objects = True
@@ -234,14 +237,14 @@ class Backend:
 
         return arg_queue.pop()
 
-    def convert_list(self, args: Any) -> List[Any]:
+    def convert_list(self, args: Any) -> list[Any]:
         return [a if isinstance(a, numbers.Number) else self.convert(a) for a in args]
 
     #
     # These functions provide support for applying operations to expressions.
     #
 
-    def call(self, op: str, args: Any) -> Union[BVV, bool, StringV, FPV]:
+    def call(self, op: str, args: Any) -> BVV | bool | StringV | FPV:
         """
         Calls operation `op` on args `args` with this backend.
 
@@ -250,7 +253,7 @@ class Backend:
         converted = self.convert_list(args)
         return self._call(op, converted)
 
-    def _call(self, op: str, args: List[Any]) -> Any:
+    def _call(self, op: str, args: list[Any]) -> Any:
         """_call
 
         :param op:
@@ -295,7 +298,7 @@ class Backend:
     # These functions simplify expressions.
     #
 
-    def simplify(self, e: Union[BV, Bool]):
+    def simplify(self, e: BV | Bool):
         o = self._abstract(self._simplify(self.convert(e)))
         o._simplified = Base.FULL_SIMPLIFY
         return o
@@ -309,8 +312,8 @@ class Backend:
 
     def is_true(
         self,
-        e: Union[TrueResult, Bool],
-        extra_constraints: Tuple[()] = (),
+        e: TrueResult | Bool,
+        extra_constraints: tuple[()] = (),
         solver: None = None,
         model_callback: None = None,
     ) -> bool:  # pylint:disable=unused-argument
@@ -344,7 +347,7 @@ class Backend:
             return t
 
     def is_false(
-        self, e: Bool, extra_constraints: Tuple[()] = (), solver: None = None, model_callback: None = None
+        self, e: Bool, extra_constraints: tuple[()] = (), solver: None = None, model_callback: None = None
     ) -> bool:  # pylint:disable=unused-argument
         """
         Should return True if e can be easily found to be False.
@@ -404,8 +407,8 @@ class Backend:
 
     def has_true(
         self,
-        e: Union[MaybeResult, TrueResult, FalseResult],
-        extra_constraints: Tuple[()] = (),
+        e: MaybeResult | TrueResult | FalseResult,
+        extra_constraints: tuple[()] = (),
         solver: None = None,
         model_callback: None = None,
     ) -> bool:  # pylint:disable=unused-argument
@@ -428,8 +431,8 @@ class Backend:
 
     def has_false(
         self,
-        e: Union[MaybeResult, TrueResult],
-        extra_constraints: Tuple[()] = (),
+        e: MaybeResult | TrueResult,
+        extra_constraints: tuple[()] = (),
         solver: None = None,
         model_callback: None = None,
     ) -> bool:  # pylint:disable=unused-argument
@@ -489,7 +492,7 @@ class Backend:
         """
         raise BackendError("backend doesn't support solving")
 
-    def add(self, s: Union[CVC4Proxy, ABCProxy], c: List[Union[Bool, Any]], track: bool = False) -> None:
+    def add(self, s: CVC4Proxy | ABCProxy, c: list[Bool | Any], track: bool = False) -> None:
         """
         This function adds constraints to the backend solver.
 
@@ -509,7 +512,7 @@ class Backend:
         """
         raise BackendError("backend doesn't support solving")
 
-    def unsat_core(self, s: Solver) -> List[Bool]:
+    def unsat_core(self, s: Solver) -> list[Bool]:
         """
         This function returns the unsat core from the backend solver.
 
@@ -535,12 +538,12 @@ class Backend:
 
     def eval(
         self,
-        expr: Union[BV, DiscreteStridedIntervalSet, FP, Bool],
+        expr: BV | DiscreteStridedIntervalSet | FP | Bool,
         n: int,
-        extra_constraints: Union[Tuple[Bool], Tuple[()]] = (),
-        solver: Optional[Solver] = None,
+        extra_constraints: tuple[Bool] | tuple[()] = (),
+        solver: Solver | None = None,
         model_callback: None = None,
-    ) -> Union[Tuple[bool], Tuple[int], Tuple[float], List[int]]:
+    ) -> tuple[bool] | tuple[int] | tuple[float] | list[int]:
         """
         This function returns up to `n` possible solutions for expression `expr`.
 
@@ -581,12 +584,12 @@ class Backend:
 
     def batch_eval(
         self,
-        exprs: List[Union[BV, FP]],
+        exprs: list[BV | FP],
         n: int,
-        extra_constraints: Union[Tuple[Bool], Tuple[()], Tuple[Bool, Bool]] = (),
-        solver: Optional[Solver] = None,
-        model_callback: Optional[Callable] = None,
-    ) -> List[Union[Tuple[int, int, int], Tuple[int], Tuple[int, int], Tuple[float]]]:
+        extra_constraints: (tuple[Bool] | tuple[()] | tuple[Bool, Bool]) = (),
+        solver: Solver | None = None,
+        model_callback: Callable | None = None,
+    ) -> list[(tuple[int, int, int] | tuple[int] | tuple[int, int] | tuple[float])]:
         """
         Evaluate one or multiple expressions.
 
@@ -629,10 +632,10 @@ class Backend:
     def min(
         self,
         expr: BV,
-        extra_constraints: Union[Tuple[Bool], Tuple[Bool, Bool], Tuple[Bool, Bool, Bool], Tuple[()]] = (),
+        extra_constraints: (tuple[Bool] | tuple[Bool, Bool] | tuple[Bool, Bool, Bool] | tuple[()]) = (),
         signed: bool = False,
-        solver: Optional[Solver] = None,
-        model_callback: Optional[Callable] = None,
+        solver: Solver | None = None,
+        model_callback: Callable | None = None,
     ) -> int:
         """
         Return the minimum value of `expr`.
@@ -675,10 +678,10 @@ class Backend:
     def max(
         self,
         expr: BV,
-        extra_constraints: Union[Tuple[Bool], Tuple[Bool, Bool, Bool], Tuple[()], Tuple[Bool, Bool]] = (),
+        extra_constraints: (tuple[Bool] | tuple[Bool, Bool, Bool] | tuple[()] | tuple[Bool, Bool]) = (),
         signed: bool = False,
-        solver: Optional[Solver] = None,
-        model_callback: Optional[Callable] = None,
+        solver: Solver | None = None,
+        model_callback: Callable | None = None,
     ) -> int:
         """
         Return the maximum value of expr.
@@ -720,9 +723,9 @@ class Backend:
 
     def check_satisfiability(
         self,
-        extra_constraints: Union[Tuple[Bool], Tuple[()]] = (),
-        solver: Optional[Union[CVC4Proxy, Solver]] = None,
-        model_callback: Optional[Callable] = None,
+        extra_constraints: tuple[Bool] | tuple[()] = (),
+        solver: CVC4Proxy | Solver | None = None,
+        model_callback: Callable | None = None,
     ) -> str:
         """
         This function does a constraint check and returns the solvers state
@@ -738,9 +741,9 @@ class Backend:
 
     def _check_satisfiability(
         self,
-        extra_constraints: List[Union[BoolRef, Any]] = (),
-        solver: Optional[Solver] = None,
-        model_callback: Optional[Callable] = None,
+        extra_constraints: list[BoolRef | Any] = (),
+        solver: Solver | None = None,
+        model_callback: Callable | None = None,
     ) -> str:
         """
         This function does a constraint check and returns the solvers state
@@ -758,9 +761,9 @@ class Backend:
 
     def satisfiable(
         self,
-        extra_constraints: Union[Tuple[Bool], Tuple[Bool, Bool], List[BoolRef], Tuple[()]] = (),
-        solver: Optional[Union[CVC4Proxy, Solver, ABCProxy]] = None,
-        model_callback: Optional[Callable] = None,
+        extra_constraints: (tuple[Bool] | tuple[Bool, Bool] | list[BoolRef] | tuple[()]) = (),
+        solver: CVC4Proxy | Solver | ABCProxy | None = None,
+        model_callback: Callable | None = None,
     ) -> bool:
         """
         This function does a constraint check and checks if the solver is in a sat state.
@@ -790,10 +793,10 @@ class Backend:
     def solution(
         self,
         expr: BV,
-        v: Union[BV, int],
-        extra_constraints: Tuple[()] = (),
-        solver: Optional[Solver] = None,
-        model_callback: Optional[Callable] = None,
+        v: BV | int,
+        extra_constraints: tuple[()] = (),
+        solver: Solver | None = None,
+        model_callback: Callable | None = None,
     ) -> bool:
         """
         Return True if `v` is a solution of `expr` with the extra constraints, False otherwise.
@@ -853,7 +856,7 @@ class Backend:
         """
         raise BackendError("backend doesn't support name()")
 
-    def identical(self, a: Union[BV, Bool], b: Union[BV, Bool]) -> bool:
+    def identical(self, a: BV | Bool, b: BV | Bool) -> bool:
         """
         This should return whether `a` is identical to `b`. Of course, this isn't always clear. True should mean that it
         is definitely identical. False eans that, conservatively, it might not be.
@@ -872,7 +875,7 @@ class Backend:
         """
         raise BackendError("backend doesn't support identical()")
 
-    def cardinality(self, a: Union[BV, Bool]) -> int:
+    def cardinality(self, a: BV | Bool) -> int:
         """
         This should return the maximum number of values that an expression can take on. This should be a strict *over*
         approximation.
@@ -908,18 +911,10 @@ class Backend:
         """
         return o
 
-    def default_op(self, expr: Union[String, BV, FP, Bool]):
+    def default_op(self, expr: String | BV | FP | Bool):
         # pylint: disable=unused-argument
         raise BackendError(f"Backend {self} does not support operation {expr.op}")
 
-
-from ..errors import BackendError, ClaripyRecursionError, BackendUnsupportedError
-from .backend_z3 import BackendZ3
-from .backend_z3_parallel import BackendZ3Parallel
-from .backend_concrete import BackendConcrete
-from .backend_vsa import BackendVSA
-from ..ast.base import Base
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Tuple, Union
 
 if TYPE_CHECKING:
     from claripy.ast.bool import Bool

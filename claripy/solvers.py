@@ -1,8 +1,8 @@
 from __future__ import annotations
+from typing import TYPE_CHECKING
 from . import frontend_mixins
 from . import frontends
 from . import backends
-from typing import TYPE_CHECKING, Optional, Union
 
 if TYPE_CHECKING:
     from claripy.backends.backend_smtlib_solvers.abc_popen import SolverBackendABC

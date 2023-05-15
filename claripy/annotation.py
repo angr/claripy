@@ -1,5 +1,4 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
 
 
 class Annotation:
@@ -60,6 +59,10 @@ class Annotation:
 
 
 class SimplificationAvoidanceAnnotation(Annotation):
+    """
+    Annotation for ASTs that should not be simplified.
+    """
+
     @property
     def eliminatable(self) -> bool:
         return False
