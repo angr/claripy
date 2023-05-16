@@ -4,7 +4,7 @@ import numbers
 import operator
 from functools import reduce
 
-from . import BackendError, Backend
+from .backend import BackendError, Backend
 
 l = logging.getLogger("claripy.backends.backend_concrete")
 
