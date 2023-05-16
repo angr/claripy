@@ -1,3 +1,4 @@
+from typing import Callable, ClassVar
 from ..ast.base import Base
 
 
@@ -8,12 +9,14 @@ class Bits(Base):
     :ivar length:       The length of this value in bits.
     """
 
+    __len__: ClassVar[Callable[..., int]]
+
     def make_like(self, op, args, **kwargs):
         if "length" not in kwargs:
             kwargs["length"] = self.length
         return Base.make_like(self, op, args, **kwargs)
 
-    def size(self):
+    def size(self) -> int:
         """
         :returns: The bit length of this AST
         """

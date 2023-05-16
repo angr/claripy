@@ -112,6 +112,7 @@ class Base:
         "depth",
         "__weakref__",
     ]
+    length: int
     _hash_cache = weakref.WeakValueDictionary()
     _leaf_cache = weakref.WeakValueDictionary()
 
