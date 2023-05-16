@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from claripy.backends.backend_concrete import BackendConcrete
+    from claripy.backends.backend import Backend
     from claripy.backends.backend_smtlib import BackendSMTLibBase
     from claripy.backends.backend_smtlib_solvers.cvc4_popen import SolverBackendCVC4
     from claripy.backends.backend_vsa import BackendVSA
@@ -17,7 +18,7 @@ class BackendManager:
         self._backends_by_type = {}
         self._backends_by_name = {}
 
-    def _register_backend(self, b: BackendSMTLibBase, name: str, eager: bool, quick: bool) -> None:
+    def _register_backend(self, b: Backend, name: str, eager: bool, quick: bool) -> None:
         self._backends_by_name[name] = b
         self._backends_by_type[b.__class__.__name__] = b
         self._all_backends.append(b)

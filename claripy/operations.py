@@ -1,16 +1,48 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Tuple, Type, TypeVar, Union, List
 import itertools
+
 from . import fp
 from . import ast
 from . import simplifications
 from .errors import ClaripyOperationError, ClaripyTypeError
 from . import debug as _d
 
+TArgType = TypeVar("TArgType", bound=Any)  # basic type for argument
+TReturnType = TypeVar("TReturnType", bound=Any)
+
 
 def op(
-    name, arg_types, return_type, extra_check=None, calc_length=None, do_coerce=True, bound=True
-):  # pylint:disable=unused-argument
+    name: str,
+    arg_types: tuple[type[TArgType], ...] | type[TArgType],
+    return_type: type[TReturnType],
+    extra_check: Callable | None = None,
+    calc_length=None,
+    do_coerce=True,
+    bound=True,
+) -> Callable[..., TReturnType]:  # pylint:disable=unused-argument
+    """_summary_
+
+    Args:
+        name (str): operation name, passed to SimplificationManager
+        arg_types (tuple[Type[TArgType], ...] | Type[TArgType]): function's input TYPE or inputs' TYPE
+        return_type (Type[TReturnType]): return type, the final value will be converted to this type
+        extra_check (Callable | None, optional): extra checking function. Defaults to None.
+        calc_length (_type_, optional): TODO. Defaults to None.
+        do_coerce (bool, optional): TODO. Defaults to True.
+        bound (bool, optional): TODO. Defaults to True.
+
+    Raises:
+        ClaripyOperationError: _description_
+        ClaripyTypeError: _description_
+        ClaripyOperationError: _description_
+
+    Returns:
+        Callable[..., TReturnType]: _description_
+
+    Yields:
+        Iterator[Callable[..., TReturnType]]: _description_
+    """
     if type(arg_types) in (tuple, list):  # pylint:disable=unidiomatic-typecheck
         expected_num_args = len(arg_types)
     elif type(arg_types) is type:  # pylint:disable=unidiomatic-typecheck
@@ -106,7 +138,10 @@ def _handle_annotations(simp: String | BV | Bool | FP | None, args: Any) -> Stri
     return None
 
 
-def reversed_op(op_func):
+TOpFunc = Callable[..., TReturnType]
+
+
+def reversed_op(op_func: TOpFunc) -> TOpFunc:
     if type(op_func) is not type(reversed_op):
         op_func = op_func.im_func  # unwrap instancemethod into function
 

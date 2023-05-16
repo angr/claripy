@@ -51,8 +51,10 @@ class TestFp(unittest.TestCase):
         assert s.eval(nzf.to_bv(), 1)[0] == 0x80000000
 
     def test_fp_ops(self):
+        from claripy.fp import RM_NearestTiesEven
+
         a = claripy.FPV(1.5, claripy.FSORT_DOUBLE)
-        b = claripy.fpToUBV(claripy.fp.RM_NearestTiesEven, a, 32)
+        b = claripy.fpToUBV(RM_NearestTiesEven, a, 32)
 
         s = claripy.Solver()
         assert s.eval(b, 1)[0] == 2

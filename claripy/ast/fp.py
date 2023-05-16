@@ -1,8 +1,13 @@
+from __future__ import annotations
+from abc import ABCMeta, abstractmethod
 import struct
+from typing import Any, Callable, ClassVar, Union
 
 from .bits import Bits
 from ..ast.base import _make_name
-from ..fp import FSORT_FLOAT
+from ..fp import FSORT_DOUBLE, FSORT_FLOAT
+from ..fp import RM, FSort
+from .bool import Bool
 
 
 class FP(Bits):
@@ -15,6 +20,28 @@ class FP(Bits):
     :ivar length:   The length of this value
     :ivar sort:     The sort of this value, usually either FSORT_FLOAT or FSORT_DOUBLE
     """
+
+    length: int
+
+    __eq__: ClassVar[Callable[..., Bool]]
+    __ne__: ClassVar[Callable[..., Bool]]
+    __lt__: ClassVar[Callable[..., Bool]]
+    __gt__: ClassVar[Callable[..., Bool]]
+    __ge__: ClassVar[Callable[..., Bool]]
+    __le__: ClassVar[Callable[..., Bool]]
+    __abs__: ClassVar[Callable[..., FP]]
+    __neg__: ClassVar[Callable[..., FP]]
+    __add__: ClassVar[Callable[..., FP]]
+    __sub__: ClassVar[Callable[..., FP]]
+    __mul__: ClassVar[Callable[..., FP]]
+    __truediv__: ClassVar[Callable[..., FP]]
+    __radd__: ClassVar[Callable[..., FP]]
+    __rmul__: ClassVar[Callable[..., FP]]
+    __rsub__: ClassVar[Callable[..., FP]]
+    __rtruediv__: ClassVar[Callable[..., FP]]
+    isNaN: ClassVar[Callable[..., Bool]]
+    isInf: ClassVar[Callable[..., Bool]]
+    Sqrt: ClassVar[Callable[..., FP]]
 
     __slots__ = ()
 

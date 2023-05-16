@@ -1,8 +1,12 @@
+from __future__ import annotations
+from abc import ABCMeta
 import logging
 import numbers
+from typing import Any, Callable, ClassVar
 
 from .bits import Bits
 from ..ast.base import _make_name
+from .bool import Bool
 from .bool import If
 from ..utils import deprecated
 
@@ -48,6 +52,65 @@ class BV(Bits):
 
             11111111111111111111111111111100
     """
+
+    SLE: ClassVar[Callable[..., Bool]]
+    __rrshift__: ClassVar[Callable[..., BV]]
+    __eq__: ClassVar[Callable[..., Bool]]
+    __ne__: ClassVar[Callable[..., Bool]]
+    __lt__: ClassVar[Callable[..., Bool]]
+    __gt__: ClassVar[Callable[..., Bool]]
+    __ge__: ClassVar[Callable[..., Bool]]
+    __le__: ClassVar[Callable[..., Bool]]
+    __abs__: ClassVar[Callable[..., BV]]
+    __neg__: ClassVar[Callable[..., BV]]
+    __add__: ClassVar[Callable[..., BV]]
+    __sub__: ClassVar[Callable[..., BV]]
+    __mul__: ClassVar[Callable[..., BV]]
+    __floordiv__: ClassVar[Callable[..., BV]]
+    __rfloordiv__: ClassVar[Callable[..., BV]]
+    __pow__: ClassVar[Callable[..., BV]]
+    __rpow__: ClassVar[Callable[..., BV]]
+    __mod__: ClassVar[Callable[..., BV]]
+    __rmod__: ClassVar[Callable[..., BV]]
+    SMod: ClassVar[Callable[..., BV]]
+    SDiv: ClassVar[Callable[..., BV]]
+    __pos__: ClassVar[Callable[..., BV]]
+    SLT: ClassVar[Callable[..., Bool]]
+    SGT: ClassVar[Callable[..., Bool]]
+    SGE: ClassVar[Callable[..., Bool]]
+    ULT: ClassVar[Callable[..., Bool]]
+    SLE: ClassVar[Callable[..., Bool]]
+    UGT: ClassVar[Callable[..., Bool]]
+    ULE: ClassVar[Callable[..., Bool]]
+    UGE: ClassVar[Callable[..., Bool]]
+    __invert__: ClassVar[Callable[..., BV]]
+    __or__: ClassVar[Callable[..., BV]]
+    __ror__: ClassVar[Callable[..., BV]]
+    __and__: ClassVar[Callable[..., BV]]
+    __rand__: ClassVar[Callable[..., BV]]
+    __xor__: ClassVar[Callable[..., BV]]
+    __rxor__: ClassVar[Callable[..., BV]]
+    __lshift__: ClassVar[Callable[..., BV]]
+    __rlshift__: ClassVar[Callable[..., BV]]
+    __rrshift__: ClassVar[Callable[..., BV]]
+    __rshift__: ClassVar[Callable[..., BV]]
+    LShR: ClassVar[Callable[..., BV]]
+
+    # TODO: fix this type
+    # Extract: ClassVar[Callable[..., BV]]
+    # Concat: ClassVar[Callable[..., BV]]
+    # reversed: ClassVar[Callable[..., None]]
+
+    union: ClassVar[Callable[..., BV]]
+    widen: ClassVar[Callable[..., BV]]
+    intersection: ClassVar[Callable[..., BV]]
+    __truediv__: ClassVar[Callable[..., BV]]
+    __radd__: ClassVar[Callable[..., BV]]
+    __rmul__: ClassVar[Callable[..., BV]]
+    __rsub__: ClassVar[Callable[..., BV]]
+    __rtruediv__: ClassVar[Callable[..., BV]]
+    isNaN: ClassVar[Callable[..., Bool]]
+    isInf: ClassVar[Callable[..., Bool]]
 
     __slots__ = ()
 
