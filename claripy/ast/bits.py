@@ -8,6 +8,8 @@ class Bits(Base):
     :ivar length:       The length of this value in bits.
     """
 
+    length: int
+
     def make_like(self, op, args, **kwargs):
         if "length" not in kwargs:
             kwargs["length"] = self.length

@@ -41,7 +41,7 @@ class Bool(Base):
         return is_false(self)
 
 
-def BoolS(name, explicit_name=None):
+def BoolS(name, explicit_name=None) -> Bool:
     """
     Creates a boolean symbol (i.e., a variable).
 
@@ -54,7 +54,7 @@ def BoolS(name, explicit_name=None):
     return Bool("BoolS", (n,), variables={n}, symbolic=True)
 
 
-def BoolV(val):
+def BoolV(val) -> Bool:
     try:
         return _boolv_cache[(val)]
     except KeyError:
