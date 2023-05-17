@@ -9,6 +9,8 @@ class Bits(Base):
     :ivar length:       The length of this value in bits.
     """
 
+    length: int
+
     __len__: ClassVar[Callable[..., int]]
 
     def make_like(self, op, args, **kwargs):
