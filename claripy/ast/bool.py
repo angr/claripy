@@ -1,4 +1,5 @@
 import logging
+import atexit
 
 from ..ast.base import Base, _make_name, ASTCacheKey
 
@@ -13,8 +14,6 @@ def cleanup():
     global _boolv_cache  # pylint:disable=global-variable-not-assigned
     del _boolv_cache
 
-
-import atexit
 
 atexit.register(cleanup)
 

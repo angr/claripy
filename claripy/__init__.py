@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-# pylint: disable=F0401,W0401,W0603,
+# pylint: disable=F0401,W0401,W0603,C0413
+
+# C0413 disables the warning of import order, maybe fixed by further refining
 
 __version__ = "9.2.52.dev0"
 

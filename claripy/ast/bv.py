@@ -1,8 +1,8 @@
 from __future__ import annotations
-from abc import ABCMeta
 import logging
 import numbers
-from typing import Any, Callable, ClassVar
+import atexit
+from typing import Callable, ClassVar
 
 from .bits import Bits
 from ..ast.base import _make_name
@@ -21,8 +21,6 @@ def cleanup():
     global _bvv_cache  # pylint:disable=global-variable-not-assigned
     del _bvv_cache
 
-
-import atexit
 
 atexit.register(cleanup)
 
