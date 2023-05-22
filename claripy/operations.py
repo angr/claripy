@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Tuple, Type, TypeVar, Union, List
+from typing import TYPE_CHECKING, Any, Callable, TypeVar
 import itertools
 
 from . import fp
@@ -19,8 +19,8 @@ def op(
     extra_check: Callable | None = None,
     calc_length=None,
     do_coerce=True,
-    bound=True,
-) -> Callable[..., TReturnType]:  # pylint:disable=unused-argument
+    bound=True,  # pylint:disable=unused-argument
+) -> Callable[..., TReturnType]:
     """_summary_
 
     Args:
@@ -258,8 +258,8 @@ def strlen_bv_size_calc(s: String, bitlength: int) -> int:  # pylint: disable=un
 
 
 def strindexof_bv_size_calc(
-    s1: String, s2: String, start_idx: BV, bitlength: int
-) -> int:  # pylint: disable=unused-argument
+    s1: String, s2: String, start_idx: BV, bitlength: int  # pylint: disable=unused-argument
+) -> int:
     return bitlength
 
 

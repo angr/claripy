@@ -1,12 +1,10 @@
 from __future__ import annotations
-from abc import ABCMeta, abstractmethod
 import struct
-from typing import Any, Callable, ClassVar, Union
+from typing import Callable, ClassVar
 
 from .bits import Bits
 from ..ast.base import _make_name
-from ..fp import FSORT_DOUBLE, FSORT_FLOAT
-from ..fp import RM, FSort
+from ..fp import FSORT_FLOAT
 from .bool import Bool
 
 
@@ -150,7 +148,6 @@ def FPV(value, sort):
 from .. import operations
 from .. import fp
 from .bv import BV
-from .bool import Bool
 
 
 def _fp_length_calc(a1, a2, a3=None):

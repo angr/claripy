@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, List, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING
 import logging
 import numbers
 from . import ast
