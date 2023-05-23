@@ -4,6 +4,8 @@ import unittest
 
 import claripy
 
+from claripy.fp import RM_NearestTiesEven
+
 
 class TestFp(unittest.TestCase):
     def test_nan(self):
@@ -51,8 +53,6 @@ class TestFp(unittest.TestCase):
         assert s.eval(nzf.to_bv(), 1)[0] == 0x80000000
 
     def test_fp_ops(self):
-        from claripy.fp import RM_NearestTiesEven
-
         a = claripy.FPV(1.5, claripy.FSORT_DOUBLE)
         b = claripy.fpToUBV(RM_NearestTiesEven, a, 32)
 

@@ -10,6 +10,10 @@ l = logging.getLogger("claripy.frontends.frontend")
 
 
 class Frontend:
+    """
+    base class for creating symbolic expressions and constraints
+    """
+
     def __init__(self) -> None:
         pass
 
@@ -29,10 +33,10 @@ class Frontend:
         self._blank_copy(c)
         return c
 
-    def _blank_copy(self, c: ConstrainedFrontend) -> None:  # pylint:disable=no-self-use,unused-argument
+    def _blank_copy(self, c: Frontend) -> None:  # pylint:disable=no-self-use,unused-argument
         return
 
-    def _copy(self, c: ConstrainedFrontend) -> None:  # pylint:disable=no-self-use,unused-argument
+    def _copy(self, c: Frontend) -> None:  # pylint:disable=no-self-use,unused-argument
         return
 
     #
@@ -276,8 +280,8 @@ class Frontend:
                 constraint_connections[v] = connected_constraints
 
         unique_constraint_sets = set()
-        for v in variable_connections:
-            unique_constraint_sets.add((frozenset(variable_connections[v]), frozenset(constraint_connections[v])))
+        for key, value in variable_connections.items():
+            unique_constraint_sets.add((frozenset(value), frozenset(constraint_connections[key])))
 
         results = []
         for v, c_indexes in unique_constraint_sets:
