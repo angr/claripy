@@ -54,7 +54,8 @@ _unique_names = True
 
 def _make_name(name, size, explicit_name=False, prefix=""):
     if _unique_names and not explicit_name:
-        return "%s%s_%d_%d" % (prefix, name, next(var_counter), size)
+        # return "%s%s_%d_%d" % (prefix, name, next(var_counter), size)
+        return "%s%s_%d" % (prefix, name, size)
     else:
         return name
 
