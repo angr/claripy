@@ -1,4 +1,4 @@
-name: Pylint
+name: mypy type check
 
 on: [push]
 
