@@ -20,4 +20,4 @@ jobs:
         pip install mypy
     - name: Analysing the code with pylint
       run: |
-        mypy ./claripy
+        mypy ./claripy --show-error-codes
