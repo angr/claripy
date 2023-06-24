@@ -1064,7 +1064,15 @@ class BackendZ3(Backend):
     def _op_raw_If(self, i, t, e):
         # partially copied from z3._to_expr_ref
         ctx_ref = self._context.ref()
-        ast = z3.Z3_mk_ite(ctx_ref, i.as_ast(), t.as_ast(), e.as_ast())
+        try:
+            ast = z3.Z3_mk_ite(ctx_ref, i.as_ast(), t.as_ast(), e.as_ast())
+        except Exception as ex:
+            print("\ni", i)
+            print("\nt", t)
+            print("\ne", e)
+            print("EXCEPTION", ex)
+            raise ex
+
         k = z3.Z3_get_ast_kind(ctx_ref, ast)
         sk = z3.Z3_get_sort_kind(ctx_ref, z3.Z3_get_sort(ctx_ref, ast))
         if sk == z3.Z3_BOOL_SORT:
