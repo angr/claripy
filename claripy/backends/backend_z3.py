@@ -515,7 +515,7 @@ class BackendZ3(Backend):
         elif op_name in ("SignExt", "ZeroExt"):
             num = z3.Z3_get_decl_int_parameter(ctx, decl, 0)
             args = [num]
-        elif op_name in ("fpToFP", "fpToFPSigned"):
+        elif op_name in ("fpToFP", "fpToFPSigned", "fpToFPUnsigned"):
             exp = z3.Z3_fpa_get_ebits(ctx, z3_sort)
             mantissa = z3.Z3_fpa_get_sbits(ctx, z3_sort)
             sort = FSort.from_params(exp, mantissa)
@@ -1388,6 +1388,7 @@ op_map = {
     "Z3_OP_FPA_TO_UBV": "fpToUBV",
     "Z3_OP_FPA_TO_IEEE_BV": "fpToIEEEBV",
     "Z3_OP_FPA_TO_FP": "fpToFP",
+    "Z3_OP_FPA_TO_FP_UNSIGNED": "fpToFPUnsigned",
     "Z3_OP_FPA_NUM": "FPVal",
     "Z3_OP_FPA_MINUS_ZERO": "MinusZero",
     "Z3_OP_FPA_MINUS_INF": "MinusInf",
@@ -1528,6 +1529,7 @@ op_type_map = {
     "Z3_OP_FPA_TO_UBV": BV,
     "Z3_OP_FPA_TO_IEEE_BV": BV,
     "Z3_OP_FPA_TO_FP": FP,
+    "Z3_OP_FPA_TO_FP_UNSIGNED": FP,
     "Z3_OP_FPA_NUM": FP,
     "Z3_OP_FPA_MINUS_ZERO": FP,
     "Z3_OP_FPA_MINUS_INF": FP,
