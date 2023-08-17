@@ -18,7 +18,7 @@ jobs:
         shell: bash
       - run: |
           call %USERPROFILE%\venv\Scripts\activate
-          pip install ./claripy[testing]
+          pip install .[testing]
         name: Install
         shell: cmd
       - run: |

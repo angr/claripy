@@ -18,7 +18,7 @@ jobs:
         shell: bash
       - run: |
           source $HOME/venv/bin/activate
-          pip install ./claripy[testing]
+          pip install .[testing]
         name: Install
       - run: |
           source $HOME/venv/bin/activate
