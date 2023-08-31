@@ -104,15 +104,40 @@ def BVS(
 def BVV(value: int, size: int = ..., **kwargs) -> BV: ...
 @overload
 def BVV(value: bytes, **kwargs) -> BV: ...
-
-def SI(name: str | None = ..., bits: int = ..., lower_bound: int | None = ..., upper_bound: int | None = ..., stride: int | None = ..., to_conv: Incomplete | None = ..., explicit_name: bool | None = ..., discrete_set: bool = ..., discrete_set_max_card: int | None = ...): ...
+def SI(
+    name: str | None = ...,
+    bits: int = ...,
+    lower_bound: int | None = ...,
+    upper_bound: int | None = ...,
+    stride: int | None = ...,
+    to_conv: Incomplete | None = ...,
+    explicit_name: bool | None = ...,
+    discrete_set: bool = ...,
+    discrete_set_max_card: int | None = ...,
+): ...
 def TSI(bits, name: str | None = ..., uninitialized: bool = ..., explicit_name: bool | None = ...): ...
 def ESI(bits, **kwargs): ...
-def ValueSet(bits, region: str | None = ..., region_base_addr: int | None = ..., value: int | None = ..., name: str | None = ..., val: Incomplete | None = ...): ...
+def ValueSet(
+    bits,
+    region: str | None = ...,
+    region_base_addr: int | None = ...,
+    value: int | None = ...,
+    name: str | None = ...,
+    val: Incomplete | None = ...,
+): ...
+
 VS = ValueSet
 
-def DSIS(name: Incomplete | None = ..., bits: int = ..., lower_bound: Incomplete | None = ..., upper_bound: Incomplete | None = ..., stride: Incomplete | None = ..., explicit_name: Incomplete | None = ..., to_conv: Incomplete | None = ..., max_card: Incomplete | None = ...): ...
-
+def DSIS(
+    name: Incomplete | None = ...,
+    bits: int = ...,
+    lower_bound: Incomplete | None = ...,
+    upper_bound: Incomplete | None = ...,
+    stride: Incomplete | None = ...,
+    explicit_name: Incomplete | None = ...,
+    to_conv: Incomplete | None = ...,
+    max_card: Incomplete | None = ...,
+): ...
 def ULT(a: Union[BV, int], b: Union[BV, int]) -> Bool: ...
 def ULE(a: Union[BV, int], b: Union[BV, int]) -> Bool: ...
 def UGT(a: Union[BV, int], b: Union[BV, int]) -> Bool: ...
