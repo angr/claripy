@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # pylint: disable=F0401,W0401,W0603,
 
-__version__ = "9.2.75.dev0"
+__version__ = "9.2.76.dev0"
 
 if bytes is str:
     raise Exception("This module is designed for python 3 only. Please install an older version to use python 2.")
