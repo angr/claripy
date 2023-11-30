@@ -2291,6 +2291,9 @@ class StridedInterval(BackendObject):
 
             ret = si_ if ret is None else ret.union(si_)
 
+        if ret is None:
+            return StridedInterval.top(self.bits)
+
         ret.normalize()
         ret.uninitialized = self.uninitialized
         return ret
@@ -2314,6 +2317,9 @@ class StridedInterval(BackendObject):
             si_ = self._rshift_logical(amount)
 
             ret = si_ if ret is None else ret.union(si_)
+
+        if ret is None:
+            return StridedInterval.top(self.bits)
 
         ret.normalize()
         ret.uninitialized = self.uninitialized
@@ -2339,6 +2345,9 @@ class StridedInterval(BackendObject):
             si_ = self._rshift_arithmetic(amount)
 
             ret = si_ if ret is None else ret.union(si_)
+
+        if ret is None:
+            return StridedInterval.top(self.bits)
 
         ret.normalize()
         ret.uninitialized = self.uninitialized
