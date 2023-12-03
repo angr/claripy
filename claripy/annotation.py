@@ -1,4 +1,6 @@
+from __future__ import annotations
 from typing import TYPE_CHECKING
+
 
 if TYPE_CHECKING:
     from .ast.base import Base
@@ -28,7 +30,7 @@ class Annotation:
         """
         return False
 
-    def relocate(self, src: "Base", dst: "Base"):  # pylint:disable=no-self-use,unused-argument
+    def relocate(self, src: Base, dst: Base):  # pylint:disable=no-self-use,unused-argument
         """
         This is called when an annotation has to be relocated because of simplifications.
 
@@ -62,10 +64,14 @@ class Annotation:
 
 
 class SimplificationAvoidanceAnnotation(Annotation):
+    """
+    Annotation for ASTs that should not be simplified.
+    """
+
     @property
-    def eliminatable(self):
+    def eliminatable(self) -> bool:
         return False
 
     @property
-    def relocatable(self):
+    def relocatable(self) -> bool:
         return False

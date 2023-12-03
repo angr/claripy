@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 
 import logging
+from ..frontend import Frontend
 
 l = logging.getLogger("claripy.frontends.constrained_frontend")
-
-from ..frontend import Frontend
 
 
 class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
@@ -14,13 +13,13 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
         self.variables = set()
         self._finalized = False
 
-    def _blank_copy(self, c):
+    def _blank_copy(self, c: "ConstrainedFrontend"):
         super()._blank_copy(c)
         c.constraints = []
         c.variables = set()
         c._finalized = False
 
-    def _copy(self, c):
+    def _copy(self, c: "ConstrainedFrontend"):
         super()._copy(c)
         c.constraints = list(self.constraints)
         c.variables = set(self.variables)
@@ -152,6 +151,6 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
         raise NotImplementedError("is_false() is not implemented")
 
 
-from ..ast.base import simplify
-from ..ast.bool import And, Or
-from ..annotation import SimplificationAvoidanceAnnotation
+from ..ast.base import simplify  # pylint:disable=wrong-import-position
+from ..ast.bool import And, Or  # pylint:disable=wrong-import-position
+from ..annotation import SimplificationAvoidanceAnnotation  # pylint:disable=wrong-import-position

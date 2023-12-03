@@ -6,7 +6,7 @@ import struct
 import weakref
 from collections import OrderedDict, deque
 from itertools import chain
-from typing import Optional, Generic, TypeVar, overload, TYPE_CHECKING, List, Iterable, Iterator, Tuple
+from typing import Optional, Generic, TypeVar, TYPE_CHECKING, List, Iterable, Iterator, Tuple
 
 if TYPE_CHECKING:
     from .bool import Bool
@@ -119,6 +119,7 @@ class Base:
         "depth",
         "__weakref__",
     ]
+    length: int
     _hash_cache = weakref.WeakValueDictionary()
     _leaf_cache = weakref.WeakValueDictionary()
 
