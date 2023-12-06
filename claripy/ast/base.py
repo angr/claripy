@@ -569,8 +569,8 @@ class Base:
         self._canonical_hash = None
         self._ret_size = _ret_size
 
-        if len(self.args) == 0:
-            raise ClaripyOperationError("AST with no arguments!")
+        # if len(self.args) == 0:
+            # raise ClaripyOperationError("AST with no arguments!")
 
     # pylint:enable=attribute-defined-outside-init
 
