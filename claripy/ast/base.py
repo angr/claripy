@@ -6,7 +6,7 @@ import struct
 import weakref
 from collections import OrderedDict, deque
 from itertools import chain
-from typing import Optional, Generic, TypeVar, overload, TYPE_CHECKING, List, Iterable, Iterator, Tuple
+from typing import Optional, Generic, TypeVar, overload, TYPE_CHECKING, List, Iterable, Iterator, Tuple, NoReturn
 
 if TYPE_CHECKING:
     from .bool import Bool
@@ -908,13 +908,13 @@ class Base:
             return [self]
 
     # we don't support iterating over Base objects
-    def __iter__(self):
+    def __iter__(self) -> NoReturn:
         """
         This prevents people from iterating over ASTs.
         """
         raise ClaripyOperationError("Please don't iterate over, or split, AST nodes!")
 
-    def __bool__(self):
+    def __bool__(self) -> NoReturn:
         """
         This prevents people from accidentally using an AST as a condition. For
         example, the following was previously common::
