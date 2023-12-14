@@ -2291,6 +2291,9 @@ class StridedInterval(BackendObject):
 
             ret = si_ if ret is None else ret.union(si_)
 
+        if ret is None:
+            return StridedInterval.top(self.bits)
+
         ret.normalize()
         ret.uninitialized = self.uninitialized
         return ret
@@ -2314,6 +2317,9 @@ class StridedInterval(BackendObject):
             si_ = self._rshift_logical(amount)
 
             ret = si_ if ret is None else ret.union(si_)
+
+        if ret is None:
+            return StridedInterval.top(self.bits)
 
         ret.normalize()
         ret.uninitialized = self.uninitialized
@@ -2339,6 +2345,9 @@ class StridedInterval(BackendObject):
             si_ = self._rshift_arithmetic(amount)
 
             ret = si_ if ret is None else ret.union(si_)
+
+        if ret is None:
+            return StridedInterval.top(self.bits)
 
         ret.normalize()
         ret.uninitialized = self.uninitialized
@@ -2493,7 +2502,6 @@ class StridedInterval(BackendObject):
 
     @normalize_types
     def concat(self, b):
-
         # Zero-extend
         a = self.nameless_copy()
         a._bits += b.bits
@@ -2515,7 +2523,6 @@ class StridedInterval(BackendObject):
 
     @reversed_processor
     def extract(self, high_bit, low_bit):
-
         assert low_bit >= 0
 
         bits = high_bit - low_bit + 1
@@ -2531,7 +2538,6 @@ class StridedInterval(BackendObject):
         return ret.normalize()
 
     def _unrev_extract(self, high_bit, low_bit):
-
         assert low_bit >= 0
 
         bits = high_bit - low_bit + 1

@@ -4,6 +4,7 @@ from decorator import decorator
 import claripy
 from test_backend_smt import TestSMTLibBackend
 
+
 # use of decorator instead of the usual pattern is important because nose2 will check the argspec and wraps does not
 # preserve that!
 @decorator

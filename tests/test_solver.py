@@ -691,7 +691,6 @@ class TestComposite(TestCase, UnsatCore):
         raw_composite_solver(False)
 
     def test_composite_solver_child_solvers_transitive_closure(self):
-
         # https://github.com/angr/angr/issues/3604
         # the child solver must be merged from solvers for the transitive closure of all variable names
 

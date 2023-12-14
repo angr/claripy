@@ -1055,7 +1055,6 @@ def test_reasonable_bounds():
 
 
 def test_shifting():
-
     SI = claripy.SI
     identical = claripy.backends.vsa.identical
 
@@ -1086,7 +1085,6 @@ def test_shifting():
 
 
 def test_reverse():
-
     x = claripy.SI(name="TOP", bits=64, lower_bound=0, upper_bound=0xFFFFFFFFFFFFFFFF, stride=1)  # TOP
     y = claripy.SI(name="range", bits=64, lower_bound=0, upper_bound=1337, stride=1)  # [0, 1337]
 

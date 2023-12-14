@@ -150,7 +150,6 @@ def test_extract_zeroext():
 
 
 def test_complex_case_0():
-
     #
 
     """
@@ -172,7 +171,6 @@ def test_complex_case_0():
 
 
 def test_complex_case_1():
-
     #
 
     """

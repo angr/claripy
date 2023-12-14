@@ -6,6 +6,7 @@ l = logging.getLogger("claripy.ast.bool")
 
 _boolv_cache = {}
 
+
 # This is a hilarious hack to get around some sort of bug in z3's python bindings, where
 # under some circumstances stuff gets destructed out of order
 def cleanup():
@@ -40,7 +41,7 @@ class Bool(Base):
         return is_false(self)
 
 
-def BoolS(name, explicit_name=None):
+def BoolS(name, explicit_name=None) -> Bool:
     """
     Creates a boolean symbol (i.e., a variable).
 
@@ -53,7 +54,7 @@ def BoolS(name, explicit_name=None):
     return Bool("BoolS", (n,), variables={n}, symbolic=True)
 
 
-def BoolV(val):
+def BoolV(val) -> Bool:
     try:
         return _boolv_cache[(val)]
     except KeyError:
@@ -182,7 +183,6 @@ def is_false(e, exact=None):  # pylint:disable=unused-argument
 # This improves Z3 search capability (eliminating branches) and decreases recursion depth:
 # linear search trees make Z3 error out on tables larger than a couple hundred elements.)
 def ite_dict(i, d, default):
-
     """
     Return an expression of if-then-else trees which expresses a switch tree
     :param i: The variable which may take on multiple values affecting the final result

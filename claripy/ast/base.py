@@ -6,8 +6,13 @@ import struct
 import weakref
 from collections import OrderedDict, deque, Counter
 from itertools import chain
-from typing import Optional
 from past.builtins import long
+from typing import Optional, Generic, TypeVar, overload, TYPE_CHECKING, List, Iterable, Iterator, Tuple, NoReturn
+
+if TYPE_CHECKING:
+    from .bool import Bool
+    from .fp import FP
+    from ..annotation import Annotation
 
 try:
     import cPickle as pickle
@@ -29,10 +34,12 @@ from_iterable = chain.from_iterable
 # pylint:enable=unused-argument
 # pylint:disable=unidiomatic-typecheck
 
+T = TypeVar("T", bound="Base")
 
-class ASTCacheKey:
-    def __init__(self, a):
-        self.ast = a
+
+class ASTCacheKey(Generic[T]):
+    def __init__(self, a: T):
+        self.ast: T = a
 
     def __hash__(self):
         return hash(self.ast)
@@ -52,7 +59,7 @@ var_counter = itertools.count()
 _unique_names = True
 
 
-def _make_name(name, size, explicit_name=False, prefix=""):
+def _make_name(name: str, size: int, explicit_name: bool = False, prefix: str = "") -> str:
     if _unique_names and not explicit_name:
         # return "%s%s_%d_%d" % (prefix, name, next(var_counter), size)
         return "%s%s_%d" % (prefix, name, size)
@@ -63,8 +70,8 @@ def _make_name(name, size, explicit_name=False, prefix=""):
 def _d(h, cls, state):
     """
     This function is the deserializer for ASTs.
-    It exists to work around the fact that pickle will (normally) call __new__() with no arguments during deserialization.
-    For ASTs, this does not work.
+    It exists to work around the fact that pickle will (normally) call __new__() with no arguments during
+    deserialization. For ASTs, this does not work.
     """
     op, args, length, variables, symbolic, annotations = state
     return cls.__new__(
@@ -306,7 +313,6 @@ class Base:
     def __init_with_annotations__(
         cls, op, a_args, depth=None, uneliminatable_annotations=None, relocatable_annotations=None, **kwargs
     ):
-
         cache = cls._hash_cache
         h = Base._calc_hash(op, a_args, kwargs)
         self = cache.get(h, None)
@@ -546,7 +552,7 @@ class Base:
         self.length = length
         self.variables = frozenset(variables) if type(variables) is not frozenset else variables
         self.symbolic = symbolic
-        self.annotations = annotations
+        self.annotations: Tuple[Annotation] = annotations
         self._uneliminatable_annotations = uneliminatable_annotations
         self._relocatable_annotations = relocatable_annotations
 
@@ -581,7 +587,7 @@ class Base:
         return res
 
     @property
-    def cache_key(self):
+    def cache_key(self: T) -> ASTCacheKey[T]:
         """
         A key that refers to this AST - this value is appropriate for usage as a key in dictionaries.
         """
@@ -603,7 +609,7 @@ class Base:
     #        else:
     #            yield backend.convert(a)
 
-    def make_like(self, op, args, **kwargs):
+    def make_like(self: T, op: str, args: Iterable, **kwargs) -> T:
         if kwargs.pop("simplify", False) is True:
             # Try to simplify the expression again
             simplified = simplifications.simpleton.simplify(op, args)
@@ -676,7 +682,7 @@ class Base:
     def _apply_to_annotations(self, f):
         return self.make_like(self.op, self.args, annotations=f(self.annotations), skip_child_annotations=True)
 
-    def append_annotation(self, a):
+    def append_annotation(self: T, a: "Annotation") -> T:
         """
         Appends an annotation to this AST.
 
@@ -685,7 +691,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: alist + (a,))
 
-    def append_annotations(self, new_tuple):
+    def append_annotations(self: T, new_tuple: Tuple["Annotation", ...]) -> T:
         """
         Appends several annotations to this AST.
 
@@ -694,7 +700,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: alist + new_tuple)
 
-    def annotate(self, *args, remove_annotations=None):
+    def annotate(self: T, *args: "Annotation", remove_annotations: Optional[Iterable["Annotation"]] = None) -> T:
         """
         Appends annotations to this AST.
 
@@ -709,7 +715,7 @@ class Base:
                 lambda alist: tuple(arg for arg in alist if arg not in remove_annotations) + args
             )
 
-    def insert_annotation(self, a):
+    def insert_annotation(self: T, a: "Annotation") -> T:
         """
         Inserts an annotation to this AST.
 
@@ -718,7 +724,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: (a,) + alist)
 
-    def insert_annotations(self, new_tuple):
+    def insert_annotations(self: T, new_tuple: Tuple["Annotation", ...]) -> T:
         """
         Inserts several annotations to this AST.
 
@@ -727,7 +733,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: new_tuple + alist)
 
-    def replace_annotations(self, new_tuple):
+    def replace_annotations(self: T, new_tuple: Tuple["Annotation", ...]) -> T:
         """
         Replaces annotations on this AST.
 
@@ -736,7 +742,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: new_tuple)
 
-    def remove_annotation(self, a):
+    def remove_annotation(self: T, a: "Annotation") -> T:
         """
         Removes an annotation from this AST.
 
@@ -745,7 +751,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: tuple(oa for oa in alist if oa != a))
 
-    def remove_annotations(self, remove_sequence):
+    def remove_annotations(self: T, remove_sequence: Iterable["Annotation"]) -> T:
         """
         Removes several annotations from this AST.
 
@@ -758,7 +764,7 @@ class Base:
     # Viewing and debugging
     #
 
-    def dbg_repr(self, prefix=None):  # pylint:disable=unused-argument
+    def dbg_repr(self, prefix=None) -> str:  # pylint:disable=unused-argument
         """
         Returns a debug representation of this AST.
         """
@@ -775,7 +781,7 @@ class Base:
 
     def shallow_repr(
         self, max_depth=8, explicit_length=False, details=LITE_REPR, inner=False, parent_prec=15, left=True
-    ):
+    ) -> str:
         """
         Returns a string representation of this AST, but with a maximum depth to
         prevent floods of text being printed.
@@ -876,15 +882,14 @@ class Base:
                 value = f" {operations.infix[op]} ".join(args)
                 return f"({value})" if inner and inner_infix_use_par else value
 
-        return "{}({})".format(op, ", ".join(map(str, args)))
+        return "{}({})".format(op, ", ".join(str(arg) for arg in args))
 
-    def children_asts(self):
+    def children_asts(self) -> Iterator["Base"]:
         """
         Return an iterator over the nested children ASTs.
         """
         ast_queue = deque([iter(self.args)])
         while ast_queue:
-
             try:
                 ast = next(ast_queue[-1])
             except StopIteration:
@@ -897,7 +902,7 @@ class Base:
                 l.debug("Yielding AST %s with hash %s with %d children", ast, hash(ast), len(ast.args))
                 yield ast
 
-    def leaf_asts(self):
+    def leaf_asts(self) -> Iterator["Base"]:
         """
         Return an iterator over the leaf ASTs.
         """
@@ -905,7 +910,6 @@ class Base:
 
         ast_queue = deque([self])
         while ast_queue:
-
             ast = ast_queue.pop()
             if isinstance(ast, Base) and id(ast.cache_key) not in seen:
                 seen.add(id(ast.cache_key))
@@ -948,7 +952,7 @@ class Base:
     # Various AST modifications (replacements)
     #
 
-    def swap_args(self, new_args, new_length=None, **kwargs):
+    def swap_args(self: T, new_args, new_length=None, **kwargs) -> T:
         """
         This returns the same AST, with the arguments swapped out for new_args.
         """
@@ -968,7 +972,7 @@ class Base:
     # Other helper functions
     #
 
-    def split(self, split_on):
+    def split(self, split_on: Iterable[str]) -> List:
         """
         Splits the AST if its operation is `split_on` (i.e., return all the arguments). Otherwise, return a list with
         just the AST.
@@ -979,13 +983,13 @@ class Base:
             return [self]
 
     # we don't support iterating over Base objects
-    def __iter__(self):
+    def __iter__(self) -> NoReturn:
         """
         This prevents people from iterating over ASTs.
         """
         raise ClaripyOperationError("Please don't iterate over, or split, AST nodes!")
 
-    def __bool__(self):
+    def __bool__(self) -> NoReturn:
         """
         This prevents people from accidentally using an AST as a condition. For
         example, the following was previously common::
@@ -1002,7 +1006,7 @@ class Base:
             "testing Expressions for truthiness does not do what you want, as these expressions can be symbolic"
         )
 
-    def structurally_match(self, o):
+    def structurally_match(self: T, o: T) -> bool:
         """
         Structurally compares two A objects, and check if their corresponding leaves are definitely the same A object
         (name-wise or hash-identity wise).
@@ -1039,7 +1043,7 @@ class Base:
 
         return True
 
-    def replace_dict(self, replacements, variable_set=None, leaf_operation=None):
+    def replace_dict(self: T, replacements, variable_set=None, leaf_operation=None) -> T:
         """
         Returns this AST with subexpressions replaced by those that can be found in `replacements`
         dict.
@@ -1073,7 +1077,6 @@ class Base:
                     repl = replacements[ast.cache_key]
 
                 elif ast.variables >= variable_set:
-
                     if ast.op in operations.leaf_operations:
                         repl = leaf_operation(ast)
                         if repl is not ast:
@@ -1110,7 +1113,7 @@ class Base:
 
         return rep_queue.pop()
 
-    def replace(self, old, new, variable_set=None, leaf_operation=None):  # pylint:disable=unused-argument
+    def replace(self: T, old, new, variable_set=None, leaf_operation=None) -> T:  # pylint:disable=unused-argument
         """
         Returns this AST but with the AST 'old' replaced with AST 'new' in its subexpressions.
         """
@@ -1305,7 +1308,7 @@ class Base:
         return arg_queue.pop()
 
     @property
-    def ite_burrowed(self):
+    def ite_burrowed(self: T) -> T:
         """
         Returns an equivalent AST that "burrows" the ITE expressions as deep as possible into the ast, for simpler
         printing.
@@ -1316,7 +1319,7 @@ class Base:
         return self._burrowed
 
     @property
-    def ite_excavated(self):
+    def ite_excavated(self: T) -> T:
         """
         Returns an equivalent AST that "excavates" the ITE expressions out as far as possible toward the root of the
         AST, for processing in static analyses.
@@ -1343,21 +1346,36 @@ class Base:
                 return getattr(b, what)(self)
             except BackendError:
                 pass
+        return None
 
     @property
-    def singlevalued(self):
+    def concrete_value(self):
+        return self._model_concrete.value
+
+    # yan I'm gonna kill you
+
+    @property
+    def cv(self):
+        return self._model_concrete.value
+
+    @property
+    def v(self):
+        return self._model_concrete.value
+
+    @property
+    def singlevalued(self) -> bool:
         return self._first_backend("singlevalued")
 
     @property
-    def multivalued(self):
+    def multivalued(self) -> bool:
         return self._first_backend("multivalued")
 
     @property
-    def cardinality(self):
+    def cardinality(self) -> int:
         return self._first_backend("cardinality")
 
     @property
-    def concrete(self):
+    def concrete(self) -> bool:
         # fast path
         if self.op in {"BVV", "BoolV", "FPV"}:
             return True
@@ -1368,7 +1386,7 @@ class Base:
         return backends.concrete.handles(self)
 
     @property
-    def uninitialized(self):
+    def uninitialized(self) -> bool:
         """
         Whether this AST comes from an uninitialized dereference or not. It's only used in under-constrained symbolic
         execution mode.
@@ -1381,17 +1399,18 @@ class Base:
         return self._uninitialized
 
     @property
-    def uc_alloc_depth(self):
+    def uc_alloc_depth(self) -> int:
         """
         The depth of allocation by lazy-initialization. It's only used in under-constrained symbolic execution mode.
 
-        :returns:                   An integer indicating the allocation depth, or None if it's not from lazy-initialization.
+        :returns:                   An integer indicating the allocation depth, or None if it's not from
+                                    lazy-initialization.
         """
         # TODO: It should definitely be moved to the proposed Annotation backend.
 
         return self._uc_alloc_depth
 
-    def to_claripy(self):
+    def to_claripy(self: T) -> T:
         """
         Returns itself. Provides compatibility with other classes (such as SimActionObject) which provide a similar
         method to unwrap to an AST.
@@ -1416,7 +1435,7 @@ class Base:
             return self
 
 
-def simplify(e):
+def simplify(e: T) -> T:
     if isinstance(e, Base) and e.op in operations.leaf_operations:
         return e
 

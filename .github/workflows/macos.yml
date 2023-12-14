@@ -1,0 +1,26 @@
+name: Test on macOS
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  macos:
+    name: Test macOS
+    runs-on: macos-12
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.8"
+      - run: python -m venv $HOME/venv
+        name: Create venv
+        shell: bash
+      - run: |
+          source $HOME/venv/bin/activate
+          pip install .[testing]
+        name: Install
+      - run: |
+          source $HOME/venv/bin/activate
+          pytest -n auto
+        name: Run pytest
