@@ -1,5 +1,6 @@
 import logging
 import numbers
+import weakref
 
 from .bits import Bits
 from ..ast.base import _make_name
@@ -8,7 +9,7 @@ from ..utils import deprecated
 
 l = logging.getLogger("claripy.ast.bv")
 
-_bvv_cache = {}
+_bvv_cache = weakref.WeakValueDictionary()
 
 
 # This is a hilarious hack to get around some sort of bug in z3's python bindings, where
