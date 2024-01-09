@@ -521,6 +521,7 @@ class BackendZ3(Backend):
             args.extend(children)
             func = Func(op=symbol_str, args=args, _ret_size=bv_size)
             func_result = func.func_op(*args)
+            func_result.symbolic = True
             if  len(func_result.args)  == len(children) + 1:
                 func_result.args = func_result.args[1:]
             return func_result
@@ -529,6 +530,7 @@ class BackendZ3(Backend):
             bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
             MemoryLoad_decl = MemoryLoad(op="MemoryLoad", args=children, _ret_size=bv_size)
             MemoryLoad_result = MemoryLoad_decl.op(*children)
+            MemoryLoad_result.symbolic = True
             return MemoryLoad_result
 
         elif op_name == "UNINTERPRETED" and num_args == 0: # symbolic value
