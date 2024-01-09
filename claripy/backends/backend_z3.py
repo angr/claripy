@@ -500,40 +500,33 @@ class BackendZ3(Backend):
             val = self._abstract_fp_val(ctx, ast, op_name)
             return FPV(val, sort)
 
-        elif op_name == "UNINTERPRETED" and decl_name_str.decode().startswith("Func_"):
+        elif op_name == "UNINTERPRETED":
             symbol_name = decl_name_str
             symbol_str = symbol_name.decode()
-            symbol_ty = z3.Z3_get_sort_kind(ctx, z3_sort)
-            bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
+            # Func obj: starts with 'Func_' but doesn't have 'Arg#' (Indicating an output argument)
+            if symbol_str.startswith("Func_") and "Arg#" not in symbol_str:
+                symbol_ty = z3.Z3_get_sort_kind(ctx, z3_sort)
+                bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
 
-            # if len(children) == 0:
-            #     bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
-            #     ast_args = (symbol_str, None, None, None, False, False, None)
-            #
-            #     return BV('BVS',
-            #             ast_args,
-            #             length=bv_size,
-            #             variables={symbol_str},
-            #             symbolic=True,
-            #             encoded_name=symbol_name)
-            # else:
-            args = [symbol_str]
-            args.extend(children)
-            func = Func(op=symbol_str, args=args, _ret_size=bv_size)
-            func_result = func.func_op(*args)
-            func_result.symbolic = True
-            if  len(func_result.args)  == len(children) + 1:
-                func_result.args = func_result.args[1:]
-            return func_result
+                args = [symbol_str]
+                args.extend(children)
+                func = Func(op=symbol_str, args=args, _ret_size=bv_size)
+                func_result = func.func_op(*args)
+                func_result.symbolic = True
+                if  len(func_result.args)  == len(children) + 1:
+                    func_result.args = func_result.args[1:]
+                return func_result
 
-        elif op_name == "UNINTERPRETED" and decl_name_str.decode() == "MemoryLoad":
-            bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
-            MemoryLoad_decl = MemoryLoad(op="MemoryLoad", args=children, _ret_size=bv_size)
-            MemoryLoad_result = MemoryLoad_decl.op(*children)
-            MemoryLoad_result.symbolic = True
-            return MemoryLoad_result
+            elif symbol_str == "MemoryLoad":
+                bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
+                MemoryLoad_decl = MemoryLoad(op="MemoryLoad", args=children, _ret_size=bv_size)
+                MemoryLoad_result = MemoryLoad_decl.op(*children)
+                MemoryLoad_result.symbolic = True
+                return MemoryLoad_result
 
-        elif op_name == "UNINTERPRETED" and num_args == 0: # symbolic value
+        # Change from 'elif' to 'if',
+        # Any 'Func' or 'MemoryLoad' objects should have been handled in the 'UNINTERPRETED' case above
+        if op_name == "UNINTERPRETED" and num_args == 0: # symbolic value
             symbol_name = _z3_decl_name_str(ctx, decl)
             symbol_str = symbol_name.decode()
             symbol_ty = z3.Z3_get_sort_kind(ctx, z3_sort)
