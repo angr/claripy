@@ -519,8 +519,10 @@ class BackendZ3(Backend):
 
             elif symbol_str == "MemoryLoad":
                 bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
-                MemoryLoad_decl = MemoryLoad(op="MemoryLoad", args=children, _ret_size=bv_size)
-                MemoryLoad_result = MemoryLoad_decl.op(*children)
+                args = []
+                args.extend(children)
+                MemoryLoad_decl = MemoryLoad(op="MemoryLoad", args=args, _ret_size=bv_size)
+                MemoryLoad_result = MemoryLoad_decl.op(*args)
                 MemoryLoad_result.symbolic = True
                 return MemoryLoad_result
 
@@ -583,6 +585,12 @@ class BackendZ3(Backend):
             args = []
 
         if append_children:
+            try:
+                # Try to use the variable. If it's not already defined, this will raise a NameError.
+                args
+            except NameError:
+                # If the variable isn't defined, initialize it here.
+                args = []
             args.extend(children)
 
         # hmm.... honestly not sure what to do here
