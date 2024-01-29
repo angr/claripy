@@ -236,9 +236,11 @@ class Base:
             ast_args = tuple(a for a in a_args if isinstance(a, Base))
             uneliminatable_annotations = frozenset(
                 chain(
-                    from_iterable(a._uneliminatable_annotations for a in ast_args)
-                    if not skip_child_annotations
-                    else tuple(),
+                    (
+                        from_iterable(a._uneliminatable_annotations for a in ast_args)
+                        if not skip_child_annotations
+                        else tuple()
+                    ),
                     tuple(a for a in annotations if not a.eliminatable and not a.relocatable),
                 )
             )
@@ -248,9 +250,11 @@ class Base:
                     (e, True)
                     for e in tuple(
                         chain(
-                            from_iterable(a._relocatable_annotations for a in ast_args)
-                            if not skip_child_annotations
-                            else tuple(),
+                            (
+                                from_iterable(a._relocatable_annotations for a in ast_args)
+                                if not skip_child_annotations
+                                else tuple()
+                            ),
                             tuple(a for a in annotations if not a.eliminatable and a.relocatable),
                         )
                     )
@@ -259,9 +263,11 @@ class Base:
 
             annotations = tuple(
                 chain(
-                    from_iterable(a._relocatable_annotations for a in ast_args)
-                    if not skip_child_annotations
-                    else tuple(),
+                    (
+                        from_iterable(a._relocatable_annotations for a in ast_args)
+                        if not skip_child_annotations
+                        else tuple()
+                    ),
                     tuple(a for a in annotations),
                 )
             )
@@ -738,9 +744,11 @@ class Base:
         op_prec = operations.op_precedence[op] if op in operations.op_precedence else 15
 
         args = [
-            arg.shallow_repr(next_max_depth, explicit_length, details, True, op_prec, idx == 0)
-            if isinstance(arg, Base)
-            else arg
+            (
+                arg.shallow_repr(next_max_depth, explicit_length, details, True, op_prec, idx == 0)
+                if isinstance(arg, Base)
+                else arg
+            )
             for idx, arg in enumerate(args)
         ]
 

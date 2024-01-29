@@ -48,26 +48,30 @@ class ModelCache:
         return (
             all_operations.BVV(self.model.get(a.args[0], 0), a.length)
             if a.op == "BVS"
-            else all_operations.BoolV(self.model.get(a.args[0], True))
-            if a.op == "BoolS"
-            else all_operations.FPV(self.model.get(a.args[0], 0.0), a.args[1])
-            if a.op == "FPS"
-            else all_operations.StringV(self.model.get(a.args[0], ""))
-            if a.op == "StringS"
-            else a
+            else (
+                all_operations.BoolV(self.model.get(a.args[0], True))
+                if a.op == "BoolS"
+                else (
+                    all_operations.FPV(self.model.get(a.args[0], 0.0), a.args[1])
+                    if a.op == "FPS"
+                    else all_operations.StringV(self.model.get(a.args[0], "")) if a.op == "StringS" else a
+                )
+            )
         )
 
     def _leaf_op_existonly(self, a):
         return (
             all_operations.BVV(self.model[a.args[0]], a.length)
             if a.op == "BVS"
-            else all_operations.BoolV(self.model[a.args[0]])
-            if a.op == "BoolS"
-            else all_operations.FPV(self.model[a.args[0]], a.args[1])
-            if a.op == "FPS"
-            else all_operations.StringV(self.model[a.args[0]])
-            if a.op == "StringS"
-            else a
+            else (
+                all_operations.BoolV(self.model[a.args[0]])
+                if a.op == "BoolS"
+                else (
+                    all_operations.FPV(self.model[a.args[0]], a.args[1])
+                    if a.op == "FPS"
+                    else all_operations.StringV(self.model[a.args[0]]) if a.op == "StringS" else a
+                )
+            )
         )
 
     def eval_ast(self, ast, allow_unconstrained: bool = True):
