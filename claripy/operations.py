@@ -339,14 +339,17 @@ backend_other_operations = {"If"}
 
 backend_arithmetic_operations = {"SDiv", "SMod"}
 
+backend_func_operations = {"FuncDecl", "MemoryLoad"}
+
 backend_operations = (
-    backend_comparator_operations
-    | backend_bitwise_operations
-    | backend_boolean_operations
-    | backend_bitmod_operations
-    | backend_creation_operations
-    | backend_other_operations
-    | backend_arithmetic_operations
+        backend_comparator_operations
+        | backend_bitwise_operations
+        | backend_boolean_operations
+        | backend_bitmod_operations
+        | backend_creation_operations
+        | backend_other_operations
+        | backend_arithmetic_operations
+        | backend_func_operations
 )
 backend_operations_vsa_compliant = (
     backend_bitwise_operations | backend_comparator_operations | backend_boolean_operations | backend_bitmod_operations
@@ -452,6 +455,15 @@ reversed_ops = {
     "__rtruediv__": "__truediv__",
     "__rxor__": "__xor__",
 }
+
+nonstandard_reversible_operations = {
+    '__lt__': '__gt__',
+    '__le__': '__ge__',
+    'ULT': 'UGT', 'ULE': 'UGE',
+    'SLT': 'SGT', 'SLE': 'SGE',
+}
+
+nonstandard_reversible_operations.update(reversed_ops)
 
 inverse_operations = {
     "__eq__": "__ne__",
@@ -590,6 +602,8 @@ commutative_operations = {
     "And",
     "Or",
     "Xor",
+    "__eq__",
+    "__ne__",
 }
 
 from .errors import ClaripyOperationError, ClaripyTypeError

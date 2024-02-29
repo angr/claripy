@@ -185,7 +185,7 @@ class Backend:
                             continue
 
                     op_queue.append(ast)
-                    if ast.op in self._op_expr:
+                    if ast.op in self._op_expr or ast.op.startswith('Func'):
                         ast_queue.append(None)
                     else:
                         ast_queue.append(list(ast.args))
@@ -197,6 +197,8 @@ class Backend:
                         ast = op_queue.pop()
 
                         op = self._op_expr.get(ast.op, None)
+                        if ast.op.startswith('Func_'):
+                            op = self._op_expr.get('FuncDecl')
                         if op is not None:
                             r = op(ast)
 
@@ -228,9 +230,9 @@ class Backend:
             raise
 
         # Note: Uncomment the following assertions if you are touching the above implementation
-        # assert len(op_queue) == 0, "op_queue is not empty"
-        # assert len(ast_queue) == 0, "ast_queue is not empty"
-        # assert len(arg_queue) == 1, ("arg_queue has unexpected length", len(arg_queue))
+        assert len(op_queue) == 0, "op_queue is not empty"
+        assert len(ast_queue) == 0, "ast_queue is not empty"
+        assert len(arg_queue) == 1, ("arg_queue has unexpected length", len(arg_queue))
 
         return arg_queue.pop()
 
