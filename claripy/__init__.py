@@ -7,31 +7,29 @@ if bytes is str:
     raise Exception("This module is designed for python 3 only. Please install an older version to use python 2.")
 
 import os
-import sys
-import socket
 import logging
 
 l = logging.getLogger("claripy")
 l.addHandler(logging.NullHandler())
 
 from .errors import *
-from . import operations
+from . import operations as operations
 from . import ops as _all_operations
 
 # This is here for later, because we'll fuck the namespace in a few lines
 from . import backends as _backends_module
-from .backends import Backend
-from .backend_object import BackendObject
+from .backends import Backend as Backend
+from .backend_object import BackendObject as BackendObject
 
 
 #
 # backend objects
 #
 
-from . import bv
-from . import fp
-from . import vsa
-from .fp import FSORT_DOUBLE, FSORT_FLOAT
+from . import bv as bv
+from . import fp as fp
+from . import vsa as vsa
+from .fp import FSORT_DOUBLE as FSORT_DOUBLE, FSORT_FLOAT as FSORT_FLOAT
 from .annotation import *
 
 #
@@ -93,8 +91,8 @@ def downsize():
 #
 
 from .frontend import Frontend as _Frontend
-from . import frontends
-from . import frontend_mixins
+from . import frontends as frontends
+from . import frontend_mixins as frontend_mixins
 from .solvers import *
 
 #
