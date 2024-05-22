@@ -37,6 +37,9 @@ T = TypeVar("T", bound="Base")
 
 
 class ASTCacheKey(Generic[T]):
+
+    __slots__ = ("ast", "__weakref__")
+
     def __init__(self, a: T):
         self.ast: T = a
 
@@ -102,6 +105,7 @@ class Base:
         "variables",
         "symbolic",
         "_hash",
+        "_base_ast",
         "_simplified",
         "_cached_encoded_name",
         "_cache_key",
@@ -272,18 +276,10 @@ class Base:
         if hash is not None:
             h = hash
         elif op in {"BVS", "BVV", "BoolS", "BoolV", "FPS", "FPV"} and not annotations:
-            if op == "FPV" and a_args[0] == 0.0 and math.copysign(1, a_args[0]) < 0:
-                # Python does not distinguish between +0.0 and -0.0 so we add sign to tuple to distinguish
-                h = (op, kwargs.get("length", None), ("-",) + a_args)
-            elif op == "FPV" and math.isnan(a_args[0]):
-                # cannot compare nans
-                h = (op, kwargs.get("length", None), ("nan",) + a_args[1:])
-            else:
-                h = (op, kwargs.get("length", None), a_args)
-
+            h = cls._calc_primitive_hash(op, kwargs.get("length", None), a_args)
             cache = cls._leaf_cache
         else:
-            h = Base._calc_hash(op, a_args, kwargs) if hash is None else hash
+            h = Base._calc_hash(op, a_args, kwargs)
         self = cache.get(h, None)
         if self is None:
             self = super().__new__(cls)
@@ -297,6 +293,28 @@ class Base:
                 **kwargs,
             )
             self._hash = h
+
+            # find or create base AST
+            if not annotations:
+                base_ast = self
+            else:
+                annotationless_kwargs = kwargs.copy()
+                annotationless_kwargs["annotations"] = ()
+                if op in {"BVS", "BVV", "BoolS", "BoolV", "FPS", "FPV"}:
+                    base_h = cls._calc_primitive_hash(op, kwargs.get("length", None), a_args)
+                    base_cache = self._leaf_cache
+                else:
+                    base_h = Base._calc_hash(op, a_args, kwargs)
+                    base_cache = cls._hash_cache
+                base_ast = base_cache.get(base_h, None)
+                if base_ast is None:
+                    base_ast = super().__new__(cls)
+                    base_ast.__a_init__(op, a_args, depth=depth, **annotationless_kwargs)
+                    base_ast._hash = base_h
+                    base_ast._base_ast = base_ast
+                    base_cache[base_h] = base_ast
+
+            self._base_ast = base_ast
             cache[h] = self
         # else:
         #   if self.args != a_args or self.op != op or self.variables != kwargs['variables']:
@@ -306,7 +324,14 @@ class Base:
 
     @classmethod
     def __init_with_annotations__(
-        cls, op, a_args, depth=None, uneliminatable_annotations=None, relocatable_annotations=None, **kwargs
+        cls,
+        op,
+        a_args,
+        depth=None,
+        uneliminatable_annotations=None,
+        relocatable_annotations=None,
+        base_ast=None,
+        **kwargs,
     ):
         cache = cls._hash_cache
         h = Base._calc_hash(op, a_args, kwargs)
@@ -325,9 +350,22 @@ class Base:
         )
 
         self._hash = h
+        self._base_ast = base_ast
         cache[h] = self
 
         return self
+
+    @staticmethod
+    def _calc_primitive_hash(op, length, a_args) -> Tuple:
+        if op == "FPV" and a_args[0] == 0.0 and math.copysign(1, a_args[0]) < 0:
+            # Python does not distinguish between +0.0 and -0.0 so we add sign to tuple to distinguish
+            h = (op, length, ("-",) + a_args)
+        elif op == "FPV" and math.isnan(a_args[0]):
+            # cannot compare nans
+            h = (op, length, ("nan",) + a_args[1:])
+        else:
+            h = (op, length, a_args)
+        return h
 
     def __reduce__(self):
         # HASHCONS: these attributes key the cache
@@ -571,6 +609,7 @@ class Base:
                 depth=self.depth,
                 eager_backends=self._eager_backends,
                 uc_alloc_depth=self._uc_alloc_depth,
+                base_ast=self._base_ast,
             )
 
         all_operations = operations.leaf_operations_symbolic_with_union
