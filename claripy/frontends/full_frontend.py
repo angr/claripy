@@ -141,11 +141,8 @@ class FullFrontend(ConstrainedFrontend):
     ) -> Tuple[float, ...]: ...
 
     def eval(self, e, n, extra_constraints=(), exact=None) -> Tuple[Any, ...]:
-        if not self.satisfiable(extra_constraints=extra_constraints):
-            raise UnsatError("unsat")
-
         try:
-            return tuple(
+            results = tuple(
                 self._solver_backend.eval(
                     e,
                     n,
@@ -154,6 +151,9 @@ class FullFrontend(ConstrainedFrontend):
                     model_callback=self._model_hook,
                 )
             )
+            if len(results) == 0:
+                raise UnsatError("unsat")
+            return results
         except BackendError as exc:
             raise ClaripyFrontendError("Backend error during eval") from exc
 
@@ -175,17 +175,17 @@ class FullFrontend(ConstrainedFrontend):
     ) -> List[Tuple[float, ...]]: ...
 
     def batch_eval(self, exprs, n, extra_constraints=(), exact=None):
-        if not self.satisfiable(extra_constraints=extra_constraints):
-            raise UnsatError("unsat")
-
         try:
-            return self._solver_backend.batch_eval(
+            results = self._solver_backend.batch_eval(
                 exprs,
                 n,
                 extra_constraints=extra_constraints,
                 solver=self._get_solver(),
                 model_callback=self._model_hook,
             )
+            if len(results) == 0:
+                raise UnsatError("unsat")
+            return results
         except BackendError as e:
             raise ClaripyFrontendError("Backend error during batch_eval") from e
 
