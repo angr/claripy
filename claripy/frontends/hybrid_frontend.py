@@ -1,7 +1,7 @@
 import logging
 
-from ..frontend import Frontend
-from ..errors import ClaripyFrontendError
+from claripy.frontend import Frontend
+from claripy.errors import ClaripyFrontendError
 
 l = logging.getLogger("claripy.frontends.full_frontend")
 _VALIDATE_BALANCER = False

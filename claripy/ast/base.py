@@ -7,13 +7,13 @@ import weakref
 from collections import OrderedDict, deque
 from itertools import chain
 from typing import Optional, Generic, TypeVar, TYPE_CHECKING, List, Iterable, Iterator, Tuple, NoReturn
-from ..errors import BackendError, ClaripyOperationError, ClaripyReplacementError
-from .. import operations
-from ..backend_manager import backends
-from .. import simplifications
+from claripy.errors import BackendError, ClaripyOperationError, ClaripyReplacementError
+from claripy import operations
+from claripy.backend_manager import backends
+from claripy import simplifications
 
 if TYPE_CHECKING:
-    from ..annotation import Annotation
+    from claripy.annotation import Annotation
 
 try:
     import _pickle as pickle
@@ -1353,5 +1353,5 @@ def simplify(e: T) -> T:
         return s
 
 
-from ..ast.bool import If, Not, BoolS  # noqa: E402
-from ..ast.bv import BV  # noqa: E402
+from claripy.ast.bool import If, Not, BoolS  # noqa: E402
+from claripy.ast.bv import BV  # noqa: E402

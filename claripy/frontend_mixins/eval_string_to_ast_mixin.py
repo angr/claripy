@@ -1,4 +1,4 @@
-from .. import String, StringV
+from claripy import String, StringV
 
 class EvalStringsToASTsMixin:
     def eval_to_ast(self, e, n, extra_constraints=(), exact=None):

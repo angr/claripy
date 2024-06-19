@@ -1,6 +1,6 @@
 import logging
-from ..ast.bool import Or
-from ..ast.bv import SGE, SLE, UGE, ULE
+from claripy.ast.bool import Or
+from claripy.ast.bv import SGE, SLE, UGE, ULE
 
 l = logging.getLogger("claripy.frontends.cache_mixin")
 

@@ -1,5 +1,5 @@
-from ..ast.base import Base
-from ..errors import ClaripyOperationError
+from claripy.ast.base import Base
+from claripy.errors import ClaripyOperationError
 
 
 class Bits(Base):

@@ -3,7 +3,7 @@ import os
 import pickle
 import threading
 
-from ..errors import ClaripyError, UnsatError
+from claripy.errors import ClaripyError, UnsatError
 from .backend_z3 import BackendZ3
 
 num_children = 0

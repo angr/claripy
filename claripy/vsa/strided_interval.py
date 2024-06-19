@@ -5,12 +5,12 @@ import math
 import numbers
 from functools import reduce
 
-from ..backend_object import BackendObject
+from claripy.backend_object import BackendObject
 from .errors import ClaripyVSAError
-from ..errors import ClaripyOperationError
+from claripy.errors import ClaripyOperationError
 from .bool_result import TrueResult, FalseResult, MaybeResult
-from ..ast.base import Base
-from ..bv import BVV
+from claripy.ast.base import Base
+from claripy.bv import BVV
 from .valueset import ValueSet
 
 logger = logging.getLogger("claripy.vsa.strided_interval")

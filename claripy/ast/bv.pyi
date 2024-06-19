@@ -3,8 +3,8 @@ from typing import overload, Any
 from .bits import Bits
 from .bool import Bool
 from .fp import FP
-from ..bv import BVV as ConcreteBVV
-from ..fp import RM, FSort
+from claripy.bv import BVV as ConcreteBVV
+from claripy.fp import RM, FSort
 
 CoerceBV = int | "BV"
 Incomplete = Any

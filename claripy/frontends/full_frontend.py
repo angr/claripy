@@ -3,14 +3,14 @@ import logging
 import threading
 
 from .constrained_frontend import ConstrainedFrontend
-from ..errors import UnsatError, BackendError, ClaripyFrontendError
-from ..ast.bv import UGE, ULE, SGE, SLE
-from ..backend_manager import backends
+from claripy.errors import UnsatError, BackendError, ClaripyFrontendError
+from claripy.ast.bv import UGE, ULE, SGE, SLE
+from claripy.backend_manager import backends
 
 if TYPE_CHECKING:
-    from ..ast.bv import BV
-    from ..ast.bool import Bool
-    from ..ast.fp import FP
+    from claripy.ast.bv import BV
+    from claripy.ast.bool import Bool
+    from claripy.ast.fp import FP
 
 l = logging.getLogger("claripy.frontends.full_frontend")
 

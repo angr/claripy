@@ -1,6 +1,6 @@
-from ..backend_object import BackendObject
-from ..errors import BackendError, ClaripyValueError
-from ..ast.base import Base
+from claripy.backend_object import BackendObject
+from claripy.errors import BackendError, ClaripyValueError
+from claripy.ast.base import Base
 
 
 class BoolResult(BackendObject):

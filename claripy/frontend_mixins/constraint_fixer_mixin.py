@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING, List, Union, Set, Tuple
-from .. import BoolV
+from claripy import BoolV
 
 if TYPE_CHECKING:
     from claripy.ast.bool import Bool

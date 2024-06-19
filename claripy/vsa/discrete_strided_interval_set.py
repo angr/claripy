@@ -5,7 +5,7 @@ import itertools
 from .strided_interval import StridedInterval
 from .errors import ClaripyVSAOperationError
 from .bool_result import BoolResult
-from ..bv import BVV
+from claripy.bv import BVV
 from .valueset import ValueSet
 
 DEFAULT_MAX_CARDINALITY_WITHOUT_COLLAPSING = 256  # We don't collapse until there are more than this many SIs

@@ -21,6 +21,7 @@ select = [
     "RSE",
     "SIM",
     "T10",
+    "TID",
     "W",
     "UP",
     "YTT",

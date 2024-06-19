@@ -1,10 +1,10 @@
 import atexit
 import logging
 
-from ..ast.base import Base, _make_name, ASTCacheKey
-from ..backend_manager import backends
-from .. import operations
-from ..errors import ClaripyOperationError, ClaripyTypeError, BackendError
+from claripy.ast.base import Base, _make_name, ASTCacheKey
+from claripy.backend_manager import backends
+from claripy import operations
+from claripy.errors import ClaripyOperationError, ClaripyTypeError, BackendError
 from .bits import Bits
 
 l = logging.getLogger("claripy.ast.bool")

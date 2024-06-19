@@ -4,13 +4,13 @@ import numbers
 import weakref
 
 from .bits import Bits
-from ..ast.base import _make_name
+from claripy.ast.base import _make_name
 from .bool import If
-from ..utils import deprecated
-from ..errors import ClaripyValueError
+from claripy.utils import deprecated
+from claripy.errors import ClaripyValueError
 from .bool import Bool
-from .. import operations
-from .. import vsa
+from claripy import operations
+from claripy import vsa
 
 l = logging.getLogger("claripy.ast.bv")
 

@@ -1,10 +1,10 @@
 
 import logging
 
-from ..ast.base import simplify
-from ..ast.bool import And, Or
-from ..annotation import SimplificationAvoidanceAnnotation
-from ..frontend import Frontend
+from claripy.ast.base import simplify
+from claripy.ast.bool import And, Or
+from claripy.annotation import SimplificationAvoidanceAnnotation
+from claripy.frontend import Frontend
 
 l = logging.getLogger("claripy.frontends.constrained_frontend")
 

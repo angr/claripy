@@ -1,10 +1,10 @@
 import struct
 
 from .bits import Bits
-from ..ast.base import _make_name
-from ..fp import FSORT_FLOAT
-from .. import operations
-from .. import fp
+from claripy.ast.base import _make_name
+from claripy.fp import FSORT_FLOAT
+from claripy import operations
+from claripy import fp
 from .bv import BV
 from .bool import Bool
 

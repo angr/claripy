@@ -1,5 +1,5 @@
-from .. import backends
-from ..errors import BackendError
+from claripy import backends
+from claripy.errors import BackendError
 
 class EagerResolutionMixin:
     def _concrete_value(self, e):

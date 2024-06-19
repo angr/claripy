@@ -2,10 +2,10 @@ from typing import Tuple
 import weakref
 import itertools
 
-from .. import errors
-from .. import backends, false
-from ..errors import UnsatError
-from ..ast import all_operations, Base
+from claripy import errors
+from claripy import backends, false
+from claripy.errors import UnsatError
+from claripy.ast import all_operations, Base
 
 
 class ModelCache:

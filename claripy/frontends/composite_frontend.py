@@ -5,12 +5,12 @@ import itertools
 
 from .constrained_frontend import ConstrainedFrontend
 from claripy.ast.strings import String
-from ..ast import Base
-from ..ast.bool import Or
-from .. import backends
-from ..errors import BackendError, UnsatError
-from ..frontend_mixins.model_cache_mixin import ModelCacheMixin
-from ..frontend_mixins.simplify_skipper_mixin import SimplifySkipperMixin
+from claripy.ast import Base
+from claripy.ast.bool import Or
+from claripy import backends
+from claripy.errors import BackendError, UnsatError
+from claripy.frontend_mixins.model_cache_mixin import ModelCacheMixin
+from claripy.frontend_mixins.simplify_skipper_mixin import SimplifySkipperMixin
 
 if TYPE_CHECKING:
     from claripy import SolverCompositeChild

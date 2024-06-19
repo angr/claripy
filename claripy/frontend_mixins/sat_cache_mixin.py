@@ -1,5 +1,5 @@
-from .. import false
-from ..errors import UnsatError
+from claripy import false
+from claripy.errors import UnsatError
 
 class SatCacheMixin:
     def __init__(self, *args, **kwargs):

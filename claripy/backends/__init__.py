@@ -842,12 +842,12 @@ class Backend:
         raise BackendError(f"Backend {self} does not support operation {expr.op}")
 
 
-from ..errors import BackendError, ClaripyRecursionError, BackendUnsupportedError
+from claripy.errors import BackendError, ClaripyRecursionError, BackendUnsupportedError
 from .backend_z3 import BackendZ3
 from .backend_z3_parallel import BackendZ3Parallel
 from .backend_concrete import BackendConcrete
 from .backend_vsa import BackendVSA
-from ..ast.base import Base
+from claripy.ast.base import Base
 
 # If you need support for multiple solvers, please import claripy.backends.backend_smtlib_solvers by yourself
 # from .backend_smtlib_solvers import *

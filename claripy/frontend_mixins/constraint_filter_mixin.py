@@ -1,5 +1,5 @@
-from ..errors import UnsatError, ClaripyValueError
-from .. import false
+from claripy.errors import UnsatError, ClaripyValueError
+from claripy import false
 
 class ConstraintFilterMixin:
     def _constraint_filter(self, constraints, **kwargs):

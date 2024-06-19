@@ -1,6 +1,6 @@
 import logging
 
-from ..errors import BackendError, ClaripyFrontendError
+from claripy.errors import BackendError, ClaripyFrontendError
 
 l = logging.getLogger(__name__)
 

@@ -3,11 +3,11 @@ import functools
 import itertools
 import numbers
 
-from ..backend_object import BackendObject
-from ..annotation import Annotation
-from ..ast.base import Base
+from claripy.backend_object import BackendObject
+from claripy.annotation import Annotation
+from claripy.ast.base import Base
 from .errors import ClaripyVSAOperationError, ClaripyVSAError
-from ..errors import ClaripyValueError
+from claripy.errors import ClaripyValueError
 from .bool_result import BoolResult, TrueResult, FalseResult, MaybeResult
 
 
