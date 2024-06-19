@@ -32,9 +32,8 @@ def compare_bits_0_length(f):
 def normalize_types(f):
     @functools.wraps(f)
     def normalize_helper(self, o):
-        if _d._DEBUG:
-            if hasattr(o, "__module__") and o.__module__ == "z3":
-                raise ValueError("this should no longer happen")
+        if _d._DEBUG and hasattr(o, "__module__") and o.__module__ == "z3":
+            raise ValueError("this should no longer happen")
         if isinstance(o, numbers.Number):
             o = BVV(o, self.bits)
         if isinstance(self, numbers.Number):

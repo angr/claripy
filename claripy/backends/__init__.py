@@ -5,6 +5,7 @@ import threading
 import numbers
 
 import logging
+import contextlib
 
 l = logging.getLogger("claripy.backend")
 
@@ -267,10 +268,8 @@ class Backend:
             obj = NotImplemented
 
             # first, try the operation with the first guy
-            try:
+            with contextlib.suppress(TypeError, ValueError):
                 obj = getattr(operator, op)(*args)
-            except (TypeError, ValueError):
-                pass
 
         if obj is NotImplemented:
             l.debug("received NotImplemented in %s.call() for operation %s", self, op)

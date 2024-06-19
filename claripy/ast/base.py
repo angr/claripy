@@ -220,16 +220,10 @@ class Base:
         if "uc_alloc_depth" not in kwargs:
             kwargs["uc_alloc_depth"] = None
 
-        if "annotations" not in kwargs or kwargs["annotations"] is None:
-            annotations = ()
-        else:
-            annotations = kwargs["annotations"]
+        annotations = () if "annotations" not in kwargs or kwargs["annotations"] is None else kwargs["annotations"]
 
         # process annotations
-        if "skip_child_annotations" in kwargs:
-            skip_child_annotations = kwargs.pop("skip_child_annotations")
-        else:
-            skip_child_annotations = False
+        skip_child_annotations = kwargs.pop("skip_child_annotations") if "skip_child_annotations" in kwargs else False
 
         if not annotations and not args_have_annotations:
             uneliminatable_annotations = frozenset()
@@ -543,11 +537,8 @@ class Base:
     #            yield backend.convert(a)
 
     def make_like(self: T, op: str, args: Iterable, **kwargs) -> T:
-        if kwargs.pop("simplify", False) is True:
-            # Try to simplify the expression again
-            simplified = simplifications.simpleton.simplify(op, args)
-        else:
-            simplified = None
+        # Try to simplify the expression again
+        simplified = simplifications.simpleton.simplify(op, args) if kwargs.pop("simplify", False) is True else None
         if simplified is not None:
             op = simplified.op
         if (
@@ -582,10 +573,9 @@ class Base:
             )
 
         all_operations = operations.leaf_operations_symbolic_with_union
-        if "annotations" not in kwargs:
-            # special case: if self is one of the args, we do not copy annotations over from self since child
-            # annotations will be re-processed during AST creation.
-            if not args or not any(self is arg for arg in args):
+        # special case: if self is one of the args, we do not copy annotations over from self since child
+        # annotations will be re-processed during AST creation.
+        if "annotations" not in kwargs and (not args or not any(self is arg for arg in args)):
                 kwargs["annotations"] = self.annotations
         if "variables" not in kwargs and op in all_operations:
             kwargs["variables"] = self.variables

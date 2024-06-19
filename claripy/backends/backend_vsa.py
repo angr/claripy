@@ -144,9 +144,7 @@ class BackendVSA(Backend):
         raise BackendError
 
     def _eval(self, expr, n, extra_constraints=(), solver=None, model_callback=None):
-        if isinstance(expr, StridedInterval):
-            return expr.eval(n)
-        elif isinstance(expr, ValueSet):
+        if isinstance(expr, (StridedInterval, ValueSet)):
             return expr.eval(n)
         elif isinstance(expr, BoolResult):
             return expr.value
@@ -191,10 +189,7 @@ class BackendVSA(Backend):
             return not obj.intersection(v).is_empty
 
         if isinstance(obj, ValueSet):
-            for _, si in obj.items():
-                if not si.intersection(v).is_empty:
-                    return True
-            return False
+            return any(not si.intersection(v).is_empty for _, si in obj.items())
 
         raise NotImplementedError(type(obj).__name__)
 
@@ -223,9 +218,7 @@ class BackendVSA(Backend):
         return a.identical(b)
 
     def _unique(self, obj):  # pylint:disable=unused-argument,no-self-use
-        if isinstance(obj, StridedInterval):
-            return obj.unique
-        elif isinstance(obj, ValueSet):
+        if isinstance(obj, (StridedInterval, ValueSet)):
             return obj.unique
         else:
             raise BackendError("Not supported type of operand %s" % type(obj))
@@ -448,10 +441,7 @@ class BackendVSA(Backend):
         ret = None
 
         for arg in ast.args:
-            if ret is None:
-                ret = arg
-            else:
-                ret = ret.intersection(arg)
+            ret = arg if ret is None else ret.intersection(arg)
         return ret
 
     @convert_args

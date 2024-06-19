@@ -26,10 +26,7 @@ def op(
                     f"Operation {name} takes exactly {len(arg_types)} arguments ({len(args)} given)"
                 )
 
-        if type(arg_types) is type:  # pylint:disable=unidiomatic-typecheck
-            actual_arg_types = (arg_types,) * num_args
-        else:
-            actual_arg_types = arg_types
+        actual_arg_types = (arg_types,) * num_args if isinstance(arg_types, type) else arg_types
         matches = [isinstance(arg, argty) for arg, argty in zip(args, actual_arg_types)]
 
         # heuristically, this works!

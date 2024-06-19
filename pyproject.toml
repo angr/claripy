@@ -19,6 +19,7 @@ select = [
     "ISC",
     "PIE",
     "RSE",
+    "SIM",
     "T10",
     "W",
     "UP",

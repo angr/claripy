@@ -111,13 +111,12 @@ class BackendConcrete(Backend):
         """
         Override Backend.convert() to add fast paths for BVVs and BoolVs.
         """
-        if type(expr) is BV:
-            if expr.op == "BVV":
-                cached_obj = self._object_cache.get(expr._cache_key, None)
-                if cached_obj is None:
-                    cached_obj = self.BVV(*expr.args)
-                    self._object_cache[expr._cache_key] = cached_obj
-                return cached_obj
+        if type(expr) is BV and expr.op == "BVV":
+            cached_obj = self._object_cache.get(expr._cache_key, None)
+            if cached_obj is None:
+                cached_obj = self.BVV(*expr.args)
+                self._object_cache[expr._cache_key] = cached_obj
+            return cached_obj
         if type(expr) is Bool and expr.op == "BoolV":
             return expr.args[0]
         return super().convert(expr)
@@ -168,15 +167,9 @@ class BackendConcrete(Backend):
 
     @staticmethod
     def _to_primitive(expr):
-        if isinstance(expr, bv.BVV):
+        if isinstance(expr, (bv.BVV, fp.FPV, strings.StringV)):
             return expr.value
-        elif isinstance(expr, fp.FPV):
-            return expr.value
-        elif isinstance(expr, strings.StringV):
-            return expr.value
-        elif isinstance(expr, bool):
-            return expr
-        elif isinstance(expr, numbers.Number):
+        elif isinstance(expr, (bool, numbers.Number)):
             return expr
         else:
             raise BackendError("idk how to turn this into a primitive")

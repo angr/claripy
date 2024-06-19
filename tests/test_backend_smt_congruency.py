@@ -106,7 +106,7 @@ class SmtLibSolverTestCongruency(unittest.TestCase):
     def test_congruency_1(self):
         recv_input = claripy.StringS("recv_input", 1024)
         constraints = []
-        constraints.append(0 <= claripy.StrIndexOf(recv_input, claripy.StringV("\r\n\r\n"), 0, 32))
+        constraints.append(claripy.StrIndexOf(recv_input, claripy.StringV("\r\n\r\n"), 0, 32) >= 0)
 
         results = self._collect_generic_solver_test_data((recv_input,), constraints)
         self._generic_consistency_check(results)

@@ -367,10 +367,8 @@ class SimplificationManager:
             if all(a.length == 8 for a in body.args):
                 return body.make_like(body.op, body.args[::-1], simplify=True)
 
-        if body.op == "Concat":
-            if all(a.op == "Reverse" for a in body.args):
-                if all(a.length % 8 == 0 for a in body.args):
-                    return body.make_like(body.op, [a.args[0] for a in reversed(body.args)], simplify=True)
+        if body.op == "Concat" and all(a.op == "Reverse" for a in body.args) and all(a.length % 8 == 0 for a in body.args):
+                return body.make_like(body.op, [a.args[0] for a in reversed(body.args)], simplify=True)
 
         if body.op == "Extract" and body.args[2].op == "Reverse":
             # Reverse(Extract(hi, lo, Reverse(x))) ==> Extract(bits-lo-1, bits-hi-1, x)
@@ -409,10 +407,8 @@ class SimplificationManager:
         if len(args) == 2:
             a = args[0]
             b = args[1]
-            if len(a.args) >= 2 and len(b.args) >= 2:
-                if a.args[0] is b.args[0] and a.args[1] is b.args[1]:
-                    if a.op == "__ge__" and b.op == "__ne__":
-                        return ast.all_operations.UGT(a.args[0], a.args[1])
+            if len(a.args) >= 2 and len(b.args) >= 2 and a.args[0] is b.args[0] and a.args[1] is b.args[1] and a.op == "__ge__" and b.op == "__ne__":
+                return ast.all_operations.UGT(a.args[0], a.args[1])
 
         flattened = SimplificationManager._flatten_simplifier("And", SimplificationManager._deduplicate_filter, *args)
         if flattened is None:
@@ -434,15 +430,9 @@ class SimplificationManager:
         target_var = None
 
         # Determine the unknown variable
-        if fargs[0].args[0].symbolic:
-            if fargs[0].args[0] is fargs[1].args[0]:
+        if fargs[0].args[0].symbolic and (fargs[0].args[0] is fargs[1].args[0] or fargs[0].args[0] is fargs[1].args[1]):
                 target_var = fargs[0].args[0]
-            elif fargs[0].args[0] is fargs[1].args[1]:
-                target_var = fargs[0].args[0]
-        elif fargs[0].args[1].symbolic:
-            if fargs[0].args[1] is fargs[1].args[0]:
-                target_var = fargs[0].args[1]
-            elif fargs[0].args[1] is fargs[1].args[1]:
+        elif fargs[0].args[1].symbolic and (fargs[0].args[1] is fargs[1].args[0] or fargs[0].args[1] is fargs[1].args[1]):
                 target_var = fargs[0].args[1]
 
         if target_var is None:
@@ -688,9 +678,8 @@ class SimplificationManager:
             if b is ast.all_operations.BVV(0, a.size()):
                 return a
             if a.op == b.op and a.op in {"BVV", "BoolV", "FPV"}:
-                if a.args == b.args:
-                    if (a == b).is_true():
-                        return a
+                if a.args == b.args and (a == b).is_true():
+                    return a
             elif (a == b).is_true():
                 return a
             if a is b:
@@ -716,37 +705,34 @@ class SimplificationManager:
                 return a
             # for concrete values, we delay the AST creation as much as possible
             if a.op == b.op and a.op in {"BVV", "BoolV", "FPV"}:
-                if a.args == b.args:
-                    if (a == b).is_true():
-                        return a
+                if a.args == b.args and (a == b).is_true():
+                    return a
             elif (a == b).is_true():
                 return a
             if a.op == "BVV" and a.args[0] == 0:
                 return ast.all_operations.BVV(0, a.size())
             if b.op == "BVV" and b.args[0] == 0:
                 return ast.all_operations.BVV(0, a.size())
-            if a.op == "Concat" and len(a.args) == 2:
-                # Concat(a.args[0], a.args[1]) & b  ==>  ZeroExt(size, a.args[1])
-                # maybe we can drop the second argument
-                if (b == 2 ** (a.size() - a.args[0].size()) - 1).is_true():
-                    # yes!
-                    return ast.all_operations.ZeroExt(a.args[0].size(), a.args[1])
+            # Concat(a.args[0], a.args[1]) & b  ==>  ZeroExt(size, a.args[1])
+            # maybe we can drop the second argument
+            if a.op == "Concat" and len(a.args) == 2 and (b == 2 ** (a.size() - a.args[0].size()) - 1).is_true():
+                # yes!
+                return ast.all_operations.ZeroExt(a.args[0].size(), a.args[1])
 
             # if(cond0, 1, 0) & if(cond1, 1, 0)  ->  if(cond0 & cond1, 1, 0)
-            if a.op == "If" and b.op == "If":
-                if (
-                    (a.args[1] == ast.all_operations.BVV(1, 1)).is_true()
-                    and (a.args[2] == ast.all_operations.BVV(0, 1)).is_true()
-                    and (b.args[1] == ast.all_operations.BVV(1, 1)).is_true()
-                    and (b.args[2] == ast.all_operations.BVV(0, 1)).is_true()
-                ):
-                    cond0 = a.args[0]
-                    cond1 = b.args[0]
-                    return ast.all_operations.If(
-                        cond0 & cond1,
-                        ast.all_operations.BVV(1, 1),
-                        ast.all_operations.BVV(0, 1),
-                    )
+            if a.op == "If" and b.op == "If" and (
+                (a.args[1] == ast.all_operations.BVV(1, 1)).is_true()
+                and (a.args[2] == ast.all_operations.BVV(0, 1)).is_true()
+                and (b.args[1] == ast.all_operations.BVV(1, 1)).is_true()
+                and (b.args[2] == ast.all_operations.BVV(0, 1)).is_true()
+            ):
+                cond0 = a.args[0]
+                cond1 = b.args[0]
+                return ast.all_operations.If(
+                    cond0 & cond1,
+                    ast.all_operations.BVV(1, 1),
+                    ast.all_operations.BVV(0, 1),
+                )
 
         return SimplificationManager._flatten_simplifier(
             "__and__", SimplificationManager._deduplicate_filter, a, b, *args
@@ -927,9 +913,7 @@ class SimplificationManager:
     def fptofp_simplifier(*args):
         if len(args) == 2 and args[0].op == "fpToIEEEBV":
             to_bv, sort = args
-            if sort == fp.FSORT_FLOAT and to_bv.length == 32:
-                return to_bv.args[0]
-            elif sort == fp.FSORT_DOUBLE and to_bv.length == 64:
+            if (sort == fp.FSORT_FLOAT and to_bv.length == 32) or (sort == fp.FSORT_DOUBLE and to_bv.length == 64):
                 return to_bv.args[0]
 
     @staticmethod
@@ -1037,9 +1021,8 @@ class SimplificationManager:
                             return op(ast.all_operations.BVV(0, b.size()), b)
 
                         b_highbit_idx = b.size() - 1 - zero_bits
-                        if b.size() % 8 == 0:
-                            # originally, b was 8-bit aligned. Can we keep the size of the new expression 8-byte aligned?
-                            if (b_highbit_idx + 1) % 8 != 0:
+                        # originally, b was 8-bit aligned. Can we keep the size of the new expression 8-byte aligned?
+                        if b.size() % 8 == 0 and (b_highbit_idx + 1) % 8 != 0:
                                 b_highbit_idx += 8 - (b_highbit_idx + 1) % 8
                         b_lower = b[b_highbit_idx:0]
                         if mask_allones:
@@ -1080,11 +1063,10 @@ class SimplificationManager:
         if a_arg.op == "Concat" and len(a_arg.args) == 2:
             a_concat_expr0 = a_arg.args[0]
             a_inner_expr = a_arg.args[1]
-            if a_concat_expr0.op == "BVV" and a_concat_expr0.args[0] == 0:
-                # equivalent to ZeroExt
-                if a_concat_expr0.size() >= a_arg.size() - a_hi:
-                    # high bits are all zeros
-                    highbits_are_zeros = True
+            # equivalent to ZeroExt
+            if a_concat_expr0.op == "BVV" and a_concat_expr0.args[0] == 0 and a_concat_expr0.size() >= a_arg.size() - a_hi:
+                # high bits are all zeros
+                highbits_are_zeros = True
 
         elif a_arg.op == "ZeroExt":
             a_zeroext_bits = a_arg.args[0]

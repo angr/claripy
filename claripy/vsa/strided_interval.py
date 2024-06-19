@@ -37,7 +37,7 @@ def normalize_types(f):
         if f.__name__ == "union" and isinstance(o, DiscreteStridedIntervalSet):
             return o.union(self)
 
-        if isinstance(o, ValueSet) or isinstance(o, DiscreteStridedIntervalSet):
+        if isinstance(o, (ValueSet, DiscreteStridedIntervalSet)):
             # if it's singlevalued, we can convert it to a StridedInterval
             if o.cardinality == 1:
                 o = o.stridedinterval()
@@ -446,13 +446,7 @@ class StridedInterval(BackendObject):
         if self.stride == 0 and n > 0:
             results.append(self.lower_bound)
         else:
-            if signed:
-                # View it as a signed integer
-                bounds = self._signed_bounds()
-
-            else:
-                # View it as an unsigned integer
-                bounds = self._unsigned_bounds()
+            bounds = self._signed_bounds() if signed else self._unsigned_bounds()
 
             for lb, ub in bounds:
                 while len(results) < n and lb <= ub:
@@ -1460,10 +1454,7 @@ class StridedInterval(BackendObject):
             max = StridedInterval.max_int(bits)  # pylint:disable=redefined-builtin
             max_offset = max % stride
 
-            if max_offset >= offset:
-                o = max - (max_offset - offset)
-            else:
-                o = max - ((max_offset + stride) - offset)
+            o = max - (max_offset - offset) if max_offset >= offset else max - (max_offset + stride - offset)
             return o
         else:
             return StridedInterval.max_int(bits)
@@ -1479,10 +1470,7 @@ class StridedInterval(BackendObject):
             min = StridedInterval.min_int(bits)  # pylint:disable=redefined-builtin
             min_offset = min % stride
 
-            if offset >= min_offset:
-                o = min + (offset - min_offset)
-            else:
-                o = min + ((offset + stride) - min_offset)
+            o = min + (offset - min_offset) if offset >= min_offset else min + (offset + stride - min_offset)
             return o
         else:
             return StridedInterval.min_int(bits)
@@ -1911,13 +1899,12 @@ class StridedInterval(BackendObject):
         elif b.is_top:
             return True
 
-        if b._surrounds_member(a.lower_bound) and b._surrounds_member(a.upper_bound):
-            if (
-                (b.lower_bound == a.lower_bound and b.upper_bound == a.upper_bound)
-                or not a._surrounds_member(b.lower_bound)
-                or not a._surrounds_member(b.upper_bound)
-            ):
-                return True
+        if b._surrounds_member(a.lower_bound) and b._surrounds_member(a.upper_bound) and (
+            (b.lower_bound == a.lower_bound and b.upper_bound == a.upper_bound)
+            or not a._surrounds_member(b.lower_bound)
+            or not a._surrounds_member(b.upper_bound)
+        ):
+            return True
         return False
 
     #
@@ -2533,10 +2520,7 @@ class StridedInterval(BackendObject):
 
         bits = high_bit - low_bit + 1
 
-        if low_bit != 0:
-            ret = self.rshift_logical(low_bit)
-        else:
-            ret = self.copy()
+        ret = self.rshift_logical(low_bit) if low_bit != 0 else self.copy()
         if bits != self.bits:
             ret = ret.cast_low(bits)
 
@@ -2548,10 +2532,7 @@ class StridedInterval(BackendObject):
 
         bits = high_bit - low_bit + 1
 
-        if low_bit != 0:
-            ret = self._unrev_rshift_logical(low_bit)
-        else:
-            ret = self.copy()
+        ret = self._unrev_rshift_logical(low_bit) if low_bit != 0 else self.copy()
         if bits != self.bits:
             ret = ret._unrev_cast_low(bits)
 
@@ -3119,14 +3100,8 @@ class StridedInterval(BackendObject):
                 t0 = (-c * x0) / float(b)
                 t1 = (c * y0) / float(a)
                 # direction of the disequation depends on b and a sign
-                if b < 0:
-                    t0_dir = "<="
-                else:
-                    t0_dir = ">="
-                if a < 0:
-                    t1_dir = ">="
-                else:
-                    t1_dir = "<="
+                t0_dir = "<=" if b < 0 else ">="
+                t1_dir = ">=" if a < 0 else "<="
 
                 # calculate the intersection between the found
                 # solution intervals to get the common solutions
@@ -3145,10 +3120,7 @@ class StridedInterval(BackendObject):
                 else:
                     t = ub if abs(ub) < abs(lb) else lb
                 # round the value of t
-                if t == ub:
-                    t = int(math.floor(t))
-                else:
-                    t = int(math.ceil(t))
+                t = int(math.floor(t)) if t == ub else int(math.ceil(t))
 
                 return (c * x0 + b * t, c * y0 - a * t)
             else:

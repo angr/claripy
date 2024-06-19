@@ -407,10 +407,9 @@ class ValueSet(BackendObject):
         :rtype: ValueSet
         """
 
-        if type(other) is ValueSet:
-            # The only case where calling & between two points makes sense
-            if self.identical(other):
-                return self.copy()
+        # The only case where calling & between two points makes sense
+        if type(other) is ValueSet and self.identical(other):
+            return self.copy()
 
         if BoolResult.is_true(other == 0):
             # Corner case: a & 0 = 0

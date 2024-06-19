@@ -119,10 +119,7 @@ class Balancer:
                     return -(1 << (len(converted) - 1))
                 else:
                     return 0
-        if not signed:
-            bounds = converted._unsigned_bounds()
-        else:
-            bounds = converted._signed_bounds()
+        bounds = converted._unsigned_bounds() if not signed else converted._signed_bounds()
         return min(mn for mn, mx in bounds)
 
     @staticmethod
@@ -138,10 +135,7 @@ class Balancer:
                     return (1 << (len(converted) - 1)) - 1
                 else:
                     return (1 << len(converted)) - 1
-        if not signed:
-            bounds = converted._unsigned_bounds()
-        else:
-            bounds = converted._signed_bounds()
+        bounds = converted._unsigned_bounds() if not signed else converted._signed_bounds()
         return max(mx for mn, mx in bounds)
 
     def _range(self, a, signed=False):
@@ -196,10 +190,7 @@ class Balancer:
             raise ClaripyBalancerError("unable to reverse comparison %s (missing from 'opposites')" % a.op)
 
         try:
-            if new_op.startswith("__"):
-                op = getattr(operator, new_op)
-            else:
-                op = getattr(_all_operations, new_op)
+            op = getattr(operator, new_op) if new_op.startswith("__") else getattr(_all_operations, new_op)
         except AttributeError:
             raise ClaripyBalancerError("unable to reverse comparison %s (AttributeError)" % a.op)
 
@@ -268,9 +259,7 @@ class Balancer:
             self._handle(balanced_truism)
 
     def _queue_truism(self, t, check_true=False):
-        if not check_true:
-            self._truisms.append(t)
-        elif check_true and not is_true(t):
+        if (not check_true) or (check_true and not is_true(t)):
             self._truisms.append(t)
 
     def _queue_truisms(self, ts, check_true=False):

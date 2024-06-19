@@ -410,9 +410,7 @@ class BackendZ3(Backend):
             return z3.BoolRef(z3.Z3_mk_true(self._context.ref()), self._context)
         elif obj is False:
             return z3.BoolRef(z3.Z3_mk_false(self._context.ref()), self._context)
-        elif isinstance(obj, (numbers.Number, str)):
-            return obj
-        elif hasattr(obj, "__module__") and obj.__module__ in ("z3", "z3.z3"):
+        elif isinstance(obj, (numbers.Number, str)) or (hasattr(obj, "__module__") and obj.__module__ in ("z3", "z3.z3")):
             return obj
         else:
             l.debug("BackendZ3 encountered unexpected type %s", type(obj))
@@ -888,10 +886,7 @@ class BackendZ3(Backend):
         sat = z3_solver_sat(solver, constraints, comment)
         if sat and model_callback is not None:
             model_callback(self._generic_model(solver.model()))
-        if sat == is_max:
-            ret = hi
-        else:
-            ret = lo
+        ret = hi if sat == is_max else lo
         return ret
 
     @condom

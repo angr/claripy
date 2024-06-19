@@ -83,13 +83,10 @@ class LightFrontend(ConstrainedFrontend):
             return False
 
     def satisfiable(self, extra_constraints=(), exact=None):
-        if any(
+        return not any(
             self.is_false(c, extra_constraints=extra_constraints, exact=exact)
             for c in reversed(self.constraints + list(extra_constraints))
-        ):
-            return False
-        else:
-            return True
+        )
 
     #
     # Merging and splitting
