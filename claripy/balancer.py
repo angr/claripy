@@ -244,7 +244,7 @@ class Balancer:
 
             unpacked_truisms = self._unpack_truisms(truism)
             if is_false(truism):
-                raise ClaripyBalancerUnsatError()
+                raise ClaripyBalancerUnsatError
 
             self._processed_truisms.add(truism)
             if len(unpacked_truisms):
@@ -358,7 +358,7 @@ class Balancer:
     def _unpack_truisms_Or(self, c):
         vals = [is_false(v) for v in c.args]
         if all(vals):
-            raise ClaripyBalancerUnsatError()
+            raise ClaripyBalancerUnsatError
         elif vals.count(False) == 1:
             return self._unpack_truisms(c.args[vals.index(False)])
         else:
@@ -601,7 +601,7 @@ class Balancer:
             return truism
         elif not (can_true or can_false):
             # neither are satisfiable. This truism is fucked
-            raise ClaripyBalancerUnsatError()
+            raise ClaripyBalancerUnsatError
         elif must_true or (can_true and not can_false):
             # it will always be true
             self._queue_truism(condition)
@@ -619,7 +619,7 @@ class Balancer:
         l.debug("Handling %s", truism)
 
         if is_false(truism):
-            raise ClaripyBalancerUnsatError()
+            raise ClaripyBalancerUnsatError
         elif self._cardinality(truism.args[0]) == 1:
             # we are down to single-cardinality arguments, so our work is not
             # necessary
@@ -655,10 +655,10 @@ class Balancer:
 
         if is_lt and bound_max < int_min:
             # if the bound max is negative and we're unsigned less than, we're fucked
-            raise ClaripyBalancerUnsatError()
+            raise ClaripyBalancerUnsatError
         elif not is_lt and bound_min > int_max:
             # if the bound min is too big, we're fucked
-            raise ClaripyBalancerUnsatError()
+            raise ClaripyBalancerUnsatError
 
         current_min = int_min
         current_max = int_max

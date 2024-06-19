@@ -70,13 +70,13 @@ class Frontend:
 
         :return:
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def simplify(self):
         """
         Simplifies the stored constraints conjunction.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def check_satisfiability(self, extra_constraints=(), exact=None):
         """
@@ -100,7 +100,7 @@ class Frontend:
 
         :return:                        True if the conjunction is satisfiable otherwise False
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def eval(self, e, n, extra_constraints=(), exact=None):
         """
@@ -114,7 +114,7 @@ class Frontend:
 
         :return:                        tuple of python primitives representing results
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def batch_eval(self, exprs, n, extra_constraints=(), exact=None):
         """
@@ -128,7 +128,7 @@ class Frontend:
 
         :return:                        list of tuples of python primitives representing results
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def max(self, e, extra_constraints=(), signed=False, exact=None):
         """
@@ -142,7 +142,7 @@ class Frontend:
 
         :return:                        max possible value
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def min(self, e, extra_constraints=(), signed=False, exact=None):
         """
@@ -156,7 +156,7 @@ class Frontend:
 
         :return:                        min possible value
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def solution(self, e, v, extra_constraints=(), exact=None):
         """
@@ -170,7 +170,7 @@ class Frontend:
 
         :return:                        True if it is a possible solution otherwise False
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def is_true(self, e, extra_constraints=(), exact=None):
         """
@@ -188,7 +188,7 @@ class Frontend:
 
         :return:                        True if it can only evaluate to True otherwise False
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def is_false(self, e, extra_constraints=(), exact=None):
         """
@@ -205,7 +205,7 @@ class Frontend:
 
         :return:                        True if it can only evaluate to False otherwise False
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def downsize(self):  # pylint:disable=no-self-use
         pass

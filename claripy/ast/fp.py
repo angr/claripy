@@ -126,7 +126,7 @@ def FPV(value, sort):
 
 def _fp_length_calc(a1, a2, a3=None):
     if isinstance(a1, fp.RM) and a3 is None:
-        raise Exception()
+        raise Exception
     if a3 is None:
         return a2.length
     else:

@@ -42,12 +42,12 @@ def handle_sigint(signals, frametype):
         context.interrupt()
 
     if old_handler is signal.default_int_handler:
-        raise KeyboardInterrupt()
+        raise KeyboardInterrupt
     if callable(old_handler):
         old_handler(signals, frametype)
     else:
         print("*** CRITICAL ERROR - THIS SHOULD NEVER HAPPEN", sys.stderr, flush=True)
-        raise KeyboardInterrupt()
+        raise KeyboardInterrupt
 
 
 if threading.current_thread() == threading.main_thread():  # Signal only works in the main thread
@@ -113,7 +113,7 @@ def condom(f):
         try:
             return f(*args, **kwargs)
         except z3.Z3Exception as ze:
-            raise ClaripyZ3Error() from ze
+            raise ClaripyZ3Error from ze
 
     return z3_condom
 
@@ -132,7 +132,7 @@ def z3_solver_sat(solver, extra_constraints, occasion):
     if result == z3.unknown:
         reason = solver.reason_unknown()
         if reason in ("interrupted from keyboard", "interrupted"):
-            raise KeyboardInterrupt()
+            raise KeyboardInterrupt
         if reason in ("timeout", "max. resource limit exceeded", "max. memory exceeded"):
             raise ClaripySolverInterruptError(reason)
         raise ClaripyZ3Error("solver unknown: " + reason)

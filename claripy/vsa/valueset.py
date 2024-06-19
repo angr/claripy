@@ -351,7 +351,7 @@ class ValueSet(BackendObject):
 
             else:
                 # TODO: raise the proper exception here
-                raise NotImplementedError()
+                raise NotImplementedError
 
             delta = StridedInterval.empty(self.bits)
             for d in deltas:
@@ -382,7 +382,7 @@ class ValueSet(BackendObject):
         """
         if isinstance(other, ValueSet):
             # TODO: Handle more cases
-            raise NotImplementedError()
+            raise NotImplementedError
 
         new_vs = self.copy()
 

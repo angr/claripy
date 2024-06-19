@@ -9,22 +9,22 @@ class BoolResult(BackendObject):
         self._args = args
 
     def value(self):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __len__(self):
         return BackendError()
 
     def __eq__(self, other):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __and__(self, other):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __invert__(self):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __or__(self, other):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def identical(self, other):
         if self.value != other.value:
@@ -36,7 +36,7 @@ class BoolResult(BackendObject):
         return True
 
     def union(self, other):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def size(self):  # pylint:disable=no-self-use
         return None

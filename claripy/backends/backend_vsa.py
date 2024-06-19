@@ -141,7 +141,7 @@ class BackendVSA(Backend):
             return a
 
         # Not supported
-        raise BackendError()
+        raise BackendError
 
     def _eval(self, expr, n, extra_constraints=(), solver=None, model_callback=None):
         if isinstance(expr, StridedInterval):
