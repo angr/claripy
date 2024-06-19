@@ -276,7 +276,7 @@ class Base:
         elif op in {"BVS", "BVV", "BoolS", "BoolV", "FPS", "FPV"} and not annotations:
             if op == "FPV" and a_args[0] == 0.0 and math.copysign(1, a_args[0]) < 0:
                 # Python does not distinguish between +0.0 and -0.0 so we add sign to tuple to distinguish
-                h = (op, kwargs.get("length", None), ("-",) + a_args)
+                h = (op, kwargs.get("length", None), ("-", *a_args))
             elif op == "FPV" and math.isnan(a_args[0]):
                 # cannot compare nans
                 h = (op, kwargs.get("length", None), ("nan",) + a_args[1:])
@@ -612,7 +612,7 @@ class Base:
         :param a:                   the annotation to append
         :returns:                   a new AST, with the annotation added
         """
-        return self._apply_to_annotations(lambda alist: alist + (a,))
+        return self._apply_to_annotations(lambda alist: (*alist, a))
 
     def append_annotations(self: T, new_tuple: Tuple["Annotation", ...]) -> T:
         """
@@ -645,7 +645,7 @@ class Base:
         :param a:                   the annotation to insert
         :returns:                   a new AST, with the annotation added
         """
-        return self._apply_to_annotations(lambda alist: (a,) + alist)
+        return self._apply_to_annotations(lambda alist: (a, *alist))
 
     def insert_annotations(self: T, new_tuple: Tuple["Annotation", ...]) -> T:
         """

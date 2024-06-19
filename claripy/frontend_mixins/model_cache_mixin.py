@@ -317,9 +317,7 @@ class ModelCacheMixin:
 
         # TODO: faster to concat?
         if len(results) != 0:
-            constraints = (
-                all_operations.And(*[all_operations.Or(*[a != v for a, v in zip(asts, r)]) for r in results]),
-            ) + tuple(extra_constraints)
+            constraints = (all_operations.And(*[all_operations.Or(*[a != v for a, v in zip(asts, r)]) for r in results]), *tuple(extra_constraints))
         else:
             constraints = extra_constraints
 

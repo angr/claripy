@@ -111,7 +111,7 @@ class Balancer:
         converted = backends.vsa.convert(a)
         if isinstance(converted, vsa.ValueSet):
             if len(converted.regions) == 1:
-                converted = list(converted.regions.values())[0]
+                converted = next(iter(converted.regions.values()))
             else:
                 # unfortunately, this is a real abstract pointer
                 # the minimum value will be 0 or MIN_INT
@@ -127,7 +127,7 @@ class Balancer:
         converted = backends.vsa.convert(a)
         if isinstance(converted, vsa.ValueSet):
             if len(converted.regions) == 1:
-                converted = list(converted.regions.values())[0]
+                converted = next(iter(converted.regions.values()))
             else:
                 # unfortunately, this is a real abstract pointer
                 # the minimum value will be 0 or MIN_INT
@@ -422,7 +422,7 @@ class Balancer:
         new_lhs = truism.args[0].args[0]
         old_rhs = truism.args[1]
         other_adds = truism.args[0].args[1:]
-        new_rhs = truism.args[0].make_like("__sub__", (old_rhs,) + other_adds)
+        new_rhs = truism.args[0].make_like("__sub__", (old_rhs, *other_adds))
         return truism.make_like(truism.op, (new_lhs, new_rhs))
 
     @staticmethod
@@ -432,7 +432,7 @@ class Balancer:
         new_lhs = truism.args[0].args[0]
         old_rhs = truism.args[1]
         other_adds = truism.args[0].args[1:]
-        new_rhs = truism.args[0].make_like("__add__", (old_rhs,) + other_adds)
+        new_rhs = truism.args[0].make_like("__add__", (old_rhs, *other_adds))
         return truism.make_like(truism.op, (new_lhs, new_rhs))
 
     @staticmethod

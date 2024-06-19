@@ -221,9 +221,9 @@ class FullFrontend(ConstrainedFrontend):
             return two[0]
 
         if signed:
-            c = tuple(extra_constraints) + (SGE(e, two[0]), SGE(e, two[1]))
+            c = (*tuple(extra_constraints), SGE(e, two[0]), SGE(e, two[1]))
         else:
-            c = tuple(extra_constraints) + (UGE(e, two[0]), UGE(e, two[1]))
+            c = (*tuple(extra_constraints), UGE(e, two[0]), UGE(e, two[1]))
         try:
             return self._solver_backend.max(
                 e,
@@ -264,9 +264,9 @@ class FullFrontend(ConstrainedFrontend):
             return two[0]
 
         if signed:
-            c = tuple(extra_constraints) + (SLE(e, two[0]), SLE(e, two[1]))
+            c = (*tuple(extra_constraints), SLE(e, two[0]), SLE(e, two[1]))
         else:
-            c = tuple(extra_constraints) + (ULE(e, two[0]), ULE(e, two[1]))
+            c = (*tuple(extra_constraints), ULE(e, two[0]), ULE(e, two[1]))
         try:
             return self._solver_backend.min(
                 e,

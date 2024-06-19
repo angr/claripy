@@ -487,7 +487,7 @@ class CompositeFrontend(ConstrainedFrontend):
             for v in s.variables:
                 merged._solvers[v] = s
 
-        noncommon_solvers = [[s for s in cs._solver_list if id(s) not in common_ids] for cs in [self] + others]
+        noncommon_solvers = [[s for s in cs._solver_list if id(s) not in common_ids] for cs in [self, *others]]
 
         l.debug("... merging noncommon solvers")
         combined_noncommons = []

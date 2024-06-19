@@ -507,7 +507,7 @@ class SimplificationManager:
                 other_args.append(arg)
         if other_args and len(value_args) > 1:
             value_arg = value_args[0].make_like(op_name, tuple(value_args), simplify=False)
-            new_args = tuple(other_args) + (value_arg,)
+            new_args = (*tuple(other_args), value_arg)
 
         variables = frozenset(itertools.chain.from_iterable(a.variables for a in args if isinstance(a, ast.Base)))
         if filter_func:

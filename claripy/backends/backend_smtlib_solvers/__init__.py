@@ -134,7 +134,7 @@ class SMTLibSolverBackend(BackendSMTLibBase):
 
         sat = solver.read_sat().upper()
         if sat not in {"SAT", "UNSAT", "UNKNOWN"}:
-            raise ValueError(f"Solver error, don't understand (check-sat) response: {repr(sat)}")
+            raise ValueError(f"Solver error, don't understand (check-sat) response: {sat!r}")
         return sat.upper()
 
     def _check_satisfiability(self, extra_constraints=(), solver=None, model_callback=None, extra_variables=()):

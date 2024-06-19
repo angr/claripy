@@ -168,7 +168,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
         if self.should_collapse():
             return self.collapse()
         elif self.number_of_values == 1:
-            return list(self._si_set)[0]
+            return next(iter(self._si_set))
         else:
             for si in self._si_set:
                 self._update_bits(si)
@@ -358,7 +358,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
             return DiscreteStridedIntervalSet(bits=bits, si_set=ret)
 
         else:
-            return list(ret)[0]
+            return next(iter(ret))
 
     # Arithmetic operations
 

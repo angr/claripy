@@ -68,8 +68,8 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
         if common_ancestor is None:
             merged = self.blank_copy()
             options = []
-            for s, v in zip([self] + others, merge_conditions):
-                options.append(And(*([v] + s.constraints)))
+            for s, v in zip([self, *others], merge_conditions):
+                options.append(And(*([v, *s.constraints])))
             merged.add([Or(*options)])
         else:
             merged = common_ancestor.branch()

@@ -44,7 +44,7 @@ def _expr_to_smtlib(e, daggify=True):
     Dump the symbol in its smt-format depending on its type
 
     :param e: symbol to dump
-    :param daggify: The daggify parameter can be used to switch from a linear-size representation that uses ‘let’
+    :param daggify: The daggify parameter can be used to switch from a linear-size representation that uses `let`
                     operators to represent the formula as a dag or a simpler (but possibly exponential) representation
                     that expands the formula as a tree
 

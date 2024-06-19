@@ -158,7 +158,7 @@ class SmartLRUCache(LRUCache):
 
 
 class BackendZ3(Backend):
-    _split_on = {"And", "Or"}
+    _split_on = ("And", "Or")
 
     def __init__(self, reuse_z3_solver=None, ast_cache_size=10000):
         Backend.__init__(self, solver_required=True)
@@ -527,12 +527,12 @@ class BackendZ3(Backend):
             exp = z3.Z3_fpa_get_ebits(ctx, z3_sort)
             mantissa = z3.Z3_fpa_get_sbits(ctx, z3_sort)
             sort = FSort.from_params(exp, mantissa)
-            args = children + [sort]
+            args = [*children, sort]
             append_children = False
         elif op_name in ("fpToSBV", "fpToUBV"):
             # uuuuuugggggghhhhhh
             bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
-            args = children + [bv_size]
+            args = [*children, bv_size]
             append_children = False
         else:
             args = []
@@ -940,7 +940,7 @@ class BackendZ3(Backend):
 
     def _solution(self, expr, v, extra_constraints=(), solver=None, model_callback=None):
         return self._satisfiable(
-            extra_constraints=(expr == v,) + tuple(extra_constraints), solver=solver, model_callback=model_callback
+            extra_constraints=(expr == v, *tuple(extra_constraints)), solver=solver, model_callback=model_callback
         )
 
     #
