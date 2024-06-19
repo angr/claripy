@@ -546,9 +546,7 @@ class BackendZ3(Backend):
         ty = type(args[-1])
 
         if isinstance(result_ty, str):
-            err = (
-                f"Unknown Z3 error in abstraction (result_ty == '{result_ty}'). Update your version of Z3, and, if the problem persists, open a claripy issue."
-            )
+            err = f"Unknown Z3 error in abstraction (result_ty == '{result_ty}'). Update your version of Z3, and, if the problem persists, open a claripy issue."
             l.error(err)
             raise BackendError(err)
 
