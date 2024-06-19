@@ -241,7 +241,7 @@ class Base:
                     (
                         from_iterable(a._uneliminatable_annotations for a in ast_args)
                         if not skip_child_annotations
-                        else tuple()
+                        else ()
                     ),
                     tuple(a for a in annotations if not a.eliminatable and not a.relocatable),
                 )
@@ -255,7 +255,7 @@ class Base:
                             (
                                 from_iterable(a._relocatable_annotations for a in ast_args)
                                 if not skip_child_annotations
-                                else tuple()
+                                else ()
                             ),
                             tuple(a for a in annotations if not a.eliminatable and a.relocatable),
                         )
@@ -268,7 +268,7 @@ class Base:
                     (
                         from_iterable(a._relocatable_annotations for a in ast_args)
                         if not skip_child_annotations
-                        else tuple()
+                        else ()
                     ),
                     tuple(a for a in annotations),
                 )

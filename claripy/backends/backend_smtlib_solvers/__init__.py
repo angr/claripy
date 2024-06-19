@@ -164,7 +164,7 @@ class SMTLibSolverBackend(BackendSMTLibBase):
             model_string = solver.read_model()
             tokens = Tokenizer(StringIO(model_string), interactive=True)
             ass_list = SMTParser(tokens).consume_assignment_list()
-            return sat, {s: val for s, val in ass_list}, ass_list
+            return sat, dict(ass_list), ass_list
         else:
             error = solver.readline()
 

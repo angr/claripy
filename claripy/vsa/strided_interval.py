@@ -2797,7 +2797,7 @@ class StridedInterval(BackendObject):
             if ret is None or ret.n_values > si.n_values:
                 ret = si
 
-        if any([x for x in intervals_to_join if x.uninitialized]):
+        if any(x for x in intervals_to_join if x.uninitialized):
             ret.uninitialized = True
 
         return ret

@@ -39,7 +39,7 @@ class SmtLibSolverTestCongruency(unittest.TestCase):
         vars = list(variables)
         results = solver.batch_eval(vars, n, extra_constraints=constraints)
         for r in results:
-            yield map(lambda x: (x[0], solution_ast(*x)), zip(vars, r))
+            yield ((x[0], solution_ast(*x)) for x in zip(vars, r))
 
     def doublecheck_model_is_correct(self, csts, model):
         for c in csts:
