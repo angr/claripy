@@ -240,8 +240,7 @@ class ModelCacheMixin:
         model_lists = [self._models]
         model_lists.extend(o._models for o in others)
         combined._models.update(
-            ModelCache.combine(*product)
-            for product in itertools.islice(itertools.product(*model_lists), len(self._models))
+            itertools.starmap(ModelCache.combine, itertools.islice(itertools.product(*model_lists), len(self._models)))
         )
         return combined
 

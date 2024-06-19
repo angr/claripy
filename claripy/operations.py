@@ -27,7 +27,7 @@ def op(
                 )
 
         actual_arg_types = (arg_types,) * num_args if isinstance(arg_types, type) else arg_types
-        matches = [isinstance(arg, argty) for arg, argty in zip(args, actual_arg_types)]
+        matches = list(itertools.starmap(isinstance, zip(args, actual_arg_types)))
 
         # heuristically, this works!
         thing = args[matches.index(True, 1 if actual_arg_types[0] is fp.RM else 0)] if True in matches else None
@@ -132,7 +132,7 @@ def preprocess_union(*args, **kwargs):
 
 preprocessors = {
     "union": preprocess_union,
-    #'intersection': preprocess_intersect
+    # 'intersection': preprocess_intersect
 }
 
 #
@@ -424,9 +424,9 @@ opposites = {
     "SGT": "SLT",
     "SLE": "SGE",
     "SGE": "SLE",
-    #'__neg__':
-    #'__abs__':
-    #'__invert__':
+    # '__neg__':
+    # '__abs__':
+    # '__invert__':
     "__or__": "__ror__",
     "__ror__": "__or__",
     "__and__": "__rand__",
@@ -579,7 +579,7 @@ op_precedence = {  # based on https://en.cppreference.com/w/c/language/operator_
     "And": 11,
     # precedence: 12
     "Or": 12,
-    #'Concat': '..',
+    # 'Concat': '..',
 }
 
 commutative_operations = {

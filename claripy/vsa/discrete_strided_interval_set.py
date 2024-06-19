@@ -604,10 +604,10 @@ class DiscreteStridedIntervalSet(StridedInterval):
             raise ClaripyVSAOperationError("Unsupported operand type %s." % type(val))
 
         if val._lower_bound is not None and (self._lower_bound is None or val.lower_bound < self._lower_bound):
-                self._lower_bound = val.lower_bound
+            self._lower_bound = val.lower_bound
 
         if val._upper_bound is not None and (self._upper_bound is None or val.upper_bound > self._upper_bound):
-                self._upper_bound = val.upper_bound
+            self._upper_bound = val.upper_bound
 
     def _update_bits(self, val):
         if not isinstance(val, StridedInterval):

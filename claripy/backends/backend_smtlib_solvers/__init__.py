@@ -180,7 +180,7 @@ class SMTLibSolverBackend(BackendSMTLibBase):
 
         results = []
         while len(results) < n:
-            sat, model, ass_list = self._get_model(solver=solver, extra_constraints=e_c, extra_variables=expr_vars)
+            sat, model, _ = self._get_model(solver=solver, extra_constraints=e_c, extra_variables=expr_vars)
             if sat != "sat":
                 break
 

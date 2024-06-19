@@ -576,7 +576,7 @@ class Base:
         # special case: if self is one of the args, we do not copy annotations over from self since child
         # annotations will be re-processed during AST creation.
         if "annotations" not in kwargs and (not args or not any(self is arg for arg in args)):
-                kwargs["annotations"] = self.annotations
+            kwargs["annotations"] = self.annotations
         if "variables" not in kwargs and op in all_operations:
             kwargs["variables"] = self.variables
         if "uninitialized" not in kwargs:
@@ -733,7 +733,7 @@ class Base:
         next_max_depth = max_depth - 1 if max_depth is not None else None
         length = self.length if explicit_length else None
         # if operation is not in op_precedence, assign the "least operation precedence"
-        op_prec = operations.op_precedence[op] if op in operations.op_precedence else 15
+        op_prec = operations.op_precedence.get(op, 15)
 
         args = [
             (

@@ -41,7 +41,7 @@ class Z3Proxy(PopenSolverProxy):
             raise MissingSolverError("Z3 not found! Please install Z3 before using this backend")
         cmd = ["z3", "-smt2", "-in"]
         if self.timeout is not None:
-            cmd.append(f"-t:{self.timeout//1000}")  # our timeout is in milliseconds
+            cmd.append(f"-t:{self.timeout // 1000}")  # our timeout is in milliseconds
         if self.max_memory is not None:
             cmd.append(f"-memory:{self.max_memory}")
 

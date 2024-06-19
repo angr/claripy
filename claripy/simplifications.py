@@ -368,7 +368,7 @@ class SimplificationManager:
                 return body.make_like(body.op, body.args[::-1], simplify=True)
 
         if body.op == "Concat" and all(a.op == "Reverse" for a in body.args) and all(a.length % 8 == 0 for a in body.args):
-                return body.make_like(body.op, [a.args[0] for a in reversed(body.args)], simplify=True)
+            return body.make_like(body.op, [a.args[0] for a in reversed(body.args)], simplify=True)
 
         if body.op == "Extract" and body.args[2].op == "Reverse":
             # Reverse(Extract(hi, lo, Reverse(x))) ==> Extract(bits-lo-1, bits-hi-1, x)
@@ -431,9 +431,9 @@ class SimplificationManager:
 
         # Determine the unknown variable
         if fargs[0].args[0].symbolic and (fargs[0].args[0] is fargs[1].args[0] or fargs[0].args[0] is fargs[1].args[1]):
-                target_var = fargs[0].args[0]
+            target_var = fargs[0].args[0]
         elif fargs[0].args[1].symbolic and (fargs[0].args[1] is fargs[1].args[0] or fargs[0].args[1] is fargs[1].args[1]):
-                target_var = fargs[0].args[1]
+            target_var = fargs[0].args[1]
 
         if target_var is None:
             return flattened
@@ -1023,7 +1023,7 @@ class SimplificationManager:
                         b_highbit_idx = b.size() - 1 - zero_bits
                         # originally, b was 8-bit aligned. Can we keep the size of the new expression 8-byte aligned?
                         if b.size() % 8 == 0 and (b_highbit_idx + 1) % 8 != 0:
-                                b_highbit_idx += 8 - (b_highbit_idx + 1) % 8
+                            b_highbit_idx += 8 - (b_highbit_idx + 1) % 8
                         b_lower = b[b_highbit_idx:0]
                         if mask_allones:
                             # yes!

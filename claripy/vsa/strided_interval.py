@@ -104,7 +104,7 @@ def normalize_types(f):
 
         reverse_back = False
 
-        if f.__name__ in {"concat"}:
+        if f.__name__ == "concat":
             # TODO: Some optimizations can be applied to concat
             if self._reversed:
                 self = self._reverse()
@@ -1411,17 +1411,17 @@ class StridedInterval(BackendObject):
             return 1
         elif val < 0:
             if max_bits is None:
-                return int(math.log(-val, 2) + 1) + 1
+                return int(math.log2(-val) + 1) + 1
             else:
                 assert isinstance(max_bits, int)
-                return int(math.log((((1 << max_bits) - 1) & ~(-val)) + 1, 2) + 1)
+                return int(math.log2((((1 << max_bits) - 1) & ~(-val)) + 1) + 1)
         else:
             # FIXME: Support other bits
             # Here we assume the maximum val is 64 bits
             # Special case to deal with the floating-point imprecision
             if val > 0xFFFFFFFFFFFE0000 and val <= 0x10000000000000000:
                 return 64
-            return int(math.log(val, 2) + 1)
+            return int(math.log2(val) + 1)
 
     @staticmethod
     def max_int(k):
@@ -3053,7 +3053,7 @@ class StridedInterval(BackendObject):
             # Do the intersection between two
             # ranges.
             if (a_dir, b_dir) == (">=", ">="):
-                lb = a if a > b else b
+                lb = max(b, a)
                 ub = float("inf")
             elif (a_dir, b_dir) == ("<=", ">="):
                 if a > b:
@@ -3070,7 +3070,7 @@ class StridedInterval(BackendObject):
                     lb = None
                     ub = None
             elif (a_dir, b_dir) == ("<=", "<="):
-                ub = a if a < b else b
+                ub = min(b, a)
                 lb = float("-inf")
 
             return lb, ub
