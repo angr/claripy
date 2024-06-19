@@ -156,7 +156,6 @@ class SmartLRUCache(LRUCache):
 #
 
 
-
 class BackendZ3(Backend):
     _split_on = ("And", "Or")
 
@@ -410,7 +409,9 @@ class BackendZ3(Backend):
             return z3.BoolRef(z3.Z3_mk_true(self._context.ref()), self._context)
         elif obj is False:
             return z3.BoolRef(z3.Z3_mk_false(self._context.ref()), self._context)
-        elif isinstance(obj, (numbers.Number, str)) or (hasattr(obj, "__module__") and obj.__module__ in ("z3", "z3.z3")):
+        elif isinstance(obj, (numbers.Number, str)) or (
+            hasattr(obj, "__module__") and obj.__module__ in ("z3", "z3.z3")
+        ):
             return obj
         else:
             l.debug("BackendZ3 encountered unexpected type %s", type(obj))

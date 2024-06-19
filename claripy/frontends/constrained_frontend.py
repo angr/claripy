@@ -1,4 +1,3 @@
-
 import logging
 
 from claripy.ast.base import simplify
@@ -7,7 +6,6 @@ from claripy.annotation import SimplificationAvoidanceAnnotation
 from claripy.frontend import Frontend
 
 l = logging.getLogger("claripy.frontends.constrained_frontend")
-
 
 
 class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
@@ -153,4 +151,3 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
 
     def is_false(self, e, extra_constraints=(), exact=None):
         raise NotImplementedError("is_false() is not implemented")
-

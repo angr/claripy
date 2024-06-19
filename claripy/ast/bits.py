@@ -43,5 +43,3 @@ class Bits(Base):
             raise ClaripyOperationError("replacements must have matching sizes")
 
     __len__ = size
-
-

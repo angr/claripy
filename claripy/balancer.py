@@ -710,4 +710,3 @@ def is_true(a):
 
 def is_false(a):
     return backends.vsa.is_false(a)
-

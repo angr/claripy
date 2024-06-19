@@ -51,5 +51,4 @@ class SolverBackendABC(SMTLibSolverBackend):
         return ABCProxy()
 
 
-
 backend_manager.backends._register_backend(SolverBackendABC(), "smtlib_abc", False, False)

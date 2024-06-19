@@ -478,5 +478,3 @@ def fpIsInf(x):
     Checks whether the argument is a floating point infinity.
     """
     return math.isinf(x)
-
-

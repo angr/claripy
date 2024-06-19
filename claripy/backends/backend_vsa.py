@@ -10,7 +10,15 @@ from claripy.vsa import RegionAnnotation
 
 from claripy.ast.base import Base
 from claripy.operations import backend_operations_vsa_compliant, expression_set_operations
-from claripy.vsa import StridedInterval, CreateStridedInterval, DiscreteStridedIntervalSet, ValueSet, BoolResult, TrueResult, FalseResult
+from claripy.vsa import (
+    StridedInterval,
+    CreateStridedInterval,
+    DiscreteStridedIntervalSet,
+    ValueSet,
+    BoolResult,
+    TrueResult,
+    FalseResult,
+)
 from claripy.balancer import Balancer
 
 l = logging.getLogger("claripy.backends.backend_vsa")

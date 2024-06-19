@@ -59,5 +59,4 @@ class SolverBackendZ3(SMTLibSolverBackend):
         return Z3Proxy(timeout=timeout, max_memory=max_memory)
 
 
-
 backend_manager.backends._register_backend(SolverBackendZ3(), "smtlib_z3", False, False)

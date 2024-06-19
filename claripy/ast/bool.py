@@ -11,6 +11,7 @@ l = logging.getLogger("claripy.ast.bool")
 
 _boolv_cache = {}
 
+
 # This is a hilarious hack to get around some sort of bug in z3's python bindings, where
 # under some circumstances stuff gets destructed out of order
 def cleanup():
@@ -19,6 +20,7 @@ def cleanup():
 
 
 atexit.register(cleanup)
+
 
 class Bool(Base):
     __slots__ = ()

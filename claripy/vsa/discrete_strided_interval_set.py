@@ -614,5 +614,3 @@ class DiscreteStridedIntervalSet(StridedInterval):
             raise ClaripyVSAOperationError("Unsupported operand type %s." % type(val))
 
         self._bits = val.bits
-
-

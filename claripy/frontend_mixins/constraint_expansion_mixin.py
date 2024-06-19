@@ -34,4 +34,3 @@ class ConstraintExpansionMixin:
         if b is False and len(extra_constraints) == 0:
             self.add([e != v], invalidate_cache=False)
         return b
-

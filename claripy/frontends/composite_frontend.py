@@ -19,6 +19,7 @@ if TYPE_CHECKING:
 l = logging.getLogger("claripy.frontends.composite_frontend")
 symbolic_count = itertools.count()
 
+
 class CompositeFrontend(ConstrainedFrontend):
     def __init__(self, template_frontend, template_frontend_string, track=False, **kwargs):
         super().__init__(**kwargs)
@@ -518,4 +519,3 @@ class CompositeFrontend(ConstrainedFrontend):
 
     def split(self):
         return [s.branch() for s in self._solver_list]
-

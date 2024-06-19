@@ -334,5 +334,3 @@ class FullFrontend(ConstrainedFrontend):
             self._solver_backend.__class__.__name__ == "BackendZ3",
             ConstrainedFrontend.merge(self, others, merge_conditions, common_ancestor=common_ancestor)[1],
         )
-
-

@@ -22,9 +22,7 @@ def op(
             if num_args + 1 == expected_num_args and arg_types[0] is fp.RM:
                 args = (fp.RM.default(), *args)
             else:
-                raise ClaripyTypeError(
-                    f"Operation {name} takes exactly {len(arg_types)} arguments ({len(args)} given)"
-                )
+                raise ClaripyTypeError(f"Operation {name} takes exactly {len(arg_types)} arguments ({len(args)} given)")
 
         actual_arg_types = (arg_types,) * num_args if isinstance(arg_types, type) else arg_types
         matches = list(itertools.starmap(isinstance, zip(args, actual_arg_types)))

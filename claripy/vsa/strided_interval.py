@@ -1899,10 +1899,14 @@ class StridedInterval(BackendObject):
         elif b.is_top:
             return True
 
-        if b._surrounds_member(a.lower_bound) and b._surrounds_member(a.upper_bound) and (
-            (b.lower_bound == a.lower_bound and b.upper_bound == a.upper_bound)
-            or not a._surrounds_member(b.lower_bound)
-            or not a._surrounds_member(b.upper_bound)
+        if (
+            b._surrounds_member(a.lower_bound)
+            and b._surrounds_member(a.upper_bound)
+            and (
+                (b.lower_bound == a.lower_bound and b.upper_bound == a.upper_bound)
+                or not a._surrounds_member(b.lower_bound)
+                or not a._surrounds_member(b.upper_bound)
+            )
         ):
             return True
         return False

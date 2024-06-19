@@ -207,5 +207,3 @@ class MaybeResult(BoolResult):
 
     def __bool__(self):
         return False
-
-

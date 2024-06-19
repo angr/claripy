@@ -135,5 +135,3 @@ class BackendZ3Parallel(BackendZ3):
 
     def simplify(self, *args, **kwargs):
         return self._synchronize("simplify", *args, **kwargs)
-
-

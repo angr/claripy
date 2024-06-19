@@ -58,5 +58,4 @@ class SolverBackendCVC4(SMTLibSolverBackend):
         return CVC4Proxy(timeout, max_memory)
 
 
-
 backend_manager.backends._register_backend(SolverBackendCVC4(), "smtlib_cvc4", False, False)

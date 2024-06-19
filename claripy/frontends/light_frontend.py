@@ -7,7 +7,6 @@ from .constrained_frontend import ConstrainedFrontend
 l = logging.getLogger("claripy.frontends.light_frontend")
 
 
-
 class LightFrontend(ConstrainedFrontend):
     def __init__(self, solver_backend, **kwargs):
         # since the LightFrontend mostly cannot handle extra_constriants, it horribly misuses the cache.
@@ -97,4 +96,3 @@ class LightFrontend(ConstrainedFrontend):
             self._solver_backend.__class__.__name__ == "BackendZ3",
             ConstrainedFrontend.merge(self, others, merge_conditions, common_ancestor=common_ancestor)[1],
         )
-

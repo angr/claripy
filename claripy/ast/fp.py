@@ -9,7 +9,6 @@ from .bv import BV
 from .bool import Bool
 
 
-
 class FP(Bits):
     """
     An AST representing a set of operations culminating in an IEEE754 floating point number.

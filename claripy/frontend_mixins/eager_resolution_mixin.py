@@ -1,6 +1,7 @@
 from claripy import backends
 from claripy.errors import BackendError
 
+
 class EagerResolutionMixin:
     def _concrete_value(self, e):
         r = super()._concrete_value(e)
@@ -16,5 +17,3 @@ class EagerResolutionMixin:
         return None
 
     _concrete_constraint = _concrete_value
-
-

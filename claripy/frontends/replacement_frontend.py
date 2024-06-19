@@ -13,7 +13,6 @@ from .constrained_frontend import ConstrainedFrontend
 l = logging.getLogger("claripy.frontends.replacement_frontend")
 
 
-
 class ReplacementFrontend(ConstrainedFrontend):
     def __init__(
         self,
@@ -302,4 +301,3 @@ class ReplacementFrontend(ConstrainedFrontend):
         self._actual_frontend.add(cr, **kwargs)
 
         return added
-

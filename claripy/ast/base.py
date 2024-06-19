@@ -259,11 +259,7 @@ class Base:
 
             annotations = tuple(
                 chain(
-                    (
-                        from_iterable(a._relocatable_annotations for a in ast_args)
-                        if not skip_child_annotations
-                        else ()
-                    ),
+                    (from_iterable(a._relocatable_annotations for a in ast_args) if not skip_child_annotations else ()),
                     tuple(a for a in annotations),
                 )
             )

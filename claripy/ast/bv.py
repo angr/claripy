@@ -24,7 +24,6 @@ def cleanup():
     del _bvv_cache
 
 
-
 atexit.register(cleanup)
 
 

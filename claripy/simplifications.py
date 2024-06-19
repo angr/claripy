@@ -367,7 +367,11 @@ class SimplificationManager:
             if all(a.length == 8 for a in body.args):
                 return body.make_like(body.op, body.args[::-1], simplify=True)
 
-        if body.op == "Concat" and all(a.op == "Reverse" for a in body.args) and all(a.length % 8 == 0 for a in body.args):
+        if (
+            body.op == "Concat"
+            and all(a.op == "Reverse" for a in body.args)
+            and all(a.length % 8 == 0 for a in body.args)
+        ):
             return body.make_like(body.op, [a.args[0] for a in reversed(body.args)], simplify=True)
 
         if body.op == "Extract" and body.args[2].op == "Reverse":
@@ -407,7 +411,14 @@ class SimplificationManager:
         if len(args) == 2:
             a = args[0]
             b = args[1]
-            if len(a.args) >= 2 and len(b.args) >= 2 and a.args[0] is b.args[0] and a.args[1] is b.args[1] and a.op == "__ge__" and b.op == "__ne__":
+            if (
+                len(a.args) >= 2
+                and len(b.args) >= 2
+                and a.args[0] is b.args[0]
+                and a.args[1] is b.args[1]
+                and a.op == "__ge__"
+                and b.op == "__ne__"
+            ):
                 return ast.all_operations.UGT(a.args[0], a.args[1])
 
         flattened = SimplificationManager._flatten_simplifier("And", SimplificationManager._deduplicate_filter, *args)
@@ -432,7 +443,9 @@ class SimplificationManager:
         # Determine the unknown variable
         if fargs[0].args[0].symbolic and (fargs[0].args[0] is fargs[1].args[0] or fargs[0].args[0] is fargs[1].args[1]):
             target_var = fargs[0].args[0]
-        elif fargs[0].args[1].symbolic and (fargs[0].args[1] is fargs[1].args[0] or fargs[0].args[1] is fargs[1].args[1]):
+        elif fargs[0].args[1].symbolic and (
+            fargs[0].args[1] is fargs[1].args[0] or fargs[0].args[1] is fargs[1].args[1]
+        ):
             target_var = fargs[0].args[1]
 
         if target_var is None:
@@ -720,11 +733,15 @@ class SimplificationManager:
                 return ast.all_operations.ZeroExt(a.args[0].size(), a.args[1])
 
             # if(cond0, 1, 0) & if(cond1, 1, 0)  ->  if(cond0 & cond1, 1, 0)
-            if a.op == "If" and b.op == "If" and (
-                (a.args[1] == ast.all_operations.BVV(1, 1)).is_true()
-                and (a.args[2] == ast.all_operations.BVV(0, 1)).is_true()
-                and (b.args[1] == ast.all_operations.BVV(1, 1)).is_true()
-                and (b.args[2] == ast.all_operations.BVV(0, 1)).is_true()
+            if (
+                a.op == "If"
+                and b.op == "If"
+                and (
+                    (a.args[1] == ast.all_operations.BVV(1, 1)).is_true()
+                    and (a.args[2] == ast.all_operations.BVV(0, 1)).is_true()
+                    and (b.args[1] == ast.all_operations.BVV(1, 1)).is_true()
+                    and (b.args[2] == ast.all_operations.BVV(0, 1)).is_true()
+                )
             ):
                 cond0 = a.args[0]
                 cond1 = b.args[0]
@@ -1064,7 +1081,11 @@ class SimplificationManager:
             a_concat_expr0 = a_arg.args[0]
             a_inner_expr = a_arg.args[1]
             # equivalent to ZeroExt
-            if a_concat_expr0.op == "BVV" and a_concat_expr0.args[0] == 0 and a_concat_expr0.size() >= a_arg.size() - a_hi:
+            if (
+                a_concat_expr0.op == "BVV"
+                and a_concat_expr0.args[0] == 0
+                and a_concat_expr0.size() >= a_arg.size() - a_hi
+            ):
                 # high bits are all zeros
                 highbits_are_zeros = True
 

@@ -271,5 +271,3 @@ class Frontend:
             results.append(({"CONCRETE"}, concrete_constraints))
 
         return results
-
-

@@ -233,4 +233,3 @@ class BackendConcrete(Backend):
 
     def _has_false(self, e, extra_constraints=(), solver=None, model_callback=None):
         return e is False
-

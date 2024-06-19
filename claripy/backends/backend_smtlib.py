@@ -37,8 +37,6 @@ from . import BackendError, Backend
 l = logging.getLogger("claripy.backends.backend_smt")
 
 
-
-
 def _expr_to_smtlib(e, daggify=True):
     """
     Dump the symbol in its smt-format depending on its type

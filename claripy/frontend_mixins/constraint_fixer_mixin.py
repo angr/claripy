@@ -14,5 +14,3 @@ class ConstraintFixerMixin:
 
         constraints = [BoolV(c) if isinstance(c, bool) else c for c in constraints]
         return super().add(constraints, **kwargs)
-
-
