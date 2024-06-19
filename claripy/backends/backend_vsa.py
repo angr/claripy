@@ -4,10 +4,24 @@ import functools
 import operator
 from functools import reduce
 
-l = logging.getLogger("claripy.backends.backend_vsa")
 
 from . import Backend, BackendError
 from ..vsa import RegionAnnotation
+
+from ..ast.base import Base
+from ..operations import backend_operations_vsa_compliant, expression_set_operations
+from ..vsa import (
+    StridedInterval,
+    CreateStridedInterval,
+    DiscreteStridedIntervalSet,
+    ValueSet,
+    BoolResult,
+    TrueResult,
+    FalseResult,
+)
+from ..balancer import Balancer
+
+l = logging.getLogger("claripy.backends.backend_vsa")
 
 
 def arg_filter(f):
@@ -458,19 +472,5 @@ class BackendVSA(Backend):
     def constraint_to_si(self, expr):
         return Balancer(self, expr).compat_ret
 
-
-from ..ast.base import Base
-from ..operations import backend_operations_vsa_compliant, expression_set_operations
-from ..vsa import (
-    StridedInterval,
-    CreateStridedInterval,
-    DiscreteStridedIntervalSet,
-    ValueSet,
-    AbstractLocation,
-    BoolResult,
-    TrueResult,
-    FalseResult,
-)
-from ..balancer import Balancer
 
 BackendVSA.CreateStridedInterval = staticmethod(CreateStridedInterval)

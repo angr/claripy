@@ -1,9 +1,9 @@
 import subprocess
 import logging
 
-import re
 from . import SMTLibSolverBackend, PopenSolverProxy
 from ...errors import MissingSolverError
+from ... import backend_manager as backend_manager
 
 log = logging.getLogger(__name__)
 
@@ -50,6 +50,5 @@ class SolverBackendABC(SMTLibSolverBackend):
         return ABCProxy()
 
 
-from ... import backend_manager as backend_manager
 
 backend_manager.backends._register_backend(SolverBackendABC(), "smtlib_abc", False, False)

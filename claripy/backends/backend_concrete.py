@@ -5,6 +5,14 @@ import operator
 from functools import reduce
 
 from . import BackendError, Backend
+from ..operations import backend_operations, backend_fp_operations, backend_strings_operations
+from .. import bv, fp, strings
+from ..ast import Base
+from ..ast.bv import BV, BVV
+from ..ast.strings import StringV
+from ..ast.fp import FPV
+from ..ast.bool import Bool, BoolV
+from ..errors import UnsatError
 
 l = logging.getLogger("claripy.backends.backend_concrete")
 
@@ -222,23 +230,14 @@ class BackendConcrete(Backend):
 
     # pylint:disable=singleton-comparison
     def _is_true(self, e, extra_constraints=(), solver=None, model_callback=None):
-        return e == True
+        return e is True
 
     def _is_false(self, e, extra_constraints=(), solver=None, model_callback=None):
-        return e == False
+        return e is False
 
     def _has_true(self, e, extra_constraints=(), solver=None, model_callback=None):
-        return e == True
+        return e is True
 
     def _has_false(self, e, extra_constraints=(), solver=None, model_callback=None):
-        return e == False
+        return e is False
 
-
-from ..operations import backend_operations, backend_fp_operations, backend_strings_operations
-from .. import bv, fp, strings
-from ..ast import Base
-from ..ast.bv import BV, BVV
-from ..ast.strings import StringV
-from ..ast.fp import FPV
-from ..ast.bool import Bool, BoolV
-from ..errors import UnsatError

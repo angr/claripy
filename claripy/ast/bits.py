@@ -1,4 +1,5 @@
 from ..ast.base import Base
+from ..errors import ClaripyOperationError
 
 
 class Bits(Base):
@@ -44,4 +45,3 @@ class Bits(Base):
     __len__ = size
 
 
-from ..errors import ClaripyOperationError

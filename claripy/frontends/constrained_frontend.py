@@ -1,10 +1,13 @@
-#!/usr/bin/env python
 
 import logging
 
+from ..ast.base import simplify
+from ..ast.bool import And, Or
+from ..annotation import SimplificationAvoidanceAnnotation
+from ..frontend import Frontend
+
 l = logging.getLogger("claripy.frontends.constrained_frontend")
 
-from ..frontend import Frontend
 
 
 class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
@@ -151,7 +154,3 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
     def is_false(self, e, extra_constraints=(), exact=None):
         raise NotImplementedError("is_false() is not implemented")
 
-
-from ..ast.base import simplify
-from ..ast.bool import And, Or
-from ..annotation import SimplificationAvoidanceAnnotation

@@ -1,11 +1,15 @@
+import atexit
 import logging
 
 from ..ast.base import Base, _make_name, ASTCacheKey
+from ..backend_manager import backends
+from .. import operations
+from ..errors import ClaripyOperationError, ClaripyTypeError, BackendError
+from .bits import Bits
 
 l = logging.getLogger("claripy.ast.bool")
 
 _boolv_cache = {}
-
 
 # This is a hilarious hack to get around some sort of bug in z3's python bindings, where
 # under some circumstances stuff gets destructed out of order
@@ -14,10 +18,7 @@ def cleanup():
     del _boolv_cache
 
 
-import atexit
-
 atexit.register(cleanup)
-
 
 class Bool(Base):
     __slots__ = ()
@@ -74,7 +75,6 @@ false = BoolV(False)
 # Bound operations
 #
 
-from .. import operations
 
 Bool.__eq__ = operations.op("__eq__", (Bool, Bool), Bool)
 Bool.__ne__ = operations.op("__ne__", (Bool, Bool), Bool)
@@ -268,7 +268,4 @@ def constraint_to_si(expr):
     return satisfiable, replace_list
 
 
-from ..backend_manager import backends
-from ..errors import ClaripyOperationError, ClaripyTypeError, BackendError
-from .bits import Bits
-from .bv import BVS
+from .bv import BVS  # noqa: E402

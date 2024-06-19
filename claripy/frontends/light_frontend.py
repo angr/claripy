@@ -2,9 +2,12 @@
 
 import logging
 
+from ..errors import BackendError, ClaripyFrontendError
+from ..backend_manager import backends
+from .constrained_frontend import ConstrainedFrontend
+
 l = logging.getLogger("claripy.frontends.light_frontend")
 
-from .constrained_frontend import ConstrainedFrontend
 
 
 class LightFrontend(ConstrainedFrontend):
@@ -100,6 +103,3 @@ class LightFrontend(ConstrainedFrontend):
             ConstrainedFrontend.merge(self, others, merge_conditions, common_ancestor=common_ancestor)[1],
         )
 
-
-from ..errors import BackendError, ClaripyFrontendError
-from ..backend_manager import backends

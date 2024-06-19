@@ -7,6 +7,10 @@ import weakref
 from collections import OrderedDict, deque
 from itertools import chain
 from typing import Optional, Generic, TypeVar, overload, TYPE_CHECKING, List, Iterable, Iterator, Tuple, NoReturn
+from ..errors import BackendError, ClaripyOperationError, ClaripyReplacementError
+from .. import operations
+from ..backend_manager import backends
+from .. import simplifications
 
 if TYPE_CHECKING:
     from .bool import Bool
@@ -14,7 +18,7 @@ if TYPE_CHECKING:
     from ..annotation import Annotation
 
 try:
-    import cPickle as pickle
+    import _pickle as pickle
 except ImportError:
     import pickle
 
@@ -391,7 +395,7 @@ class Base:
             return b"\x1f"
         elif arg is False:
             return b"\x2e"
-        elif type(arg) is int:
+        elif isinstance(arg, int):
             if arg < 0:
                 if arg >= -0x7FFF:
                     return b"-" + struct.pack("<h", arg)
@@ -408,11 +412,11 @@ class Base:
                 elif arg <= 0xFFFF_FFFF_FFFF_FFFF:
                     return struct.pack("<Q", arg)
                 return None
-        elif type(arg) is str:
+        elif isinstance(arg, str):
             return arg.encode()
-        elif type(arg) is float:
+        elif isinstance(arg, float):
             return struct.pack("f", arg)
-        elif type(arg) is tuple:
+        elif isinstance(arg, tuple):
             arr = []
             for elem in arg:
                 b = Base._arg_serialize(elem)
@@ -513,7 +517,7 @@ class Base:
 
     def __hash__(self):
         res = self._hash
-        if type(self._hash) is not int:
+        if not isinstance(self._hash, int):
             res = hash(self._hash)
         return res
 
@@ -767,13 +771,13 @@ class Base:
             if op == "BVS":
                 extras = []
                 if args[1] is not None:
-                    fmt = "%#x" if type(args[1]) is int else "%s"
+                    fmt = "%#x" if isinstance(args[1], int) else "%s"
                     extras.append("min=%s" % (fmt % args[1]))
                 if args[2] is not None:
-                    fmt = "%#x" if type(args[2]) is int else "%s"
+                    fmt = "%#x" if isinstance(args[2], int) else "%s"
                     extras.append("max=%s" % (fmt % args[2]))
                 if args[3] is not None:
-                    fmt = "%#x" if type(args[3]) is int else "%s"
+                    fmt = "%#x" if isinstance(args[3], int) else "%s"
                     extras.append("stride=%s" % (fmt % args[3]))
                 if args[4] is True:
                     extras.append("UNINITIALIZED")
@@ -1361,9 +1365,5 @@ def simplify(e: T) -> T:
         return s
 
 
-from ..errors import BackendError, ClaripyOperationError, ClaripyReplacementError
-from .. import operations
-from ..backend_manager import backends
-from ..ast.bool import If, Not, BoolS
-from ..ast.bv import BV
-from .. import simplifications
+from ..ast.bool import If, Not, BoolS  # noqa: E402
+from ..ast.bv import BV  # noqa: E402

@@ -1,3 +1,6 @@
+from .. import backends
+from ..errors import BackendError
+
 class EagerResolutionMixin:
     def _concrete_value(self, e):
         r = super()._concrete_value(e)
@@ -15,5 +18,3 @@ class EagerResolutionMixin:
     _concrete_constraint = _concrete_value
 
 
-from .. import backends
-from ..errors import BackendError

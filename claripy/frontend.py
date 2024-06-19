@@ -1,7 +1,7 @@
-#!/usr/bin/env python
-
 import logging
 import numbers
+
+from . import ast
 
 l = logging.getLogger("claripy.frontends.frontend")
 
@@ -273,4 +273,3 @@ class Frontend:
         return results
 
 
-from . import ast

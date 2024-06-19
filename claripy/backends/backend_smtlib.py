@@ -31,12 +31,12 @@ from pysmt.shortcuts import (
 )
 
 from pysmt.typing import STRING, INT, BOOL
+from . import BackendError, Backend
 
 
 l = logging.getLogger("claripy.backends.backend_smt")
 
 
-from . import BackendError, Backend
 
 
 def _expr_to_smtlib(e, daggify=True):

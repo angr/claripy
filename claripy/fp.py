@@ -7,6 +7,7 @@ from enum import Enum
 
 from .errors import ClaripyOperationError
 from .backend_object import BackendObject
+from .bv import BVV, Concat
 
 
 def compare_sorts(f):
@@ -479,4 +480,3 @@ def fpIsInf(x):
     return math.isinf(x)
 
 
-from .bv import BVV, Concat

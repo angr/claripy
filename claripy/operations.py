@@ -1,5 +1,9 @@
 import itertools
 from . import debug as _d
+from .errors import ClaripyOperationError, ClaripyTypeError
+from . import simplifications
+from . import ast
+from . import fp
 
 
 def op(
@@ -591,8 +595,3 @@ commutative_operations = {
     "Or",
     "Xor",
 }
-
-from .errors import ClaripyOperationError, ClaripyTypeError
-from . import simplifications
-from . import ast
-from . import fp

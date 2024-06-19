@@ -3,6 +3,9 @@ import weakref
 import itertools
 
 from .. import errors
+from .. import backends, false
+from ..errors import UnsatError
+from ..ast import all_operations, Base
 
 
 class ModelCache:
@@ -381,7 +384,3 @@ class ModelCacheMixin:
 
         return super().solution(e, v, extra_constraints=extra_constraints, **kwargs)
 
-
-from .. import backends, false
-from ..errors import UnsatError
-from ..ast import all_operations, Base

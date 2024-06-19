@@ -14,6 +14,17 @@ import z3
 from cachetools import LRUCache
 
 from ..errors import ClaripyZ3Error, ClaripySolverInterruptError
+from ..ast.base import Base
+from ..ast.bv import BV, BVV
+from ..ast.bool import BoolV, Bool
+from ..ast.strings import StringV
+from ..ast.fp import FP, FPV
+from ..operations import backend_operations, backend_fp_operations, backend_strings_operations
+from ..fp import FSort, RM
+from ..errors import ClaripyError, BackendError, ClaripyOperationError
+from .. import _all_operations
+from . import Backend
+
 
 l = logging.getLogger("claripy.backends.backend_z3")
 
@@ -144,7 +155,6 @@ class SmartLRUCache(LRUCache):
 # And the (ugh) magic
 #
 
-from . import Backend
 
 
 class BackendZ3(Backend):
@@ -536,7 +546,7 @@ class BackendZ3(Backend):
         result_ty = op_type_map[z3_op_nums[decl_num]]
         ty = type(args[-1])
 
-        if type(result_ty) is str:
+        if isinstance(result_ty, str):
             err = (
                 "Unknown Z3 error in abstraction (result_ty == '%s'). Update your version of Z3, and, if the problem persists, open a claripy issue."
                 % result_ty
@@ -1415,16 +1425,6 @@ op_map = {
     "Z3_OP_INTERNAL": "INTERNAL",
     "Z3_OP_UNINTERPRETED": "UNINTERPRETED",
 }
-
-from ..ast.base import Base
-from ..ast.bv import BV, BVV
-from ..ast.bool import BoolV, Bool
-from ..ast.strings import StringV
-from ..ast.fp import FP, FPV
-from ..operations import backend_operations, backend_fp_operations, backend_strings_operations
-from ..fp import FSort, RM
-from ..errors import ClaripyError, BackendError, ClaripyOperationError
-from .. import _all_operations
 
 op_type_map = {
     # Boolean

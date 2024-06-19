@@ -4,6 +4,7 @@ import logging
 import re
 from . import SMTLibSolverBackend, PopenSolverProxy
 from ...errors import MissingSolverError
+from ... import backend_manager as backend_manager
 
 log = logging.getLogger(__name__)
 
@@ -58,6 +59,5 @@ class SolverBackendZ3Str(SMTLibSolverBackend):
         return Z3StrProxy(timeout=timeout, max_memory=max_memory)
 
 
-from ... import backend_manager as backend_manager
 
 backend_manager.backends._register_backend(SolverBackendZ3Str(), "smtlib_z3str", False, False)

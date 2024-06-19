@@ -1,11 +1,9 @@
-#!/usr/bin/env python
-
 import logging
 
-l = logging.getLogger("claripy.frontends.full_frontend")
-
 from ..frontend import Frontend
+from ..errors import ClaripyFrontendError
 
+l = logging.getLogger("claripy.frontends.full_frontend")
 _VALIDATE_BALANCER = False
 
 
@@ -179,4 +177,3 @@ class HybridFrontend(Frontend):
         return results
 
 
-from ..errors import ClaripyFrontendError

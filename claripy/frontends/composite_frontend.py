@@ -1,19 +1,23 @@
 from typing import Set, TYPE_CHECKING
 import logging
-
-l = logging.getLogger("claripy.frontends.composite_frontend")
-
 import weakref
 import itertools
 
-symbolic_count = itertools.count()
-
 from .constrained_frontend import ConstrainedFrontend
 from claripy.ast.strings import String
+from ..ast import Base
+from ..ast.bool import Or
+from .. import backends
+from ..errors import BackendError, UnsatError
+from ..frontend_mixins.model_cache_mixin import ModelCacheMixin
+from ..frontend_mixins.simplify_skipper_mixin import SimplifySkipperMixin
 
 if TYPE_CHECKING:
     from claripy import SolverCompositeChild
 
+
+l = logging.getLogger("claripy.frontends.composite_frontend")
+symbolic_count = itertools.count()
 
 class CompositeFrontend(ConstrainedFrontend):
     def __init__(self, template_frontend, template_frontend_string, track=False, **kwargs):
@@ -515,10 +519,3 @@ class CompositeFrontend(ConstrainedFrontend):
     def split(self):
         return [s.branch() for s in self._solver_list]
 
-
-from ..ast import Base
-from ..ast.bool import Or
-from .. import backends
-from ..errors import BackendError, UnsatError
-from ..frontend_mixins.model_cache_mixin import ModelCacheMixin
-from ..frontend_mixins.simplify_skipper_mixin import SimplifySkipperMixin

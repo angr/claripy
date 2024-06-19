@@ -4,6 +4,7 @@ import logging
 import re
 from . import SMTLibSolverBackend, PopenSolverProxy
 from ...errors import MissingSolverError
+from ... import backend_manager as backend_manager
 
 log = logging.getLogger(__name__)
 
@@ -57,6 +58,5 @@ class SolverBackendCVC4(SMTLibSolverBackend):
         return CVC4Proxy(timeout, max_memory)
 
 
-from ... import backend_manager as backend_manager
 
 backend_manager.backends._register_backend(SolverBackendCVC4(), "smtlib_cvc4", False, False)

@@ -6,6 +6,10 @@ from typing import Optional
 
 from functools import reduce
 
+from .backend_manager import backends
+from . import ast
+from . import fp
+
 
 class SimplificationManager:
     def __init__(self):
@@ -958,7 +962,7 @@ class SimplificationManager:
             return None
         a_00, a_01 = a_0.args
         a_10, a_11 = a_1.args
-        if not a_00 is a_10:
+        if a_00 is not a_10:
             return None
         if a_01.op != "BVV" or a_11.op != "BVV":
             return None
@@ -1156,10 +1160,6 @@ flattenable = {
     "And",
     "Or",
 }
-
-from .backend_manager import backends
-from . import ast
-from . import fp
 
 
 # the actual instance

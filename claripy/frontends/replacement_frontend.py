@@ -4,9 +4,16 @@ import logging
 import numbers
 import weakref
 
+from ..ast.base import Base
+from ..ast.bv import BVV
+from ..ast.bool import BoolV, false
+from ..errors import ClaripyFrontendError, BackendError
+from ..balancer import Balancer
+from ..backend_manager import backends
+from .constrained_frontend import ConstrainedFrontend
+
 l = logging.getLogger("claripy.frontends.replacement_frontend")
 
-from .constrained_frontend import ConstrainedFrontend
 
 
 class ReplacementFrontend(ConstrainedFrontend):
@@ -298,10 +305,3 @@ class ReplacementFrontend(ConstrainedFrontend):
 
         return added
 
-
-from ..ast.base import Base
-from ..ast.bv import BVV
-from ..ast.bool import BoolV, false
-from ..errors import ClaripyFrontendError, BackendError
-from ..balancer import Balancer
-from ..backend_manager import backends

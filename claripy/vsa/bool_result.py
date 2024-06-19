@@ -1,4 +1,6 @@
 from ..backend_object import BackendObject
+from ..errors import BackendError, ClaripyValueError
+from ..ast.base import Base
 
 
 class BoolResult(BackendObject):
@@ -209,5 +211,3 @@ class MaybeResult(BoolResult):
         return False
 
 
-from ..errors import BackendError, ClaripyValueError
-from ..ast.base import Base

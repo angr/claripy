@@ -5,9 +5,15 @@ import math
 import numbers
 from functools import reduce
 
-logger = logging.getLogger("claripy.vsa.strided_interval")
-
 from ..backend_object import BackendObject
+from .errors import ClaripyVSAError
+from ..errors import ClaripyOperationError
+from .bool_result import TrueResult, FalseResult, MaybeResult
+from ..ast.base import Base
+from ..bv import BVV
+from .valueset import ValueSet
+
+logger = logging.getLogger("claripy.vsa.strided_interval")
 
 
 def reversed_processor(f):
@@ -1154,8 +1160,8 @@ class StridedInterval(BackendObject):
         if self.is_empty:
             s = "<%d>[EmptySI]" % (self._bits)
         else:
-            lower_bound = self._lower_bound if type(self._lower_bound) == str else "%#x" % self._lower_bound
-            upper_bound = self._upper_bound if type(self._upper_bound) == str else "%#x" % self._upper_bound
+            lower_bound = self._lower_bound if isinstance(self._lower_bound, str) else "%#x" % self._lower_bound
+            upper_bound = self._upper_bound if isinstance(self._upper_bound, str) else "%#x" % self._upper_bound
             s = "<%d>0x%x[%s, %s]%s" % (
                 self._bits,
                 self._stride,
@@ -3625,11 +3631,5 @@ def CreateStridedInterval(
         return dsis
 
 
-from .errors import ClaripyVSAError
-from ..errors import ClaripyOperationError
-from .bool_result import TrueResult, FalseResult, MaybeResult
-from . import discrete_strided_interval_set
-from .discrete_strided_interval_set import DiscreteStridedIntervalSet
-from .valueset import ValueSet
-from ..ast.base import Base
-from ..bv import BVV
+from . import discrete_strided_interval_set  # noqa: E402
+from .discrete_strided_interval_set import DiscreteStridedIntervalSet  # noqa: E402

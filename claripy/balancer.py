@@ -2,6 +2,15 @@ from typing import Set
 import logging
 import operator
 
+from .errors import ClaripyBalancerError, ClaripyBalancerUnsatError, ClaripyOperationError, BackendError
+from .ast.base import Base
+from .ast.bool import Bool
+from .ast.bv import BVV, BVS, BV
+from . import _all_operations
+from .backend_manager import backends
+from . import vsa
+from .operations import opposites, commutative_operations
+
 l = logging.getLogger("claripy.balancer")
 
 
@@ -713,12 +722,3 @@ def is_true(a):
 def is_false(a):
     return backends.vsa.is_false(a)
 
-
-from .errors import ClaripyBalancerError, ClaripyBalancerUnsatError, ClaripyOperationError, BackendError
-from .ast.base import Base
-from .ast.bool import Bool
-from .ast.bv import BVV, BVS, BV
-from . import _all_operations
-from .backend_manager import backends
-from . import vsa
-from .operations import opposites, commutative_operations

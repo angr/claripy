@@ -3,6 +3,11 @@ import struct
 from .bits import Bits
 from ..ast.base import _make_name
 from ..fp import FSORT_FLOAT
+from .. import operations
+from .. import fp
+from .bv import BV
+from .bool import Bool
+
 
 
 class FP(Bits):
@@ -98,14 +103,12 @@ def FPV(value, sort):
     :param sort:    The sort of the floating point.
     :return:        An FP AST.
     """
-    if type(value) is int:
+    if isinstance(value, int):
         value = float(value)
-    elif type(value) is float:
-        pass
-    else:
+    elif not isinstance(value, float):
         raise TypeError("Must instanciate FPV with a numerical value")
 
-    if type(sort) is not fp.FSort:
+    if not isinstance(sort, fp.FSort):
         raise TypeError("Must instanciate FPV with a FSort")
 
     if sort == FSORT_FLOAT:
@@ -119,11 +122,6 @@ def FPV(value, sort):
 #
 # unbound floating point conversions
 #
-
-from .. import operations
-from .. import fp
-from .bv import BV
-from .bool import Bool
 
 
 def _fp_length_calc(a1, a2, a3=None):

@@ -5,6 +5,10 @@ import numbers
 
 from ..backend_object import BackendObject
 from ..annotation import Annotation
+from ..ast.base import Base
+from .errors import ClaripyVSAOperationError, ClaripyVSAError
+from ..errors import ClaripyValueError
+from .bool_result import BoolResult, TrueResult, FalseResult, MaybeResult
 
 
 def normalize_types_two_args(f):
@@ -696,8 +700,4 @@ class ValueSet(BackendObject):
         return True
 
 
-from ..ast.base import Base
-from .strided_interval import StridedInterval
-from .bool_result import BoolResult, TrueResult, FalseResult, MaybeResult
-from .errors import ClaripyVSAOperationError, ClaripyVSAError
-from ..errors import ClaripyValueError
+from .strided_interval import StridedInterval  # noqa: E402

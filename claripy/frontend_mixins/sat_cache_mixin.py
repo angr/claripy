@@ -1,3 +1,6 @@
+from .. import false
+from ..errors import UnsatError
+
 class SatCacheMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -107,5 +110,3 @@ class SatCacheMixin:
             raise
 
 
-from .. import false
-from ..errors import UnsatError

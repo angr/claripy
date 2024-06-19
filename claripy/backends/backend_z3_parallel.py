@@ -1,14 +1,14 @@
+import logging
 import os
 import pickle
 import threading
 
+from ..errors import ClaripyError, UnsatError
+from .backend_z3 import BackendZ3
+
 num_children = 0
 
-import logging
-
 l = logging.getLogger("claripy.backends.backend_z3_parallel")
-
-from .backend_z3 import BackendZ3
 
 
 class BackendZ3Parallel(BackendZ3):
@@ -137,4 +137,3 @@ class BackendZ3Parallel(BackendZ3):
         return self._synchronize("simplify", *args, **kwargs)
 
 
-from ..errors import ClaripyError, UnsatError
