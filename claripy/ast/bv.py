@@ -244,7 +244,7 @@ def BVS(
     if isinstance(name, bytes):
         name = name.decode()
     if not isinstance(name, str):
-        raise TypeError("Name value for BVS must be a str, got %r" % type(name))
+        raise TypeError(f"Name value for BVS must be a str, got {type(name)!r}")
 
     n = _make_name(name, size, False if explicit_name is None else explicit_name)
     encoded_name = n.encode()
@@ -366,7 +366,7 @@ def ValueSet(bits, region=None, region_base_addr=None, value=None, name=None, va
         min_v, max_v = v.lower_bound, v.upper_bound
         stride = v.stride
     else:
-        raise ClaripyValueError("ValueSet() does not take `value` of type %s" % type(value))
+        raise ClaripyValueError(f"ValueSet() does not take `value` of type {type(value)}")
 
     if name is None:
         name = "ValueSet"

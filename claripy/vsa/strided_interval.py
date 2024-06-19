@@ -353,10 +353,10 @@ class StridedInterval(BackendObject):
         self._upper_bound = upper_bound if upper_bound is not None else (2**bits - 1)
 
         if lower_bound is not None and not isinstance(lower_bound, numbers.Number):
-            raise ClaripyVSAError("'lower_bound' must be an int. %s is not supported." % type(lower_bound))
+            raise ClaripyVSAError(f"'lower_bound' must be an int. {type(lower_bound)} is not supported.")
 
         if upper_bound is not None and not isinstance(upper_bound, numbers.Number):
-            raise ClaripyVSAError("'upper_bound' must be an int. %s is not supported." % type(upper_bound))
+            raise ClaripyVSAError(f"'upper_bound' must be an int. {type(upper_bound)} is not supported.")
 
         self._reversed = False
 
@@ -1154,8 +1154,8 @@ class StridedInterval(BackendObject):
         if self.is_empty:
             s = "<%d>[EmptySI]" % (self._bits)
         else:
-            lower_bound = self._lower_bound if isinstance(self._lower_bound, str) else "%#x" % self._lower_bound
-            upper_bound = self._upper_bound if isinstance(self._upper_bound, str) else "%#x" % self._upper_bound
+            lower_bound = self._lower_bound if isinstance(self._lower_bound, str) else f"{self._lower_bound:#x}"
+            upper_bound = self._upper_bound if isinstance(self._upper_bound, str) else f"{self._upper_bound:#x}"
             s = "<%d>0x%x[%s, %s]%s" % (
                 self._bits,
                 self._stride,
@@ -3573,7 +3573,7 @@ def CreateStridedInterval(
             return to_conv
 
         if not isinstance(to_conv, (numbers.Number, BVV)):
-            raise ClaripyOperationError("Unsupported to_conv type %s" % type(to_conv))
+            raise ClaripyOperationError(f"Unsupported to_conv type {type(to_conv)}")
 
         if stride is not None or lower_bound is not None or upper_bound is not None:
             raise ClaripyOperationError("You cannot specify both to_conv and other parameters at the same time.")

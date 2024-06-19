@@ -209,7 +209,7 @@ class SMTLibSolverBackend(BackendSMTLibBase):
         :return:              A sequence of up to n results (backend objects)
         """
         if self._solver_required and solver is None:
-            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
+            raise BackendError(f"{self.__class__.__name__} requires a solver for evaluation")
 
         results = self._eval(
             self.convert(expr),

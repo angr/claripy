@@ -104,7 +104,7 @@ class TestBv(unittest.TestCase):
                 elif hasattr(claripy, op):
                     getattr(claripy, op)(va, vb)
                 else:
-                    raise Exception("Operation %s does not exist." % op)
+                    raise Exception(f"Operation {op} does not exist.")
                 raise Exception("The expected exception is not raised.")
             except Exception as ex:  # pylint:disable=broad-except
                 assert type(ex) is ClaripyZeroDivisionError

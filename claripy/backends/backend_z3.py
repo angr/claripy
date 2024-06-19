@@ -415,7 +415,7 @@ class BackendZ3(Backend):
             return obj
         else:
             l.debug("BackendZ3 encountered unexpected type %s", type(obj))
-            raise BackendError("unexpected type %s encountered in BackendZ3" % type(obj))
+            raise BackendError(f"unexpected type {type(obj)} encountered in BackendZ3")
 
     def call(self, *args, **kwargs):  # pylint;disable=arguments-renamed
         return Backend.call(self, *args, **kwargs)
@@ -450,7 +450,7 @@ class BackendZ3(Backend):
         if decl_num not in z3_op_nums:
             raise ClaripyError("unknown decl kind %d" % decl_num)
         if z3_op_nums[decl_num] not in op_map:
-            raise ClaripyError("unknown decl op %s" % z3_op_nums[decl_num])
+            raise ClaripyError(f"unknown decl op {z3_op_nums[decl_num]}")
         op_name = op_map[z3_op_nums[decl_num]]
 
         num_args = z3.Z3_get_app_num_args(ctx, ast)
@@ -547,8 +547,7 @@ class BackendZ3(Backend):
 
         if isinstance(result_ty, str):
             err = (
-                "Unknown Z3 error in abstraction (result_ty == '%s'). Update your version of Z3, and, if the problem persists, open a claripy issue."
-                % result_ty
+                f"Unknown Z3 error in abstraction (result_ty == '{result_ty}'). Update your version of Z3, and, if the problem persists, open a claripy issue."
             )
             l.error(err)
             raise BackendError(err)
@@ -579,7 +578,7 @@ class BackendZ3(Backend):
         if decl_num not in z3_op_nums:
             raise ClaripyError("unknown decl kind %d" % decl_num)
         if z3_op_nums[decl_num] not in op_map:
-            raise ClaripyError("unknown decl op %s" % z3_op_nums[decl_num])
+            raise ClaripyError(f"unknown decl op {z3_op_nums[decl_num]}")
         op_name = op_map[z3_op_nums[decl_num]]
 
         if op_name == "BitVecVal":

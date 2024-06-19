@@ -765,7 +765,7 @@ class Base:
                     extras.append("stride=%s" % (fmt % args[3]))
                 if args[4] is True:
                     extras.append("UNINITIALIZED")
-                return "{}{}".format(args[0], "{%s}" % ", ".join(extras) if extras else "")
+                return "{}{}".format(args[0], "{{{}}}".format(", ".join(extras)) if extras else "")
 
             elif op == "BoolV":
                 return str(args[0])

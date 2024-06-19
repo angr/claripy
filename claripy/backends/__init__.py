@@ -288,7 +288,7 @@ class Backend:
         :param e:   The backend object.
         :return:   An AST.
         """
-        raise BackendError("backend %s doesn't implement abstract()" % self.__class__.__name__)
+        raise BackendError(f"backend {self.__class__.__name__} doesn't implement abstract()")
 
     #
     # These functions simplify expressions.
@@ -300,7 +300,7 @@ class Backend:
         return o
 
     def _simplify(self, e):  # pylint:disable=R0201,unused-argument
-        raise BackendError("backend %s can't simplify" % self.__class__.__name__)
+        raise BackendError(f"backend {self.__class__.__name__} can't simplify")
 
     #
     # Some other helpers
@@ -525,7 +525,7 @@ class Backend:
         :return:              A sequence of up to n results (backend objects)
         """
         if self._solver_required and solver is None:
-            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
+            raise BackendError(f"{self.__class__.__name__} requires a solver for evaluation")
 
         return self._eval(
             self.convert(expr),
@@ -563,7 +563,7 @@ class Backend:
         :return:                    A list of up to n tuples, where each tuple is a solution for all expressions.
         """
         if self._solver_required and solver is None:
-            raise BackendError("%s requires a solver for batch evaluation" % self.__class__.__name__)
+            raise BackendError(f"{self.__class__.__name__} requires a solver for batch evaluation")
 
         converted_exprs = [self.convert(ex) for ex in exprs]
 
@@ -604,7 +604,7 @@ class Backend:
         :return: the minimum possible value of expr (backend object)
         """
         if self._solver_required and solver is None:
-            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
+            raise BackendError(f"{self.__class__.__name__} requires a solver for evaluation")
 
         return self._min(
             self.convert(expr),
@@ -643,7 +643,7 @@ class Backend:
         :return: the maximum possible value of expr (backend object)
         """
         if self._solver_required and solver is None:
-            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
+            raise BackendError(f"{self.__class__.__name__} requires a solver for evaluation")
 
         return self._max(
             self.convert(expr),
@@ -736,7 +736,7 @@ class Backend:
         :return:                    True if `v` is a solution of `expr`, False otherwise
         """
         if self._solver_required and solver is None:
-            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
+            raise BackendError(f"{self.__class__.__name__} requires a solver for evaluation")
 
         return self._solution(
             self.convert(expr),

@@ -51,7 +51,7 @@ def _expr_to_smtlib(e, daggify=True):
     if e.is_symbol():
         return f"(declare-fun {e.symbol_name()} {e.symbol_type().as_smtlib()})"
     else:
-        return "(assert %s)" % e.to_smtlib(daggify=daggify)
+        return f"(assert {e.to_smtlib(daggify=daggify)})"
 
 
 def _exprs_to_smtlib(*exprs, **kwargs):

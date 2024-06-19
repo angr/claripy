@@ -28,7 +28,7 @@ def arg_filter(f):
     @functools.wraps(f)
     def filter(*args):  # pylint:disable=redefined-builtin
         if isinstance(args[0], numbers.Number):  # pylint:disable=unidiomatic-typecheck
-            raise BackendError("Unsupported argument type %s" % type(args[0]))
+            raise BackendError(f"Unsupported argument type {type(args[0])}")
         return f(*args)
 
     return filter
@@ -149,7 +149,7 @@ class BackendVSA(Backend):
         elif isinstance(expr, BoolResult):
             return expr.value
         else:
-            raise BackendError("Unsupported type %s" % type(expr))
+            raise BackendError(f"Unsupported type {type(expr)}")
 
     def _min(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None):
         # TODO: signed min
@@ -164,7 +164,7 @@ class BackendVSA(Backend):
             return expr.min
 
         else:
-            raise BackendError("Unsupported expr type %s" % type(expr))
+            raise BackendError(f"Unsupported expr type {type(expr)}")
 
     def _max(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None):
         # TODO: signed max
@@ -179,7 +179,7 @@ class BackendVSA(Backend):
             return expr.max
 
         else:
-            raise BackendError("Unsupported expr type %s" % type(expr))
+            raise BackendError(f"Unsupported expr type {type(expr)}")
 
     def _solution(self, obj, v, extra_constraints=(), solver=None, model_callback=None):
         if isinstance(obj, BoolResult):
@@ -221,7 +221,7 @@ class BackendVSA(Backend):
         if isinstance(obj, (StridedInterval, ValueSet)):
             return obj.unique
         else:
-            raise BackendError("Not supported type of operand %s" % type(obj))
+            raise BackendError(f"Not supported type of operand {type(obj)}")
 
     def _cardinality(self, a):  # pylint:disable=unused-argument,no-self-use
         return a.cardinality
@@ -365,7 +365,7 @@ class BackendVSA(Backend):
                 DiscreteStridedIntervalSet,
                 ValueSet,
             }:  # pylint:disable=unidiomatic-typecheck
-                raise BackendError("Unsupported expr type %s" % type(expr))
+                raise BackendError(f"Unsupported expr type {type(expr)}")
 
             ret = ret.concat(expr) if ret is not None else expr
 
@@ -382,7 +382,7 @@ class BackendVSA(Backend):
             DiscreteStridedIntervalSet,
             ValueSet,
         }:  # pylint:disable=unidiomatic-typecheck
-            raise BackendError("Unsupported expr type %s" % type(expr))
+            raise BackendError(f"Unsupported expr type {type(expr)}")
 
         ret = expr.extract(high_bit, low_bit)
 
@@ -394,7 +394,7 @@ class BackendVSA(Backend):
         expr = args[1]
 
         if type(expr) not in {StridedInterval, DiscreteStridedIntervalSet}:  # pylint:disable=unidiomatic-typecheck
-            raise BackendError("Unsupported expr type %s" % type(expr))
+            raise BackendError(f"Unsupported expr type {type(expr)}")
 
         return expr.sign_extend(new_bits + expr.bits)
 
@@ -404,7 +404,7 @@ class BackendVSA(Backend):
         expr = args[1]
 
         if type(expr) not in {StridedInterval, DiscreteStridedIntervalSet}:  # pylint:disable=unidiomatic-typecheck
-            raise BackendError("Unsupported expr type %s" % type(expr))
+            raise BackendError(f"Unsupported expr type {type(expr)}")
 
         return expr.zero_extend(new_bits + expr.bits)
 
@@ -415,7 +415,7 @@ class BackendVSA(Backend):
             DiscreteStridedIntervalSet,
             ValueSet,
         }:  # pylint:disable=unidiomatic-typecheck
-            raise BackendError("Unsupported expr type %s" % type(arg))
+            raise BackendError(f"Unsupported expr type {type(arg)}")
 
         return arg.reverse()
 

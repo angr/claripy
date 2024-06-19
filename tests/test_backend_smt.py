@@ -29,13 +29,11 @@ class TestSMTLibBackend(unittest.TestCase):
         return SolverSMT()
 
     def test_concat(self):
-        correct_script = """(set-logic ALL)
-(declare-fun {0}symb_concat () String)
-(assert (let ((.def_0 (str.++  "conc" {0}symb_concat))) (let ((.def_1 (= .def_0 "concrete"))) .def_1)))
+        correct_script = f"""(set-logic ALL)
+(declare-fun {String.STRING_TYPE_IDENTIFIER}symb_concat () String)
+(assert (let ((.def_0 (str.++  "conc" {String.STRING_TYPE_IDENTIFIER}symb_concat))) (let ((.def_1 (= .def_0 "concrete"))) .def_1)))
 (check-sat)
-""".format(
-            String.STRING_TYPE_IDENTIFIER
-        )
+"""
         str_concrete = claripy.StringV("conc")
         str_symbol = claripy.StringS("symb_concat", 4, explicit_name=True)
         solver = self.get_solver()
@@ -93,15 +91,13 @@ class TestSMTLibBackend(unittest.TestCase):
         self.assertEqual(correct_script, script)
 
     def test_substr_BV_symbolic_index(self):
-        correct_script = """(set-logic ALL)
-(declare-fun {0}symb_subst () String)
+        correct_script = f"""(set-logic ALL)
+(declare-fun {String.STRING_TYPE_IDENTIFIER}symb_subst () String)
 (declare-fun symb_subst_count () Int)
 (declare-fun symb_subst_start_idx () Int)
-(assert (let ((.def_0 (= ( str.substr {0}symb_subst symb_subst_start_idx symb_subst_count) "on"))) .def_0))
+(assert (let ((.def_0 (= ( str.substr {String.STRING_TYPE_IDENTIFIER}symb_subst symb_subst_start_idx symb_subst_count) "on"))) .def_0))
 (check-sat)
-""".format(
-            String.STRING_TYPE_IDENTIFIER
-        )
+"""
         str_symbol = claripy.StringS("symb_subst", 4, explicit_name=True)
         solver = self.get_solver()
         bv1 = claripy.BVS("symb_subst_start_idx", 32, explicit_name=True)
@@ -218,13 +214,11 @@ class TestSMTLibBackend(unittest.TestCase):
         self.assertEqual(correct_script, script)
 
     def test_or(self):
-        correct_script = """(set-logic ALL)
-(declare-fun {0}Symb_or () String)
-(assert (let ((.def_0 (= {0}Symb_or "ciao"))) (let ((.def_1 (= {0}Symb_or "abc"))) (let ((.def_2 (or .def_1 .def_0))) .def_2))))
+        correct_script = f"""(set-logic ALL)
+(declare-fun {String.STRING_TYPE_IDENTIFIER}Symb_or () String)
+(assert (let ((.def_0 (= {String.STRING_TYPE_IDENTIFIER}Symb_or "ciao"))) (let ((.def_1 (= {String.STRING_TYPE_IDENTIFIER}Symb_or "abc"))) (let ((.def_2 (or .def_1 .def_0))) .def_2))))
 (check-sat)
-""".format(
-            String.STRING_TYPE_IDENTIFIER
-        )
+"""
         str_symb = claripy.StringS("Symb_or", 4, explicit_name=True)
         solver = self.get_solver()
         res = claripy.Or((str_symb == claripy.StringV("abc")), (str_symb == claripy.StringV("ciao")))

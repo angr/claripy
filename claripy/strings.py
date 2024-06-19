@@ -8,7 +8,7 @@ class StringV(BackendObject):
         self.value = value
 
     def __repr__(self):
-        return "StringV(%s)" % (self.value)
+        return f"StringV({self.value})"
 
 
 def StrConcat(*args):

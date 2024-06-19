@@ -44,7 +44,7 @@ def apply_on_each_si(f):
             return ret.normalize()
 
         else:
-            raise ClaripyVSAOperationError("Unsupported operand type %s" % (type(o)))
+            raise ClaripyVSAOperationError(f"Unsupported operand type {type(o)}")
 
     return operator
 
@@ -457,7 +457,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
             return b.union(self)
 
         else:
-            raise ClaripyVSAOperationError("Unsupported operand type %s for operation union." % type(b))
+            raise ClaripyVSAOperationError(f"Unsupported operand type {type(b)} for operation union.")
 
     def intersection(self, b):
         if isinstance(b, DiscreteStridedIntervalSet):
@@ -467,7 +467,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
             return self._intersection_with_si(b)
 
         else:
-            raise ClaripyVSAOperationError("Unsupported operand type %s for operation intersection." % type(b))
+            raise ClaripyVSAOperationError(f"Unsupported operand type {type(b)} for operation intersection.")
 
     # Other operations
 
@@ -601,7 +601,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
 
     def _update_bounds(self, val):
         if not isinstance(val, StridedInterval):
-            raise ClaripyVSAOperationError("Unsupported operand type %s." % type(val))
+            raise ClaripyVSAOperationError(f"Unsupported operand type {type(val)}.")
 
         if val._lower_bound is not None and (self._lower_bound is None or val.lower_bound < self._lower_bound):
             self._lower_bound = val.lower_bound
@@ -611,6 +611,6 @@ class DiscreteStridedIntervalSet(StridedInterval):
 
     def _update_bits(self, val):
         if not isinstance(val, StridedInterval):
-            raise ClaripyVSAOperationError("Unsupported operand type %s." % type(val))
+            raise ClaripyVSAOperationError(f"Unsupported operand type {type(val)}.")
 
         self._bits = val.bits

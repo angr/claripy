@@ -21,7 +21,7 @@ def normalize_types_two_args(f):
             raise ClaripyValueError("BoolResult can't handle AST objects directly")
 
         if not isinstance(o, StridedInterval):
-            raise ClaripyVSAOperationError("Unsupported operand type %s" % type(o))
+            raise ClaripyVSAOperationError(f"Unsupported operand type {type(o)}")
 
         return f(self, region, o)
 
@@ -155,7 +155,7 @@ class ValueSet(BackendObject):
             if isinstance(val, StridedInterval):
                 self._set_si(region, region_base_addr, val)
             else:
-                raise ClaripyVSAError("Unsupported type '%s' for argument 'val'" % type(val))
+                raise ClaripyVSAError(f"Unsupported type '{type(val)}' for argument 'val'")
 
         else:
             if region is not None or val is not None:
@@ -215,7 +215,7 @@ class ValueSet(BackendObject):
             )
 
         if not isinstance(si, StridedInterval):
-            raise ClaripyVSAOperationError("Unsupported type %s for si" % type(si))
+            raise ClaripyVSAOperationError(f"Unsupported type {type(si)} for si")
 
         self._regions[region] = si
         self._region_base_addrs[region] = region_base_addr

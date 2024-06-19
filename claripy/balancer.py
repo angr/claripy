@@ -187,18 +187,18 @@ class Balancer:
         try:
             new_op = opposites[a.op]
         except KeyError:
-            raise ClaripyBalancerError("unable to reverse comparison %s (missing from 'opposites')" % a.op)
+            raise ClaripyBalancerError(f"unable to reverse comparison {a.op} (missing from 'opposites')")
 
         try:
             op = getattr(operator, new_op) if new_op.startswith("__") else getattr(_all_operations, new_op)
         except AttributeError:
-            raise ClaripyBalancerError("unable to reverse comparison %s (AttributeError)" % a.op)
+            raise ClaripyBalancerError(f"unable to reverse comparison {a.op} (AttributeError)")
 
         try:
             return op(*a.args[::-1])
         except ClaripyOperationError:
             # TODO: copy trace
-            raise ClaripyBalancerError("unable to reverse comparison %s (ClaripyOperationError)" % a.op)
+            raise ClaripyBalancerError(f"unable to reverse comparison {a.op} (ClaripyOperationError)")
 
     def _align_bv(self, a):
         if a.op in commutative_operations:
@@ -393,7 +393,7 @@ class Balancer:
                 return truism
 
             try:
-                balancer = getattr(self, "_balance_%s" % inner_aligned.args[0].op)
+                balancer = getattr(self, f"_balance_{inner_aligned.args[0].op}")
             except AttributeError:
                 l.debug("Balance handler %s is not found in balancer. Consider implementing.", truism.args[0].op)
                 return truism
@@ -615,7 +615,7 @@ class Balancer:
             return
 
         try:
-            handler = getattr(self, "_handle_%s" % truism.op)
+            handler = getattr(self, f"_handle_{truism.op}")
         except AttributeError:
             l.debug("No handler for operation %s", truism.op)
             return

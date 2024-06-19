@@ -140,7 +140,7 @@ class BackendConcrete(Backend):
             return a
         if isinstance(a, (numbers.Number, bv.BVV, fp.FPV, fp.RM, fp.FSort, strings.StringV)):
             return a
-        raise BackendError("can't handle AST of type %s" % type(a))
+        raise BackendError(f"can't handle AST of type {type(a)}")
 
     def _simplify(self, e):
         return e
