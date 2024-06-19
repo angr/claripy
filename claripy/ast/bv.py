@@ -69,7 +69,7 @@ class BV(Bits):
         if s == bits:
             return [self]
         else:
-            return list(reversed([self[(n + 1) * bits - 1 : n * bits] for n in range(0, s // bits)]))
+            return list(reversed([self[(n + 1) * bits - 1 : n * bits] for n in range(s // bits)]))
 
     def __getitem__(self, rng):
         if type(rng) is slice:
