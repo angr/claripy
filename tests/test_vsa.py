@@ -5,7 +5,6 @@ from claripy.vsa import (
     BoolResult,
     DiscreteStridedIntervalSet,
     StridedInterval,
-    RegionAnnotation,
 )
 
 

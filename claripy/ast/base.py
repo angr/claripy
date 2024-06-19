@@ -6,15 +6,13 @@ import struct
 import weakref
 from collections import OrderedDict, deque
 from itertools import chain
-from typing import Optional, Generic, TypeVar, overload, TYPE_CHECKING, List, Iterable, Iterator, Tuple, NoReturn
+from typing import Optional, Generic, TypeVar, TYPE_CHECKING, List, Iterable, Iterator, Tuple, NoReturn
 from ..errors import BackendError, ClaripyOperationError, ClaripyReplacementError
 from .. import operations
 from ..backend_manager import backends
 from .. import simplifications
 
 if TYPE_CHECKING:
-    from .bool import Bool
-    from .fp import FP
     from ..annotation import Annotation
 
 try:

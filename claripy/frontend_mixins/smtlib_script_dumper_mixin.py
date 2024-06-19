@@ -1,7 +1,6 @@
 import logging
 
 from ..errors import BackendError, ClaripyFrontendError
-from ..frontends.constrained_frontend import ConstrainedFrontend
 
 l = logging.getLogger(__name__)
 

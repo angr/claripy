@@ -1,5 +1,4 @@
 import unittest
-from abc import abstractmethod
 
 import claripy
 from collections import defaultdict
