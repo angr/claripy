@@ -5,9 +5,9 @@ import struct
 from decimal import Decimal
 from enum import Enum
 
-from .errors import ClaripyOperationError
 from .backend_object import BackendObject
 from .bv import BVV, Concat
+from .errors import ClaripyOperationError
 
 
 def compare_sorts(f):

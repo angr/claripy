@@ -1,9 +1,8 @@
+import time
 import unittest
-
-import claripy
 from collections import defaultdict
 
-import time
+import claripy
 
 NUMBER_SOLUTIONS_TO_COMPARE = 5
 

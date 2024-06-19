@@ -1,10 +1,10 @@
 import unittest
-import claripy
 
-from claripy import frontend_mixins, backend_manager
+import claripy
+from claripy import backend_manager, frontend_mixins
+from claripy.ast.strings import String
 from claripy.backends.backend_smtlib import BackendSMTLibBase
 from claripy.frontends.constrained_frontend import ConstrainedFrontend
-from claripy.ast.strings import String
 
 KEEP_TEST_PERFORMANT = True
 

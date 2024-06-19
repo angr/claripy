@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, List, Union, Set, Tuple
+from typing import TYPE_CHECKING, List, Set, Tuple, Union
+
 from claripy import BoolV
 
 if TYPE_CHECKING:

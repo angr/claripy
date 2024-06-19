@@ -2,37 +2,36 @@
 import logging
 
 from pysmt.shortcuts import (
-    Symbol,
-    String,
-    StrConcat,
-    NotEquals,
-    StrSubstr,
-    Int,
-    StrLength,
-    StrReplace,
-    Bool,
-    Or,
-    LT,
-    LE,
-    GT,
     GE,
-    StrContains,
-    StrPrefixOf,
-    StrSuffixOf,
-    StrIndexOf,
-    StrToInt,
-    Ite,
-    EqualsOrIff,
-    Minus,
-    Plus,
-    IntToStr,
-    Not,
+    GT,
+    LE,
+    LT,
     And,
+    Bool,
+    EqualsOrIff,
+    Int,
+    IntToStr,
+    Ite,
+    Minus,
+    Not,
+    NotEquals,
+    Or,
+    Plus,
+    StrConcat,
+    StrContains,
+    StrIndexOf,
+    String,
+    StrLength,
+    StrPrefixOf,
+    StrReplace,
+    StrSubstr,
+    StrSuffixOf,
+    StrToInt,
+    Symbol,
 )
+from pysmt.typing import BOOL, INT, STRING
 
-from pysmt.typing import STRING, INT, BOOL
-from . import BackendError, Backend
-
+from . import Backend, BackendError
 
 l = logging.getLogger("claripy.backends.backend_smt")
 

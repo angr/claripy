@@ -1,8 +1,9 @@
-from common_backend_smt_solver import if_installed
-from unittest import TestCase, main
-import claripy
-
 import logging
+from unittest import TestCase, main
+
+from common_backend_smt_solver import if_installed
+
+import claripy
 
 l = logging.getLogger("claripy.test.solver")
 

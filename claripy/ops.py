@@ -22,11 +22,11 @@ def AbstractLocation(*args, **kwargs):  # pylint:disable=no-self-use
 #
 
 # pylint:disable=wildcard-import,unused-wildcard-import
+from . import vsa
 from .ast.base import *
+from .ast.bool import *
 from .ast.bv import *
 from .ast.fp import *
-from .ast.bool import *
 from .ast.strings import *
-from . import vsa
 
 VS = ValueSet

@@ -1,25 +1,24 @@
+import functools
 import logging
 import numbers
-import functools
 import operator
 from functools import reduce
 
-
-from . import Backend, BackendError
-from claripy.vsa import RegionAnnotation
-
 from claripy.ast.base import Base
+from claripy.balancer import Balancer
 from claripy.operations import backend_operations_vsa_compliant, expression_set_operations
 from claripy.vsa import (
-    StridedInterval,
+    BoolResult,
     CreateStridedInterval,
     DiscreteStridedIntervalSet,
-    ValueSet,
-    BoolResult,
-    TrueResult,
     FalseResult,
+    RegionAnnotation,
+    StridedInterval,
+    TrueResult,
+    ValueSet,
 )
-from claripy.balancer import Balancer
+
+from . import Backend, BackendError
 
 l = logging.getLogger("claripy.backends.backend_vsa")
 

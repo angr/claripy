@@ -1,15 +1,16 @@
-from typing import List, TYPE_CHECKING, overload, Tuple, Optional, Iterable, TypeVar, Any
 import logging
 import threading
+from typing import TYPE_CHECKING, Any, Iterable, List, Optional, Tuple, TypeVar, overload
+
+from claripy.ast.bv import SGE, SLE, UGE, ULE
+from claripy.backend_manager import backends
+from claripy.errors import BackendError, ClaripyFrontendError, UnsatError
 
 from .constrained_frontend import ConstrainedFrontend
-from claripy.errors import UnsatError, BackendError, ClaripyFrontendError
-from claripy.ast.bv import UGE, ULE, SGE, SLE
-from claripy.backend_manager import backends
 
 if TYPE_CHECKING:
-    from claripy.ast.bv import BV
     from claripy.ast.bool import Bool
+    from claripy.ast.bv import BV
     from claripy.ast.fp import FP
 
 l = logging.getLogger("claripy.frontends.full_frontend")

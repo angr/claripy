@@ -1,9 +1,9 @@
 import functools
 import numbers
 
-from .errors import ClaripyOperationError, ClaripyTypeError, ClaripyZeroDivisionError
-from .backend_object import BackendObject
 from . import debug as _d
+from .backend_object import BackendObject
+from .errors import ClaripyOperationError, ClaripyTypeError, ClaripyZeroDivisionError
 
 
 def compare_bits(f):

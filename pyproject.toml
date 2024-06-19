@@ -18,6 +18,7 @@ select = [
     "F",
     "FLY",
     "FURB",
+    "I",
     "ISC",
     "PIE",
     "RSE",
@@ -46,6 +47,7 @@ ignore = [
     "F405",
     "F811",
     "F821",
+    "I",
 ]
 "claripy/ops.py" = [
     "E402",

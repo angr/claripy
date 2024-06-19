@@ -6,11 +6,11 @@ import struct
 import weakref
 from collections import OrderedDict, deque
 from itertools import chain
-from typing import Optional, Generic, TypeVar, TYPE_CHECKING, List, Iterable, Iterator, Tuple, NoReturn
-from claripy.errors import BackendError, ClaripyOperationError, ClaripyReplacementError
-from claripy import operations
+from typing import TYPE_CHECKING, Generic, Iterable, Iterator, List, NoReturn, Optional, Tuple, TypeVar
+
+from claripy import operations, simplifications
 from claripy.backend_manager import backends
-from claripy import simplifications
+from claripy.errors import BackendError, ClaripyOperationError, ClaripyReplacementError
 
 if TYPE_CHECKING:
     from claripy.annotation import Annotation
@@ -1349,5 +1349,5 @@ def simplify(e: T) -> T:
         return s
 
 
-from claripy.ast.bool import If, Not, BoolS  # noqa: E402
+from claripy.ast.bool import BoolS, If, Not  # noqa: E402
 from claripy.ast.bv import BV  # noqa: E402

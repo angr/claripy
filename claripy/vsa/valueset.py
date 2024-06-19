@@ -3,12 +3,13 @@ import functools
 import itertools
 import numbers
 
-from claripy.backend_object import BackendObject
 from claripy.annotation import Annotation
 from claripy.ast.base import Base
-from .errors import ClaripyVSAOperationError, ClaripyVSAError
+from claripy.backend_object import BackendObject
 from claripy.errors import ClaripyValueError
-from .bool_result import BoolResult, TrueResult, FalseResult, MaybeResult
+
+from .bool_result import BoolResult, FalseResult, MaybeResult, TrueResult
+from .errors import ClaripyVSAError, ClaripyVSAOperationError
 
 
 def normalize_types_two_args(f):

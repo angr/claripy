@@ -2,8 +2,8 @@
 import unittest
 
 import claripy
-from claripy.bv import BVV, Extract, SignExt, ZeroExt, Concat, SDiv
-from claripy.errors import ClaripyTypeError, ClaripyZeroDivisionError, ClaripyValueError
+from claripy.bv import BVV, Concat, Extract, SDiv, SignExt, ZeroExt
+from claripy.errors import ClaripyTypeError, ClaripyValueError, ClaripyZeroDivisionError
 
 
 class TestBv(unittest.TestCase):

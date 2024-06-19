@@ -1,9 +1,10 @@
-import subprocess
 import logging
+import subprocess
 
-from . import SMTLibSolverBackend, PopenSolverProxy
-from claripy.errors import MissingSolverError
 from claripy import backend_manager as backend_manager
+from claripy.errors import MissingSolverError
+
+from . import PopenSolverProxy, SMTLibSolverBackend
 
 log = logging.getLogger(__name__)
 

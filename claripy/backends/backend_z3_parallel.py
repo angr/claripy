@@ -4,6 +4,7 @@ import pickle
 import threading
 
 from claripy.errors import ClaripyError, UnsatError
+
 from .backend_z3 import BackendZ3
 
 num_children = 0

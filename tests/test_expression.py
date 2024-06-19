@@ -1,9 +1,9 @@
 # pylint: disable= [no-self-use, missing-class-docstring]
 
+import contextlib
 import unittest
 
 import claripy
-import contextlib
 
 
 class TestExpression(unittest.TestCase):

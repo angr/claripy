@@ -1,9 +1,8 @@
 import claripy
-
 from claripy.vsa import (
-    MaybeResult,
     BoolResult,
     DiscreteStridedIntervalSet,
+    MaybeResult,
     StridedInterval,
 )
 

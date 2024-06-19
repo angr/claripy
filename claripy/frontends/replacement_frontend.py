@@ -3,11 +3,12 @@ import numbers
 import weakref
 
 from claripy.ast.base import Base
-from claripy.ast.bv import BVV
 from claripy.ast.bool import BoolV, false
-from claripy.errors import ClaripyFrontendError, BackendError
-from claripy.balancer import Balancer
+from claripy.ast.bv import BVV
 from claripy.backend_manager import backends
+from claripy.balancer import Balancer
+from claripy.errors import BackendError, ClaripyFrontendError
+
 from .constrained_frontend import ConstrainedFrontend
 
 l = logging.getLogger("claripy.frontends.replacement_frontend")

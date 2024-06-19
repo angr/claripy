@@ -2,13 +2,11 @@
 import collections
 import itertools
 import operator
+from functools import reduce
 from typing import Optional
 
-from functools import reduce
-
+from . import ast, fp
 from .backend_manager import backends
-from . import ast
-from . import fp
 
 
 class SimplificationManager:

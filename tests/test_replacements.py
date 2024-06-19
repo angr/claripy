@@ -1,6 +1,6 @@
-import claripy
-
 import logging
+
+import claripy
 
 l = logging.getLogger("claripy.test.replacements")
 

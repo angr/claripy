@@ -1,12 +1,12 @@
 import struct
 
-from .bits import Bits
+from claripy import fp, operations
 from claripy.ast.base import _make_name
 from claripy.fp import FSORT_FLOAT
-from claripy import operations
-from claripy import fp
-from .bv import BV
+
+from .bits import Bits
 from .bool import Bool
+from .bv import BV
 
 
 class FP(Bits):

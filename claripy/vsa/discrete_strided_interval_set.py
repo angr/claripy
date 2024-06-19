@@ -1,11 +1,12 @@
 import functools
-import numbers
 import itertools
+import numbers
 
-from .strided_interval import StridedInterval
-from .errors import ClaripyVSAOperationError
-from .bool_result import BoolResult
 from claripy.bv import BVV
+
+from .bool_result import BoolResult
+from .errors import ClaripyVSAOperationError
+from .strided_interval import StridedInterval
 from .valueset import ValueSet
 
 DEFAULT_MAX_CARDINALITY_WITHOUT_COLLAPSING = 256  # We don't collapse until there are more than this many SIs

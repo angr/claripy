@@ -1,15 +1,14 @@
-from typing import Set
 import logging
 import operator
+from typing import Set
 
-from .errors import ClaripyBalancerError, ClaripyBalancerUnsatError, ClaripyOperationError, BackendError
+from . import _all_operations, vsa
 from .ast.base import Base
 from .ast.bool import Bool
-from .ast.bv import BVV, BVS, BV
-from . import _all_operations
+from .ast.bv import BV, BVS, BVV
 from .backend_manager import backends
-from . import vsa
-from .operations import opposites, commutative_operations
+from .errors import BackendError, ClaripyBalancerError, ClaripyBalancerUnsatError, ClaripyOperationError
+from .operations import commutative_operations, opposites
 
 l = logging.getLogger("claripy.balancer")
 

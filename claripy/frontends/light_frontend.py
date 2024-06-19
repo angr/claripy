@@ -1,7 +1,8 @@
 import logging
 
-from claripy.errors import BackendError, ClaripyFrontendError
 from claripy.backend_manager import backends
+from claripy.errors import BackendError, ClaripyFrontendError
+
 from .constrained_frontend import ConstrainedFrontend
 
 l = logging.getLogger("claripy.frontends.light_frontend")

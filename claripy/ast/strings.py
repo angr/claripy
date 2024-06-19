@@ -1,9 +1,9 @@
 from typing import Optional
 
-from .bits import Bits
+from claripy import operations
 from claripy.ast.base import _make_name
 
-from claripy import operations
+from .bits import Bits
 from .bool import Bool
 from .bv import BV, BVS, BVV
 
