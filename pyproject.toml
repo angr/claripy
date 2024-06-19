@@ -16,6 +16,7 @@ select = [
     "E",
     "EXE",
     "F",
+    "ISC",
     "T10",
     "W",
     "UP",
