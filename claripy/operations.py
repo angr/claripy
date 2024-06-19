@@ -23,7 +23,7 @@ def op(
                 args = (fp.RM.default(),) + args
             else:
                 raise ClaripyTypeError(
-                    "Operation {} takes exactly " "{} arguments ({} given)".format(name, len(arg_types), len(args))
+                    f"Operation {name} takes exactly " f"{len(arg_types)} arguments ({len(args)} given)"
                 )
 
         if type(arg_types) is type:  # pylint:disable=unidiomatic-typecheck

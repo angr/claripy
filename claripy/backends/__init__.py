@@ -174,8 +174,8 @@ class Backend:
 
                     if self in ast._errored:
                         raise BackendError(
-                            "%s can't handle operation %s (%s) due to a failed "
-                            "conversion on a child node" % (self, ast.op, ast.__class__.__name__)
+                            f"{self} can't handle operation {ast.op} ({ast.__class__.__name__}) due to a failed "
+                            "conversion on a child node"
                         )
 
                     if self._cache_objects:
