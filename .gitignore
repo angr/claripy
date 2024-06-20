@@ -7,3 +7,12 @@ build
 docs/_build
 venv
 .venv
+**/*.so
+**/*.dll
+**/*.dylib
+
+
+# Added by cargo
+
+/target
+Cargo.lock
