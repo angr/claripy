@@ -9,6 +9,7 @@ l = logging.getLogger("claripy.frontends.light_frontend")
 
 from .constrained_frontend import ConstrainedFrontend
 
+
 class LightFrontend(ConstrainedFrontend):
     def __init__(self, solver_backend, **kwargs):
         # since the LightFrontend mostly cannot handle extra_constriants, it horribly misuses the cache.

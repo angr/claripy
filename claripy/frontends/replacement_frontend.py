@@ -15,6 +15,7 @@ l = logging.getLogger("claripy.frontends.replacement_frontend")
 
 from .constrained_frontend import ConstrainedFrontend
 
+
 class ReplacementFrontend(ConstrainedFrontend):
     def __init__(
         self,

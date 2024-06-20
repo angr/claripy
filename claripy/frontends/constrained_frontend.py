@@ -9,6 +9,7 @@ l = logging.getLogger("claripy.frontends.constrained_frontend")
 
 from ..frontend import Frontend
 
+
 class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
     def __init__(self):
         Frontend.__init__(self)
