@@ -9,6 +9,7 @@ from collections.abc import Iterable, Iterator
 from itertools import chain
 from typing import TYPE_CHECKING, Generic, NoReturn, TypeVar
 
+import claripy.clarirs as clarirs
 from claripy import operations, simplifications
 from claripy.backend_manager import backends
 from claripy.errors import BackendError, ClaripyOperationError, ClaripyReplacementError
@@ -80,7 +81,7 @@ def _d(h, cls, state):
     )
 
 
-class Base:
+class Base(clarirs.Base, metaclass=type):
     """
     This is the base class of all claripy ASTs. An AST tracks a tree of operations on arguments.
 
