@@ -240,7 +240,7 @@ def BVS(
     if stride == 0 and max != min:
         raise ClaripyValueError("BVSes of stride 0 should have max == min")
 
-    if isinstance(name, bytes):
+    if type(name) is bytes:
         name = name.decode()
     if not isinstance(name, str):
         raise TypeError(f"Name value for BVS must be a str, got {type(name)!r}")
@@ -276,20 +276,20 @@ def BVV(value, size=None, **kwargs) -> BV:
     """
 
     if type(value) in (bytes, bytearray, memoryview, str):
-        if isinstance(value, str):
+        if type(value) is str:
             l.warning("BVV value is a unicode string, encoding as utf-8")
             value = value.encode("utf-8")
 
         if size is None:
             size = len(value) * 8
-        elif not isinstance(size, int):
+        elif type(size) is not int:
             raise TypeError("Bitvector size  must be either absent (implicit) or an integer")
         elif size != len(value) * 8:
             raise ClaripyValueError("string/size mismatch for BVV creation")
 
         value = int.from_bytes(value, "big")
 
-    elif size is None or (not isinstance(value, int) and value is not None):
+    elif size is None or (type(value) is not int and value is not None):
         raise TypeError("BVV() takes either an integer value and a size or a string of bytes")
 
     # ensure the 0 <= value < (1 << size)
@@ -411,6 +411,8 @@ def DSIS(
 # Unbound operations
 #
 
+from .bool import Bool
+from .. import operations
 
 # comparisons
 ULT = operations.op("__lt__", (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
@@ -623,4 +625,6 @@ BV.intersection = operations.op(
     "intersection", (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc
 )
 
-from . import fp  # noqa: E402
+from . import fp
+from .. import vsa
+from ..errors import ClaripyValueError

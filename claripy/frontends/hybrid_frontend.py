@@ -1,9 +1,10 @@
+#!/usr/bin/env python
+
 import logging
 
 from claripy.errors import ClaripyFrontendError
 from claripy.frontend import Frontend
 
-l = logging.getLogger("claripy.frontends.full_frontend")
 _VALIDATE_BALANCER = False
 
 

@@ -1,4 +1,3 @@
-import atexit
 import logging
 
 from claripy import operations
@@ -19,6 +18,8 @@ def cleanup():
     global _boolv_cache  # pylint:disable=global-variable-not-assigned
     del _boolv_cache
 
+
+import atexit
 
 atexit.register(cleanup)
 
@@ -78,6 +79,7 @@ false = BoolV(False)
 # Bound operations
 #
 
+from .. import operations
 
 Bool.__eq__ = operations.op("__eq__", (Bool, Bool), Bool)
 Bool.__ne__ = operations.op("__ne__", (Bool, Bool), Bool)
@@ -271,4 +273,7 @@ def constraint_to_si(expr):
     return satisfiable, replace_list
 
 
-from .bv import BVS  # noqa: E402
+from ..backend_manager import backends
+from ..errors import ClaripyOperationError, ClaripyTypeError, BackendError
+from .bits import Bits
+from .bv import BVS

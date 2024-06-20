@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import logging
 
 from claripy.ast.bool import Or

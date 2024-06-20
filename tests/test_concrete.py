@@ -4,9 +4,10 @@ import claripy
 def test_concrete():
     a = claripy.BVV(10, 32)
     b = claripy.BoolV(True)
+    # c = claripy.BVS('x', 32)
 
-    assert isinstance(claripy.backends.concrete.convert(a), claripy.bv.BVV)
-    assert isinstance(claripy.backends.concrete.convert(b), bool)
+    assert type(claripy.backends.concrete.convert(a)) is claripy.bv.BVV
+    assert type(claripy.backends.concrete.convert(b)) is bool
 
     a = claripy.BVV(1337, 32)
     b = a[31:16]

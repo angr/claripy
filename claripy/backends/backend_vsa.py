@@ -462,4 +462,18 @@ class BackendVSA(Backend):
         return Balancer(self, expr).compat_ret
 
 
+from ..ast.base import Base
+from ..operations import backend_operations_vsa_compliant, expression_set_operations
+from ..vsa import (
+    StridedInterval,
+    CreateStridedInterval,
+    DiscreteStridedIntervalSet,
+    ValueSet,
+    AbstractLocation,
+    BoolResult,
+    TrueResult,
+    FalseResult,
+)
+from ..balancer import Balancer
+
 BackendVSA.CreateStridedInterval = staticmethod(CreateStridedInterval)

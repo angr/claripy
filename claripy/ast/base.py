@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from claripy.annotation import Annotation
 
 try:
-    import _pickle as pickle
+    import cPickle as pickle
 except ImportError:
     import pickle
 
@@ -383,7 +383,7 @@ class Base:
             return b"\x1f"
         elif arg is False:
             return b"\x2e"
-        elif isinstance(arg, int):
+        elif type(arg) is int:
             if arg < 0:
                 if arg >= -0x7FFF:
                     return b"-" + struct.pack("<h", arg)
@@ -400,11 +400,11 @@ class Base:
                 elif arg <= 0xFFFF_FFFF_FFFF_FFFF:
                     return struct.pack("<Q", arg)
                 return None
-        elif isinstance(arg, str):
+        elif type(arg) is str:
             return arg.encode()
-        elif isinstance(arg, float):
+        elif type(arg) is float:
             return struct.pack("f", arg)
-        elif isinstance(arg, tuple):
+        elif type(arg) is tuple:
             arr = []
             for elem in arg:
                 b = Base._arg_serialize(elem)
@@ -505,7 +505,7 @@ class Base:
 
     def __hash__(self):
         res = self._hash
-        if not isinstance(self._hash, int):
+        if type(self._hash) is not int:
             res = hash(self._hash)
         return res
 
@@ -755,13 +755,13 @@ class Base:
             if op == "BVS":
                 extras = []
                 if args[1] is not None:
-                    fmt = "%#x" if isinstance(args[1], int) else "%s"
+                    fmt = "%#x" if type(args[1]) is int else "%s"
                     extras.append("min=%s" % (fmt % args[1]))
                 if args[2] is not None:
-                    fmt = "%#x" if isinstance(args[2], int) else "%s"
+                    fmt = "%#x" if type(args[2]) is int else "%s"
                     extras.append("max=%s" % (fmt % args[2]))
                 if args[3] is not None:
-                    fmt = "%#x" if isinstance(args[3], int) else "%s"
+                    fmt = "%#x" if type(args[3]) is int else "%s"
                     extras.append("stride=%s" % (fmt % args[3]))
                 if args[4] is True:
                     extras.append("UNINITIALIZED")

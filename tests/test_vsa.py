@@ -66,16 +66,16 @@ def test_reversed_concat():
     assert claripy.backends.vsa.max(reversed_b) == 0xFF000000
 
     a_concat_b = claripy.Concat(a, b)
-    assert a_concat_b._model_vsa._reversed is False
+    assert a_concat_b._model_vsa._reversed == False
 
     ra_concat_b = claripy.Concat(reversed_a, b)
-    assert ra_concat_b._model_vsa._reversed is False
+    assert ra_concat_b._model_vsa._reversed == False
 
     a_concat_rb = claripy.Concat(a, reversed_b)
-    assert a_concat_rb._model_vsa._reversed is False
+    assert a_concat_rb._model_vsa._reversed == False
 
     ra_concat_rb = claripy.Concat(reversed_a, reversed_b)
-    assert ra_concat_rb._model_vsa._reversed is False
+    assert ra_concat_rb._model_vsa._reversed == False
 
 
 def test_simple_cardinality():
@@ -285,7 +285,7 @@ def test_join():
     assert 225 in vsa_model(tmp).eval(255)
     assert 0 in vsa_model(tmp).eval(255)
     assert 135 in vsa_model(tmp).eval(255)
-    assert 138 not in vsa_model(tmp).eval(255)
+    assert not 138 in vsa_model(tmp).eval(255)
 
 
 def test_vsa():
@@ -701,7 +701,7 @@ def test_vsa_constraint_to_si():
     )
 
     falseside_sat, falseside_replacement = b.constraint_to_si(ast_false)
-    assert falseside_sat is True
+    assert falseside_sat == True
     assert len(falseside_replacement) == 1
     assert falseside_replacement[0][0] is s1
     # False side; claripy.SI<32>1[1, 2]

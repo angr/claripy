@@ -160,6 +160,7 @@ class SmartLRUCache(LRUCache):
 # And the (ugh) magic
 #
 
+from . import Backend
 
 class BackendZ3(Backend):
     _split_on = ("And", "Or")
@@ -1423,6 +1424,16 @@ op_map = {
     "Z3_OP_INTERNAL": "INTERNAL",
     "Z3_OP_UNINTERPRETED": "UNINTERPRETED",
 }
+
+from ..ast.base import Base
+from ..ast.bv import BV, BVV
+from ..ast.bool import BoolV, Bool
+from ..ast.strings import StringV
+from ..ast.fp import FP, FPV
+from ..operations import backend_operations, backend_fp_operations, backend_strings_operations
+from ..fp import FSort, RM
+from ..errors import ClaripyError, BackendError, ClaripyOperationError
+from .. import _all_operations
 
 op_type_map = {
     # Boolean

@@ -1,5 +1,8 @@
 import itertools
 import logging
+
+l = logging.getLogger("claripy.frontends.composite_frontend")
+
 import weakref
 from typing import TYPE_CHECKING, Set
 

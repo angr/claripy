@@ -102,12 +102,14 @@ def FPV(value, sort):
     :param sort:    The sort of the floating point.
     :return:        An FP AST.
     """
-    if isinstance(value, int):
+    if type(value) is int:
         value = float(value)
-    elif not isinstance(value, float):
+    elif type(value) is float:
+        pass
+    else:
         raise TypeError("Must instanciate FPV with a numerical value")
 
-    if not isinstance(sort, fp.FSort):
+    if type(sort) is not fp.FSort:
         raise TypeError("Must instanciate FPV with a FSort")
 
     if sort == FSORT_FLOAT:
@@ -121,6 +123,11 @@ def FPV(value, sort):
 #
 # unbound floating point conversions
 #
+
+from .. import operations
+from .. import fp
+from .bv import BV
+from .bool import Bool
 
 
 def _fp_length_calc(a1, a2, a3=None):

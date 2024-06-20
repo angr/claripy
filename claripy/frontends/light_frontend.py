@@ -7,6 +7,7 @@ from .constrained_frontend import ConstrainedFrontend
 
 l = logging.getLogger("claripy.frontends.light_frontend")
 
+from .constrained_frontend import ConstrainedFrontend
 
 class LightFrontend(ConstrainedFrontend):
     def __init__(self, solver_backend, **kwargs):
