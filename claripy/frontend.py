@@ -3,6 +3,8 @@
 import logging
 import numbers
 
+from claripy import ast
+
 l = logging.getLogger("claripy.frontends.frontend")
 
 
