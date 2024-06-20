@@ -101,22 +101,22 @@ class Base(clarirs.Base, metaclass=type):
     """
 
     __slots__ = [
-        "op",
-        "args",
-        "variables",
-        "symbolic",
+        # "op",
+        # "args",
+        # "variables",
+        # "symbolic",
         "_hash",
         "_simplified",
         "_cached_encoded_name",
         "_cache_key",
         "_errored",
         "_eager_backends",
-        "length",
+        # "length",
         "_excavated",
         "_burrowed",
         "_uninitialized",
         "_uc_alloc_depth",
-        "annotations",
+        # "annotations",
         "simplifiable",
         "_uneliminatable_annotations",
         "_relocatable_annotations",
@@ -286,7 +286,15 @@ class Base(clarirs.Base, metaclass=type):
             h = Base._calc_hash(op, a_args, kwargs) if hash is None else hash
         self = cache.get(h, None)
         if self is None:
-            self = super().__new__(cls)
+            self = super().__new__(
+                cls,
+                op,
+                tuple(args),
+                kwargs.get("length", None),
+                frozenset(kwargs["variables"]),
+                kwargs["symbolic"],
+                annotations,
+            )
             depth = arg_max_depth + 1
             self.__a_init__(
                 op,
@@ -314,7 +322,15 @@ class Base(clarirs.Base, metaclass=type):
         if self is not None:
             return self
 
-        self = super().__new__(cls)
+        self = super().__new__(
+            cls,
+            op,
+            tuple(a_args),
+            kwargs.get("length", None),
+            frozenset(kwargs["variables"]),
+            kwargs["symbolic"],
+            tuple(kwargs.get("annotations", ())),
+        )
         self.__a_init__(
             op,
             a_args,
@@ -476,12 +492,13 @@ class Base(clarirs.Base, metaclass=type):
 
         # HASHCONS: these attributes key the cache
         # BEFORE CHANGING THIS, SEE ALL OTHER INSTANCES OF "HASHCONS" IN THIS FILE
-        self.op = op
-        self.args = args if type(args) is tuple else tuple(args)
-        self.length = length
-        self.variables = frozenset(variables) if type(variables) is not frozenset else variables
-        self.symbolic = symbolic
-        self.annotations: tuple[Annotation] = annotations
+        # super().__new__(op, args, length, frozenset(variables), symbolic, annotations)
+        # self.op = op
+        # self.args = args if type(args) is tuple else tuple(args)
+        # self.length = length
+        # self.variables = frozenset(variables) if type(variables) is not frozenset else variables
+        # self.symbolic = symbolic
+        # self.annotations: tuple[Annotation] = annotations
         self._uneliminatable_annotations = uneliminatable_annotations
         self._relocatable_annotations = relocatable_annotations
 
