@@ -224,13 +224,13 @@ class BackendConcrete(Backend):
 
     # pylint:disable=singleton-comparison
     def _is_true(self, e, extra_constraints=(), solver=None, model_callback=None):
-        return e is True
+        return e == True  # noqa: E712
 
     def _is_false(self, e, extra_constraints=(), solver=None, model_callback=None):
-        return e is False
+        return e == False  # noqa: E712
 
     def _has_true(self, e, extra_constraints=(), solver=None, model_callback=None):
-        return e is True
+        return e == True  # noqa: E712
 
     def _has_false(self, e, extra_constraints=(), solver=None, model_callback=None):
-        return e is False
+        return e == False  # noqa: E712
