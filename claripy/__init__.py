@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # pylint: disable=F0401,W0401,W0603,
 
 __version__ = "9.2.108.dev0"

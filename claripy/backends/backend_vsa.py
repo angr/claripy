@@ -1,20 +1,33 @@
+import functools
 import logging
 import numbers
-import functools
 import operator
 from functools import reduce
 
-l = logging.getLogger("claripy.backends.backend_vsa")
+from claripy.ast.base import Base
+from claripy.balancer import Balancer
+from claripy.operations import backend_operations_vsa_compliant, expression_set_operations
+from claripy.vsa import (
+    BoolResult,
+    CreateStridedInterval,
+    DiscreteStridedIntervalSet,
+    FalseResult,
+    RegionAnnotation,
+    StridedInterval,
+    TrueResult,
+    ValueSet,
+)
 
 from . import Backend, BackendError
-from ..vsa import RegionAnnotation
+
+l = logging.getLogger("claripy.backends.backend_vsa")
 
 
 def arg_filter(f):
     @functools.wraps(f)
     def filter(*args):  # pylint:disable=redefined-builtin
         if isinstance(args[0], numbers.Number):  # pylint:disable=unidiomatic-typecheck
-            raise BackendError("Unsupported argument type %s" % type(args[0]))
+            raise BackendError(f"Unsupported argument type {type(args[0])}")
         return f(*args)
 
     return filter
@@ -127,17 +140,15 @@ class BackendVSA(Backend):
             return a
 
         # Not supported
-        raise BackendError()
+        raise BackendError
 
     def _eval(self, expr, n, extra_constraints=(), solver=None, model_callback=None):
-        if isinstance(expr, StridedInterval):
-            return expr.eval(n)
-        elif isinstance(expr, ValueSet):
+        if isinstance(expr, (StridedInterval, ValueSet)):
             return expr.eval(n)
         elif isinstance(expr, BoolResult):
             return expr.value
         else:
-            raise BackendError("Unsupported type %s" % type(expr))
+            raise BackendError(f"Unsupported type {type(expr)}")
 
     def _min(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None):
         # TODO: signed min
@@ -152,7 +163,7 @@ class BackendVSA(Backend):
             return expr.min
 
         else:
-            raise BackendError("Unsupported expr type %s" % type(expr))
+            raise BackendError(f"Unsupported expr type {type(expr)}")
 
     def _max(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None):
         # TODO: signed max
@@ -167,7 +178,7 @@ class BackendVSA(Backend):
             return expr.max
 
         else:
-            raise BackendError("Unsupported expr type %s" % type(expr))
+            raise BackendError(f"Unsupported expr type {type(expr)}")
 
     def _solution(self, obj, v, extra_constraints=(), solver=None, model_callback=None):
         if isinstance(obj, BoolResult):
@@ -177,10 +188,7 @@ class BackendVSA(Backend):
             return not obj.intersection(v).is_empty
 
         if isinstance(obj, ValueSet):
-            for _, si in obj.items():
-                if not si.intersection(v).is_empty:
-                    return True
-            return False
+            return any(not si.intersection(v).is_empty for _, si in obj.items())
 
         raise NotImplementedError(type(obj).__name__)
 
@@ -209,12 +217,10 @@ class BackendVSA(Backend):
         return a.identical(b)
 
     def _unique(self, obj):  # pylint:disable=unused-argument,no-self-use
-        if isinstance(obj, StridedInterval):
-            return obj.unique
-        elif isinstance(obj, ValueSet):
+        if isinstance(obj, (StridedInterval, ValueSet)):
             return obj.unique
         else:
-            raise BackendError("Not supported type of operand %s" % type(obj))
+            raise BackendError(f"Not supported type of operand {type(obj)}")
 
     def _cardinality(self, a):  # pylint:disable=unused-argument,no-self-use
         return a.cardinality
@@ -358,7 +364,7 @@ class BackendVSA(Backend):
                 DiscreteStridedIntervalSet,
                 ValueSet,
             }:  # pylint:disable=unidiomatic-typecheck
-                raise BackendError("Unsupported expr type %s" % type(expr))
+                raise BackendError(f"Unsupported expr type {type(expr)}")
 
             ret = ret.concat(expr) if ret is not None else expr
 
@@ -375,7 +381,7 @@ class BackendVSA(Backend):
             DiscreteStridedIntervalSet,
             ValueSet,
         }:  # pylint:disable=unidiomatic-typecheck
-            raise BackendError("Unsupported expr type %s" % type(expr))
+            raise BackendError(f"Unsupported expr type {type(expr)}")
 
         ret = expr.extract(high_bit, low_bit)
 
@@ -387,7 +393,7 @@ class BackendVSA(Backend):
         expr = args[1]
 
         if type(expr) not in {StridedInterval, DiscreteStridedIntervalSet}:  # pylint:disable=unidiomatic-typecheck
-            raise BackendError("Unsupported expr type %s" % type(expr))
+            raise BackendError(f"Unsupported expr type {type(expr)}")
 
         return expr.sign_extend(new_bits + expr.bits)
 
@@ -397,7 +403,7 @@ class BackendVSA(Backend):
         expr = args[1]
 
         if type(expr) not in {StridedInterval, DiscreteStridedIntervalSet}:  # pylint:disable=unidiomatic-typecheck
-            raise BackendError("Unsupported expr type %s" % type(expr))
+            raise BackendError(f"Unsupported expr type {type(expr)}")
 
         return expr.zero_extend(new_bits + expr.bits)
 
@@ -408,7 +414,7 @@ class BackendVSA(Backend):
             DiscreteStridedIntervalSet,
             ValueSet,
         }:  # pylint:disable=unidiomatic-typecheck
-            raise BackendError("Unsupported expr type %s" % type(arg))
+            raise BackendError(f"Unsupported expr type {type(arg)}")
 
         return arg.reverse()
 
@@ -434,10 +440,7 @@ class BackendVSA(Backend):
         ret = None
 
         for arg in ast.args:
-            if ret is None:
-                ret = arg
-            else:
-                ret = ret.intersection(arg)
+            ret = arg if ret is None else ret.intersection(arg)
         return ret
 
     @convert_args
@@ -458,19 +461,5 @@ class BackendVSA(Backend):
     def constraint_to_si(self, expr):
         return Balancer(self, expr).compat_ret
 
-
-from ..ast.base import Base
-from ..operations import backend_operations_vsa_compliant, expression_set_operations
-from ..vsa import (
-    StridedInterval,
-    CreateStridedInterval,
-    DiscreteStridedIntervalSet,
-    ValueSet,
-    AbstractLocation,
-    BoolResult,
-    TrueResult,
-    FalseResult,
-)
-from ..balancer import Balancer
 
 BackendVSA.CreateStridedInterval = staticmethod(CreateStridedInterval)

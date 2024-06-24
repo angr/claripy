@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from .int import Int
     from .base import Base
     from .strings import String
-    from .. import ops as all_operations
+    from claripy import ops as all_operations
 else:
     Bits = lambda *args, **kwargs: None
     BV = lambda *args, **kwargs: None
@@ -38,7 +38,7 @@ def _import():
     from .int import Int
     from .base import Base
     from .strings import String
-    from .. import ops as all_operations
+    from claripy import ops as all_operations
 
 
 __all__ = ("Bits", "BV", "VS", "FP", "Bool", "true", "false", "Int", "Base", "String", "all_operations")

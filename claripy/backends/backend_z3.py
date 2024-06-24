@@ -1,19 +1,35 @@
-import os
-import sys
 import ctypes
 import logging
 import numbers
 import operator
+import os
+import signal
+import sys
 import threading
 import weakref
-import signal
-from functools import reduce
 from decimal import Decimal
-import z3
+from functools import reduce
 
+import z3
 from cachetools import LRUCache
 
-from ..errors import ClaripyZ3Error, ClaripySolverInterruptError
+from claripy import _all_operations
+from claripy.ast.base import Base
+from claripy.ast.bool import Bool, BoolV
+from claripy.ast.bv import BV, BVV
+from claripy.ast.fp import FP, FPV
+from claripy.ast.strings import StringV
+from claripy.errors import (
+    BackendError,
+    ClaripyError,
+    ClaripyOperationError,
+    ClaripySolverInterruptError,
+    ClaripyZ3Error,
+)
+from claripy.fp import RM, FSort
+from claripy.operations import backend_fp_operations, backend_operations, backend_strings_operations
+
+from . import Backend
 
 l = logging.getLogger("claripy.backends.backend_z3")
 
@@ -31,12 +47,12 @@ def handle_sigint(signals, frametype):
         context.interrupt()
 
     if old_handler is signal.default_int_handler:
-        raise KeyboardInterrupt()
+        raise KeyboardInterrupt
     if callable(old_handler):
         old_handler(signals, frametype)
     else:
         print("*** CRITICAL ERROR - THIS SHOULD NEVER HAPPEN", sys.stderr, flush=True)
-        raise KeyboardInterrupt()
+        raise KeyboardInterrupt
 
 
 if threading.current_thread() == threading.main_thread():  # Signal only works in the main thread
@@ -102,7 +118,7 @@ def condom(f):
         try:
             return f(*args, **kwargs)
         except z3.Z3Exception as ze:
-            raise ClaripyZ3Error() from ze
+            raise ClaripyZ3Error from ze
 
     return z3_condom
 
@@ -121,7 +137,7 @@ def z3_solver_sat(solver, extra_constraints, occasion):
     if result == z3.unknown:
         reason = solver.reason_unknown()
         if reason in ("interrupted from keyboard", "interrupted"):
-            raise KeyboardInterrupt()
+            raise KeyboardInterrupt
         if reason in ("timeout", "max. resource limit exceeded", "max. memory exceeded"):
             raise ClaripySolverInterruptError(reason)
         raise ClaripyZ3Error("solver unknown: " + reason)
@@ -144,11 +160,9 @@ class SmartLRUCache(LRUCache):
 # And the (ugh) magic
 #
 
-from . import Backend
-
 
 class BackendZ3(Backend):
-    _split_on = {"And", "Or"}
+    _split_on = ("And", "Or")
 
     def __init__(self, reuse_z3_solver=None, ast_cache_size=10000):
         Backend.__init__(self, solver_required=True)
@@ -400,13 +414,13 @@ class BackendZ3(Backend):
             return z3.BoolRef(z3.Z3_mk_true(self._context.ref()), self._context)
         elif obj is False:
             return z3.BoolRef(z3.Z3_mk_false(self._context.ref()), self._context)
-        elif isinstance(obj, (numbers.Number, str)):
-            return obj
-        elif hasattr(obj, "__module__") and obj.__module__ in ("z3", "z3.z3"):
+        elif isinstance(obj, (numbers.Number, str)) or (
+            hasattr(obj, "__module__") and obj.__module__ in ("z3", "z3.z3")
+        ):
             return obj
         else:
             l.debug("BackendZ3 encountered unexpected type %s", type(obj))
-            raise BackendError("unexpected type %s encountered in BackendZ3" % type(obj))
+            raise BackendError(f"unexpected type {type(obj)} encountered in BackendZ3")
 
     def call(self, *args, **kwargs):  # pylint;disable=arguments-renamed
         return Backend.call(self, *args, **kwargs)
@@ -441,7 +455,7 @@ class BackendZ3(Backend):
         if decl_num not in z3_op_nums:
             raise ClaripyError("unknown decl kind %d" % decl_num)
         if z3_op_nums[decl_num] not in op_map:
-            raise ClaripyError("unknown decl op %s" % z3_op_nums[decl_num])
+            raise ClaripyError(f"unknown decl op {z3_op_nums[decl_num]}")
         op_name = op_map[z3_op_nums[decl_num]]
 
         num_args = z3.Z3_get_app_num_args(ctx, ast)
@@ -519,12 +533,12 @@ class BackendZ3(Backend):
             exp = z3.Z3_fpa_get_ebits(ctx, z3_sort)
             mantissa = z3.Z3_fpa_get_sbits(ctx, z3_sort)
             sort = FSort.from_params(exp, mantissa)
-            args = children + [sort]
+            args = [*children, sort]
             append_children = False
         elif op_name in ("fpToSBV", "fpToUBV"):
             # uuuuuugggggghhhhhh
             bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
-            args = children + [bv_size]
+            args = [*children, bv_size]
             append_children = False
         else:
             args = []
@@ -536,11 +550,8 @@ class BackendZ3(Backend):
         result_ty = op_type_map[z3_op_nums[decl_num]]
         ty = type(args[-1])
 
-        if type(result_ty) is str:
-            err = (
-                "Unknown Z3 error in abstraction (result_ty == '%s'). Update your version of Z3, and, if the problem persists, open a claripy issue."
-                % result_ty
-            )
+        if isinstance(result_ty, str):
+            err = f"Unknown Z3 error in abstraction (result_ty == '{result_ty}'). Update your version of Z3, and, if the problem persists, open a claripy issue."
             l.error(err)
             raise BackendError(err)
 
@@ -570,7 +581,7 @@ class BackendZ3(Backend):
         if decl_num not in z3_op_nums:
             raise ClaripyError("unknown decl kind %d" % decl_num)
         if z3_op_nums[decl_num] not in op_map:
-            raise ClaripyError("unknown decl op %s" % z3_op_nums[decl_num])
+            raise ClaripyError(f"unknown decl op {z3_op_nums[decl_num]}")
         op_name = op_map[z3_op_nums[decl_num]]
 
         if op_name == "BitVecVal":
@@ -878,10 +889,7 @@ class BackendZ3(Backend):
         sat = z3_solver_sat(solver, constraints, comment)
         if sat and model_callback is not None:
             model_callback(self._generic_model(solver.model()))
-        if sat == is_max:
-            ret = hi
-        else:
-            ret = lo
+        ret = hi if sat == is_max else lo
         return ret
 
     @condom
@@ -935,7 +943,7 @@ class BackendZ3(Backend):
 
     def _solution(self, expr, v, extra_constraints=(), solver=None, model_callback=None):
         return self._satisfiable(
-            extra_constraints=(expr == v,) + tuple(extra_constraints), solver=solver, model_callback=model_callback
+            extra_constraints=(expr == v, *tuple(extra_constraints)), solver=solver, model_callback=model_callback
         )
 
     #
@@ -1297,10 +1305,10 @@ op_map = {
     "Z3_OP_IFF": "__eq__",
     "Z3_OP_XOR": "Xor",
     "Z3_OP_NOT": "Not",
-    #'Z3_OP_OEQ': None,
+    # 'Z3_OP_OEQ': None,
     # Arithmetic
-    #'Z3_OP_ANUM': None,
-    #'Z3_OP_AGNUM': None,
+    # 'Z3_OP_ANUM': None,
+    # 'Z3_OP_AGNUM': None,
     "Z3_OP_LE": "SLE",
     "Z3_OP_GE": "SGE",
     "Z3_OP_LT": "SLT",
@@ -1313,26 +1321,26 @@ op_map = {
     "Z3_OP_IDIV": "SDiv",
     "Z3_OP_REM": "__mod__",
     "Z3_OP_MOD": "__mod__",
-    #'Z3_OP_TO_REAL': None,
-    #'Z3_OP_TO_INT': None,
-    #'Z3_OP_IS_INT': None,
+    # 'Z3_OP_TO_REAL': None,
+    # 'Z3_OP_TO_INT': None,
+    # 'Z3_OP_IS_INT': None,
     "Z3_OP_POWER": "__pow__",
     # Arrays & Sets
-    #'Z3_OP_STORE': None,
-    #'Z3_OP_SELECT': None,
-    #'Z3_OP_CONST_ARRAY': None,
-    #'Z3_OP_ARRAY_MAP': None,
-    #'Z3_OP_ARRAY_DEFAULT': None,
-    #'Z3_OP_SET_UNION': None,
-    #'Z3_OP_SET_INTERSECT': None,
-    #'Z3_OP_SET_DIFFERENCE': None,
-    #'Z3_OP_SET_COMPLEMENT': None,
-    #'Z3_OP_SET_SUBSET': None,
-    #'Z3_OP_AS_ARRAY': None,
+    # 'Z3_OP_STORE': None,
+    # 'Z3_OP_SELECT': None,
+    # 'Z3_OP_CONST_ARRAY': None,
+    # 'Z3_OP_ARRAY_MAP': None,
+    # 'Z3_OP_ARRAY_DEFAULT': None,
+    # 'Z3_OP_SET_UNION': None,
+    # 'Z3_OP_SET_INTERSECT': None,
+    # 'Z3_OP_SET_DIFFERENCE': None,
+    # 'Z3_OP_SET_COMPLEMENT': None,
+    # 'Z3_OP_SET_SUBSET': None,
+    # 'Z3_OP_AS_ARRAY': None,
     # Bit-vectors
     "Z3_OP_BNUM": "BitVecVal",
-    #'Z3_OP_BIT1': None, # MAYBE TODO
-    #'Z3_OP_BIT0': None, # MAYBE TODO
+    # 'Z3_OP_BIT1': None, # MAYBE TODO
+    # 'Z3_OP_BIT0': None, # MAYBE TODO
     "Z3_OP_BNEG": "__neg__",
     "Z3_OP_BADD": "__add__",
     "Z3_OP_BSUB": "__sub__",
@@ -1349,11 +1357,11 @@ op_map = {
     "Z3_OP_BSMOD_I": "SMod",
     # special functions to record the division by 0 cases
     # these are internal functions
-    #'Z3_OP_BSDIV0': None,
-    #'Z3_OP_BUDIV0': None,
-    #'Z3_OP_BSREM0': None,
-    #'Z3_OP_BUREM0': None,
-    #'Z3_OP_BSMOD0': None,
+    # 'Z3_OP_BSDIV0': None,
+    # 'Z3_OP_BUDIV0': None,
+    # 'Z3_OP_BSREM0': None,
+    # 'Z3_OP_BUREM0': None,
+    # 'Z3_OP_BSMOD0': None,
     "Z3_OP_ULEQ": "ULE",
     "Z3_OP_SLEQ": "SLE",
     "Z3_OP_UGEQ": "UGE",
@@ -1366,22 +1374,22 @@ op_map = {
     "Z3_OP_BOR": "__or__",
     "Z3_OP_BNOT": "__invert__",
     "Z3_OP_BXOR": "__xor__",
-    #'Z3_OP_BNAND': None,
-    #'Z3_OP_BNOR': None,
-    #'Z3_OP_BXNOR': None,
+    # 'Z3_OP_BNAND': None,
+    # 'Z3_OP_BNOR': None,
+    # 'Z3_OP_BXNOR': None,
     "Z3_OP_CONCAT": "Concat",
     "Z3_OP_SIGN_EXT": "SignExt",
     "Z3_OP_ZERO_EXT": "ZeroExt",
     "Z3_OP_EXTRACT": "Extract",
     "Z3_OP_REPEAT": "RepeatBitVec",
-    #'Z3_OP_BREDOR': None,
-    #'Z3_OP_BREDAND': None,
-    #'Z3_OP_BCOMP': None,
+    # 'Z3_OP_BREDOR': None,
+    # 'Z3_OP_BREDAND': None,
+    # 'Z3_OP_BCOMP': None,
     "Z3_OP_BSHL": "__lshift__",
     "Z3_OP_BLSHR": "LShR",
     "Z3_OP_BASHR": "__rshift__",
-    #'Z3_OP_ROTATE_LEFT': None,
-    #'Z3_OP_ROTATE_RIGHT': None,
+    # 'Z3_OP_ROTATE_LEFT': None,
+    # 'Z3_OP_ROTATE_RIGHT': None,
     "Z3_OP_EXT_ROTATE_LEFT": "RotateLeft",
     "Z3_OP_EXT_ROTATE_RIGHT": "RotateRight",
     "Z3_OP_FPA_TO_SBV": "fpToSBV",
@@ -1416,16 +1424,6 @@ op_map = {
     "Z3_OP_UNINTERPRETED": "UNINTERPRETED",
 }
 
-from ..ast.base import Base
-from ..ast.bv import BV, BVV
-from ..ast.bool import BoolV, Bool
-from ..ast.strings import StringV
-from ..ast.fp import FP, FPV
-from ..operations import backend_operations, backend_fp_operations, backend_strings_operations
-from ..fp import FSort, RM
-from ..errors import ClaripyError, BackendError, ClaripyOperationError
-from .. import _all_operations
-
 op_type_map = {
     # Boolean
     "Z3_OP_TRUE": Bool,
@@ -1438,10 +1436,10 @@ op_type_map = {
     "Z3_OP_IFF": Bool,
     "Z3_OP_XOR": Bool,
     "Z3_OP_NOT": Bool,
-    #'Z3_OP_OEQ': None,
+    # 'Z3_OP_OEQ': None,
     # Arithmetic
-    #'Z3_OP_ANUM': None,
-    #'Z3_OP_AGNUM': None,
+    # 'Z3_OP_ANUM': None,
+    # 'Z3_OP_AGNUM': None,
     "Z3_OP_LE": None,
     "Z3_OP_GE": None,
     "Z3_OP_LT": None,
@@ -1454,26 +1452,26 @@ op_type_map = {
     "Z3_OP_IDIV": None,
     "Z3_OP_REM": None,  # TODO: is this correct?
     "Z3_OP_MOD": None,
-    #'Z3_OP_TO_REAL': None,
-    #'Z3_OP_TO_INT': None,
-    #'Z3_OP_IS_INT': None,
+    # 'Z3_OP_TO_REAL': None,
+    # 'Z3_OP_TO_INT': None,
+    # 'Z3_OP_IS_INT': None,
     "Z3_OP_POWER": None,
     # Arrays & Sets
-    #'Z3_OP_STORE': None,
-    #'Z3_OP_SELECT': None,
-    #'Z3_OP_CONST_ARRAY': None,
-    #'Z3_OP_ARRAY_MAP': None,
-    #'Z3_OP_ARRAY_DEFAULT': None,
-    #'Z3_OP_SET_UNION': None,
-    #'Z3_OP_SET_INTERSECT': None,
-    #'Z3_OP_SET_DIFFERENCE': None,
-    #'Z3_OP_SET_COMPLEMENT': None,
-    #'Z3_OP_SET_SUBSET': None,
-    #'Z3_OP_AS_ARRAY': None,
+    # 'Z3_OP_STORE': None,
+    # 'Z3_OP_SELECT': None,
+    # 'Z3_OP_CONST_ARRAY': None,
+    # 'Z3_OP_ARRAY_MAP': None,
+    # 'Z3_OP_ARRAY_DEFAULT': None,
+    # 'Z3_OP_SET_UNION': None,
+    # 'Z3_OP_SET_INTERSECT': None,
+    # 'Z3_OP_SET_DIFFERENCE': None,
+    # 'Z3_OP_SET_COMPLEMENT': None,
+    # 'Z3_OP_SET_SUBSET': None,
+    # 'Z3_OP_AS_ARRAY': None,
     # Bit-vectors
     "Z3_OP_BNUM": "BitVecVal",
-    #'Z3_OP_BIT1': None, # MAYBE TODO
-    #'Z3_OP_BIT0': None, # MAYBE TODO
+    # 'Z3_OP_BIT1': None, # MAYBE TODO
+    # 'Z3_OP_BIT0': None, # MAYBE TODO
     "Z3_OP_BNEG": BV,
     "Z3_OP_BADD": BV,
     "Z3_OP_BSUB": BV,
@@ -1490,11 +1488,11 @@ op_type_map = {
     "Z3_OP_BSMOD_I": BV,
     # special functions to record the division by 0 cases
     # these are internal functions
-    #'Z3_OP_BSDIV0': None,
-    #'Z3_OP_BUDIV0': None,
-    #'Z3_OP_BSREM0': None,
-    #'Z3_OP_BUREM0': None,
-    #'Z3_OP_BSMOD0': None,
+    # 'Z3_OP_BSDIV0': None,
+    # 'Z3_OP_BUDIV0': None,
+    # 'Z3_OP_BSREM0': None,
+    # 'Z3_OP_BUREM0': None,
+    # 'Z3_OP_BSMOD0': None,
     "Z3_OP_ULEQ": Bool,
     "Z3_OP_SLEQ": Bool,
     "Z3_OP_UGEQ": Bool,
@@ -1507,22 +1505,22 @@ op_type_map = {
     "Z3_OP_BOR": BV,
     "Z3_OP_BNOT": BV,
     "Z3_OP_BXOR": BV,
-    #'Z3_OP_BNAND': None,
-    #'Z3_OP_BNOR': None,
-    #'Z3_OP_BXNOR': None,
+    # 'Z3_OP_BNAND': None,
+    # 'Z3_OP_BNOR': None,
+    # 'Z3_OP_BXNOR': None,
     "Z3_OP_CONCAT": BV,
     "Z3_OP_SIGN_EXT": BV,
     "Z3_OP_ZERO_EXT": BV,
     "Z3_OP_EXTRACT": BV,
     "Z3_OP_REPEAT": BV,
-    #'Z3_OP_BREDOR': None,
-    #'Z3_OP_BREDAND': None,
-    #'Z3_OP_BCOMP': None,
+    # 'Z3_OP_BREDOR': None,
+    # 'Z3_OP_BREDAND': None,
+    # 'Z3_OP_BCOMP': None,
     "Z3_OP_BSHL": BV,
     "Z3_OP_BLSHR": BV,
     "Z3_OP_BASHR": BV,
-    #'Z3_OP_ROTATE_LEFT': None,
-    #'Z3_OP_ROTATE_RIGHT': None,
+    # 'Z3_OP_ROTATE_LEFT': None,
+    # 'Z3_OP_ROTATE_RIGHT': None,
     "Z3_OP_EXT_ROTATE_LEFT": BV,
     "Z3_OP_EXT_ROTATE_RIGHT": BV,
     "Z3_OP_FPA_TO_SBV": BV,

@@ -5,8 +5,9 @@ import struct
 from decimal import Decimal
 from enum import Enum
 
-from .errors import ClaripyOperationError
 from .backend_object import BackendObject
+from .bv import BVV, Concat
+from .errors import ClaripyOperationError
 
 
 def compare_sorts(f):
@@ -477,6 +478,3 @@ def fpIsInf(x):
     Checks whether the argument is a floating point infinity.
     """
     return math.isinf(x)
-
-
-from .bv import BVV, Concat

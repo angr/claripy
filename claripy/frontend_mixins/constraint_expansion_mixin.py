@@ -1,6 +1,7 @@
-#!/usr/bin/env python
-
 import logging
+
+from claripy.ast.bool import Or
+from claripy.ast.bv import SGE, SLE, UGE, ULE
 
 l = logging.getLogger("claripy.frontends.cache_mixin")
 
@@ -34,7 +35,3 @@ class ConstraintExpansionMixin:
         if b is False and len(extra_constraints) == 0:
             self.add([e != v], invalidate_cache=False)
         return b
-
-
-from ..ast.bool import Or
-from ..ast.bv import SGE, SLE, UGE, ULE

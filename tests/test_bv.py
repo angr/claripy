@@ -2,8 +2,8 @@
 import unittest
 
 import claripy
-from claripy.bv import BVV, Extract, SignExt, ZeroExt, Concat, SDiv
-from claripy.errors import ClaripyTypeError, ClaripyZeroDivisionError, ClaripyValueError
+from claripy.bv import BVV, Concat, Extract, SDiv, SignExt, ZeroExt
+from claripy.errors import ClaripyTypeError, ClaripyValueError, ClaripyZeroDivisionError
 
 
 class TestBv(unittest.TestCase):
@@ -104,7 +104,7 @@ class TestBv(unittest.TestCase):
                 elif hasattr(claripy, op):
                     getattr(claripy, op)(va, vb)
                 else:
-                    raise Exception("Operation %s does not exist." % op)
+                    raise Exception(f"Operation {op} does not exist.")
                 raise Exception("The expected exception is not raised.")
             except Exception as ex:  # pylint:disable=broad-except
                 assert type(ex) is ClaripyZeroDivisionError

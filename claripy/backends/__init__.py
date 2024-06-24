@@ -5,6 +5,7 @@ import threading
 import numbers
 
 import logging
+import contextlib
 
 l = logging.getLogger("claripy.backend")
 
@@ -174,8 +175,8 @@ class Backend:
 
                     if self in ast._errored:
                         raise BackendError(
-                            "%s can't handle operation %s (%s) due to a failed "
-                            "conversion on a child node" % (self, ast.op, ast.__class__.__name__)
+                            f"{self} can't handle operation {ast.op} ({ast.__class__.__name__}) due to a failed "
+                            "conversion on a child node"
                         )
 
                     if self._cache_objects:
@@ -267,10 +268,8 @@ class Backend:
             obj = NotImplemented
 
             # first, try the operation with the first guy
-            try:
+            with contextlib.suppress(TypeError, ValueError):
                 obj = getattr(operator, op)(*args)
-            except (TypeError, ValueError):
-                pass
 
         if obj is NotImplemented:
             l.debug("received NotImplemented in %s.call() for operation %s", self, op)
@@ -289,7 +288,7 @@ class Backend:
         :param e:   The backend object.
         :return:   An AST.
         """
-        raise BackendError("backend %s doesn't implement abstract()" % self.__class__.__name__)
+        raise BackendError(f"backend {self.__class__.__name__} doesn't implement abstract()")
 
     #
     # These functions simplify expressions.
@@ -301,7 +300,7 @@ class Backend:
         return o
 
     def _simplify(self, e):  # pylint:disable=R0201,unused-argument
-        raise BackendError("backend %s can't simplify" % self.__class__.__name__)
+        raise BackendError(f"backend {self.__class__.__name__} can't simplify")
 
     #
     # Some other helpers
@@ -526,7 +525,7 @@ class Backend:
         :return:              A sequence of up to n results (backend objects)
         """
         if self._solver_required and solver is None:
-            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
+            raise BackendError(f"{self.__class__.__name__} requires a solver for evaluation")
 
         return self._eval(
             self.convert(expr),
@@ -564,7 +563,7 @@ class Backend:
         :return:                    A list of up to n tuples, where each tuple is a solution for all expressions.
         """
         if self._solver_required and solver is None:
-            raise BackendError("%s requires a solver for batch evaluation" % self.__class__.__name__)
+            raise BackendError(f"{self.__class__.__name__} requires a solver for batch evaluation")
 
         converted_exprs = [self.convert(ex) for ex in exprs]
 
@@ -605,7 +604,7 @@ class Backend:
         :return: the minimum possible value of expr (backend object)
         """
         if self._solver_required and solver is None:
-            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
+            raise BackendError(f"{self.__class__.__name__} requires a solver for evaluation")
 
         return self._min(
             self.convert(expr),
@@ -644,7 +643,7 @@ class Backend:
         :return: the maximum possible value of expr (backend object)
         """
         if self._solver_required and solver is None:
-            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
+            raise BackendError(f"{self.__class__.__name__} requires a solver for evaluation")
 
         return self._max(
             self.convert(expr),
@@ -737,7 +736,7 @@ class Backend:
         :return:                    True if `v` is a solution of `expr`, False otherwise
         """
         if self._solver_required and solver is None:
-            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
+            raise BackendError(f"{self.__class__.__name__} requires a solver for evaluation")
 
         return self._solution(
             self.convert(expr),
@@ -843,12 +842,12 @@ class Backend:
         raise BackendError(f"Backend {self} does not support operation {expr.op}")
 
 
-from ..errors import BackendError, ClaripyRecursionError, BackendUnsupportedError
+from claripy.errors import BackendError, ClaripyRecursionError, BackendUnsupportedError
 from .backend_z3 import BackendZ3
 from .backend_z3_parallel import BackendZ3Parallel
 from .backend_concrete import BackendConcrete
 from .backend_vsa import BackendVSA
-from ..ast.base import Base
+from claripy.ast.base import Base
 
 # If you need support for multiple solvers, please import claripy.backends.backend_smtlib_solvers by yourself
 # from .backend_smtlib_solvers import *

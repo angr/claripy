@@ -1,6 +1,8 @@
 import unittest
-import claripy
+
 import common_backend_smt_solver
+
+import claripy
 
 
 class SmtLibSolverTest_ABC(common_backend_smt_solver.SmtLibSolverTestBase):

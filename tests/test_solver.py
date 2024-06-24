@@ -1,8 +1,9 @@
-from common_backend_smt_solver import if_installed
-from unittest import TestCase, main
-import claripy
-
 import logging
+from unittest import TestCase, main
+
+from common_backend_smt_solver import if_installed
+
+import claripy
 
 l = logging.getLogger("claripy.test.solver")
 
@@ -137,7 +138,7 @@ def raw_solver(solver_type, reuse_z3_solver):
             1,
         }  # adds the != from the solution() check
     if isinstance(s, claripy.frontends.ReplacementFrontend):
-        assert {len(shards[0].constraints), len(shards[1].constraints)} == {1, 1}
+        assert {len(shards[0].constraints), len(shards[1].constraints)} == {1}
 
     # test result caching
     s = solver_type()

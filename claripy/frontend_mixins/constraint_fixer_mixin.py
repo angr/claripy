@@ -1,4 +1,6 @@
-from typing import TYPE_CHECKING, List, Union, Set, Tuple
+from typing import TYPE_CHECKING, List, Set, Tuple, Union
+
+from claripy import BoolV
 
 if TYPE_CHECKING:
     from claripy.ast.bool import Bool
@@ -13,6 +15,3 @@ class ConstraintFixerMixin:
 
         constraints = [BoolV(c) if isinstance(c, bool) else c for c in constraints]
         return super().add(constraints, **kwargs)
-
-
-from .. import BoolV

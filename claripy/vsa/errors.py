@@ -1,4 +1,4 @@
-from ..errors import ClaripyError
+from claripy.errors import ClaripyError
 
 
 class ClaripyVSAError(ClaripyError):

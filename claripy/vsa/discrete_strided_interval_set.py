@@ -1,8 +1,13 @@
 import functools
-import numbers
 import itertools
+import numbers
 
+from claripy.bv import BVV
+
+from .bool_result import BoolResult
+from .errors import ClaripyVSAOperationError
 from .strided_interval import StridedInterval
+from .valueset import ValueSet
 
 DEFAULT_MAX_CARDINALITY_WITHOUT_COLLAPSING = 256  # We don't collapse until there are more than this many SIs
 
@@ -40,7 +45,7 @@ def apply_on_each_si(f):
             return ret.normalize()
 
         else:
-            raise ClaripyVSAOperationError("Unsupported operand type %s" % (type(o)))
+            raise ClaripyVSAOperationError(f"Unsupported operand type {type(o)}")
 
     return operator
 
@@ -164,7 +169,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
         if self.should_collapse():
             return self.collapse()
         elif self.number_of_values == 1:
-            return list(self._si_set)[0]
+            return next(iter(self._si_set))
         else:
             for si in self._si_set:
                 self._update_bits(si)
@@ -354,7 +359,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
             return DiscreteStridedIntervalSet(bits=bits, si_set=ret)
 
         else:
-            return list(ret)[0]
+            return next(iter(ret))
 
     # Arithmetic operations
 
@@ -453,7 +458,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
             return b.union(self)
 
         else:
-            raise ClaripyVSAOperationError("Unsupported operand type %s for operation union." % type(b))
+            raise ClaripyVSAOperationError(f"Unsupported operand type {type(b)} for operation union.")
 
     def intersection(self, b):
         if isinstance(b, DiscreteStridedIntervalSet):
@@ -463,7 +468,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
             return self._intersection_with_si(b)
 
         else:
-            raise ClaripyVSAOperationError("Unsupported operand type %s for operation intersection." % type(b))
+            raise ClaripyVSAOperationError(f"Unsupported operand type {type(b)} for operation intersection.")
 
     # Other operations
 
@@ -597,28 +602,16 @@ class DiscreteStridedIntervalSet(StridedInterval):
 
     def _update_bounds(self, val):
         if not isinstance(val, StridedInterval):
-            raise ClaripyVSAOperationError("Unsupported operand type %s." % type(val))
+            raise ClaripyVSAOperationError(f"Unsupported operand type {type(val)}.")
 
-        if val._lower_bound is not None:
-            if self._lower_bound is None:
-                self._lower_bound = val.lower_bound
-            elif val.lower_bound < self._lower_bound:
-                self._lower_bound = val.lower_bound
+        if val._lower_bound is not None and (self._lower_bound is None or val.lower_bound < self._lower_bound):
+            self._lower_bound = val.lower_bound
 
-        if val._upper_bound is not None:
-            if self._upper_bound is None:
-                self._upper_bound = val.upper_bound
-            elif val.upper_bound > self._upper_bound:
-                self._upper_bound = val.upper_bound
+        if val._upper_bound is not None and (self._upper_bound is None or val.upper_bound > self._upper_bound):
+            self._upper_bound = val.upper_bound
 
     def _update_bits(self, val):
         if not isinstance(val, StridedInterval):
-            raise ClaripyVSAOperationError("Unsupported operand type %s." % type(val))
+            raise ClaripyVSAOperationError(f"Unsupported operand type {type(val)}.")
 
         self._bits = val.bits
-
-
-from .errors import ClaripyVSAOperationError
-from .bool_result import BoolResult
-from ..bv import BVV
-from .valueset import ValueSet

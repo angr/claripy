@@ -1,11 +1,15 @@
+import atexit
 import logging
 import numbers
 import weakref
 
+from claripy import operations, vsa
+from claripy.ast.base import _make_name
+from claripy.errors import ClaripyValueError
+from claripy.utils import deprecated
+
 from .bits import Bits
-from ..ast.base import _make_name
-from .bool import If
-from ..utils import deprecated
+from .bool import Bool, If
 
 l = logging.getLogger("claripy.ast.bv")
 
@@ -18,8 +22,6 @@ def cleanup():
     global _bvv_cache  # pylint:disable=global-variable-not-assigned
     del _bvv_cache
 
-
-import atexit
 
 atexit.register(cleanup)
 
@@ -65,7 +67,7 @@ class BV(Bits):
         if s == bits:
             return [self]
         else:
-            return list(reversed([self[(n + 1) * bits - 1 : n * bits] for n in range(0, s // bits)]))
+            return list(reversed([self[(n + 1) * bits - 1 : n * bits] for n in range(s // bits)]))
 
     def __getitem__(self, rng):
         if type(rng) is slice:
@@ -238,10 +240,10 @@ def BVS(
     if stride == 0 and max != min:
         raise ClaripyValueError("BVSes of stride 0 should have max == min")
 
-    if type(name) is bytes:
+    if isinstance(name, bytes):
         name = name.decode()
-    if type(name) is not str:
-        raise TypeError("Name value for BVS must be a str, got %r" % type(name))
+    if not isinstance(name, str):
+        raise TypeError(f"Name value for BVS must be a str, got {type(name)!r}")
 
     n = _make_name(name, size, False if explicit_name is None else explicit_name)
     encoded_name = n.encode()
@@ -274,20 +276,20 @@ def BVV(value, size=None, **kwargs) -> BV:
     """
 
     if type(value) in (bytes, bytearray, memoryview, str):
-        if type(value) is str:
+        if isinstance(value, str):
             l.warning("BVV value is a unicode string, encoding as utf-8")
             value = value.encode("utf-8")
 
         if size is None:
             size = len(value) * 8
-        elif type(size) is not int:
+        elif not isinstance(size, int):
             raise TypeError("Bitvector size  must be either absent (implicit) or an integer")
         elif size != len(value) * 8:
             raise ClaripyValueError("string/size mismatch for BVV creation")
 
         value = int.from_bytes(value, "big")
 
-    elif size is None or (type(value) is not int and value is not None):
+    elif size is None or (not isinstance(value, int) and value is not None):
         raise TypeError("BVV() takes either an integer value and a size or a string of bytes")
 
     # ensure the 0 <= value < (1 << size)
@@ -363,7 +365,7 @@ def ValueSet(bits, region=None, region_base_addr=None, value=None, name=None, va
         min_v, max_v = v.lower_bound, v.upper_bound
         stride = v.stride
     else:
-        raise ClaripyValueError("ValueSet() does not take `value` of type %s" % type(value))
+        raise ClaripyValueError(f"ValueSet() does not take `value` of type {type(value)}")
 
     if name is None:
         name = "ValueSet"
@@ -409,8 +411,6 @@ def DSIS(
 # Unbound operations
 #
 
-from .bool import Bool
-from .. import operations
 
 # comparisons
 ULT = operations.op("__lt__", (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
@@ -623,6 +623,4 @@ BV.intersection = operations.op(
     "intersection", (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc
 )
 
-from . import fp
-from .. import vsa
-from ..errors import ClaripyValueError
+from . import fp  # noqa: E402

@@ -1,7 +1,7 @@
-import claripy
+import logging
 import pickle
 
-import logging
+import claripy
 
 l = logging.getLogger("claripy.test.serial")
 

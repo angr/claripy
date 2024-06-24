@@ -1,10 +1,11 @@
-#!/usr/bin/env python
-
 import logging
 
-l = logging.getLogger("claripy.frontends.light_frontend")
+from claripy.backend_manager import backends
+from claripy.errors import BackendError, ClaripyFrontendError
 
 from .constrained_frontend import ConstrainedFrontend
+
+l = logging.getLogger("claripy.frontends.light_frontend")
 
 
 class LightFrontend(ConstrainedFrontend):
@@ -82,13 +83,10 @@ class LightFrontend(ConstrainedFrontend):
             return False
 
     def satisfiable(self, extra_constraints=(), exact=None):
-        if any(
+        return not any(
             self.is_false(c, extra_constraints=extra_constraints, exact=exact)
             for c in reversed(self.constraints + list(extra_constraints))
-        ):
-            return False
-        else:
-            return True
+        )
 
     #
     # Merging and splitting
@@ -99,7 +97,3 @@ class LightFrontend(ConstrainedFrontend):
             self._solver_backend.__class__.__name__ == "BackendZ3",
             ConstrainedFrontend.merge(self, others, merge_conditions, common_ancestor=common_ancestor)[1],
         )
-
-
-from ..errors import BackendError, ClaripyFrontendError
-from ..backend_manager import backends

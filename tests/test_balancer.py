@@ -47,12 +47,12 @@ def test_complex_guy():
     assert s
     assert r[0][0] is guy_wide
     assert claripy.backends.vsa.min(r[0][1]) == 0
-    assert set(claripy.backends.vsa.eval(r[0][1], 1000)) == set([4294967295] + list(range(39)))
+    assert set(claripy.backends.vsa.eval(r[0][1], 1000)) == {4294967295, *list(range(39))}
 
     s, r = claripy.balancer.Balancer(claripy.backends.vsa, guy_zx <= claripy.BVV(39, 64)).compat_ret
     assert r[0][0] is guy_wide
     assert claripy.backends.vsa.min(r[0][1]) == 0
-    assert set(claripy.backends.vsa.eval(r[0][1], 1000)) == set([4294967295] + list(range(39)))
+    assert set(claripy.backends.vsa.eval(r[0][1], 1000)) == {4294967295, *list(range(39))}
 
 
 def test_simple_guy():

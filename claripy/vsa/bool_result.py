@@ -1,4 +1,6 @@
-from ..backend_object import BackendObject
+from claripy.ast.base import Base
+from claripy.backend_object import BackendObject
+from claripy.errors import BackendError, ClaripyValueError
 
 
 class BoolResult(BackendObject):
@@ -7,22 +9,22 @@ class BoolResult(BackendObject):
         self._args = args
 
     def value(self):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __len__(self):
         return BackendError()
 
     def __eq__(self, other):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __and__(self, other):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __invert__(self):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __or__(self, other):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def identical(self, other):
         if self.value != other.value:
@@ -34,7 +36,7 @@ class BoolResult(BackendObject):
         return True
 
     def union(self, other):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def size(self):  # pylint:disable=no-self-use
         return None
@@ -108,11 +110,9 @@ class TrueResult(BoolResult):
             return TrueResult()
 
     def union(self, other):
-        if other is True or type(other) is TrueResult:
+        if other is True or isinstance(other, TrueResult):
             return TrueResult()
-        elif other is False or type(other) is FalseResult:
-            return MaybeResult()
-        elif type(other) is MaybeResult:
+        elif other is False or isinstance(other, (FalseResult, MaybeResult)):
             return MaybeResult()
         else:
             return NotImplemented
@@ -207,7 +207,3 @@ class MaybeResult(BoolResult):
 
     def __bool__(self):
         return False
-
-
-from ..errors import BackendError, ClaripyValueError
-from ..ast.base import Base

@@ -6,15 +6,17 @@ import struct
 import weakref
 from collections import OrderedDict, deque
 from itertools import chain
-from typing import Optional, Generic, TypeVar, overload, TYPE_CHECKING, List, Iterable, Iterator, Tuple, NoReturn
+from typing import TYPE_CHECKING, Generic, Iterable, Iterator, List, NoReturn, Optional, Tuple, TypeVar
+
+from claripy import operations, simplifications
+from claripy.backend_manager import backends
+from claripy.errors import BackendError, ClaripyOperationError, ClaripyReplacementError
 
 if TYPE_CHECKING:
-    from .bool import Bool
-    from .fp import FP
-    from ..annotation import Annotation
+    from claripy.annotation import Annotation
 
 try:
-    import cPickle as pickle
+    import _pickle as pickle
 except ImportError:
     import pickle
 
@@ -218,16 +220,10 @@ class Base:
         if "uc_alloc_depth" not in kwargs:
             kwargs["uc_alloc_depth"] = None
 
-        if "annotations" not in kwargs or kwargs["annotations"] is None:
-            annotations = ()
-        else:
-            annotations = kwargs["annotations"]
+        annotations = () if "annotations" not in kwargs or kwargs["annotations"] is None else kwargs["annotations"]
 
         # process annotations
-        if "skip_child_annotations" in kwargs:
-            skip_child_annotations = kwargs.pop("skip_child_annotations")
-        else:
-            skip_child_annotations = False
+        skip_child_annotations = kwargs.pop("skip_child_annotations") if "skip_child_annotations" in kwargs else False
 
         if not annotations and not args_have_annotations:
             uneliminatable_annotations = frozenset()
@@ -239,7 +235,7 @@ class Base:
                     (
                         from_iterable(a._uneliminatable_annotations for a in ast_args)
                         if not skip_child_annotations
-                        else tuple()
+                        else ()
                     ),
                     tuple(a for a in annotations if not a.eliminatable and not a.relocatable),
                 )
@@ -253,7 +249,7 @@ class Base:
                             (
                                 from_iterable(a._relocatable_annotations for a in ast_args)
                                 if not skip_child_annotations
-                                else tuple()
+                                else ()
                             ),
                             tuple(a for a in annotations if not a.eliminatable and a.relocatable),
                         )
@@ -263,11 +259,7 @@ class Base:
 
             annotations = tuple(
                 chain(
-                    (
-                        from_iterable(a._relocatable_annotations for a in ast_args)
-                        if not skip_child_annotations
-                        else tuple()
-                    ),
+                    (from_iterable(a._relocatable_annotations for a in ast_args) if not skip_child_annotations else ()),
                     tuple(a for a in annotations),
                 )
             )
@@ -280,7 +272,7 @@ class Base:
         elif op in {"BVS", "BVV", "BoolS", "BoolV", "FPS", "FPV"} and not annotations:
             if op == "FPV" and a_args[0] == 0.0 and math.copysign(1, a_args[0]) < 0:
                 # Python does not distinguish between +0.0 and -0.0 so we add sign to tuple to distinguish
-                h = (op, kwargs.get("length", None), ("-",) + a_args)
+                h = (op, kwargs.get("length", None), ("-", *a_args))
             elif op == "FPV" and math.isnan(a_args[0]):
                 # cannot compare nans
                 h = (op, kwargs.get("length", None), ("nan",) + a_args[1:])
@@ -391,7 +383,7 @@ class Base:
             return b"\x1f"
         elif arg is False:
             return b"\x2e"
-        elif type(arg) is int:
+        elif isinstance(arg, int):
             if arg < 0:
                 if arg >= -0x7FFF:
                     return b"-" + struct.pack("<h", arg)
@@ -408,11 +400,11 @@ class Base:
                 elif arg <= 0xFFFF_FFFF_FFFF_FFFF:
                     return struct.pack("<Q", arg)
                 return None
-        elif type(arg) is str:
+        elif isinstance(arg, str):
             return arg.encode()
-        elif type(arg) is float:
+        elif isinstance(arg, float):
             return struct.pack("f", arg)
-        elif type(arg) is tuple:
+        elif isinstance(arg, tuple):
             arr = []
             for elem in arg:
                 b = Base._arg_serialize(elem)
@@ -513,7 +505,7 @@ class Base:
 
     def __hash__(self):
         res = self._hash
-        if type(self._hash) is not int:
+        if not isinstance(self._hash, int):
             res = hash(self._hash)
         return res
 
@@ -541,11 +533,8 @@ class Base:
     #            yield backend.convert(a)
 
     def make_like(self: T, op: str, args: Iterable, **kwargs) -> T:
-        if kwargs.pop("simplify", False) is True:
-            # Try to simplify the expression again
-            simplified = simplifications.simpleton.simplify(op, args)
-        else:
-            simplified = None
+        # Try to simplify the expression again
+        simplified = simplifications.simpleton.simplify(op, args) if kwargs.pop("simplify", False) is True else None
         if simplified is not None:
             op = simplified.op
         if (
@@ -580,11 +569,10 @@ class Base:
             )
 
         all_operations = operations.leaf_operations_symbolic_with_union
-        if "annotations" not in kwargs:
-            # special case: if self is one of the args, we do not copy annotations over from self since child
-            # annotations will be re-processed during AST creation.
-            if not args or not any(self is arg for arg in args):
-                kwargs["annotations"] = self.annotations
+        # special case: if self is one of the args, we do not copy annotations over from self since child
+        # annotations will be re-processed during AST creation.
+        if "annotations" not in kwargs and (not args or not any(self is arg for arg in args)):
+            kwargs["annotations"] = self.annotations
         if "variables" not in kwargs and op in all_operations:
             kwargs["variables"] = self.variables
         if "uninitialized" not in kwargs:
@@ -620,7 +608,7 @@ class Base:
         :param a:                   the annotation to append
         :returns:                   a new AST, with the annotation added
         """
-        return self._apply_to_annotations(lambda alist: alist + (a,))
+        return self._apply_to_annotations(lambda alist: (*alist, a))
 
     def append_annotations(self: T, new_tuple: Tuple["Annotation", ...]) -> T:
         """
@@ -653,7 +641,7 @@ class Base:
         :param a:                   the annotation to insert
         :returns:                   a new AST, with the annotation added
         """
-        return self._apply_to_annotations(lambda alist: (a,) + alist)
+        return self._apply_to_annotations(lambda alist: (a, *alist))
 
     def insert_annotations(self: T, new_tuple: Tuple["Annotation", ...]) -> T:
         """
@@ -741,7 +729,7 @@ class Base:
         next_max_depth = max_depth - 1 if max_depth is not None else None
         length = self.length if explicit_length else None
         # if operation is not in op_precedence, assign the "least operation precedence"
-        op_prec = operations.op_precedence[op] if op in operations.op_precedence else 15
+        op_prec = operations.op_precedence.get(op, 15)
 
         args = [
             (
@@ -767,17 +755,17 @@ class Base:
             if op == "BVS":
                 extras = []
                 if args[1] is not None:
-                    fmt = "%#x" if type(args[1]) is int else "%s"
+                    fmt = "%#x" if isinstance(args[1], int) else "%s"
                     extras.append("min=%s" % (fmt % args[1]))
                 if args[2] is not None:
-                    fmt = "%#x" if type(args[2]) is int else "%s"
+                    fmt = "%#x" if isinstance(args[2], int) else "%s"
                     extras.append("max=%s" % (fmt % args[2]))
                 if args[3] is not None:
-                    fmt = "%#x" if type(args[3]) is int else "%s"
+                    fmt = "%#x" if isinstance(args[3], int) else "%s"
                     extras.append("stride=%s" % (fmt % args[3]))
                 if args[4] is True:
                     extras.append("UNINITIALIZED")
-                return "{}{}".format(args[0], "{%s}" % ", ".join(extras) if extras else "")
+                return "{}{}".format(args[0], "{{{}}}".format(", ".join(extras)) if extras else "")
 
             elif op == "BoolV":
                 return str(args[0])
@@ -1361,9 +1349,5 @@ def simplify(e: T) -> T:
         return s
 
 
-from ..errors import BackendError, ClaripyOperationError, ClaripyReplacementError
-from .. import operations
-from ..backend_manager import backends
-from ..ast.bool import If, Not, BoolS
-from ..ast.bv import BV
-from .. import simplifications
+from claripy.ast.bool import BoolS, If, Not  # noqa: E402
+from claripy.ast.bv import BV  # noqa: E402

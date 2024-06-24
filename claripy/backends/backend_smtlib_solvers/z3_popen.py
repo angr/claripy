@@ -1,9 +1,11 @@
-import subprocess
 import logging
-
 import re
-from . import SMTLibSolverBackend, PopenSolverProxy
-from ...errors import MissingSolverError
+import subprocess
+
+from claripy import backend_manager as backend_manager
+from claripy.errors import MissingSolverError
+
+from . import PopenSolverProxy, SMTLibSolverBackend
 
 log = logging.getLogger(__name__)
 
@@ -40,7 +42,7 @@ class Z3Proxy(PopenSolverProxy):
             raise MissingSolverError("Z3 not found! Please install Z3 before using this backend")
         cmd = ["z3", "-smt2", "-in"]
         if self.timeout is not None:
-            cmd.append(f"-t:{self.timeout//1000}")  # our timeout is in milliseconds
+            cmd.append(f"-t:{self.timeout // 1000}")  # our timeout is in milliseconds
         if self.max_memory is not None:
             cmd.append(f"-memory:{self.max_memory}")
 
@@ -57,7 +59,5 @@ class SolverBackendZ3(SMTLibSolverBackend):
         """
         return Z3Proxy(timeout=timeout, max_memory=max_memory)
 
-
-from ... import backend_manager as backend_manager
 
 backend_manager.backends._register_backend(SolverBackendZ3(), "smtlib_z3", False, False)

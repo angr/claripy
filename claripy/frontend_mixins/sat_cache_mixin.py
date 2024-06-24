@@ -1,3 +1,7 @@
+from claripy import false
+from claripy.errors import UnsatError
+
+
 class SatCacheMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -105,7 +109,3 @@ class SatCacheMixin:
             if len(extra_constraints) == 0:
                 self._cached_satness = False
             raise
-
-
-from .. import false
-from ..errors import UnsatError

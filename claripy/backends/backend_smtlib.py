@@ -2,41 +2,38 @@
 import logging
 
 from pysmt.shortcuts import (
-    Symbol,
-    String,
-    StrConcat,
-    NotEquals,
-    StrSubstr,
-    Int,
-    StrLength,
-    StrReplace,
-    Bool,
-    Or,
-    LT,
-    LE,
-    GT,
     GE,
-    StrContains,
-    StrPrefixOf,
-    StrSuffixOf,
-    StrIndexOf,
-    StrToInt,
-    Ite,
-    EqualsOrIff,
-    Minus,
-    Plus,
-    IntToStr,
-    Not,
+    GT,
+    LE,
+    LT,
     And,
+    Bool,
+    EqualsOrIff,
+    Int,
+    IntToStr,
+    Ite,
+    Minus,
+    Not,
+    NotEquals,
+    Or,
+    Plus,
+    StrConcat,
+    StrContains,
+    StrIndexOf,
+    String,
+    StrLength,
+    StrPrefixOf,
+    StrReplace,
+    StrSubstr,
+    StrSuffixOf,
+    StrToInt,
+    Symbol,
 )
+from pysmt.typing import BOOL, INT, STRING
 
-from pysmt.typing import STRING, INT, BOOL
-
+from . import Backend, BackendError
 
 l = logging.getLogger("claripy.backends.backend_smt")
-
-
-from . import BackendError, Backend
 
 
 def _expr_to_smtlib(e, daggify=True):
@@ -44,7 +41,7 @@ def _expr_to_smtlib(e, daggify=True):
     Dump the symbol in its smt-format depending on its type
 
     :param e: symbol to dump
-    :param daggify: The daggify parameter can be used to switch from a linear-size representation that uses ‘let’
+    :param daggify: The daggify parameter can be used to switch from a linear-size representation that uses `let`
                     operators to represent the formula as a dag or a simpler (but possibly exponential) representation
                     that expands the formula as a tree
 
@@ -53,7 +50,7 @@ def _expr_to_smtlib(e, daggify=True):
     if e.is_symbol():
         return f"(declare-fun {e.symbol_name()} {e.symbol_type().as_smtlib()})"
     else:
-        return "(assert %s)" % e.to_smtlib(daggify=daggify)
+        return f"(assert {e.to_smtlib(daggify=daggify)})"
 
 
 def _exprs_to_smtlib(*exprs, **kwargs):
@@ -308,7 +305,7 @@ class BackendSMTLibBase(Backend):
         return StrSuffixOf(suffix, input_string)
 
     def _op_raw_str_indexof(self, *args):
-        input_string, substring, start, bitlength = args  # pylint:disable=unused-variable
+        input_string, substring, start, _ = args  # pylint:disable=unused-variable
         return StrIndexOf(input_string, substring, start)
 
     def _op_raw_str_strtoint(self, *args):

@@ -4,7 +4,16 @@ import numbers
 import operator
 from functools import reduce
 
-from . import BackendError, Backend
+from claripy import bv, fp, strings
+from claripy.ast import Base
+from claripy.ast.bool import Bool, BoolV
+from claripy.ast.bv import BV, BVV
+from claripy.ast.fp import FPV
+from claripy.ast.strings import StringV
+from claripy.errors import UnsatError
+from claripy.operations import backend_fp_operations, backend_operations, backend_strings_operations
+
+from . import Backend, BackendError
 
 l = logging.getLogger("claripy.backends.backend_concrete")
 
@@ -103,13 +112,12 @@ class BackendConcrete(Backend):
         """
         Override Backend.convert() to add fast paths for BVVs and BoolVs.
         """
-        if type(expr) is BV:
-            if expr.op == "BVV":
-                cached_obj = self._object_cache.get(expr._cache_key, None)
-                if cached_obj is None:
-                    cached_obj = self.BVV(*expr.args)
-                    self._object_cache[expr._cache_key] = cached_obj
-                return cached_obj
+        if type(expr) is BV and expr.op == "BVV":
+            cached_obj = self._object_cache.get(expr._cache_key, None)
+            if cached_obj is None:
+                cached_obj = self.BVV(*expr.args)
+                self._object_cache[expr._cache_key] = cached_obj
+            return cached_obj
         if type(expr) is Bool and expr.op == "BoolV":
             return expr.args[0]
         return super().convert(expr)
@@ -133,7 +141,7 @@ class BackendConcrete(Backend):
             return a
         if isinstance(a, (numbers.Number, bv.BVV, fp.FPV, fp.RM, fp.FSort, strings.StringV)):
             return a
-        raise BackendError("can't handle AST of type %s" % type(a))
+        raise BackendError(f"can't handle AST of type {type(a)}")
 
     def _simplify(self, e):
         return e
@@ -160,15 +168,9 @@ class BackendConcrete(Backend):
 
     @staticmethod
     def _to_primitive(expr):
-        if isinstance(expr, bv.BVV):
+        if isinstance(expr, (bv.BVV, fp.FPV, strings.StringV)):
             return expr.value
-        elif isinstance(expr, fp.FPV):
-            return expr.value
-        elif isinstance(expr, strings.StringV):
-            return expr.value
-        elif isinstance(expr, bool):
-            return expr
-        elif isinstance(expr, numbers.Number):
+        elif isinstance(expr, (bool, numbers.Number)):
             return expr
         else:
             raise BackendError("idk how to turn this into a primitive")
@@ -222,23 +224,13 @@ class BackendConcrete(Backend):
 
     # pylint:disable=singleton-comparison
     def _is_true(self, e, extra_constraints=(), solver=None, model_callback=None):
-        return e == True
+        return e == True  # noqa: E712
 
     def _is_false(self, e, extra_constraints=(), solver=None, model_callback=None):
-        return e == False
+        return e == False  # noqa: E712
 
     def _has_true(self, e, extra_constraints=(), solver=None, model_callback=None):
-        return e == True
+        return e == True  # noqa: E712
 
     def _has_false(self, e, extra_constraints=(), solver=None, model_callback=None):
-        return e == False
-
-
-from ..operations import backend_operations, backend_fp_operations, backend_strings_operations
-from .. import bv, fp, strings
-from ..ast import Base
-from ..ast.bv import BV, BVV
-from ..ast.strings import StringV
-from ..ast.fp import FPV
-from ..ast.bool import Bool, BoolV
-from ..errors import UnsatError
+        return e == False  # noqa: E712

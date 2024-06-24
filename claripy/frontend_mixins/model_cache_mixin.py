@@ -1,8 +1,10 @@
-from typing import Tuple
-import weakref
 import itertools
+import weakref
+from typing import Tuple
 
-from .. import errors
+from claripy import backends, errors, false
+from claripy.ast import Base, all_operations
+from claripy.errors import UnsatError
 
 
 class ModelCache:
@@ -237,8 +239,7 @@ class ModelCacheMixin:
         model_lists = [self._models]
         model_lists.extend(o._models for o in others)
         combined._models.update(
-            ModelCache.combine(*product)
-            for product in itertools.islice(itertools.product(*model_lists), len(self._models))
+            itertools.starmap(ModelCache.combine, itertools.islice(itertools.product(*model_lists), len(self._models)))
         )
         return combined
 
@@ -317,7 +318,8 @@ class ModelCacheMixin:
         if len(results) != 0:
             constraints = (
                 all_operations.And(*[all_operations.Or(*[a != v for a, v in zip(asts, r)]) for r in results]),
-            ) + tuple(extra_constraints)
+                *tuple(extra_constraints),
+            )
         else:
             constraints = extra_constraints
 
@@ -380,8 +382,3 @@ class ModelCacheMixin:
                 return True
 
         return super().solution(e, v, extra_constraints=extra_constraints, **kwargs)
-
-
-from .. import backends, false
-from ..errors import UnsatError
-from ..ast import all_operations, Base

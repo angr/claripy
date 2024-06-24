@@ -1,12 +1,17 @@
-#!/usr/bin/env python
-
 import logging
 import numbers
 import weakref
 
-l = logging.getLogger("claripy.frontends.replacement_frontend")
+from claripy.ast.base import Base
+from claripy.ast.bool import BoolV, false
+from claripy.ast.bv import BVV
+from claripy.backend_manager import backends
+from claripy.balancer import Balancer
+from claripy.errors import BackendError, ClaripyFrontendError
 
 from .constrained_frontend import ConstrainedFrontend
+
+l = logging.getLogger("claripy.frontends.replacement_frontend")
 
 
 class ReplacementFrontend(ConstrainedFrontend):
@@ -297,11 +302,3 @@ class ReplacementFrontend(ConstrainedFrontend):
         self._actual_frontend.add(cr, **kwargs)
 
         return added
-
-
-from ..ast.base import Base
-from ..ast.bv import BVV
-from ..ast.bool import BoolV, false
-from ..errors import ClaripyFrontendError, BackendError
-from ..balancer import Balancer
-from ..backend_manager import backends

@@ -14,7 +14,7 @@ def _debugged(f):
         try:
             r = f(*args, **kwargs)
         except Exception as e:  # pylint:disable=broad-except
-            r = "EXCEPTION: %s" % str(e)
+            r = f"EXCEPTION: {e!s}"
             raise
         finally:
             call_depth -= 1

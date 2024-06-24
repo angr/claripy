@@ -104,10 +104,7 @@ def perf_boolean_and_simplification_1():
     bool_vars = [claripy.BoolS("b%d" % i) for i in range(500)]
     v = bool_vars[0]
     for i in range(1, len(bool_vars)):
-        if v.op == "And":
-            v = claripy.And(*(v.args + (bool_vars[i] == False,)))  # pylint:disable=singleton-comparison
-        else:
-            v = claripy.And(v, bool_vars[i])
+        v = claripy.And(*((*v.args, bool_vars[i] is False))) if v.op == "And" else claripy.And(v, bool_vars[i])
 
 
 def test_concrete_flatten():

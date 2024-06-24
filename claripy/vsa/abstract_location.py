@@ -1,4 +1,4 @@
-from ..backend_object import BackendObject
+from claripy.backend_object import BackendObject
 
 
 class Segment:

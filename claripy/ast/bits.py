@@ -1,4 +1,5 @@
-from ..ast.base import Base
+from claripy.ast.base import Base
+from claripy.errors import ClaripyOperationError
 
 
 class Bits(Base):
@@ -42,6 +43,3 @@ class Bits(Base):
             raise ClaripyOperationError("replacements must have matching sizes")
 
     __len__ = size
-
-
-from ..errors import ClaripyOperationError

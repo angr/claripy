@@ -4,9 +4,9 @@ import os
 
 from claripy.ast.bv import BV
 
-from .. import BackendError
-from ..backend_smtlib import BackendSMTLibBase
-from ...smtlib_utils import SMTParser, make_pysmt_const_from_type
+from claripy.backends import BackendError
+from claripy.backends.backend_smtlib import BackendSMTLibBase
+from claripy.smtlib_utils import SMTParser, make_pysmt_const_from_type
 
 from pysmt.smtlib.parser import Tokenizer
 from pysmt.shortcuts import NotEquals
@@ -134,7 +134,7 @@ class SMTLibSolverBackend(BackendSMTLibBase):
 
         sat = solver.read_sat().upper()
         if sat not in {"SAT", "UNSAT", "UNKNOWN"}:
-            raise ValueError(f"Solver error, don't understand (check-sat) response: {repr(sat)}")
+            raise ValueError(f"Solver error, don't understand (check-sat) response: {sat!r}")
         return sat.upper()
 
     def _check_satisfiability(self, extra_constraints=(), solver=None, model_callback=None, extra_variables=()):
@@ -164,7 +164,7 @@ class SMTLibSolverBackend(BackendSMTLibBase):
             model_string = solver.read_model()
             tokens = Tokenizer(StringIO(model_string), interactive=True)
             ass_list = SMTParser(tokens).consume_assignment_list()
-            return sat, {s: val for s, val in ass_list}, ass_list
+            return sat, dict(ass_list), ass_list
         else:
             error = solver.readline()
 
@@ -180,7 +180,7 @@ class SMTLibSolverBackend(BackendSMTLibBase):
 
         results = []
         while len(results) < n:
-            sat, model, ass_list = self._get_model(solver=solver, extra_constraints=e_c, extra_variables=expr_vars)
+            sat, model, _ = self._get_model(solver=solver, extra_constraints=e_c, extra_variables=expr_vars)
             if sat != "sat":
                 break
 
@@ -209,7 +209,7 @@ class SMTLibSolverBackend(BackendSMTLibBase):
         :return:              A sequence of up to n results (backend objects)
         """
         if self._solver_required and solver is None:
-            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
+            raise BackendError(f"{self.__class__.__name__} requires a solver for evaluation")
 
         results = self._eval(
             self.convert(expr),

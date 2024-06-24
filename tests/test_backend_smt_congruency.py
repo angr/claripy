@@ -1,10 +1,8 @@
+import time
 import unittest
-from abc import abstractmethod
-
-import claripy
 from collections import defaultdict
 
-import time
+import claripy
 
 NUMBER_SOLUTIONS_TO_COMPARE = 5
 
@@ -40,7 +38,7 @@ class SmtLibSolverTestCongruency(unittest.TestCase):
         vars = list(variables)
         results = solver.batch_eval(vars, n, extra_constraints=constraints)
         for r in results:
-            yield map(lambda x: (x[0], solution_ast(*x)), zip(vars, r))
+            yield ((x[0], solution_ast(*x)) for x in zip(vars, r))
 
     def doublecheck_model_is_correct(self, csts, model):
         for c in csts:
@@ -107,7 +105,7 @@ class SmtLibSolverTestCongruency(unittest.TestCase):
     def test_congruency_1(self):
         recv_input = claripy.StringS("recv_input", 1024)
         constraints = []
-        constraints.append(0 <= claripy.StrIndexOf(recv_input, claripy.StringV("\r\n\r\n"), 0, 32))
+        constraints.append(claripy.StrIndexOf(recv_input, claripy.StringV("\r\n\r\n"), 0, 32) >= 0)
 
         results = self._collect_generic_solver_test_data((recv_input,), constraints)
         self._generic_consistency_check(results)

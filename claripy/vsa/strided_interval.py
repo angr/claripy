@@ -5,9 +5,16 @@ import math
 import numbers
 from functools import reduce
 
-logger = logging.getLogger("claripy.vsa.strided_interval")
+from claripy.ast.base import Base
+from claripy.backend_object import BackendObject
+from claripy.bv import BVV
+from claripy.errors import ClaripyOperationError
 
-from ..backend_object import BackendObject
+from .bool_result import FalseResult, MaybeResult, TrueResult
+from .errors import ClaripyVSAError
+from .valueset import ValueSet
+
+logger = logging.getLogger("claripy.vsa.strided_interval")
 
 
 def reversed_processor(f):
@@ -31,7 +38,7 @@ def normalize_types(f):
         if f.__name__ == "union" and isinstance(o, DiscreteStridedIntervalSet):
             return o.union(self)
 
-        if isinstance(o, ValueSet) or isinstance(o, DiscreteStridedIntervalSet):
+        if isinstance(o, (ValueSet, DiscreteStridedIntervalSet)):
             # if it's singlevalued, we can convert it to a StridedInterval
             if o.cardinality == 1:
                 o = o.stridedinterval()
@@ -98,7 +105,7 @@ def normalize_types(f):
 
         reverse_back = False
 
-        if f.__name__ in {"concat"}:
+        if f.__name__ == "concat":
             # TODO: Some optimizations can be applied to concat
             if self._reversed:
                 self = self._reverse()
@@ -347,10 +354,10 @@ class StridedInterval(BackendObject):
         self._upper_bound = upper_bound if upper_bound is not None else (2**bits - 1)
 
         if lower_bound is not None and not isinstance(lower_bound, numbers.Number):
-            raise ClaripyVSAError("'lower_bound' must be an int. %s is not supported." % type(lower_bound))
+            raise ClaripyVSAError(f"'lower_bound' must be an int. {type(lower_bound)} is not supported.")
 
         if upper_bound is not None and not isinstance(upper_bound, numbers.Number):
-            raise ClaripyVSAError("'upper_bound' must be an int. %s is not supported." % type(upper_bound))
+            raise ClaripyVSAError(f"'upper_bound' must be an int. {type(upper_bound)} is not supported.")
 
         self._reversed = False
 
@@ -440,13 +447,7 @@ class StridedInterval(BackendObject):
         if self.stride == 0 and n > 0:
             results.append(self.lower_bound)
         else:
-            if signed:
-                # View it as a signed integer
-                bounds = self._signed_bounds()
-
-            else:
-                # View it as an unsigned integer
-                bounds = self._unsigned_bounds()
+            bounds = self._signed_bounds() if signed else self._unsigned_bounds()
 
             for lb, ub in bounds:
                 while len(results) < n and lb <= ub:
@@ -466,7 +467,7 @@ class StridedInterval(BackendObject):
             b = StridedInterval(lower_bound=b, upper_bound=b, stride=0, bits=self.bits)
         else:
             raise ClaripyOperationError(
-                'Oops, Strided intervals cannot be passed as "' "parameter to function solution. To implement"
+                "Oops, Strided intervals cannot be passed as parameter to function solution. To implement"
             )
 
         if self.intersection(b).is_empty:
@@ -1154,8 +1155,8 @@ class StridedInterval(BackendObject):
         if self.is_empty:
             s = "<%d>[EmptySI]" % (self._bits)
         else:
-            lower_bound = self._lower_bound if type(self._lower_bound) == str else "%#x" % self._lower_bound
-            upper_bound = self._upper_bound if type(self._upper_bound) == str else "%#x" % self._upper_bound
+            lower_bound = self._lower_bound if isinstance(self._lower_bound, str) else f"{self._lower_bound:#x}"
+            upper_bound = self._upper_bound if isinstance(self._upper_bound, str) else f"{self._upper_bound:#x}"
             s = "<%d>0x%x[%s, %s]%s" % (
                 self._bits,
                 self._stride,
@@ -1411,17 +1412,17 @@ class StridedInterval(BackendObject):
             return 1
         elif val < 0:
             if max_bits is None:
-                return int(math.log(-val, 2) + 1) + 1
+                return int(math.log2(-val) + 1) + 1
             else:
                 assert isinstance(max_bits, int)
-                return int(math.log((((1 << max_bits) - 1) & ~(-val)) + 1, 2) + 1)
+                return int(math.log2((((1 << max_bits) - 1) & ~(-val)) + 1) + 1)
         else:
             # FIXME: Support other bits
             # Here we assume the maximum val is 64 bits
             # Special case to deal with the floating-point imprecision
             if val > 0xFFFFFFFFFFFE0000 and val <= 0x10000000000000000:
                 return 64
-            return int(math.log(val, 2) + 1)
+            return int(math.log2(val) + 1)
 
     @staticmethod
     def max_int(k):
@@ -1454,10 +1455,7 @@ class StridedInterval(BackendObject):
             max = StridedInterval.max_int(bits)  # pylint:disable=redefined-builtin
             max_offset = max % stride
 
-            if max_offset >= offset:
-                o = max - (max_offset - offset)
-            else:
-                o = max - ((max_offset + stride) - offset)
+            o = max - (max_offset - offset) if max_offset >= offset else max - (max_offset + stride - offset)
             return o
         else:
             return StridedInterval.max_int(bits)
@@ -1473,10 +1471,7 @@ class StridedInterval(BackendObject):
             min = StridedInterval.min_int(bits)  # pylint:disable=redefined-builtin
             min_offset = min % stride
 
-            if offset >= min_offset:
-                o = min + (offset - min_offset)
-            else:
-                o = min + ((offset + stride) - min_offset)
+            o = min + (offset - min_offset) if offset >= min_offset else min + (offset + stride - min_offset)
             return o
         else:
             return StridedInterval.min_int(bits)
@@ -1905,13 +1900,16 @@ class StridedInterval(BackendObject):
         elif b.is_top:
             return True
 
-        if b._surrounds_member(a.lower_bound) and b._surrounds_member(a.upper_bound):
-            if (
+        if (
+            b._surrounds_member(a.lower_bound)
+            and b._surrounds_member(a.upper_bound)
+            and (
                 (b.lower_bound == a.lower_bound and b.upper_bound == a.upper_bound)
                 or not a._surrounds_member(b.lower_bound)
                 or not a._surrounds_member(b.upper_bound)
-            ):
-                return True
+            )
+        ):
+            return True
         return False
 
     #
@@ -2527,10 +2525,7 @@ class StridedInterval(BackendObject):
 
         bits = high_bit - low_bit + 1
 
-        if low_bit != 0:
-            ret = self.rshift_logical(low_bit)
-        else:
-            ret = self.copy()
+        ret = self.rshift_logical(low_bit) if low_bit != 0 else self.copy()
         if bits != self.bits:
             ret = ret.cast_low(bits)
 
@@ -2542,10 +2537,7 @@ class StridedInterval(BackendObject):
 
         bits = high_bit - low_bit + 1
 
-        if low_bit != 0:
-            ret = self._unrev_rshift_logical(low_bit)
-        else:
-            ret = self.copy()
+        ret = self._unrev_rshift_logical(low_bit) if low_bit != 0 else self.copy()
         if bits != self.bits:
             ret = ret._unrev_cast_low(bits)
 
@@ -2791,7 +2783,7 @@ class StridedInterval(BackendObject):
             if ret is None or ret.n_values > si.n_values:
                 ret = si
 
-        if any([x for x in intervals_to_join if x.uninitialized]):
+        if any(x for x in intervals_to_join if x.uninitialized):
             ret.uninitialized = True
 
         return ret
@@ -3066,7 +3058,7 @@ class StridedInterval(BackendObject):
             # Do the intersection between two
             # ranges.
             if (a_dir, b_dir) == (">=", ">="):
-                lb = a if a > b else b
+                lb = max(b, a)
                 ub = float("inf")
             elif (a_dir, b_dir) == ("<=", ">="):
                 if a > b:
@@ -3083,7 +3075,7 @@ class StridedInterval(BackendObject):
                     lb = None
                     ub = None
             elif (a_dir, b_dir) == ("<=", "<="):
-                ub = a if a < b else b
+                ub = min(b, a)
                 lb = float("-inf")
 
             return lb, ub
@@ -3113,14 +3105,8 @@ class StridedInterval(BackendObject):
                 t0 = (-c * x0) / float(b)
                 t1 = (c * y0) / float(a)
                 # direction of the disequation depends on b and a sign
-                if b < 0:
-                    t0_dir = "<="
-                else:
-                    t0_dir = ">="
-                if a < 0:
-                    t1_dir = ">="
-                else:
-                    t1_dir = "<="
+                t0_dir = "<=" if b < 0 else ">="
+                t1_dir = ">=" if a < 0 else "<="
 
                 # calculate the intersection between the found
                 # solution intervals to get the common solutions
@@ -3139,10 +3125,7 @@ class StridedInterval(BackendObject):
                 else:
                     t = ub if abs(ub) < abs(lb) else lb
                 # round the value of t
-                if t == ub:
-                    t = int(math.floor(t))
-                else:
-                    t = int(math.ceil(t))
+                t = int(math.floor(t)) if t == ub else int(math.ceil(t))
 
                 return (c * x0 + b * t, c * y0 - a * t)
             else:
@@ -3591,7 +3574,7 @@ def CreateStridedInterval(
             return to_conv
 
         if not isinstance(to_conv, (numbers.Number, BVV)):
-            raise ClaripyOperationError("Unsupported to_conv type %s" % type(to_conv))
+            raise ClaripyOperationError(f"Unsupported to_conv type {type(to_conv)}")
 
         if stride is not None or lower_bound is not None or upper_bound is not None:
             raise ClaripyOperationError("You cannot specify both to_conv and other parameters at the same time.")
@@ -3625,11 +3608,5 @@ def CreateStridedInterval(
         return dsis
 
 
-from .errors import ClaripyVSAError
-from ..errors import ClaripyOperationError
-from .bool_result import TrueResult, FalseResult, MaybeResult
-from . import discrete_strided_interval_set
-from .discrete_strided_interval_set import DiscreteStridedIntervalSet
-from .valueset import ValueSet
-from ..ast.base import Base
-from ..bv import BVV
+from . import discrete_strided_interval_set  # noqa: E402
+from .discrete_strided_interval_set import DiscreteStridedIntervalSet  # noqa: E402

@@ -1,3 +1,7 @@
+from claripy import false
+from claripy.errors import ClaripyValueError, UnsatError
+
+
 class ConstraintFilterMixin:
     def _constraint_filter(self, constraints, **kwargs):
         if type(constraints) not in (tuple, list):
@@ -18,7 +22,7 @@ class ConstraintFilterMixin:
             ec = self._constraint_filter(constraints)
         except UnsatError:
             # filter out concrete False
-            ec = list(c for c in constraints if c not in {False, false}) + [false]
+            ec = [c for c in constraints if c not in {False, false}] + [false]
 
         if len(constraints) == 0:
             return []
@@ -62,7 +66,3 @@ class ConstraintFilterMixin:
     def is_false(self, e, extra_constraints=(), **kwargs):
         ec = self._constraint_filter(extra_constraints)
         return super().is_false(e, extra_constraints=ec, **kwargs)
-
-
-from ..errors import UnsatError, ClaripyValueError
-from .. import false

@@ -3,8 +3,13 @@ import functools
 import itertools
 import numbers
 
-from ..backend_object import BackendObject
-from ..annotation import Annotation
+from claripy.annotation import Annotation
+from claripy.ast.base import Base
+from claripy.backend_object import BackendObject
+from claripy.errors import ClaripyValueError
+
+from .bool_result import BoolResult, FalseResult, MaybeResult, TrueResult
+from .errors import ClaripyVSAError, ClaripyVSAOperationError
 
 
 def normalize_types_two_args(f):
@@ -17,7 +22,7 @@ def normalize_types_two_args(f):
             raise ClaripyValueError("BoolResult can't handle AST objects directly")
 
         if not isinstance(o, StridedInterval):
-            raise ClaripyVSAOperationError("Unsupported operand type %s" % type(o))
+            raise ClaripyVSAOperationError(f"Unsupported operand type {type(o)}")
 
         return f(self, region, o)
 
@@ -151,7 +156,7 @@ class ValueSet(BackendObject):
             if isinstance(val, StridedInterval):
                 self._set_si(region, region_base_addr, val)
             else:
-                raise ClaripyVSAError("Unsupported type '%s' for argument 'val'" % type(val))
+                raise ClaripyVSAError(f"Unsupported type '{type(val)}' for argument 'val'")
 
         else:
             if region is not None or val is not None:
@@ -211,7 +216,7 @@ class ValueSet(BackendObject):
             )
 
         if not isinstance(si, StridedInterval):
-            raise ClaripyVSAOperationError("Unsupported type %s for si" % type(si))
+            raise ClaripyVSAOperationError(f"Unsupported type {type(si)} for si")
 
         self._regions[region] = si
         self._region_base_addrs[region] = region_base_addr
@@ -347,7 +352,7 @@ class ValueSet(BackendObject):
 
             else:
                 # TODO: raise the proper exception here
-                raise NotImplementedError()
+                raise NotImplementedError
 
             delta = StridedInterval.empty(self.bits)
             for d in deltas:
@@ -378,7 +383,7 @@ class ValueSet(BackendObject):
         """
         if isinstance(other, ValueSet):
             # TODO: Handle more cases
-            raise NotImplementedError()
+            raise NotImplementedError
 
         new_vs = self.copy()
 
@@ -403,10 +408,9 @@ class ValueSet(BackendObject):
         :rtype: ValueSet
         """
 
-        if type(other) is ValueSet:
-            # The only case where calling & between two points makes sense
-            if self.identical(other):
-                return self.copy()
+        # The only case where calling & between two points makes sense
+        if type(other) is ValueSet and self.identical(other):
+            return self.copy()
 
         if BoolResult.is_true(other == 0):
             # Corner case: a & 0 = 0
@@ -696,8 +700,4 @@ class ValueSet(BackendObject):
         return True
 
 
-from ..ast.base import Base
-from .strided_interval import StridedInterval
-from .bool_result import BoolResult, TrueResult, FalseResult, MaybeResult
-from .errors import ClaripyVSAOperationError, ClaripyVSAError
-from ..errors import ClaripyValueError
+from .strided_interval import StridedInterval  # noqa: E402

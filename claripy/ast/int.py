@@ -1,4 +1,4 @@
-from ..ast.base import Base
+from claripy.ast.base import Base
 
 
 class Int(Base):

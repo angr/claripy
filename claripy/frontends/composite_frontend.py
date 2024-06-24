@@ -1,18 +1,24 @@
-from typing import Set, TYPE_CHECKING
-import logging
-
-l = logging.getLogger("claripy.frontends.composite_frontend")
-
-import weakref
 import itertools
+import logging
+import weakref
+from typing import TYPE_CHECKING, Set
 
-symbolic_count = itertools.count()
+from claripy import backends
+from claripy.ast import Base
+from claripy.ast.bool import Or
+from claripy.ast.strings import String
+from claripy.errors import BackendError, UnsatError
+from claripy.frontend_mixins.model_cache_mixin import ModelCacheMixin
+from claripy.frontend_mixins.simplify_skipper_mixin import SimplifySkipperMixin
 
 from .constrained_frontend import ConstrainedFrontend
-from claripy.ast.strings import String
 
 if TYPE_CHECKING:
     from claripy import SolverCompositeChild
+
+
+l = logging.getLogger("claripy.frontends.composite_frontend")
+symbolic_count = itertools.count()
 
 
 class CompositeFrontend(ConstrainedFrontend):
@@ -483,7 +489,7 @@ class CompositeFrontend(ConstrainedFrontend):
             for v in s.variables:
                 merged._solvers[v] = s
 
-        noncommon_solvers = [[s for s in cs._solver_list if id(s) not in common_ids] for cs in [self] + others]
+        noncommon_solvers = [[s for s in cs._solver_list if id(s) not in common_ids] for cs in [self, *others]]
 
         l.debug("... merging noncommon solvers")
         combined_noncommons = []
@@ -514,11 +520,3 @@ class CompositeFrontend(ConstrainedFrontend):
 
     def split(self):
         return [s.branch() for s in self._solver_list]
-
-
-from ..ast import Base
-from ..ast.bool import Or
-from .. import backends
-from ..errors import BackendError, UnsatError
-from ..frontend_mixins.model_cache_mixin import ModelCacheMixin
-from ..frontend_mixins.simplify_skipper_mixin import SimplifySkipperMixin

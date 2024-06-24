@@ -1,9 +1,9 @@
 import functools
 import numbers
 
-from .errors import ClaripyOperationError, ClaripyTypeError, ClaripyZeroDivisionError
-from .backend_object import BackendObject
 from . import debug as _d
+from .backend_object import BackendObject
+from .errors import ClaripyOperationError, ClaripyTypeError, ClaripyZeroDivisionError
 
 
 def compare_bits(f):
@@ -32,9 +32,8 @@ def compare_bits_0_length(f):
 def normalize_types(f):
     @functools.wraps(f)
     def normalize_helper(self, o):
-        if _d._DEBUG:
-            if hasattr(o, "__module__") and o.__module__ == "z3":
-                raise ValueError("this should no longer happen")
+        if _d._DEBUG and hasattr(o, "__module__") and o.__module__ == "z3":
+            raise ValueError("this should no longer happen")
         if isinstance(o, numbers.Number):
             o = BVV(o, self.bits)
         if isinstance(self, numbers.Number):
@@ -113,14 +112,14 @@ class BVV(BackendObject):
     @compare_bits
     def __mod__(self, o):
         if o.value == 0:
-            raise ClaripyZeroDivisionError()
+            raise ClaripyZeroDivisionError
         return BVV(self.value % o.value, self.bits)
 
     @normalize_types
     @compare_bits
     def __floordiv__(self, o):
         if o.value == 0:
-            raise ClaripyZeroDivisionError()
+            raise ClaripyZeroDivisionError
         return BVV(self.value // o.value, self.bits)
 
     def __truediv__(self, other):
@@ -149,14 +148,14 @@ class BVV(BackendObject):
     @compare_bits
     def __rmod__(self, o):
         if self.value == 0:
-            raise ClaripyZeroDivisionError()
+            raise ClaripyZeroDivisionError
         return BVV(o.value % self.value, self.bits)
 
     @normalize_types
     @compare_bits
     def __rfloordiv__(self, o):
         if self.value == 0:
-            raise ClaripyZeroDivisionError()
+            raise ClaripyZeroDivisionError
         return BVV(o.value // self.value, self.bits)
 
     def __rtruediv__(self, o):
@@ -413,7 +412,7 @@ def SMod(self, o):
     a = self.signed
     b = o.signed
     if b == 0:
-        raise ClaripyZeroDivisionError()
+        raise ClaripyZeroDivisionError
     division_result = a // b if a * b > 0 else (a + (-a % b)) // b
     val = a - division_result * b
     return BVV(val, self.bits)
@@ -426,7 +425,7 @@ def SDiv(self, o):
     a = self.signed
     b = o.signed
     if b == 0:
-        raise ClaripyZeroDivisionError()
+        raise ClaripyZeroDivisionError
     val = a // b if a * b > 0 else (a + (-a % b)) // b
     return BVV(val, self.bits)
 

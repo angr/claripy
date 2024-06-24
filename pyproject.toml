@@ -8,3 +8,53 @@ target-version = ['py310']
 
 [tool.ruff]
 line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "BLE",
+    "C4",
+    "E",
+    "EXE",
+    "F",
+    "FLY",
+    "FURB",
+    "I",
+    "ISC",
+    "PIE",
+    "RSE",
+    "RUF",
+    "SIM",
+    "T10",
+    "TCH",
+    "TID",
+    "W",
+    "UP",
+    "YTT",
+]
+ignore = [
+    "E501",
+    "E731",
+    "E741",
+    "FURB113",
+    "RUF012",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/__init__.py" = [
+    "E402",
+    "F401",
+    "F403",
+    "F405",
+    "F811",
+    "F821",
+    "I",
+]
+"claripy/ops.py" = [
+    "E402",
+    "F403",
+    "F405",
+]
+"tests/**" = [
+    "BLE",
+    "F841",
+]

@@ -1,8 +1,6 @@
-import json
-
 import pysmt
-from pysmt.shortcuts import Symbol, get_env
-from pysmt.smtlib.parser import SmtLibParser, PysmtSyntaxError
+from pysmt.shortcuts import Symbol
+from pysmt.smtlib.parser import PysmtSyntaxError, SmtLibParser
 
 
 def make_pysmt_const_from_type(val, type):

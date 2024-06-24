@@ -1,16 +1,18 @@
-import subprocess
 import logging
+import subprocess
 
-import re
-from . import SMTLibSolverBackend, PopenSolverProxy
-from ...errors import MissingSolverError
+from claripy import backend_manager as backend_manager
+from claripy.errors import MissingSolverError
+
+from . import PopenSolverProxy, SMTLibSolverBackend
 
 log = logging.getLogger(__name__)
 
 
 def get_version():
     try:
-        version_string = subprocess.check_output(["abc", "--help"]).decode("utf-8")
+        subprocess.check_output(["abc", "--help"]).decode("utf-8")
+        # version_string = subprocess.check_output(["abc", "--help"]).decode("utf-8")
         # version_match = re.match('This is CVC4 version (.*)\n', version_string)
 
         # if not version_match:
@@ -49,7 +51,5 @@ class SolverBackendABC(SMTLibSolverBackend):
         """
         return ABCProxy()
 
-
-from ... import backend_manager as backend_manager
 
 backend_manager.backends._register_backend(SolverBackendABC(), "smtlib_abc", False, False)

@@ -1,10 +1,11 @@
-#!/usr/bin/env python
-
 import logging
 
-l = logging.getLogger("claripy.frontends.constrained_frontend")
+from claripy.annotation import SimplificationAvoidanceAnnotation
+from claripy.ast.base import simplify
+from claripy.ast.bool import And, Or
+from claripy.frontend import Frontend
 
-from ..frontend import Frontend
+l = logging.getLogger("claripy.frontends.constrained_frontend")
 
 
 class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
@@ -65,8 +66,8 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
         if common_ancestor is None:
             merged = self.blank_copy()
             options = []
-            for s, v in zip([self] + others, merge_conditions):
-                options.append(And(*([v] + s.constraints)))
+            for s, v in zip([self, *others], merge_conditions):
+                options.append(And(*([v, *s.constraints])))
             merged.add([Or(*options)])
         else:
             merged = common_ancestor.branch()
@@ -150,8 +151,3 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
 
     def is_false(self, e, extra_constraints=(), exact=None):
         raise NotImplementedError("is_false() is not implemented")
-
-
-from ..ast.base import simplify
-from ..ast.bool import And, Or
-from ..annotation import SimplificationAvoidanceAnnotation

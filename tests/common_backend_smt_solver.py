@@ -1,8 +1,9 @@
 from unittest import skip
+
 from decorator import decorator
+from test_backend_smt import TestSMTLibBackend
 
 import claripy
-from test_backend_smt import TestSMTLibBackend
 
 
 # use of decorator instead of the usual pattern is important because nose2 will check the argspec and wraps does not
@@ -225,7 +226,7 @@ class SmtLibSolverTestBase(TestSMTLibBackend):
         res = claripy.StrContains(str_concrete, claripy.StringV("nc"))
         solver.add(res)
         self.assertTrue(solver.satisfiable())
-        self.assertEqual(tuple(), tuple(solver.constraints))
+        self.assertEqual((), tuple(solver.constraints))
         self.assertEqual(("concrete",), solver.eval(str_concrete, 2))
         self.assertEqual((True,), solver.eval(res, 2))
 
@@ -260,7 +261,7 @@ class SmtLibSolverTestBase(TestSMTLibBackend):
         res = claripy.StrPrefixOf(claripy.StringV("conc"), str_concrete)
         solver.add(res)
         self.assertTrue(solver.satisfiable())
-        self.assertEqual(tuple(), tuple(solver.constraints))
+        self.assertEqual((), tuple(solver.constraints))
         self.assertEqual(("concrete",), solver.eval(str_concrete, 2))
         self.assertEqual((True,), solver.eval(res, 2))
 
@@ -271,7 +272,7 @@ class SmtLibSolverTestBase(TestSMTLibBackend):
         res = claripy.StrSuffixOf(claripy.StringV("rete"), str_concrete)
         solver.add(res)
         self.assertTrue(solver.satisfiable())
-        self.assertEqual(tuple(), tuple(solver.constraints))
+        self.assertEqual((), tuple(solver.constraints))
         self.assertEqual(("concrete",), solver.eval(str_concrete, 2))
         self.assertEqual((True,), solver.eval(res, 2))
 
@@ -299,7 +300,7 @@ class SmtLibSolverTestBase(TestSMTLibBackend):
         target_idx = 4 if KEEP_TEST_PERFORMANT else 100
         solver.add(res == target_idx)
         self.assertTrue(solver.satisfiable())
-        self.assertEqual(tuple(), tuple(solver.constraints))
+        self.assertEqual((), tuple(solver.constraints))
         self.assertEqual((target_idx,), solver.eval(res, 2))
 
     @if_installed
@@ -345,5 +346,5 @@ class SmtLibSolverTestBase(TestSMTLibBackend):
 
         solver.add(res == target_num)
         self.assertTrue(solver.satisfiable())
-        self.assertEqual(tuple(), tuple(solver.constraints))
+        self.assertEqual((), tuple(solver.constraints))
         self.assertEqual((target_num,), solver.eval(res, 2))

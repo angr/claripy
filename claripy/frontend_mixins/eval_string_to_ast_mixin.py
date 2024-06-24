@@ -1,3 +1,6 @@
+from claripy import String, StringV
+
+
 class EvalStringsToASTsMixin:
     def eval_to_ast(self, e, n, extra_constraints=(), exact=None):
         if type(e) is String:
@@ -9,6 +12,3 @@ class EvalStringsToASTsMixin:
             ]
 
         return super().eval_to_ast(e, n, extra_constraints=extra_constraints, exact=None)
-
-
-from .. import String, StringV

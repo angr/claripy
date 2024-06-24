@@ -1,6 +1,14 @@
-from typing import Set
 import logging
 import operator
+from typing import Set
+
+from . import _all_operations, vsa
+from .ast.base import Base
+from .ast.bool import Bool
+from .ast.bv import BV, BVS, BVV
+from .backend_manager import backends
+from .errors import BackendError, ClaripyBalancerError, ClaripyBalancerUnsatError, ClaripyOperationError
+from .operations import commutative_operations, opposites
 
 l = logging.getLogger("claripy.balancer")
 
@@ -102,7 +110,7 @@ class Balancer:
         converted = backends.vsa.convert(a)
         if isinstance(converted, vsa.ValueSet):
             if len(converted.regions) == 1:
-                converted = list(converted.regions.values())[0]
+                converted = next(iter(converted.regions.values()))
             else:
                 # unfortunately, this is a real abstract pointer
                 # the minimum value will be 0 or MIN_INT
@@ -110,10 +118,7 @@ class Balancer:
                     return -(1 << (len(converted) - 1))
                 else:
                     return 0
-        if not signed:
-            bounds = converted._unsigned_bounds()
-        else:
-            bounds = converted._signed_bounds()
+        bounds = converted._unsigned_bounds() if not signed else converted._signed_bounds()
         return min(mn for mn, mx in bounds)
 
     @staticmethod
@@ -121,7 +126,7 @@ class Balancer:
         converted = backends.vsa.convert(a)
         if isinstance(converted, vsa.ValueSet):
             if len(converted.regions) == 1:
-                converted = list(converted.regions.values())[0]
+                converted = next(iter(converted.regions.values()))
             else:
                 # unfortunately, this is a real abstract pointer
                 # the minimum value will be 0 or MIN_INT
@@ -129,10 +134,7 @@ class Balancer:
                     return (1 << (len(converted) - 1)) - 1
                 else:
                     return (1 << len(converted)) - 1
-        if not signed:
-            bounds = converted._unsigned_bounds()
-        else:
-            bounds = converted._signed_bounds()
+        bounds = converted._unsigned_bounds() if not signed else converted._signed_bounds()
         return max(mx for mn, mx in bounds)
 
     def _range(self, a, signed=False):
@@ -184,21 +186,18 @@ class Balancer:
         try:
             new_op = opposites[a.op]
         except KeyError:
-            raise ClaripyBalancerError("unable to reverse comparison %s (missing from 'opposites')" % a.op)
+            raise ClaripyBalancerError(f"unable to reverse comparison {a.op} (missing from 'opposites')")
 
         try:
-            if new_op.startswith("__"):
-                op = getattr(operator, new_op)
-            else:
-                op = getattr(_all_operations, new_op)
+            op = getattr(operator, new_op) if new_op.startswith("__") else getattr(_all_operations, new_op)
         except AttributeError:
-            raise ClaripyBalancerError("unable to reverse comparison %s (AttributeError)" % a.op)
+            raise ClaripyBalancerError(f"unable to reverse comparison {a.op} (AttributeError)")
 
         try:
             return op(*a.args[::-1])
         except ClaripyOperationError:
             # TODO: copy trace
-            raise ClaripyBalancerError("unable to reverse comparison %s (ClaripyOperationError)" % a.op)
+            raise ClaripyBalancerError(f"unable to reverse comparison {a.op} (ClaripyOperationError)")
 
     def _align_bv(self, a):
         if a.op in commutative_operations:
@@ -235,7 +234,7 @@ class Balancer:
 
             unpacked_truisms = self._unpack_truisms(truism)
             if is_false(truism):
-                raise ClaripyBalancerUnsatError()
+                raise ClaripyBalancerUnsatError
 
             self._processed_truisms.add(truism)
             if len(unpacked_truisms):
@@ -259,9 +258,7 @@ class Balancer:
             self._handle(balanced_truism)
 
     def _queue_truism(self, t, check_true=False):
-        if not check_true:
-            self._truisms.append(t)
-        elif check_true and not is_true(t):
+        if (not check_true) or (check_true and not is_true(t)):
             self._truisms.append(t)
 
     def _queue_truisms(self, ts, check_true=False):
@@ -349,7 +346,7 @@ class Balancer:
     def _unpack_truisms_Or(self, c):
         vals = [is_false(v) for v in c.args]
         if all(vals):
-            raise ClaripyBalancerUnsatError()
+            raise ClaripyBalancerUnsatError
         elif vals.count(False) == 1:
             return self._unpack_truisms(c.args[vals.index(False)])
         else:
@@ -395,7 +392,7 @@ class Balancer:
                 return truism
 
             try:
-                balancer = getattr(self, "_balance_%s" % inner_aligned.args[0].op)
+                balancer = getattr(self, f"_balance_{inner_aligned.args[0].op}")
             except AttributeError:
                 l.debug("Balance handler %s is not found in balancer. Consider implementing.", truism.args[0].op)
                 return truism
@@ -424,7 +421,7 @@ class Balancer:
         new_lhs = truism.args[0].args[0]
         old_rhs = truism.args[1]
         other_adds = truism.args[0].args[1:]
-        new_rhs = truism.args[0].make_like("__sub__", (old_rhs,) + other_adds)
+        new_rhs = truism.args[0].make_like("__sub__", (old_rhs, *other_adds))
         return truism.make_like(truism.op, (new_lhs, new_rhs))
 
     @staticmethod
@@ -434,7 +431,7 @@ class Balancer:
         new_lhs = truism.args[0].args[0]
         old_rhs = truism.args[1]
         other_adds = truism.args[0].args[1:]
-        new_rhs = truism.args[0].make_like("__add__", (old_rhs,) + other_adds)
+        new_rhs = truism.args[0].make_like("__add__", (old_rhs, *other_adds))
         return truism.make_like(truism.op, (new_lhs, new_rhs))
 
     @staticmethod
@@ -592,7 +589,7 @@ class Balancer:
             return truism
         elif not (can_true or can_false):
             # neither are satisfiable. This truism is fucked
-            raise ClaripyBalancerUnsatError()
+            raise ClaripyBalancerUnsatError
         elif must_true or (can_true and not can_false):
             # it will always be true
             self._queue_truism(condition)
@@ -610,14 +607,14 @@ class Balancer:
         l.debug("Handling %s", truism)
 
         if is_false(truism):
-            raise ClaripyBalancerUnsatError()
+            raise ClaripyBalancerUnsatError
         elif self._cardinality(truism.args[0]) == 1:
             # we are down to single-cardinality arguments, so our work is not
             # necessary
             return
 
         try:
-            handler = getattr(self, "_handle_%s" % truism.op)
+            handler = getattr(self, f"_handle_{truism.op}")
         except AttributeError:
             l.debug("No handler for operation %s", truism.op)
             return
@@ -646,10 +643,10 @@ class Balancer:
 
         if is_lt and bound_max < int_min:
             # if the bound max is negative and we're unsigned less than, we're fucked
-            raise ClaripyBalancerUnsatError()
+            raise ClaripyBalancerUnsatError
         elif not is_lt and bound_min > int_max:
             # if the bound min is too big, we're fucked
-            raise ClaripyBalancerUnsatError()
+            raise ClaripyBalancerUnsatError
 
         current_min = int_min
         current_max = int_max
@@ -712,13 +709,3 @@ def is_true(a):
 
 def is_false(a):
     return backends.vsa.is_false(a)
-
-
-from .errors import ClaripyBalancerError, ClaripyBalancerUnsatError, ClaripyOperationError, BackendError
-from .ast.base import Base
-from .ast.bool import Bool
-from .ast.bv import BVV, BVS, BV
-from . import _all_operations
-from .backend_manager import backends
-from . import vsa
-from .operations import opposites, commutative_operations
