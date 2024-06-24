@@ -1,6 +1,5 @@
 import itertools
 import weakref
-from typing import Tuple
 
 from claripy import backends, errors, false
 from claripy.ast import Base, all_operations
@@ -102,7 +101,7 @@ class ModelCache:
         except errors.ClaripyZeroDivisionError:
             return False
 
-    def eval_list(self, asts, allow_unconstrained: bool = True) -> Tuple:
+    def eval_list(self, asts, allow_unconstrained: bool = True) -> tuple:
         """
         Evaluate a list of ASTs.
 

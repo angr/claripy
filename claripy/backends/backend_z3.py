@@ -414,7 +414,7 @@ class BackendZ3(Backend):
             return z3.BoolRef(z3.Z3_mk_true(self._context.ref()), self._context)
         elif obj is False:
             return z3.BoolRef(z3.Z3_mk_false(self._context.ref()), self._context)
-        elif isinstance(obj, (numbers.Number, str)) or (
+        elif isinstance(obj, numbers.Number | str) or (
             hasattr(obj, "__module__") and obj.__module__ in ("z3", "z3.z3")
         ):
             return obj
@@ -820,7 +820,7 @@ class BackendZ3(Backend):
             # construct results
             r = []
             for expr in exprs:
-                if not isinstance(expr, (numbers.Number, str, bool)):
+                if not isinstance(expr, numbers.Number | str | bool):
                     v = self._primitive_from_model(model, expr)
                     r.append(v)
                 else:

@@ -38,7 +38,7 @@ def normalize_types(f):
         if f.__name__ == "union" and isinstance(o, DiscreteStridedIntervalSet):
             return o.union(self)
 
-        if isinstance(o, (ValueSet, DiscreteStridedIntervalSet)):
+        if isinstance(o, ValueSet | DiscreteStridedIntervalSet):
             # if it's singlevalued, we can convert it to a StridedInterval
             if o.cardinality == 1:
                 o = o.stridedinterval()
@@ -3573,7 +3573,7 @@ def CreateStridedInterval(
             # No conversion will be done
             return to_conv
 
-        if not isinstance(to_conv, (numbers.Number, BVV)):
+        if not isinstance(to_conv, numbers.Number | BVV):
             raise ClaripyOperationError(f"Unsupported to_conv type {type(to_conv)}")
 
         if stride is not None or lower_bound is not None or upper_bound is not None:

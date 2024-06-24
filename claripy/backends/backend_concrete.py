@@ -139,7 +139,7 @@ class BackendConcrete(Backend):
     def _convert(self, a):
         if type(a) in {int, str, bytes}:
             return a
-        if isinstance(a, (numbers.Number, bv.BVV, fp.FPV, fp.RM, fp.FSort, strings.StringV)):
+        if isinstance(a, numbers.Number | bv.BVV | fp.FPV | fp.RM | fp.FSort | strings.StringV):
             return a
         raise BackendError(f"can't handle AST of type {type(a)}")
 
@@ -168,9 +168,9 @@ class BackendConcrete(Backend):
 
     @staticmethod
     def _to_primitive(expr):
-        if isinstance(expr, (bv.BVV, fp.FPV, strings.StringV)):
+        if isinstance(expr, bv.BVV | fp.FPV | strings.StringV):
             return expr.value
-        elif isinstance(expr, (bool, numbers.Number)):
+        elif isinstance(expr, bool | numbers.Number):
             return expr
         else:
             raise BackendError("idk how to turn this into a primitive")

@@ -36,7 +36,7 @@ def apply_on_each_si(f):
             ret = DiscreteStridedIntervalSet(bits=self.bits, si_set=new_si_set)
             return ret.normalize()
 
-        elif isinstance(o, (StridedInterval, numbers.Number, BVV)):
+        elif isinstance(o, StridedInterval | numbers.Number | BVV):
             new_si_set = set()
             for si in self._si_set:
                 new_si_set.add(getattr(si, f.__name__)(o))

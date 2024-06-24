@@ -3,7 +3,6 @@ import collections
 import itertools
 import operator
 from functools import reduce
-from typing import Optional
 
 from . import ast, fp
 from .backend_manager import backends
@@ -1023,7 +1022,7 @@ class SimplificationManager:
                     # the high `zero_bits` bits are zero
                     # check the constant
                     b_higher = b[b.size() - 1 : b.size() - zero_bits]
-                    b_higher_bits_are_0: Optional[bool] = None
+                    b_higher_bits_are_0: bool | None = None
                     if (b_higher == 0).is_true():
                         b_higher_bits_are_0 = True
                     elif (b_higher == 0).is_false():
