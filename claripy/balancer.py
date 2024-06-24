@@ -1,6 +1,5 @@
 import logging
 import operator
-from typing import Set
 
 from . import _all_operations, vsa
 from .ast.base import Base
@@ -320,7 +319,7 @@ class Balancer:
     # Truism extractor
     #
 
-    def _unpack_truisms(self, c) -> Set:
+    def _unpack_truisms(self, c) -> set:
         """
         Given a constraint, _unpack_truisms() returns a set of constraints that must be True for
         this constraint to be True.

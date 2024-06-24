@@ -1,7 +1,7 @@
 import itertools
 import logging
 import weakref
-from typing import TYPE_CHECKING, Set
+from typing import TYPE_CHECKING
 
 from claripy import backends
 from claripy.ast import Base
@@ -113,7 +113,7 @@ class CompositeFrontend(ConstrainedFrontend):
         return existing_solvers
 
     @staticmethod
-    def _names_for(names=None, lst=None, lst2=None, e=None, v=None) -> Set[str]:
+    def _names_for(names=None, lst=None, lst2=None, e=None, v=None) -> set[str]:
         if names is None:
             names = set()
         if e is not None and isinstance(e, Base):
@@ -133,7 +133,7 @@ class CompositeFrontend(ConstrainedFrontend):
     def _merged_solver_for(self, *args, **kwargs):
         return self._solver_for_names(self._names_for(*args, **kwargs))
 
-    def _solver_for_names(self, names: Set[str]) -> "SolverCompositeChild":
+    def _solver_for_names(self, names: set[str]) -> "SolverCompositeChild":
         """
         Get a merged child solver for variables specified in `names`.
 

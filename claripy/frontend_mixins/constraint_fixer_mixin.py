@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List, Set, Tuple, Union
+from typing import TYPE_CHECKING, Union
 
 from claripy import BoolV
 
@@ -7,8 +7,8 @@ if TYPE_CHECKING:
 
 
 class ConstraintFixerMixin:
-    def add(self, constraints: Union["Bool", List["Bool"], Set["Bool"], Tuple["Bool", ...]], **kwargs) -> List["Bool"]:
-        constraints = [constraints] if not isinstance(constraints, (list, tuple, set)) else constraints
+    def add(self, constraints: Union["Bool", list["Bool"], set["Bool"], tuple["Bool", ...]], **kwargs) -> list["Bool"]:
+        constraints = [constraints] if not isinstance(constraints, list | tuple | set) else constraints
 
         if len(constraints) == 0:
             return []

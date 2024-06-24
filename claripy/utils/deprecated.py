@@ -1,8 +1,7 @@
 import warnings
-from typing import Optional
 
 
-def deprecated(new: str, old: Optional[str] = None):
+def deprecated(new: str, old: str | None = None):
     """
     Warn a user once that a function has been deprecated
     If old is not specified, func.__name__ is used as the old name

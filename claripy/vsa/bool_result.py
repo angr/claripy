@@ -112,7 +112,7 @@ class TrueResult(BoolResult):
     def union(self, other):
         if other is True or isinstance(other, TrueResult):
             return TrueResult()
-        elif other is False or isinstance(other, (FalseResult, MaybeResult)):
+        elif other is False or isinstance(other, FalseResult | MaybeResult):
             return MaybeResult()
         else:
             return NotImplemented

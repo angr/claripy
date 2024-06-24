@@ -1,5 +1,3 @@
-from typing import Optional
-
 from claripy import operations
 from claripy.ast.base import _make_name
 
@@ -150,7 +148,7 @@ def StringS(name, size, uninitialized=False, explicit_name=False, **kwargs):
     return result
 
 
-def StringV(value, length: Optional[int] = None, **kwargs):
+def StringV(value, length: int | None = None, **kwargs):
     """
     Create a new Concrete string (analogous to z3.StringVal())
 

@@ -134,7 +134,7 @@ class BackendVSA(Backend):
             return a
         elif isinstance(a, bool):
             return TrueResult() if a else FalseResult()
-        if isinstance(a, (StridedInterval, DiscreteStridedIntervalSet, ValueSet)):
+        if isinstance(a, StridedInterval | DiscreteStridedIntervalSet | ValueSet):
             return a
         if isinstance(a, BoolResult):
             return a
@@ -143,7 +143,7 @@ class BackendVSA(Backend):
         raise BackendError
 
     def _eval(self, expr, n, extra_constraints=(), solver=None, model_callback=None):
-        if isinstance(expr, (StridedInterval, ValueSet)):
+        if isinstance(expr, StridedInterval | ValueSet):
             return expr.eval(n)
         elif isinstance(expr, BoolResult):
             return expr.value
@@ -217,7 +217,7 @@ class BackendVSA(Backend):
         return a.identical(b)
 
     def _unique(self, obj):  # pylint:disable=unused-argument,no-self-use
-        if isinstance(obj, (StridedInterval, ValueSet)):
+        if isinstance(obj, StridedInterval | ValueSet):
             return obj.unique
         else:
             raise BackendError(f"Not supported type of operand {type(obj)}")

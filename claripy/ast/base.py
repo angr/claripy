@@ -5,8 +5,9 @@ import os
 import struct
 import weakref
 from collections import OrderedDict, deque
+from collections.abc import Iterable, Iterator
 from itertools import chain
-from typing import TYPE_CHECKING, Generic, Iterable, Iterator, List, NoReturn, Optional, Tuple, TypeVar
+from typing import TYPE_CHECKING, Generic, NoReturn, TypeVar
 
 from claripy import operations, simplifications
 from claripy.backend_manager import backends
@@ -376,7 +377,7 @@ class Base:
         return md5_unpacker.unpack(hd)[0]  # 64 bits
 
     @staticmethod
-    def _arg_serialize(arg) -> Optional[bytes]:
+    def _arg_serialize(arg) -> bytes | None:
         if arg is None:
             return b"\x0f"
         elif arg is True:
@@ -416,7 +417,7 @@ class Base:
         return None
 
     @staticmethod
-    def _ast_serialize(op: str, args_tup, keywords) -> Optional[bytes]:
+    def _ast_serialize(op: str, args_tup, keywords) -> bytes | None:
         """
         Serialize the AST and get a bytestring for hashing.
 
@@ -479,7 +480,7 @@ class Base:
         self.length = length
         self.variables = frozenset(variables) if type(variables) is not frozenset else variables
         self.symbolic = symbolic
-        self.annotations: Tuple[Annotation] = annotations
+        self.annotations: tuple[Annotation] = annotations
         self._uneliminatable_annotations = uneliminatable_annotations
         self._relocatable_annotations = relocatable_annotations
 
@@ -610,7 +611,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: (*alist, a))
 
-    def append_annotations(self: T, new_tuple: Tuple["Annotation", ...]) -> T:
+    def append_annotations(self: T, new_tuple: tuple["Annotation", ...]) -> T:
         """
         Appends several annotations to this AST.
 
@@ -619,7 +620,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: alist + new_tuple)
 
-    def annotate(self: T, *args: "Annotation", remove_annotations: Optional[Iterable["Annotation"]] = None) -> T:
+    def annotate(self: T, *args: "Annotation", remove_annotations: Iterable["Annotation"] | None = None) -> T:
         """
         Appends annotations to this AST.
 
@@ -643,7 +644,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: (a, *alist))
 
-    def insert_annotations(self: T, new_tuple: Tuple["Annotation", ...]) -> T:
+    def insert_annotations(self: T, new_tuple: tuple["Annotation", ...]) -> T:
         """
         Inserts several annotations to this AST.
 
@@ -652,7 +653,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: new_tuple + alist)
 
-    def replace_annotations(self: T, new_tuple: Tuple["Annotation", ...]) -> T:
+    def replace_annotations(self: T, new_tuple: tuple["Annotation", ...]) -> T:
         """
         Replaces annotations on this AST.
 
@@ -893,7 +894,7 @@ class Base:
     # Other helper functions
     #
 
-    def split(self, split_on: Iterable[str]) -> List:
+    def split(self, split_on: Iterable[str]) -> list:
         """
         Splits the AST if its operation is `split_on` (i.e., return all the arguments). Otherwise, return a list with
         just the AST.
