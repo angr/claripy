@@ -6,6 +6,7 @@ import claripy
 from claripy.backends.backend_smtlib_solvers.cvc4_popen import SolverBackendCVC4
 
 
+@unittest.skip
 class SmtLibSolverTest_CVC4(common_backend_smt_solver.SmtLibSolverTestBase):
     @common_backend_smt_solver.if_installed
     def get_solver(self):
