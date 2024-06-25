@@ -8,11 +8,12 @@ import weakref
 from collections import OrderedDict, deque
 from collections.abc import Iterable, Iterator
 from itertools import chain
-from typing import TYPE_CHECKING, Generic, NoReturn, TypeVar
+from typing import TYPE_CHECKING, NoReturn, TypeVar
 
 import claripy.clarirs as clarirs
 from claripy import operations, simplifications
 from claripy.backend_manager import backends
+from claripy.clarirs import ASTCacheKey
 from claripy.errors import BackendError, ClaripyOperationError, ClaripyReplacementError
 
 if TYPE_CHECKING:
@@ -28,20 +29,6 @@ from_iterable = chain.from_iterable
 # pylint:disable=unidiomatic-typecheck
 
 T = TypeVar("T", bound="Base")
-
-
-class ASTCacheKey(Generic[T]):
-    def __init__(self, a: T):
-        self.ast: T = a
-
-    def __hash__(self):
-        return hash(self.ast)
-
-    def __eq__(self, other):
-        return type(self) is type(other) and self.ast._hash == other.ast._hash
-
-    def __repr__(self):
-        return f"<Key {self.ast._type_name()} {self.ast.__repr__(inner=True)}>"
 
 
 #
@@ -251,20 +238,16 @@ class Base(clarirs.Base, metaclass=type):
             h = Base._calc_hash(op, a_args, kwargs) if hash is None else hash
         self = cache.get(h & 0x7FFF_FFFF_FFFF_FFFF, None)
         if self is None:
+            # depth = arg_max_depth + 1
             self = super().__new__(
                 cls,
                 op,
                 tuple(args),
-                kwargs.get("length", None),
-                frozenset(kwargs["variables"]),
-                kwargs["symbolic"],
-                annotations,
-            )
-            depth = arg_max_depth + 1
-            self.__a_init__(
-                op,
-                a_args,
-                depth=depth,
+                kwargs.pop("length", None),
+                frozenset(kwargs.pop("variables")),
+                kwargs.pop("symbolic"),
+                # annotations,
+                depth=arg_max_depth + 1,
                 uneliminatable_annotations=uneliminatable_annotations,
                 relocatable_annotations=relocatable_annotations,
                 **kwargs,
@@ -287,18 +270,15 @@ class Base(clarirs.Base, metaclass=type):
         if self is not None:
             return self
 
+        print("aaa")
         self = super().__new__(
             cls,
             op,
             tuple(a_args),
-            kwargs.get("length", None),
-            frozenset(kwargs["variables"]),
-            kwargs["symbolic"],
-            tuple(kwargs.get("annotations", ())),
-        )
-        self.__a_init__(
-            op,
-            a_args,
+            kwargs.pop("length", None),
+            frozenset(kwargs.pop("variables")),
+            kwargs.pop("symbolic"),
+            tuple(kwargs.pop("annotations", ())),
             depth=depth,
             uneliminatable_annotations=uneliminatable_annotations,
             relocatable_annotations=relocatable_annotations,
@@ -322,64 +302,6 @@ class Base(clarirs.Base, metaclass=type):
     def __init__(self, *args, **kwargs):
         pass
 
-    # pylint:disable=attribute-defined-outside-init
-    def __a_init__(
-        self,
-        op,
-        args,
-        variables=None,
-        symbolic=None,
-        length=None,
-        simplified=0,
-        errored=None,
-        eager_backends=None,
-        uninitialized=None,
-        uc_alloc_depth=None,
-        annotations=None,
-        encoded_name=None,
-        depth=None,
-        uneliminatable_annotations=None,
-        relocatable_annotations=None,
-    ):  # pylint:disable=unused-argument
-        """
-        Initializes an AST. Takes the same arguments as ``Base.__new__()``
-
-        We use this instead of ``__init__`` due to python's undesirable behavior w.r.t. automatically calling it on
-        return from ``__new__``.
-        """
-
-        # HASHCONS: these attributes key the cache
-        # BEFORE CHANGING THIS, SEE ALL OTHER INSTANCES OF "HASHCONS" IN THIS FILE
-        # super().__new__(op, args, length, frozenset(variables), symbolic, annotations)
-        # self.op = op
-        # self.args = args if type(args) is tuple else tuple(args)
-        # self.length = length
-        # self.variables = frozenset(variables) if type(variables) is not frozenset else variables
-        # self.symbolic = symbolic
-        # self.annotations: tuple[Annotation] = annotations
-        self._uneliminatable_annotations = uneliminatable_annotations
-        self._relocatable_annotations = relocatable_annotations
-
-        self.depth = depth if depth is not None else 1
-
-        self._eager_backends = eager_backends
-        self._cached_encoded_name = encoded_name
-
-        self._errored = errored if errored is not None else set()
-
-        self._simplified = simplified
-        self._cache_key = ASTCacheKey(self)
-        self._excavated = None
-        self._burrowed = None
-
-        self._uninitialized = uninitialized
-        self._uc_alloc_depth = uc_alloc_depth
-
-        if len(self.args) == 0:
-            raise ClaripyOperationError("AST with no arguments!")
-
-    # pylint:enable=attribute-defined-outside-init
-
     def __hash__(self):
         res = self._hash
         if not isinstance(self._hash, int):
@@ -387,10 +309,12 @@ class Base(clarirs.Base, metaclass=type):
         return res
 
     @property
-    def cache_key(self: T) -> ASTCacheKey[T]:
+    def cache_key(self: T) -> ASTCacheKey:
         """
         A key that refers to this AST - this value is appropriate for usage as a key in dictionaries.
         """
+        if self._cache_key is None:
+            self._cache_key = ASTCacheKey(self)
         return self._cache_key
 
     @property
@@ -408,6 +332,7 @@ class Base(clarirs.Base, metaclass=type):
         simplified = simplifications.simpleton.simplify(op, args) if kwargs.pop("simplify", False) is True else None
         if simplified is not None:
             op = simplified.op
+
         if (
             simplified is None
             and len(kwargs) == 3
