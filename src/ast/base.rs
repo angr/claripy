@@ -1,9 +1,41 @@
 use std::borrow::Cow;
 
 use pyo3::{
+    exceptions::PyValueError,
     prelude::*,
-    types::{PyAnyMethods, PyBool, PyBytes, PyDict, PyFloat, PyInt, PyString, PyTuple},
+    types::{PyAnyMethods, PyBool, PyBytes, PyDict, PyFloat, PyInt, PySet, PyString, PyTuple},
 };
+
+#[pyclass(weakref)]
+pub struct ASTCacheKey {
+    #[pyo3(get)]
+    ast: PyObject,
+    #[pyo3(get)]
+    hash: isize,
+}
+
+#[pymethods]
+impl ASTCacheKey {
+    #[new]
+    pub fn new(py: Python, ast: PyObject) -> PyResult<Self> {
+        Ok(ASTCacheKey {
+            hash: ast.as_any().bind(py).hash()?,
+            ast,
+        })
+    }
+
+    pub fn __hash__(&self) -> isize {
+        self.hash
+    }
+
+    pub fn __eq__(&self, other: &Self) -> bool {
+        self.hash == other.hash
+    }
+
+    pub fn __repr__(&self) -> String {
+        format!("<Key {} >", self.ast)
+    }
+}
 
 #[pyclass(subclass, weakref)]
 pub struct Base {
@@ -22,21 +54,19 @@ pub struct Base {
     annotations: Py<PyTuple>,
 
     // Not Hashcons
-    #[pyo3(get, set)]
-    simplifiable: Option<PyObject>,
-    #[pyo3(get, set)]
-    depth: Option<PyObject>,
+    #[pyo3(get)]
+    depth: usize,
 
     #[pyo3(get, set)]
     _hash: Option<isize>,
     #[pyo3(get, set)]
     _simplified: Option<PyObject>,
     #[pyo3(get, set)]
-    _cache_key: Option<PyObject>,
+    _cache_key: Option<Py<ASTCacheKey>>,
     #[pyo3(get, set)]
     _cached_encoded_name: Option<PyObject>,
     #[pyo3(get, set)]
-    _errored: Option<PyObject>,
+    _errored: Py<PySet>,
     #[pyo3(get, set)]
     _eager_backends: Option<PyObject>,
     #[pyo3(get, set)]
@@ -56,38 +86,72 @@ pub struct Base {
 #[pymethods]
 impl Base {
     #[new]
-    #[pyo3(signature = (op, args, length, variables, symbolic, annotations))]
+    #[pyo3(signature = (op, args, length, variables, symbolic, annotations=None, simplified=None, errored=None, eager_backends=None, uninitialized=None, uc_alloc_depth=None, encoded_name=None, depth=None, uneliminatable_annotations=None, relocatable_annotations=None))]
     fn new(
+        py: Python,
         op: String,
         args: Py<PyTuple>,
         length: PyObject,
         variables: PyObject,
         symbolic: bool,
-        annotations: Py<PyTuple>,
+        annotations: Option<Py<PyTuple>>,
+        // New stuff
+        simplified: Option<PyObject>,
+        errored: Option<Py<PySet>>,
+        eager_backends: Option<PyObject>,
+        uninitialized: Option<PyObject>,
+        uc_alloc_depth: Option<PyObject>,
+        encoded_name: Option<PyObject>,
+        depth: Option<usize>,
+        uneliminatable_annotations: Option<PyObject>,
+        relocatable_annotations: Option<PyObject>,
     ) -> PyResult<Self> {
+        if args.bind(py).len() == 0 {
+            return Err(PyValueError::new_err("AST with no arguments!")); // TODO: This should be a custom error
+        }
+
+        let depth = depth.unwrap_or(
+            *args
+                .bind(py)
+                .iter()
+                .map(|arg| {
+                    arg.getattr("depth")
+                        .and_then(|p| p.extract::<usize>())
+                        .or_else(|_| Ok(1))
+                })
+                .collect::<Result<Vec<usize>, PyErr>>()?
+                .iter()
+                .max()
+                .unwrap_or(&0) + 1
+        );
+
         Ok(Base {
             op,
             args,
             length,
             variables,
             symbolic,
-            annotations,
+            annotations: annotations.unwrap_or_else(|| PyTuple::empty_bound(py).unbind()),
 
-            simplifiable: None,
-            depth: None,
+            depth,
 
             _hash: None,
-            _simplified: None,
+            _simplified: simplified,
             _cache_key: None,
-            _cached_encoded_name: None,
-            _errored: None,
-            _eager_backends: None,
+            _cached_encoded_name: encoded_name,
+            _errored: errored.unwrap_or(
+                // TODO: Is there really not an easier way to make a set?
+                py.eval_bound("set()", None, None)?
+                    .downcast_into()?
+                    .unbind(),
+            ),
+            _eager_backends: eager_backends,
             _excavated: None,
             _burrowed: None,
-            _uninitialized: None,
-            _uc_alloc_depth: None,
-            _uneliminatable_annotations: None,
-            _relocatable_annotations: None,
+            _uninitialized: uninitialized,
+            _uc_alloc_depth: uc_alloc_depth,
+            _uneliminatable_annotations: uneliminatable_annotations,
+            _relocatable_annotations: relocatable_annotations,
         })
     }
 
