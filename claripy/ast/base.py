@@ -243,7 +243,7 @@ class Base(clarirs.Base, metaclass=type):
                 cls,
                 op,
                 tuple(args),
-                kwargs.pop("length", None),
+                kwargs.pop("length", 1),
                 frozenset(kwargs.pop("variables")),
                 kwargs.pop("symbolic"),
                 # annotations,

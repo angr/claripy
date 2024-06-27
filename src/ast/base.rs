@@ -17,10 +17,10 @@ pub struct ASTCacheKey {
 #[pymethods]
 impl ASTCacheKey {
     #[new]
-    pub fn new(py: Python, ast: PyObject) -> PyResult<Self> {
+    pub fn new(ast: Bound<PyAny>) -> PyResult<Self> {
         Ok(ASTCacheKey {
-            hash: ast.as_any().bind(py).hash()?,
-            ast,
+            hash: ast.as_any().hash()?,
+            ast: ast.into(),
         })
     }
 
@@ -45,7 +45,7 @@ pub struct Base {
     #[pyo3(get, set)]
     args: Py<PyTuple>,
     #[pyo3(get, set)]
-    length: PyObject,
+    length: usize,
     #[pyo3(get, set)]
     variables: PyObject, // TODO: This should be a HashSet, leave opaque for now
     #[pyo3(get, set)]
@@ -86,33 +86,48 @@ pub struct Base {
 #[pymethods]
 impl Base {
     #[new]
-    #[pyo3(signature = (op, args, length, variables, symbolic, annotations=None, simplified=None, errored=None, eager_backends=None, uninitialized=None, uc_alloc_depth=None, encoded_name=None, depth=None, uneliminatable_annotations=None, relocatable_annotations=None))]
+    #[pyo3(signature = (
+        op,
+        args,
+        length,
+        variables,
+        symbolic,
+        annotations=None,
+        simplified=None,
+        errored=None,
+        eager_backends=None,
+        uninitialized=None,
+        uc_alloc_depth=None,
+        encoded_name=None,
+        depth=None,
+        uneliminatable_annotations=None,
+        relocatable_annotations=None
+    ))]
     fn new(
         py: Python,
         op: String,
-        args: Py<PyTuple>,
-        length: PyObject,
-        variables: PyObject,
+        args: Bound<PyTuple>,
+        length: usize,
+        variables: Bound<PyAny>,
         symbolic: bool,
-        annotations: Option<Py<PyTuple>>,
+        annotations: Option<Bound<PyTuple>>,
         // New stuff
-        simplified: Option<PyObject>,
-        errored: Option<Py<PySet>>,
-        eager_backends: Option<PyObject>,
-        uninitialized: Option<PyObject>,
-        uc_alloc_depth: Option<PyObject>,
-        encoded_name: Option<PyObject>,
+        simplified: Option<Bound<PyAny>>,
+        errored: Option<Bound<PySet>>,
+        eager_backends: Option<Bound<PyAny>>,
+        uninitialized: Option<Bound<PyAny>>,
+        uc_alloc_depth: Option<Bound<PyAny>>,
+        encoded_name: Option<Bound<PyAny>>,
         depth: Option<usize>,
-        uneliminatable_annotations: Option<PyObject>,
-        relocatable_annotations: Option<PyObject>,
+        uneliminatable_annotations: Option<Bound<PyAny>>,
+        relocatable_annotations: Option<Bound<PyAny>>,
     ) -> PyResult<Self> {
-        if args.bind(py).len() == 0 {
+        if args.len() == 0 {
             return Err(PyValueError::new_err("AST with no arguments!")); // TODO: This should be a custom error
         }
 
         let depth = depth.unwrap_or(
             *args
-                .bind(py)
                 .iter()
                 .map(|arg| {
                     arg.getattr("depth")
@@ -122,43 +137,41 @@ impl Base {
                 .collect::<Result<Vec<usize>, PyErr>>()?
                 .iter()
                 .max()
-                .unwrap_or(&0) + 1
+                .unwrap_or(&0)
+                + 1,
         );
 
         Ok(Base {
             op,
-            args,
+            args: args.into(),
             length,
-            variables,
+            variables: variables.into(),
             symbolic,
-            annotations: annotations.unwrap_or_else(|| PyTuple::empty_bound(py).unbind()),
+            annotations: annotations
+                .unwrap_or_else(|| PyTuple::empty_bound(py))
+                .into(),
 
             depth,
 
             _hash: None,
-            _simplified: simplified,
+            _simplified: simplified.map(|s| s.into()),
             _cache_key: None,
-            _cached_encoded_name: encoded_name,
-            _errored: errored.unwrap_or(
-                // TODO: Is there really not an easier way to make a set?
-                py.eval_bound("set()", None, None)?
-                    .downcast_into()?
-                    .unbind(),
-            ),
-            _eager_backends: eager_backends,
+            _cached_encoded_name: encoded_name.map(|s| s.into()),
+            _errored: errored.unwrap_or(PySet::empty_bound(py)?).into(),
+            _eager_backends: eager_backends.map(|s| s.into()),
             _excavated: None,
             _burrowed: None,
-            _uninitialized: uninitialized,
-            _uc_alloc_depth: uc_alloc_depth,
-            _uneliminatable_annotations: uneliminatable_annotations,
-            _relocatable_annotations: relocatable_annotations,
+            _uninitialized: uninitialized.map(|s| s.into()),
+            _uc_alloc_depth: uc_alloc_depth.map(|s| s.into()),
+            _uneliminatable_annotations: uneliminatable_annotations.map(|s| s.into()),
+            _relocatable_annotations: relocatable_annotations.map(|s| s.into()),
         })
     }
 
     #[staticmethod]
     fn _arg_serialize<'py>(
         py: Python<'py>,
-        arg: &Bound<'_, PyAny>,
+        arg: Bound<'_, PyAny>,
     ) -> PyResult<Option<Cow<'py, [u8]>>> {
         if arg.is_none() {
             return Ok(Some(Cow::from(vec![b'\x0f'])));
@@ -208,7 +221,7 @@ impl Base {
         if arg.is_instance(&py.get_type_bound::<PyTuple>())? {
             let mut result = Vec::new();
             for item in arg.downcast::<PyTuple>()?.iter() {
-                if let Some(sub_result) = Self::_arg_serialize(py, &item)? {
+                if let Some(sub_result) = Self::_arg_serialize(py, item)? {
                     result.extend(sub_result.iter());
                 } else {
                     return Ok(None); // Do we really want to return None here?
@@ -223,16 +236,16 @@ impl Base {
     fn _ast_serialize<'py>(
         py: Python<'py>,
         op: String,
-        args_tuple: &Bound<'_, PyTuple>,
-        keywords: &Bound<'_, PyDict>, // TODO: This should be a struct or seperate args
+        args_tuple: Bound<'_, PyTuple>,
+        keywords: Bound<'_, PyDict>, // TODO: This should be a struct or seperate args
     ) -> PyResult<Option<Cow<'py, [u8]>>> {
-        let serailized_args = match Base::_arg_serialize(py, args_tuple)? {
+        let serailized_args = match Base::_arg_serialize(py, args_tuple.into_any())? {
             Some(args) => args,
             None => return Ok(None),
         };
 
         let length = match keywords.contains("length")? {
-            true => match Base::_arg_serialize(py, &keywords.get_item("length")?.unwrap())? {
+            true => match Base::_arg_serialize(py, keywords.get_item("length")?.unwrap())? {
                 Some(length) => length,
                 None => return Ok(None),
             },
@@ -268,7 +281,7 @@ impl Base {
     fn _calc_hash<'py>(
         py: Python<'py>,
         op: String,
-        args: &Bound<PyTuple>,
+        args: Bound<PyTuple>,
         keywords: Bound<PyDict>,
     ) -> PyResult<isize> {
         let mut args_tuple = Vec::new();
@@ -299,7 +312,7 @@ impl Base {
             }
         }
 
-        let to_hash = match Base::_ast_serialize(py, op.clone(), &args, &keywords)? {
+        let to_hash = match Base::_ast_serialize(py, op.clone(), args, keywords.clone())? {
             Some(to_hash) => to_hash,
             None => {
                 let hash_tuple: Bound<PyTuple> = PyTuple::new_bound(
