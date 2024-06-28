@@ -14,7 +14,7 @@ def vsa_model(a):
     return claripy.backends.vsa.convert(a)
 
 
-class TestVSA(unittest.TestCase):
+class TestVSA(unittest.TestCase):  # pylint: disable=no-member,function-redefined
     def test_fucked_extract(self):
         not_fucked = claripy.Reverse(
             claripy.Concat(

@@ -246,7 +246,7 @@ class TestSimplify(unittest.TestCase):
         assert expr is result
 
         e = claripy.BVS("e", 32)
-        expr2 = (~e)[0:0]
+        expr2 = (~e)[0:0]  # pylint: disable=unsubscriptable-object
         result2 = ~(e[0:0])
         assert expr2 is result2
 

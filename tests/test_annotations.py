@@ -135,7 +135,8 @@ class TestAnnotation(unittest.TestCase):
         const1a = const1.annotate(AnnotationB("b", 1))
         const2 = const1a + 1
         # const2 should be (const1a + 1), instead of (1 + 1 + 1)
-        # the flatten simplifier for __add__ should not be applied as AnnotationB is not relocatable (and not eliminatable)
+        # the flatten simplifier for __add__ should not be applied as
+        # AnnotationB is not relocatable (and not eliminatable)
         assert const2.depth == 3
 
     def test_eagerness(self):

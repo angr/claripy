@@ -1,4 +1,5 @@
 # pylint: disable=missing-class-docstring,no-self-use
+import gc
 import pickle
 import unittest
 
@@ -30,7 +31,6 @@ class TestPickle(unittest.TestCase):
 
         ss = pickle.dumps(s)
         del s
-        import gc
 
         gc.collect()
 
