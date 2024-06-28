@@ -1,4 +1,4 @@
-# pylint: disable=missing-class-docstring,disable=no-self-use
+# pylint: disable=missing-class-docstring,no-self-use
 import unittest
 
 import claripy
