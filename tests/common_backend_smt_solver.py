@@ -1,29 +1,27 @@
-from unittest import skip
+import typing
+import unittest
 
-from decorator import decorator
 from test_backend_smt import TestSMTLibBackend
 
 import claripy
 
 
-# use of decorator instead of the usual pattern is important because nose2 will check the argspec and wraps does not
-# preserve that!
-@decorator
-def if_installed(f, *args, **kwargs):
-    try:
-        return f(*args, **kwargs)
-    except claripy.errors.MissingSolverError:
-        return skip("Missing Solver")(f)
+def if_installed(test_func: typing.Callable):
+    def wrapper(*args, **kwargs):
+        try:
+            return test_func(*args, **kwargs)
+        except claripy.errors.MissingSolverError as exception:
+            raise unittest.SkipTest from exception
+
+    return wrapper
 
 
 KEEP_TEST_PERFORMANT = True
 
 
 class SmtLibSolverTestBase(TestSMTLibBackend):
-    @skip
     def get_solver(self):
-        pass
-        # raise NotImplementedError
+        raise NotImplementedError
 
     @if_installed
     def test_concat(self):

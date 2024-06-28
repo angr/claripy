@@ -180,7 +180,7 @@ class Backend:
                         )
 
                     if self._cache_objects:
-                        cached_obj = self._object_cache.get(ast._cache_key, None)
+                        cached_obj = self._object_cache.get(ast.cache_key, None)
                         if cached_obj is not None:
                             arg_queue.append(cached_obj)
                             continue
@@ -214,7 +214,7 @@ class Backend:
                             r = self.apply_annotation(r, a)
 
                         if self._cache_objects:
-                            self._object_cache[ast._cache_key] = r
+                            self._object_cache[ast.cache_key] = r
 
                         arg_queue.append(r)
 
