@@ -15,5 +15,4 @@ class SmtLibSolverTest_CVC4(common_backend_smt_solver.SmtLibSolverTestBase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestLoader().loadTestsFromTestCase(SmtLibSolverTest_CVC4)
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    unittest.main()
