@@ -26,10 +26,10 @@ class String(Bits):
 
     def __init__(self, *args, length: int, **kwargs):
         """
-        :param length: The string byte length
+        :param length: The string bit length
         """
         super().__init__(*args, length=length, **kwargs)
-        self.string_length: int = length
+        self.string_length: int = self.length // 8
 
     def __getitem__(self, rng):
         """
