@@ -40,8 +40,6 @@ class TestSMTLibBackend(unittest.TestCase):
         res = str_concrete + str_symbol
         solver.add(res == claripy.StringV("concrete"))
         script = solver.get_smtlib_script_satisfiability()
-        # with open("dump_concat.smt2", "w") as dump_f:
-        # dump_f.write(script)
         self.assertEqual(correct_script, script)
 
     def test_concat_simplification(self):
@@ -69,8 +67,6 @@ class TestSMTLibBackend(unittest.TestCase):
         res = claripy.StrSubstr(1, 2, str_symbol) == claripy.StringV("on")
         solver.add(res)
         script = solver.get_smtlib_script_satisfiability()
-        # with open("dump_substr.smt2", "w") as dump_f:
-        # dump_f.write(script)
         self.assertEqual(correct_script, script)
 
     def test_substr_BV_concrete_index(self):
@@ -86,8 +82,6 @@ class TestSMTLibBackend(unittest.TestCase):
         res = claripy.StrSubstr(bv1, bv2, str_symbol) == claripy.StringV("on")
         solver.add(res)
         script = solver.get_smtlib_script_satisfiability()
-        # with open("dump_substr_bv_concrete.smt2", "w") as dump_f:
-        # dump_f.write(script)
         self.assertEqual(correct_script, script)
 
     def test_substr_BV_symbolic_index(self):
@@ -105,8 +99,6 @@ class TestSMTLibBackend(unittest.TestCase):
         res = claripy.StrSubstr(bv1, bv2, str_symbol) == claripy.StringV("on")
         solver.add(res)
         script = solver.get_smtlib_script_satisfiability()
-        # with open("dump_substr_bv_symbolic.smt2", "w") as dump_f:
-        #     dump_f.write(script)
         self.assertEqual(correct_script, script)
 
     def test_substr_BV_mixed_index(self):
@@ -123,8 +115,6 @@ class TestSMTLibBackend(unittest.TestCase):
         res = claripy.StrSubstr(bv1, bv2, str_symbol) == claripy.StringV("on")
         solver.add(res)
         script = solver.get_smtlib_script_satisfiability()
-        # with open("dump_substr_bv_symbolic.smt2", "w") as dump_f:
-        #     dump_f.write(script)
         self.assertEqual(correct_script, script)
 
     def test_substr_simplification(self):
@@ -152,8 +142,6 @@ class TestSMTLibBackend(unittest.TestCase):
         repl_stringa = claripy.StrReplace(str_to_replace_symb, sub_str_to_repl, replacement)
         solver.add(repl_stringa == claripy.StringV("cbne"))
         script = solver.get_smtlib_script_satisfiability()
-        # with open("dump_replace.smt2", "w") as dump_f:
-        # dump_f.write(script)
         self.assertEqual(correct_script, script)
 
     def test_replace_simplification(self):
@@ -182,8 +170,6 @@ class TestSMTLibBackend(unittest.TestCase):
         solver = self.get_solver()
         solver.add(str_symb != claripy.StringV("concrete"))
         script = solver.get_smtlib_script_satisfiability()
-        # with open("dump_ne.smt2", "w") as dump_f:
-        #     dump_f.write(script)
         self.assertEqual(correct_script, script)
 
     def test_length(self):
@@ -197,8 +183,6 @@ class TestSMTLibBackend(unittest.TestCase):
         # TODO: How do we want to dela with the size of a symbolic string?
         solver.add(claripy.StrLen(str_symb, 32) == 14)
         script = solver.get_smtlib_script_satisfiability()
-        # with open("dump_length.smt2", "w") as dump_f:
-        #     dump_f.write(script)
         self.assertEqual(correct_script, script)
 
     def test_length_simplification(self):
@@ -224,8 +208,6 @@ class TestSMTLibBackend(unittest.TestCase):
         res = claripy.Or((str_symb == claripy.StringV("abc")), (str_symb == claripy.StringV("ciao")))
         solver.add(res)
         script = solver.get_smtlib_script_satisfiability()
-        # with open("dump_or.smt2", "w") as dump_f:
-        #     dump_f.write(script)
         self.assertEqual(correct_script, script)
 
     def test_lt_etc(self):
@@ -248,8 +230,6 @@ class TestSMTLibBackend(unittest.TestCase):
         solver.add(c3)
         solver.add(c4)
         script = solver.get_smtlib_script_satisfiability()
-        # with open("dump_lt_etc.smt2", "w") as dump_f:
-        #     dump_f.write(script)
         self.assertEqual(correct_script, script)
 
     def test_contains(self):
@@ -263,8 +243,6 @@ class TestSMTLibBackend(unittest.TestCase):
         solver = self.get_solver()
         solver.add(res)
         script = solver.get_smtlib_script_satisfiability()
-        # with open("dump_contains.smt2", "w") as dump_f:
-        #     dump_f.write(script)
         self.assertEqual(correct_script, script)
 
     def test_contains_simplification(self):
@@ -291,7 +269,6 @@ class TestSMTLibBackend(unittest.TestCase):
         solver = self.get_solver()
         solver.add(res)
         script = solver.get_smtlib_script_satisfiability()
-        # with open("dump_prefix.smt2", "w") as dump_f:
         #     dump_f.write(script)
         self.assertEqual(correct_script, script)
 
@@ -306,8 +283,6 @@ class TestSMTLibBackend(unittest.TestCase):
         solver = self.get_solver()
         solver.add(res)
         script = solver.get_smtlib_script_satisfiability()
-        # with open("dump_suffix.smt2", "w") as dump_f:
-        #     dump_f.write(script)
         self.assertEqual(correct_script, script)
 
     def test_prefix_simplification(self):
@@ -347,8 +322,6 @@ class TestSMTLibBackend(unittest.TestCase):
         solver = self.get_solver()
         solver.add(res)
         script = solver.get_smtlib_script_satisfiability()
-        # with open("dump_suffix.smt2", "w") as dump_f:
-        #     dump_f.write(script)
         self.assertEqual(correct_script, script)
 
     def test_index_of_simplification(self):
@@ -384,8 +357,6 @@ class TestSMTLibBackend(unittest.TestCase):
 
         solver.add(res == 33)
         script = solver.get_smtlib_script_satisfiability()
-        # with open("dump_suffix.smt2", "w") as dump_f:
-        #     dump_f.write(script)
         self.assertEqual(correct_script, script)
 
     def test_str_to_int(self):
@@ -399,8 +370,6 @@ class TestSMTLibBackend(unittest.TestCase):
         solver = self.get_solver()
         solver.add(res == 12)
         script = solver.get_smtlib_script_satisfiability()
-        # with open("dump_strtoint.smt2", "w") as dump_f:
-        #     dump_f.write(script)
         self.assertEqual(correct_script, script)
 
     def test_str_to_int_simplification(self):
@@ -470,5 +439,4 @@ class TestSMTLibBackend(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestSMTLibBackend)
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    unittest.main()

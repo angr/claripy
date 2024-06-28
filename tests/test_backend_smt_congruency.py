@@ -21,7 +21,7 @@ def all_equal(vals):
     return all(v == v0 for v in vals)
 
 
-class SmtLibSolverTestCongruency(unittest.TestCase):
+class TestSmtLibSolverTestCongruency(unittest.TestCase):
     @unittest.skip("Skip these test for now because of a problem with pysmt")
     def get_solvers(self):
         solvers = [
@@ -166,5 +166,4 @@ class SmtLibSolverTestCongruency(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestLoader().loadTestsFromTestCase(SmtLibSolverTestCongruency)
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    unittest.main()

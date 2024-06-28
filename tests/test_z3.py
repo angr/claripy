@@ -8,8 +8,7 @@ class TestZ3(unittest.TestCase):
     A class used for testing z3
     """
 
-    @staticmethod
-    def test_extrema():
+    def test_extrema(self):
         """
         Test the _extrema function within the z3 backend
         """
