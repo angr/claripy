@@ -282,7 +282,6 @@ class TestSubtraction(unittest.TestCase):
         op1 = StridedInterval(bits=4, stride=1, lower_bound=1, upper_bound=7)
         op2 = StridedInterval(bits=4, stride=1, lower_bound=2, upper_bound=6)
         # Result should be 1,[-5, 5]
-        # print(str(op1.sub(op2)))
         assert check_si_fields(op1.sub(op2), 1, -5, 5)
 
     def test_basic_interval_3(self):
@@ -307,7 +306,6 @@ class TestSubtraction(unittest.TestCase):
         op1 = StridedInterval(bits=4, stride=1, lower_bound=1, upper_bound=7)
         op2 = StridedInterval(bits=4, stride=1, lower_bound=-5, upper_bound=-1)
         # Result should be 1,[2, 12]
-        # print(str(op1.sub(op2)))
         assert check_si_fields(op1.sub(op2), 1, 2, 12)
 
     # Strided Tests

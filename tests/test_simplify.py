@@ -58,8 +58,6 @@ class TestSimplify(unittest.TestCase):
         extend_ = claripy.BVS("extend", 32, uninitialized=True)
         a_ext = extend_.concat(a)
         expr = ((a_ext << 3) | (claripy.LShR(a_ext, 61))) & 0x7FFFFFFF8
-        # print(expr)
-        # print(expr._model_vsa)
         model_vsa = expr._model_vsa
         assert model_vsa.lower_bound == 8
         assert model_vsa.upper_bound == 0x60

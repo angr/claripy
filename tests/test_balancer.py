@@ -94,7 +94,7 @@ class TestBalancer(unittest.TestCase):
     def test_overflow(self):
         x = claripy.BVS("x", 32)
 
-        print("x + 10 <= 20")
+        # x + 10 <= 20
         s, r = claripy.balancer.Balancer(claripy.backends.vsa, x + 10 <= claripy.BVV(20, 32)).compat_ret
         # mn,mx = claripy.backends.vsa.min(r[0][1]), claripy.backends.vsa.max(r[0][1])
         assert s
@@ -123,7 +123,7 @@ class TestBalancer(unittest.TestCase):
             10,
         }
 
-        print("x - 10 <= 20")
+        # x - 10 <= 20
         s, r = claripy.balancer.Balancer(claripy.backends.vsa, x - 10 <= claripy.BVV(20, 32)).compat_ret
         assert s
         assert r[0][0] is x
