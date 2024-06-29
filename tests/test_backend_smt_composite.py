@@ -1,3 +1,4 @@
+# pylint: disable=missing-class-docstring,no-self-use
 import unittest
 
 import common_backend_smt_solver
@@ -5,7 +6,7 @@ import common_backend_smt_solver
 import claripy
 
 
-class SmtLibSolverTest_Z3(common_backend_smt_solver.SmtLibSolverTestBase):
+class TestSmtLibSolverTest_Z3(common_backend_smt_solver.SmtLibSolverTestBase):
     @unittest.skip("Skip these test for now because of a problem with pysmt")
     def get_solver(self):
         solver = claripy.SolverPortfolio(
@@ -31,5 +32,4 @@ class SmtLibSolverTest_Z3(common_backend_smt_solver.SmtLibSolverTestBase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestLoader().loadTestsFromTestCase(SmtLibSolverTest_Z3)
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    unittest.main()
