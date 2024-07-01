@@ -12,9 +12,7 @@ def check_si_fields(si, stride, lb, ub):
         return False
     if si.lower_bound != lb:
         return False
-    if si.upper_bound != ub:
-        return False
-    return True
+    return si.upper_bound == ub
 
 
 def test_division():
