@@ -31,9 +31,7 @@ class BoolResult(BackendObject):
             return False
         if self._op != other._op:
             return False
-        if self._args != other._args:
-            return False
-        return True
+        return self._args == other._args
 
     def union(self, other):
         raise NotImplementedError

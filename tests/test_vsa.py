@@ -570,7 +570,7 @@ def test_vsa():
     # ValueSet
     #
 
-    def VS(name=None, bits=None, region=None, val=None):
+    def VS(name=None, bits=None, region=None, val=None):  # noqa: F811  # TODO: Refactor this test case
         region = "foobar" if region is None else region
         return claripy.ValueSet(bits, region=region, region_base_addr=0, value=val, name=name)
 

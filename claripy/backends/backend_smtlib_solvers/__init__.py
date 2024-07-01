@@ -101,14 +101,10 @@ class SMTLibSolverBackend(BackendSMTLibBase):
         return e
 
     def _is_false(self, e, extra_constraints=(), solver=None, model_callback=None):
-        if e.is_constant() and e.constant_value() is False:
-            return True
-        return False
+        return e.is_constant() and e.constant_value() is False
 
     def _is_true(self, e, extra_constraints=(), solver=None, model_callback=None):
-        if e.is_constant() and e.constant_value() is True:
-            return True
-        return False
+        return e.is_constant() and e.constant_value() is True
 
     def _batch_eval(self, exprs, n, extra_constraints=(), solver=None, model_callback=None):
         return [
