@@ -133,7 +133,23 @@ class Base:
     MID_REPR = 1
     FULL_REPR = 2
 
-    def __new__(cls, op, args, add_variables=None, hash=None, **kwargs):  # pylint:disable=redefined-builtin
+    def __new__(  # pylint:disable=redefined-builtin
+        cls,
+        op,
+        args,
+        add_variables=None,
+        hash=None,
+        symbolic=None,
+        variables=None,
+        errored=None,
+        eager_backends=None,
+        uninitialized=None,
+        uc_alloc_depth=None,
+        annotations=(),
+        skip_child_annotations=False,
+        length=None,
+        encoded_name=None,
+    ):
         """
         This is called when you create a new Base object, whether directly or through an operation.
         It finalizes the arguments (see the _finalize function, above) and then computes
@@ -159,9 +175,9 @@ class Base:
         a_args = args if type(args) is tuple else tuple(args)
 
         # initialize the following properties: symbolic, variables and errored
-        need_symbolic = "symbolic" not in kwargs
-        need_variables = "variables" not in kwargs
-        need_errored = "errored" not in kwargs
+        need_symbolic = symbolic is None
+        need_variables = variables is None
+        need_errored = errored is None
         args_have_annotations = None
         # Note that `args_have_annotations` may not be set if we don't need to set any of the above variables, in which
         # case it will stay as None, and will be passed to __a_init__() "as is". __a_init__() will properly handle it
@@ -186,21 +202,22 @@ class Base:
                     arg_max_depth = a.depth
 
             if need_symbolic:
-                kwargs["symbolic"] = symbolic_flag
+                symbolic = symbolic_flag
             if need_variables:
-                kwargs["variables"] = frozenset(variables_set)
+                variables = frozenset(variables_set)
             if need_errored:
-                kwargs["errored"] = errored_set
+                errored = errored_set
 
-        if type(kwargs["variables"]) is not frozenset:  # pylint:disable=unidiomatic-typecheck
-            kwargs["variables"] = frozenset(kwargs["variables"])
+        if not isinstance(variables, frozenset):
+            variables = frozenset(variables)
 
         if add_variables:
-            kwargs["variables"] = kwargs["variables"] | add_variables
+            variables = variables | add_variables
 
-        eager_backends = list(backends._eager_backends) if "eager_backends" not in kwargs else kwargs["eager_backends"]
+        if eager_backends is None:
+            eager_backends = list(backends._eager_backends)
 
-        if not kwargs["symbolic"] and eager_backends is not None and op not in operations.leaf_operations:
+        if not symbolic and op not in operations.leaf_operations:
             for eb in eager_backends:
                 try:
                     r = operations._handle_annotations(eb._abstract(eb.call(op, args)), args)
@@ -212,20 +229,9 @@ class Base:
                     eager_backends.remove(eb)
 
             # if we can't be eager anymore, null out the eagerness
-            kwargs["eager_backends"] = None
-
-        # whether this guy is initialized or not
-        if "uninitialized" not in kwargs:
-            kwargs["uninitialized"] = None
-
-        if "uc_alloc_depth" not in kwargs:
-            kwargs["uc_alloc_depth"] = None
-
-        annotations = () if "annotations" not in kwargs or kwargs["annotations"] is None else kwargs["annotations"]
+            eager_backends = None
 
         # process annotations
-        skip_child_annotations = kwargs.pop("skip_child_annotations") if "skip_child_annotations" in kwargs else False
-
         if not annotations and not args_have_annotations:
             uneliminatable_annotations = frozenset()
             relocatable_annotations = frozenset()
@@ -265,20 +271,18 @@ class Base:
                 )
             )
 
-        kwargs["annotations"] = annotations
-
         cache = cls._hash_cache
         if hash is not None:
             h = hash
         elif op in {"BVS", "BVV", "BoolS", "BoolV", "FPS", "FPV"} and not annotations:
             if op == "FPV" and a_args[0] == 0.0 and math.copysign(1, a_args[0]) < 0:
                 # Python does not distinguish between +0.0 and -0.0 so we add sign to tuple to distinguish
-                h = (op, kwargs.get("length", None), ("-", *a_args))
+                h = (op, length, ("-", *a_args))
             elif op == "FPV" and math.isnan(a_args[0]):
                 # cannot compare nans
-                h = (op, kwargs.get("length", None), ("nan",) + a_args[1:])
+                h = (op, length, ("nan",) + a_args[1:])
             else:
-                h = (op, kwargs.get("length", None), a_args)
+                h = (op, length, a_args)
 
             cache = cls._leaf_cache
         else:
@@ -286,10 +290,10 @@ class Base:
                 Base._calc_hash(
                     op,
                     a_args,
-                    kwargs["variables"],
-                    kwargs["symbolic"],
-                    kwargs["annotations"],
-                    length=kwargs.get("length", None),
+                    variables,
+                    symbolic,
+                    annotations,
+                    length=length,
                 )
                 if hash is None
                 else hash
@@ -301,10 +305,18 @@ class Base:
             self.__a_init__(
                 op,
                 a_args,
+                variables=variables,
+                symbolic=symbolic,
+                length=length,
+                errored=errored,
+                eager_backends=eager_backends,
+                uninitialized=uninitialized,
+                uc_alloc_depth=uc_alloc_depth,
+                annotations=annotations,
+                encoded_name=encoded_name,
                 depth=depth,
                 uneliminatable_annotations=uneliminatable_annotations,
                 relocatable_annotations=relocatable_annotations,
-                **kwargs,
             )
             self._hash = h
             cache[h] = self
