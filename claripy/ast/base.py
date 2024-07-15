@@ -211,8 +211,8 @@ class Base:
                 except BackendError:
                     eager_backends.remove(eb)
 
-        # if we can't be eager anymore, null out the eagerness
-        kwargs["eager_backends"] = None
+            # if we can't be eager anymore, null out the eagerness
+            kwargs["eager_backends"] = None
 
         # whether this guy is initialized or not
         if "uninitialized" not in kwargs:
