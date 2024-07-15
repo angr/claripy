@@ -198,8 +198,7 @@ class Base:
                     errored_set |= a._errored
                 if args_have_annotations is not True:
                     args_have_annotations = args_have_annotations or bool(a.annotations)
-                if arg_max_depth < a.depth:
-                    arg_max_depth = a.depth
+                arg_max_depth = max(arg_max_depth, a.depth)
 
             if need_symbolic:
                 symbolic = symbolic_flag
@@ -604,7 +603,6 @@ class Base:
             and skip_child_annotations
             and length is not None
         ):
-            annotations = annotations
             uneliminatable_annotations = frozenset(
                 anno for anno in annotations if not anno.eliminatable and not anno.relocatable
             )
@@ -1409,5 +1407,6 @@ def simplify(e: T) -> T:
         return s
 
 
+# pylint:disable=wrong-import-position
 from claripy.ast.bool import BoolS, If, Not  # noqa: E402
 from claripy.ast.bv import BV  # noqa: E402
