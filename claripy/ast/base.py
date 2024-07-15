@@ -282,7 +282,18 @@ class Base:
 
             cache = cls._leaf_cache
         else:
-            h = Base._calc_hash(op, a_args, kwargs) if hash is None else hash
+            h = (
+                Base._calc_hash(
+                    op,
+                    a_args,
+                    kwargs["variables"],
+                    kwargs["symbolic"],
+                    kwargs["annotations"],
+                    length=kwargs.get("length", None),
+                )
+                if hash is None
+                else hash
+            )
         self = cache.get(h, None)
         if self is None:
             self = super().__new__(cls)
@@ -308,7 +319,14 @@ class Base:
         cls, op, a_args, depth=None, uneliminatable_annotations=None, relocatable_annotations=None, **kwargs
     ):
         cache = cls._hash_cache
-        h = Base._calc_hash(op, a_args, kwargs)
+        h = Base._calc_hash(
+            op,
+            a_args,
+            kwargs["variables"],
+            kwargs["symbolic"],
+            kwargs["annotations"],
+            length=kwargs.get("length", None),
+        )
         self = cache.get(h, None)
         if self is not None:
             return self
@@ -341,7 +359,7 @@ class Base:
         pass
 
     @staticmethod
-    def _calc_hash(op, args, keywords):
+    def _calc_hash(op, args, variables, symbolic, annotations, length=None):
         """
         Calculates the hash of an AST, given the operation, args, and kwargs.
 
@@ -360,20 +378,20 @@ class Base:
         to_hash = Base._ast_serialize(
             op,
             args_tup,
-            keywords.get("length", None),
-            keywords["variables"],
-            keywords["symbolic"],
-            keywords["annotations"],
+            length,
+            variables,
+            symbolic,
+            annotations,
         )
         if to_hash is None:
             # fall back to pickle.dumps
             to_hash = (
                 op,
                 args_tup,
-                str(keywords.get("length", None)),
-                hash(keywords["variables"]),
-                keywords["symbolic"],
-                hash(keywords.get("annotations", None)),
+                str(length),
+                hash(variables),
+                symbolic,
+                hash(annotations),
             )
             to_hash = pickle.dumps(to_hash, -1)
 
