@@ -316,16 +316,28 @@ class Base:
 
     @classmethod
     def __init_with_annotations__(
-        cls, op, a_args, depth=None, uneliminatable_annotations=None, relocatable_annotations=None, **kwargs
+        cls,
+        op,
+        a_args,
+        variables,
+        symbolic,
+        annotations,
+        depth=None,
+        uneliminatable_annotations=None,
+        relocatable_annotations=None,
+        length=None,
+        uninitialized=None,
+        eager_backends=None,
+        uc_alloc_depth=None,
     ):
         cache = cls._hash_cache
         h = Base._calc_hash(
             op,
             a_args,
-            kwargs["variables"],
-            kwargs["symbolic"],
-            kwargs["annotations"],
-            length=kwargs.get("length", None),
+            variables,
+            symbolic,
+            annotations,
+            length=length,
         )
         self = cache.get(h, None)
         if self is not None:
@@ -338,7 +350,13 @@ class Base:
             depth=depth,
             uneliminatable_annotations=uneliminatable_annotations,
             relocatable_annotations=relocatable_annotations,
-            **kwargs,
+            variables=variables,
+            symbolic=symbolic,
+            annotations=annotations,
+            length=length,
+            uninitialized=uninitialized,
+            eager_backends=eager_backends,
+            uc_alloc_depth=uc_alloc_depth,
         )
 
         self._hash = h
