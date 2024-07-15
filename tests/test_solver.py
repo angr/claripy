@@ -544,7 +544,7 @@ class StandardTests(TestCase):
         s = claripy.Solver()
         s.add(e == 8)
         assert s.satisfiable()
-        s.add(claripy.If(denum == 0, 0, num / denum) == e)
+        s.add(claripy.If(denum == 0, 0, num // denum) == e)
         assert s.satisfiable()
         # As a bonus:
         s.add(num == 16)

@@ -29,8 +29,8 @@ class TestAST(unittest.TestCase):
         assert (x * y * z * w).shallow_repr() == "<BV8 x * y * z * w>"
         assert (x + y - z - w).shallow_repr() == "<BV8 x + y - z - w>"
         assert (x + (y - (z - w))).shallow_repr() == "<BV8 x + (y - (z - w))>"
-        assert (x * y / z % w).shallow_repr() == "<BV8 x * y / z % w>"
-        assert (x * (y / (z % w))).shallow_repr() == "<BV8 x * (y / (z % w))>"
+        assert (x * y // z % w).shallow_repr() == "<BV8 x * y / z % w>"
+        assert (x * (y // (z % w))).shallow_repr() == "<BV8 x * (y / (z % w))>"
 
 
 if __name__ == "__main__":
