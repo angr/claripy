@@ -357,7 +357,14 @@ class Base:
         # HASHCONS: these attributes key the cache
         # BEFORE CHANGING THIS, SEE ALL OTHER INSTANCES OF "HASHCONS" IN THIS FILE
 
-        to_hash = Base._ast_serialize(op, args_tup, keywords)
+        to_hash = Base._ast_serialize(
+            op,
+            args_tup,
+            keywords.get("length", None),
+            keywords["variables"],
+            keywords["symbolic"],
+            keywords["annotations"],
+        )
         if to_hash is None:
             # fall back to pickle.dumps
             to_hash = (
@@ -417,7 +424,7 @@ class Base:
         return None
 
     @staticmethod
-    def _ast_serialize(op: str, args_tup, keywords) -> bytes | None:
+    def _ast_serialize(op: str, args_tup, length, variables, symbolic, annotations) -> bytes | None:
         """
         Serialize the AST and get a bytestring for hashing.
 
@@ -431,19 +438,10 @@ class Base:
         if serialized_args is None:
             return None
 
-        if "length" in keywords:
-            length = Base._arg_serialize(keywords["length"])
-            if length is None:
-                return None
-        else:
-            length = b"none"
-
-        variables = struct.pack("<Q", hash(keywords["variables"]) & 0xFFFF_FFFF_FFFF_FFFF)
-        symbolic = b"\x01" if keywords["symbolic"] else b"\x00"
-        if "annotations" in keywords:
-            annotations = struct.pack("<Q", hash(keywords["annotations"]) & 0xFFFF_FFFF_FFFF_FFFF)
-        else:
-            annotations = b"\xf9"
+        length = Base._arg_serialize(length)
+        variables = struct.pack("<Q", hash(variables) & 0xFFFF_FFFF_FFFF_FFFF)
+        symbolic = b"\x01" if symbolic else b"\x00"
+        annotations = struct.pack("<Q", hash(annotations) & 0xFFFF_FFFF_FFFF_FFFF)
 
         return op.encode() + serialized_args + length + variables + symbolic + annotations
 
