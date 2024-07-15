@@ -50,7 +50,7 @@ class TestSimplify(unittest.TestCase):
 
         # make sure the division simplification works
         assert_correct(2 + x, claripy.backends.z3.simplify(1 + x + 1))
-        assert_correct(x / y, claripy.backends.z3.simplify(x / y))
+        assert_correct(x // y, claripy.backends.z3.simplify(x // y))
         assert_correct(x % y, claripy.backends.z3.simplify(x % y))
 
     def test_rotate_shift_mask_simplification(self):

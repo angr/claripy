@@ -186,16 +186,16 @@ class TestVSA(unittest.TestCase):  # pylint: disable=no-member,function-redefine
         si1 = claripy.SI(bits=32, to_conv=10)
         si2 = claripy.SI(bits=32, to_conv=5)
         si3 = claripy.SI(bits=32, to_conv=2)
-        assert claripy.backends.vsa.identical(si1 / si2, si3)
+        assert claripy.backends.vsa.identical(si1 // si2, si3)
 
         si3 = claripy.SI(bits=32, to_conv=0)
-        assert claripy.backends.vsa.identical(si2 / si1, si3)
+        assert claripy.backends.vsa.identical(si2 // si1, si3)
 
         # intervals division
         si1 = claripy.SI(bits=32, stride=1, lower_bound=10, upper_bound=100)
         si2 = claripy.SI(bits=32, stride=1, lower_bound=10, upper_bound=20)
         si3 = claripy.SI(bits=32, stride=1, lower_bound=0, upper_bound=10)
-        assert claripy.backends.vsa.identical(si1 / si2, si3)
+        assert claripy.backends.vsa.identical(si1 // si2, si3)
 
         #
         # Extension
@@ -382,10 +382,10 @@ class TestVSA(unittest.TestCase):  # pylint: disable=no-member,function-redefine
         assert si_mul_3.size() == 32
         assert is_equal(si_mul_3, claripy.SI(bits=32, stride=2, lower_bound=-2000, upper_bound=4000))
         # Division
-        si_div_1 = si1 / 3
+        si_div_1 = si1 // 3
         assert si_div_1.size() == 32
         assert is_equal(si_div_1, claripy.SI(bits=32, stride=0, lower_bound=3, upper_bound=3))
-        si_div_2 = si_a / 3
+        si_div_2 = si_a // 3
         assert si_div_2.size() == 32
         assert is_equal(si_div_2, claripy.SI(bits=32, stride=1, lower_bound=3, upper_bound=6))
         # Modulo
@@ -567,7 +567,7 @@ class TestVSA(unittest.TestCase):  # pylint: disable=no-member,function-redefine
         # ValueSet
         #
 
-        def VS(name=None, bits=None, region=None, val=None):
+        def VS(name=None, bits=None, region=None, val=None):  # noqa: F811
             region = "foobar" if region is None else region
             return claripy.ValueSet(bits, region=region, region_base_addr=0, value=val, name=name)
 
