@@ -579,22 +579,32 @@ class Base:
     #        else:
     #            yield backend.convert(a)
 
-    def make_like(self: T, op: str, args: Iterable, **kwargs) -> T:
+    def make_like(
+        self: T,
+        op: str,
+        args: Iterable,
+        simplify=False,
+        annotations=None,
+        variables=None,
+        symbolic=None,
+        uninitialized=None,
+        skip_child_annotations=False,
+        length=None,
+    ) -> T:
         # Try to simplify the expression again
-        simplified = simplifications.simpleton.simplify(op, args) if kwargs.pop("simplify", False) is True else None
+        simplified = simplifications.simpleton.simplify(op, args) if simplify else None
         if simplified is not None:
             op = simplified.op
-        if (
+        if (  # fast path
             simplified is None
-            and len(kwargs) == 3
-            and "annotations" in kwargs
-            and kwargs["annotations"]
-            and "skip_child_annotations" in kwargs
-            and kwargs["skip_child_annotations"] is True
-            and "length" in kwargs
+            and annotations
+            and variables is None
+            and symbolic is None
+            and uninitialized is None
+            and skip_child_annotations
+            and length is not None
         ):
-            # fast path
-            annotations = tuple(kwargs["annotations"])
+            annotations = annotations
             uneliminatable_annotations = frozenset(
                 anno for anno in annotations if not anno.eliminatable and not anno.relocatable
             )
@@ -609,7 +619,7 @@ class Base:
                 variables=self.variables,
                 uninitialized=self._uninitialized,
                 symbolic=self.symbolic,
-                length=kwargs["length"],
+                length=length,
                 depth=self.depth,
                 eager_backends=self._eager_backends,
                 uc_alloc_depth=self._uc_alloc_depth,
@@ -618,22 +628,25 @@ class Base:
         all_operations = operations.leaf_operations_symbolic_with_union
         # special case: if self is one of the args, we do not copy annotations over from self since child
         # annotations will be re-processed during AST creation.
-        if "annotations" not in kwargs and (not args or not any(self is arg for arg in args)):
-            kwargs["annotations"] = self.annotations
-        if "variables" not in kwargs and op in all_operations:
-            kwargs["variables"] = self.variables
-        if "uninitialized" not in kwargs:
-            kwargs["uninitialized"] = self._uninitialized
-        if "symbolic" not in kwargs and op in all_operations:
-            kwargs["symbolic"] = self.symbolic
+        if annotations is None:
+            annotations = self.annotations if not args or not any(self is arg for arg in args) else ()
+        if variables is None and op in all_operations:
+            variables = self.variables
+        if uninitialized is None:
+            uninitialized = self._uninitialized
+        if symbolic is None and op in all_operations:
+            symbolic = self.symbolic
 
-        if simplified is None:
-            # Cannot simplify the expression anymore
-            return type(self)(op, args, **kwargs)
-        else:
-            # The expression is simplified
-            r = type(self)(op, simplified.args, **kwargs)
-            return r
+        return type(self)(
+            op,
+            args if simplified is None else simplified.args,
+            annotations=annotations,
+            variables=variables,
+            uninitialized=uninitialized,
+            symbolic=symbolic,
+            skip_child_annotations=skip_child_annotations,
+            length=length,
+        )
 
     def _rename(self, new_name):
         if self.op not in {"BVS", "BoolS", "FPS"}:
