@@ -8,7 +8,7 @@ NUMBER_SOLUTIONS_TO_COMPARE = 5
 
 
 def solution_ast(var, val):
-    if type(var) == claripy.ast.strings.String:
+    if isinstance(var, claripy.ast.strings.String):
         return claripy.StringV(val)
     return (var == val).args[1]
 

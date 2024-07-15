@@ -947,7 +947,7 @@ class Base:
 
         for arg_a, arg_b in zip(self.args, o.args):
             if not isinstance(arg_a, Base):
-                if type(arg_a) != type(arg_b):
+                if type(arg_a) != type(arg_b):  # noqa: E721
                     return False
                 # They are not ASTs
                 if arg_a != arg_b:

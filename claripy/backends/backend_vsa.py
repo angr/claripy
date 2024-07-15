@@ -212,7 +212,7 @@ class BackendVSA(Backend):
         raise BackendError("nope")
 
     def _identical(self, a, b):
-        if type(a) != type(b):
+        if type(a) != type(b):  # noqa: E721
             return False
         return a.identical(b)
 
