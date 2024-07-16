@@ -133,7 +133,23 @@ class Base:
     MID_REPR = 1
     FULL_REPR = 2
 
-    def __new__(cls, op, args, add_variables=None, hash=None, **kwargs):  # pylint:disable=redefined-builtin
+    def __new__(  # pylint:disable=redefined-builtin
+        cls,
+        op,
+        args,
+        add_variables=None,
+        hash=None,
+        symbolic=None,
+        variables=None,
+        errored=None,
+        eager_backends=None,
+        uninitialized=None,
+        uc_alloc_depth=None,
+        annotations=(),
+        skip_child_annotations=False,
+        length=None,
+        encoded_name=None,
+    ):
         """
         This is called when you create a new Base object, whether directly or through an operation.
         It finalizes the arguments (see the _finalize function, above) and then computes
@@ -159,9 +175,9 @@ class Base:
         a_args = args if type(args) is tuple else tuple(args)
 
         # initialize the following properties: symbolic, variables and errored
-        need_symbolic = "symbolic" not in kwargs
-        need_variables = "variables" not in kwargs
-        need_errored = "errored" not in kwargs
+        need_symbolic = symbolic is None
+        need_variables = variables is None
+        need_errored = errored is None
         args_have_annotations = None
         # Note that `args_have_annotations` may not be set if we don't need to set any of the above variables, in which
         # case it will stay as None, and will be passed to __a_init__() "as is". __a_init__() will properly handle it
@@ -182,25 +198,25 @@ class Base:
                     errored_set |= a._errored
                 if args_have_annotations is not True:
                     args_have_annotations = args_have_annotations or bool(a.annotations)
-                if arg_max_depth < a.depth:
-                    arg_max_depth = a.depth
+                arg_max_depth = max(arg_max_depth, a.depth)
 
             if need_symbolic:
-                kwargs["symbolic"] = symbolic_flag
+                symbolic = symbolic_flag
             if need_variables:
-                kwargs["variables"] = frozenset(variables_set)
+                variables = frozenset(variables_set)
             if need_errored:
-                kwargs["errored"] = errored_set
+                errored = errored_set
 
-        if type(kwargs["variables"]) is not frozenset:  # pylint:disable=unidiomatic-typecheck
-            kwargs["variables"] = frozenset(kwargs["variables"])
+        if not isinstance(variables, frozenset):
+            variables = frozenset(variables)
 
         if add_variables:
-            kwargs["variables"] = kwargs["variables"] | add_variables
+            variables = variables | add_variables
 
-        eager_backends = list(backends._eager_backends) if "eager_backends" not in kwargs else kwargs["eager_backends"]
+        if eager_backends is None:
+            eager_backends = list(backends._eager_backends)
 
-        if not kwargs["symbolic"] and eager_backends is not None and op not in operations.leaf_operations:
+        if not symbolic and op not in operations.leaf_operations:
             for eb in eager_backends:
                 try:
                     r = operations._handle_annotations(eb._abstract(eb.call(op, args)), args)
@@ -212,20 +228,9 @@ class Base:
                     eager_backends.remove(eb)
 
             # if we can't be eager anymore, null out the eagerness
-            kwargs["eager_backends"] = None
-
-        # whether this guy is initialized or not
-        if "uninitialized" not in kwargs:
-            kwargs["uninitialized"] = None
-
-        if "uc_alloc_depth" not in kwargs:
-            kwargs["uc_alloc_depth"] = None
-
-        annotations = () if "annotations" not in kwargs or kwargs["annotations"] is None else kwargs["annotations"]
+            eager_backends = None
 
         # process annotations
-        skip_child_annotations = kwargs.pop("skip_child_annotations") if "skip_child_annotations" in kwargs else False
-
         if not annotations and not args_have_annotations:
             uneliminatable_annotations = frozenset()
             relocatable_annotations = frozenset()
@@ -265,24 +270,33 @@ class Base:
                 )
             )
 
-        kwargs["annotations"] = annotations
-
         cache = cls._hash_cache
         if hash is not None:
             h = hash
         elif op in {"BVS", "BVV", "BoolS", "BoolV", "FPS", "FPV"} and not annotations:
             if op == "FPV" and a_args[0] == 0.0 and math.copysign(1, a_args[0]) < 0:
                 # Python does not distinguish between +0.0 and -0.0 so we add sign to tuple to distinguish
-                h = (op, kwargs.get("length", None), ("-", *a_args))
+                h = (op, length, ("-", *a_args))
             elif op == "FPV" and math.isnan(a_args[0]):
                 # cannot compare nans
-                h = (op, kwargs.get("length", None), ("nan",) + a_args[1:])
+                h = (op, length, ("nan",) + a_args[1:])
             else:
-                h = (op, kwargs.get("length", None), a_args)
+                h = (op, length, a_args)
 
             cache = cls._leaf_cache
         else:
-            h = Base._calc_hash(op, a_args, kwargs) if hash is None else hash
+            h = (
+                Base._calc_hash(
+                    op,
+                    a_args,
+                    variables,
+                    symbolic,
+                    annotations,
+                    length=length,
+                )
+                if hash is None
+                else hash
+            )
         self = cache.get(h, None)
         if self is None:
             self = super().__new__(cls)
@@ -290,10 +304,18 @@ class Base:
             self.__a_init__(
                 op,
                 a_args,
+                variables=variables,
+                symbolic=symbolic,
+                length=length,
+                errored=errored,
+                eager_backends=eager_backends,
+                uninitialized=uninitialized,
+                uc_alloc_depth=uc_alloc_depth,
+                annotations=annotations,
+                encoded_name=encoded_name,
                 depth=depth,
                 uneliminatable_annotations=uneliminatable_annotations,
                 relocatable_annotations=relocatable_annotations,
-                **kwargs,
             )
             self._hash = h
             cache[h] = self
@@ -305,10 +327,29 @@ class Base:
 
     @classmethod
     def __init_with_annotations__(
-        cls, op, a_args, depth=None, uneliminatable_annotations=None, relocatable_annotations=None, **kwargs
+        cls,
+        op,
+        a_args,
+        variables,
+        symbolic,
+        annotations,
+        depth=None,
+        uneliminatable_annotations=None,
+        relocatable_annotations=None,
+        length=None,
+        uninitialized=None,
+        eager_backends=None,
+        uc_alloc_depth=None,
     ):
         cache = cls._hash_cache
-        h = Base._calc_hash(op, a_args, kwargs)
+        h = Base._calc_hash(
+            op,
+            a_args,
+            variables,
+            symbolic,
+            annotations,
+            length=length,
+        )
         self = cache.get(h, None)
         if self is not None:
             return self
@@ -320,7 +361,13 @@ class Base:
             depth=depth,
             uneliminatable_annotations=uneliminatable_annotations,
             relocatable_annotations=relocatable_annotations,
-            **kwargs,
+            variables=variables,
+            symbolic=symbolic,
+            annotations=annotations,
+            length=length,
+            uninitialized=uninitialized,
+            eager_backends=eager_backends,
+            uc_alloc_depth=uc_alloc_depth,
         )
 
         self._hash = h
@@ -341,7 +388,7 @@ class Base:
         pass
 
     @staticmethod
-    def _calc_hash(op, args, keywords):
+    def _calc_hash(op, args, variables, symbolic, annotations, length=None):
         """
         Calculates the hash of an AST, given the operation, args, and kwargs.
 
@@ -357,16 +404,23 @@ class Base:
         # HASHCONS: these attributes key the cache
         # BEFORE CHANGING THIS, SEE ALL OTHER INSTANCES OF "HASHCONS" IN THIS FILE
 
-        to_hash = Base._ast_serialize(op, args_tup, keywords)
+        to_hash = Base._ast_serialize(
+            op,
+            args_tup,
+            length,
+            variables,
+            symbolic,
+            annotations,
+        )
         if to_hash is None:
             # fall back to pickle.dumps
             to_hash = (
                 op,
                 args_tup,
-                str(keywords.get("length", None)),
-                hash(keywords["variables"]),
-                keywords["symbolic"],
-                hash(keywords.get("annotations", None)),
+                str(length),
+                hash(variables),
+                symbolic,
+                hash(annotations),
             )
             to_hash = pickle.dumps(to_hash, -1)
 
@@ -417,7 +471,7 @@ class Base:
         return None
 
     @staticmethod
-    def _ast_serialize(op: str, args_tup, keywords) -> bytes | None:
+    def _ast_serialize(op: str, args_tup, length, variables, symbolic, annotations) -> bytes | None:
         """
         Serialize the AST and get a bytestring for hashing.
 
@@ -431,19 +485,10 @@ class Base:
         if serialized_args is None:
             return None
 
-        if "length" in keywords:
-            length = Base._arg_serialize(keywords["length"])
-            if length is None:
-                return None
-        else:
-            length = b"none"
-
-        variables = struct.pack("<Q", hash(keywords["variables"]) & 0xFFFF_FFFF_FFFF_FFFF)
-        symbolic = b"\x01" if keywords["symbolic"] else b"\x00"
-        if "annotations" in keywords:
-            annotations = struct.pack("<Q", hash(keywords["annotations"]) & 0xFFFF_FFFF_FFFF_FFFF)
-        else:
-            annotations = b"\xf9"
+        length = Base._arg_serialize(length)
+        variables = struct.pack("<Q", hash(variables) & 0xFFFF_FFFF_FFFF_FFFF)
+        symbolic = b"\x01" if symbolic else b"\x00"
+        annotations = struct.pack("<Q", hash(annotations) & 0xFFFF_FFFF_FFFF_FFFF)
 
         return op.encode() + serialized_args + length + variables + symbolic + annotations
 
@@ -533,22 +578,31 @@ class Base:
     #        else:
     #            yield backend.convert(a)
 
-    def make_like(self: T, op: str, args: Iterable, **kwargs) -> T:
+    def make_like(
+        self: T,
+        op: str,
+        args: Iterable,
+        simplify=False,
+        annotations=None,
+        variables=None,
+        symbolic=None,
+        uninitialized=None,
+        skip_child_annotations=False,
+        length=None,
+    ) -> T:
         # Try to simplify the expression again
-        simplified = simplifications.simpleton.simplify(op, args) if kwargs.pop("simplify", False) is True else None
+        simplified = simplifications.simpleton.simplify(op, args) if simplify else None
         if simplified is not None:
             op = simplified.op
-        if (
+        if (  # fast path
             simplified is None
-            and len(kwargs) == 3
-            and "annotations" in kwargs
-            and kwargs["annotations"]
-            and "skip_child_annotations" in kwargs
-            and kwargs["skip_child_annotations"] is True
-            and "length" in kwargs
+            and annotations
+            and variables is None
+            and symbolic is None
+            and uninitialized is None
+            and skip_child_annotations
+            and length is not None
         ):
-            # fast path
-            annotations = tuple(kwargs["annotations"])
             uneliminatable_annotations = frozenset(
                 anno for anno in annotations if not anno.eliminatable and not anno.relocatable
             )
@@ -563,7 +617,7 @@ class Base:
                 variables=self.variables,
                 uninitialized=self._uninitialized,
                 symbolic=self.symbolic,
-                length=kwargs["length"],
+                length=length,
                 depth=self.depth,
                 eager_backends=self._eager_backends,
                 uc_alloc_depth=self._uc_alloc_depth,
@@ -572,22 +626,25 @@ class Base:
         all_operations = operations.leaf_operations_symbolic_with_union
         # special case: if self is one of the args, we do not copy annotations over from self since child
         # annotations will be re-processed during AST creation.
-        if "annotations" not in kwargs and (not args or not any(self is arg for arg in args)):
-            kwargs["annotations"] = self.annotations
-        if "variables" not in kwargs and op in all_operations:
-            kwargs["variables"] = self.variables
-        if "uninitialized" not in kwargs:
-            kwargs["uninitialized"] = self._uninitialized
-        if "symbolic" not in kwargs and op in all_operations:
-            kwargs["symbolic"] = self.symbolic
+        if annotations is None:
+            annotations = self.annotations if not args or not any(self is arg for arg in args) else ()
+        if variables is None and op in all_operations:
+            variables = self.variables
+        if uninitialized is None:
+            uninitialized = self._uninitialized
+        if symbolic is None and op in all_operations:
+            symbolic = self.symbolic
 
-        if simplified is None:
-            # Cannot simplify the expression anymore
-            return type(self)(op, args, **kwargs)
-        else:
-            # The expression is simplified
-            r = type(self)(op, simplified.args, **kwargs)
-            return r
+        return type(self)(
+            op,
+            args if simplified is None else simplified.args,
+            annotations=annotations,
+            variables=variables,
+            uninitialized=uninitialized,
+            symbolic=symbolic,
+            skip_child_annotations=skip_child_annotations,
+            length=length,
+        )
 
     def _rename(self, new_name):
         if self.op not in {"BVS", "BoolS", "FPS"}:
@@ -1350,5 +1407,6 @@ def simplify(e: T) -> T:
         return s
 
 
+# pylint:disable=wrong-import-position
 from claripy.ast.bool import BoolS, If, Not  # noqa: E402
 from claripy.ast.bv import BV  # noqa: E402
