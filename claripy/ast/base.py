@@ -604,7 +604,7 @@ class Base:
             op = simplified.op
         if (  # fast path
             simplified is None
-            and annotations
+            and annotations is not None
             and variables is None
             and symbolic is None
             and uninitialized is None
