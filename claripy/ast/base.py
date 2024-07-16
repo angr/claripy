@@ -739,6 +739,14 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: tuple(oa for oa in alist if oa not in remove_sequence))
 
+    def clear_annotations(self: T) -> T:
+        """
+        Removes all annotations from this AST.
+
+        :returns:                   a new AST, with all annotations removed
+        """
+        return self._apply_to_annotations(lambda _: ())
+
     #
     # Viewing and debugging
     #

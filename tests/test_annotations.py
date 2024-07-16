@@ -139,6 +139,16 @@ def test_annotations():
     assert const2.depth == 3
 
 
+def test_clear_annotations():
+    x = claripy.BVS("x", 32).annotate(AnnotationA("a", 1))
+    y = x.clear_annotations()
+    assert len(y.annotations) == 0
+
+    x2 = claripy.BVS("x", 32).annotate(AnnotationA("a", 1)).annotate(AnnotationA("b", 2))
+    y2 = x2.clear_annotations()
+    assert len(y2.annotations) == 0
+
+
 def test_eagerness():
     x = claripy.BVV(10, 32).annotate(AnnotationD())
     y = x + 1
