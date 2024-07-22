@@ -31,7 +31,8 @@ from pysmt.shortcuts import (
 )
 from pysmt.typing import BOOL, INT, STRING
 
-from . import Backend, BackendError
+from claripy.backends.backend import Backend
+from claripy.errors import BackendError
 
 l = logging.getLogger("claripy.backends.backend_smt")
 

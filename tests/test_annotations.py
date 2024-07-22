@@ -1,5 +1,6 @@
 # pylint:disable=missing-class-docstring,multiple-statements
 import claripy
+from claripy.backends.backend import Backend
 
 
 class AnnotationA(claripy.Annotation):
@@ -46,9 +47,9 @@ class AnnotationD(claripy.Annotation):
         return True
 
 
-class BackendA(claripy.Backend):
+class BackendA(Backend):
     def __init__(self):
-        claripy.Backend.__init__(self)
+        super().__init__(self)
         self._op_expr["BVV"] = lambda e, result=None: e.args[0]
 
     def apply_annotation(self, o, a):

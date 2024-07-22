@@ -19,6 +19,7 @@ from claripy.ast.bool import Bool, BoolV
 from claripy.ast.bv import BV, BVV
 from claripy.ast.fp import FP, FPV
 from claripy.ast.strings import StringV
+from claripy.backends.backend import Backend
 from claripy.errors import (
     BackendError,
     ClaripyError,
@@ -28,8 +29,6 @@ from claripy.errors import (
 )
 from claripy.fp import RM, FSort
 from claripy.operations import backend_fp_operations, backend_operations, backend_strings_operations
-
-from . import Backend
 
 l = logging.getLogger("claripy.backends.backend_z3")
 
