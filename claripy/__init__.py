@@ -17,7 +17,7 @@ from . import ops as _all_operations
 
 # This is here for later, because we'll fuck the namespace in a few lines
 from . import backends as _backends_module
-from .backends import Backend as Backend
+from .backends.backend import Backend as Backend
 from .backend_object import BackendObject as BackendObject
 
 

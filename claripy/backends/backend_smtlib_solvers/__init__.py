@@ -3,9 +3,8 @@ import hashlib
 import os
 
 from claripy.ast.bv import BV
-
-from claripy.backends import BackendError
 from claripy.backends.backend_smtlib import BackendSMTLibBase
+from claripy.errors import BackendError
 from claripy.smtlib_utils import SMTParser, make_pysmt_const_from_type
 
 from pysmt.smtlib.parser import Tokenizer
