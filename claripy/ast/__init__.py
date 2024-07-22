@@ -6,20 +6,16 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .bits import Bits
     from .bv import BV
-    from .vs import VS
     from .fp import FP
     from .bool import Bool, true, false
-    from .int import Int
     from .base import Base
     from .strings import String
     from claripy import ops as all_operations
 else:
     Bits = lambda *args, **kwargs: None
     BV = lambda *args, **kwargs: None
-    VS = lambda *args, **kwargs: None
     FP = lambda *args, **kwargs: None
     Bool = lambda *args, **kwargs: None
-    Int = lambda *args, **kwargs: None
     Base = lambda *args, **kwargs: None
     true = lambda *args, **kwargs: None
     false = lambda *args, **kwargs: None
@@ -28,17 +24,15 @@ else:
 
 
 def _import():
-    global Bits, BV, VS, FP, Bool, Int, Base, String, true, false, all_operations
+    global Bits, BV, FP, Bool, Base, String, true, false, all_operations
 
     from .bits import Bits
     from .bv import BV
-    from .vs import VS
     from .fp import FP
     from .bool import Bool, true, false
-    from .int import Int
     from .base import Base
     from .strings import String
     from claripy import ops as all_operations
 
 
-__all__ = ("Bits", "BV", "VS", "FP", "Bool", "true", "false", "Int", "Base", "String", "all_operations")
+__all__ = ("Bits", "BV", "FP", "Bool", "true", "false", "Base", "String", "all_operations")
