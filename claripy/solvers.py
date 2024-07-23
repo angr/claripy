@@ -106,7 +106,7 @@ class SolverStrings(
     frontend_mixins.SMTLibScriptDumperMixin,
     frontends.FullFrontend,
 ):
-    def __init__(self, backend, *args, **kwargs):
+    def __init__(self, backend=backends.z3, *args, **kwargs):
         super().__init__(backend, *args, **kwargs)
 
 

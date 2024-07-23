@@ -1,3 +1,4 @@
+# pylint: disable=no-self-use
 import logging
 from unittest import TestCase, main
 
@@ -615,6 +616,8 @@ class StandardTests(TestCase):
 
 
 class Base:
+    solver: type[claripy.Solver]
+
     def test_solver_with_reuse(self):
         raw_solver(self.solver, True)
 
