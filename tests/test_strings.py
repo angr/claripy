@@ -212,6 +212,7 @@ class TestStrings(unittest.TestCase):
         str_symb = claripy.StringS("symb_suffix", 4, explicit_name=True)
         res = claripy.StrSuffixOf(claripy.StringV("an"), str_symb)
         solver = claripy.SolverStrings()
+        solver.add(res)
         self.assertTrue(solver.satisfiable())
 
         solutions = solver.eval(str_symb, 4 if KEEP_TEST_PERFORMANT else 100)
