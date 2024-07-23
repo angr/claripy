@@ -132,12 +132,12 @@ def _fp_length_calc(a1, a2, a3=None):
         return a3.length
 
 
-fpToFP = operations.op("fpToFP", object, FP, bound=False, calc_length=_fp_length_calc)
-fpToFPUnsigned = operations.op("fpToFPUnsigned", (fp.RM, BV, fp.FSort), FP, bound=False, calc_length=_fp_length_calc)
-fpFP = operations.op("fpFP", (BV, BV, BV), FP, bound=False, calc_length=lambda a, b, c: a.length + b.length + c.length)
-fpToIEEEBV = operations.op("fpToIEEEBV", (FP,), BV, bound=False, calc_length=lambda fp: fp.length)
-fpToSBV = operations.op("fpToSBV", (fp.RM, FP, int), BV, bound=False, calc_length=lambda _rm, _fp, len: len)
-fpToUBV = operations.op("fpToUBV", (fp.RM, FP, int), BV, bound=False, calc_length=lambda _rm, _fp, len: len)
+fpToFP = operations.op("fpToFP", object, FP, calc_length=_fp_length_calc)
+fpToFPUnsigned = operations.op("fpToFPUnsigned", (fp.RM, BV, fp.FSort), FP, calc_length=_fp_length_calc)
+fpFP = operations.op("fpFP", (BV, BV, BV), FP, calc_length=lambda a, b, c: a.length + b.length + c.length)
+fpToIEEEBV = operations.op("fpToIEEEBV", (FP,), BV, calc_length=lambda fp: fp.length)
+fpToSBV = operations.op("fpToSBV", (fp.RM, FP, int), BV, calc_length=lambda _rm, _fp, len: len)
+fpToUBV = operations.op("fpToUBV", (fp.RM, FP, int), BV, calc_length=lambda _rm, _fp, len: len)
 
 #
 # unbound float point comparisons
@@ -148,13 +148,13 @@ def _fp_cmp_check(a, b):
     return a.length == b.length, "FP lengths must be the same"
 
 
-fpEQ = operations.op("fpEQ", (FP, FP), Bool, bound=False, extra_check=_fp_cmp_check)
-fpGT = operations.op("fpGT", (FP, FP), Bool, bound=False, extra_check=_fp_cmp_check)
-fpGEQ = operations.op("fpGEQ", (FP, FP), Bool, bound=False, extra_check=_fp_cmp_check)
-fpLT = operations.op("fpLT", (FP, FP), Bool, bound=False, extra_check=_fp_cmp_check)
-fpLEQ = operations.op("fpLEQ", (FP, FP), Bool, bound=False, extra_check=_fp_cmp_check)
-fpIsNaN = operations.op("fpIsNaN", (FP,), Bool, bound=False)
-fpIsInf = operations.op("fpIsInf", (FP,), Bool, bound=False)
+fpEQ = operations.op("fpEQ", (FP, FP), Bool, extra_check=_fp_cmp_check)
+fpGT = operations.op("fpGT", (FP, FP), Bool, extra_check=_fp_cmp_check)
+fpGEQ = operations.op("fpGEQ", (FP, FP), Bool, extra_check=_fp_cmp_check)
+fpLT = operations.op("fpLT", (FP, FP), Bool, extra_check=_fp_cmp_check)
+fpLEQ = operations.op("fpLEQ", (FP, FP), Bool, extra_check=_fp_cmp_check)
+fpIsNaN = operations.op("fpIsNaN", (FP,), Bool)
+fpIsInf = operations.op("fpIsInf", (FP,), Bool)
 
 #
 # unbound floating point arithmetic
@@ -169,20 +169,12 @@ def _fp_binop_length(rm, a, b):  # pylint:disable=unused-argument
     return a.length
 
 
-fpAbs = operations.op("fpAbs", (FP,), FP, bound=False, calc_length=lambda x: x.length)
-fpNeg = operations.op("fpNeg", (FP,), FP, bound=False, calc_length=lambda x: x.length)
-fpSub = operations.op(
-    "fpSub", (fp.RM, FP, FP), FP, bound=False, extra_check=_fp_binop_check, calc_length=_fp_binop_length
-)
-fpAdd = operations.op(
-    "fpAdd", (fp.RM, FP, FP), FP, bound=False, extra_check=_fp_binop_check, calc_length=_fp_binop_length
-)
-fpMul = operations.op(
-    "fpMul", (fp.RM, FP, FP), FP, bound=False, extra_check=_fp_binop_check, calc_length=_fp_binop_length
-)
-fpDiv = operations.op(
-    "fpDiv", (fp.RM, FP, FP), FP, bound=False, extra_check=_fp_binop_check, calc_length=_fp_binop_length
-)
+fpAbs = operations.op("fpAbs", (FP,), FP, calc_length=lambda x: x.length)
+fpNeg = operations.op("fpNeg", (FP,), FP, calc_length=lambda x: x.length)
+fpSub = operations.op("fpSub", (fp.RM, FP, FP), FP, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
+fpAdd = operations.op("fpAdd", (fp.RM, FP, FP), FP, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
+fpMul = operations.op("fpMul", (fp.RM, FP, FP), FP, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
+fpDiv = operations.op("fpDiv", (fp.RM, FP, FP), FP, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
 fpSqrt = operations.op(
     "fpSqrt",
     (
@@ -190,7 +182,6 @@ fpSqrt = operations.op(
         FP,
     ),
     FP,
-    bound=False,
     calc_length=lambda _, x: x.length,
 )
 

@@ -5,9 +5,7 @@ from . import debug as _d
 from .errors import ClaripyOperationError, ClaripyTypeError
 
 
-def op(
-    name, arg_types, return_type, extra_check=None, calc_length=None, do_coerce=True, bound=True
-):  # pylint:disable=unused-argument
+def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coerce=True):
     if type(arg_types) in (tuple, list):  # pylint:disable=unidiomatic-typecheck
         expected_num_args = len(arg_types)
     elif type(arg_types) is type:  # pylint:disable=unidiomatic-typecheck
