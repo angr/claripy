@@ -105,7 +105,7 @@ class SolverStrings(
     frontend_mixins.EvalStringsToASTsMixin,
     frontends.FullFrontend,
 ):
-    def __init__(self, backend=backends.z3, *args, **kwargs):
+    def __init__(self, *args, backend=backends.z3, **kwargs):
         super().__init__(backend, *args, **kwargs)
 
 
