@@ -103,7 +103,6 @@ class SolverStrings(
     frontend_mixins.ConstraintDeduplicatorMixin,
     frontend_mixins.EagerResolutionMixin,
     frontend_mixins.EvalStringsToASTsMixin,
-    frontend_mixins.SMTLibScriptDumperMixin,
     frontends.FullFrontend,
 ):
     def __init__(self, backend=backends.z3, *args, **kwargs):
