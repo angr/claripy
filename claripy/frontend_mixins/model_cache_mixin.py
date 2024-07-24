@@ -7,8 +7,6 @@ from claripy.errors import UnsatError
 
 
 class ModelCache:
-    _defaults = {0, 0.0, True}
-
     def __init__(self, model):
         self.model = model
         self.replacements = weakref.WeakKeyDictionary()
@@ -116,6 +114,8 @@ class ModelCache:
 
 
 class ModelCacheMixin:
+    """ModelCacheMixin is a mixin that caches models for a solver."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._models = set()
@@ -350,10 +350,13 @@ class ModelCacheMixin:
             cached = self._get_solutions(e, extra_constraints=extra_constraints, allow_unconstrained=False)
 
         if len(cached) > 0:
-            signed_key = lambda v: v if v < 2 ** (len(e) - 1) else v - 2 ** len(e)
+
+            def signed_key(v):
+                return v if v >= 0 else v + 2 ** len(e)
+
             return min(cached, key=signed_key if signed else lambda v: v)
         else:
-            m = super().min(e, extra_constraints=extra_constraints, signed=signed, exact=None)
+            m = super().min(e, extra_constraints=extra_constraints, signed=signed, exact=exact)
             if len(extra_constraints) == 0:
                 (self._min_signed_exhausted if signed else self._min_exhausted).add(e.cache_key)
             return m
@@ -364,10 +367,13 @@ class ModelCacheMixin:
             cached = self._get_solutions(e, extra_constraints=extra_constraints, allow_unconstrained=False)
 
         if len(cached) > 0:
-            signed_key = lambda v: v if v < 2 ** (len(e) - 1) else v - 2 ** len(e)
+
+            def signed_key(v):
+                return v if v < 2 ** (len(e) - 1) else v - 2 ** len(e)
+
             return max(cached, key=signed_key if signed else lambda v: v)
         else:
-            m = super().max(e, extra_constraints=extra_constraints, signed=signed, exact=None)
+            m = super().max(e, extra_constraints=extra_constraints, signed=signed, exact=exact)
             if len(extra_constraints) == 0:
                 (self._max_signed_exhausted if signed else self._max_exhausted).add(e.cache_key)
             return m
@@ -382,4 +388,4 @@ class ModelCacheMixin:
             if v in cached:
                 return True
 
-        return super().solution(e, v, extra_constraints=extra_constraints, exact=None)
+        return super().solution(e, v, extra_constraints=extra_constraints, exact=exact)

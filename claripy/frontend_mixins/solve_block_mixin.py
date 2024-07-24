@@ -1,4 +1,6 @@
 class SolveBlockMixin:
+    """SolveBlockMixin that adds the ability to block solving by setting can_solve to False."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.can_solve = True
@@ -20,7 +22,7 @@ class SolveBlockMixin:
 
     def eval(self, e, n, extra_constraints=(), exact=None):
         assert self.can_solve
-        return super().eval(e.n, extra_constraints=extra_constraints, exact=exact)
+        return super().eval(e, n, extra_constraints=extra_constraints, exact=exact)
 
     def batch_eval(self, exprs, n, extra_constraints=(), exact=None):
         assert self.can_solve

@@ -339,5 +339,5 @@ class FullFrontend(ConstrainedFrontend):
     # Default model hook
     #
 
-    def _model_hook(self, m):
+    def _model_hook(self, m):  # pylint:disable=unused-argument,no-self-use
         return None
