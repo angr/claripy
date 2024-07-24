@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pysmt
 from pysmt.shortcuts import Symbol
 from pysmt.smtlib.parser import PysmtSyntaxError, SmtLibParser

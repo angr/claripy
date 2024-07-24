@@ -1,4 +1,6 @@
 # pylint:disable=missing-class-docstring,multiple-statements
+from __future__ import annotations
+
 import claripy
 from claripy.backends.backend import Backend
 

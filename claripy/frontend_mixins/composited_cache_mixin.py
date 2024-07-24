@@ -1,6 +1,7 @@
 # hits = 0
 # misses = 0
 # ejects = 0
+from __future__ import annotations
 
 
 class CompositedCacheMixin:

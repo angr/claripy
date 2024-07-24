@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from claripy import false
 from claripy.errors import ClaripyValueError, UnsatError
 

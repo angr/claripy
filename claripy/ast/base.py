@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import itertools
 import logging
 import math
@@ -5,7 +7,6 @@ import os
 import struct
 import weakref
 from collections import OrderedDict, deque
-from collections.abc import Iterable, Iterator
 from itertools import chain
 from typing import TYPE_CHECKING, Generic, NoReturn, TypeVar
 
@@ -14,6 +15,8 @@ from claripy.backend_manager import backends
 from claripy.errors import BackendError, ClaripyOperationError, ClaripyReplacementError
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable, Iterator
+
     from claripy.annotation import Annotation
 
 try:
@@ -661,7 +664,7 @@ class Base:
     def _apply_to_annotations(self, f):
         return self.make_like(self.op, self.args, annotations=f(self.annotations), skip_child_annotations=True)
 
-    def append_annotation(self: T, a: "Annotation") -> T:
+    def append_annotation(self: T, a: Annotation) -> T:
         """
         Appends an annotation to this AST.
 
@@ -670,7 +673,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: (*alist, a))
 
-    def append_annotations(self: T, new_tuple: tuple["Annotation", ...]) -> T:
+    def append_annotations(self: T, new_tuple: tuple[Annotation, ...]) -> T:
         """
         Appends several annotations to this AST.
 
@@ -679,7 +682,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: alist + new_tuple)
 
-    def annotate(self: T, *args: "Annotation", remove_annotations: Iterable["Annotation"] | None = None) -> T:
+    def annotate(self: T, *args: Annotation, remove_annotations: Iterable[Annotation] | None = None) -> T:
         """
         Appends annotations to this AST.
 
@@ -694,7 +697,7 @@ class Base:
                 lambda alist: tuple(arg for arg in alist if arg not in remove_annotations) + args
             )
 
-    def insert_annotation(self: T, a: "Annotation") -> T:
+    def insert_annotation(self: T, a: Annotation) -> T:
         """
         Inserts an annotation to this AST.
 
@@ -703,7 +706,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: (a, *alist))
 
-    def insert_annotations(self: T, new_tuple: tuple["Annotation", ...]) -> T:
+    def insert_annotations(self: T, new_tuple: tuple[Annotation, ...]) -> T:
         """
         Inserts several annotations to this AST.
 
@@ -712,7 +715,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: new_tuple + alist)
 
-    def replace_annotations(self: T, new_tuple: tuple["Annotation", ...]) -> T:
+    def replace_annotations(self: T, new_tuple: tuple[Annotation, ...]) -> T:
         """
         Replaces annotations on this AST.
 
@@ -721,7 +724,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: new_tuple)
 
-    def remove_annotation(self: T, a: "Annotation") -> T:
+    def remove_annotation(self: T, a: Annotation) -> T:
         """
         Removes an annotation from this AST.
 
@@ -730,7 +733,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: tuple(oa for oa in alist if oa != a))
 
-    def remove_annotations(self: T, remove_sequence: Iterable["Annotation"]) -> T:
+    def remove_annotations(self: T, remove_sequence: Iterable[Annotation]) -> T:
         """
         Removes several annotations from this AST.
 
@@ -873,7 +876,7 @@ class Base:
 
         return "{}({})".format(op, ", ".join(str(arg) for arg in args))
 
-    def children_asts(self) -> Iterator["Base"]:
+    def children_asts(self) -> Iterator[Base]:
         """
         Return an iterator over the nested children ASTs.
         """
@@ -891,7 +894,7 @@ class Base:
                 l.debug("Yielding AST %s with hash %s with %d children", ast, hash(ast), len(ast.args))
                 yield ast
 
-    def leaf_asts(self) -> Iterator["Base"]:
+    def leaf_asts(self) -> Iterator[Base]:
         """
         Return an iterator over the leaf ASTs.
         """

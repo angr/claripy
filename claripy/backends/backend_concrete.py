@@ -1,4 +1,6 @@
 # pylint:disable=duplicate-value,missing-class-docstring
+from __future__ import annotations
+
 import logging
 import numbers
 import operator

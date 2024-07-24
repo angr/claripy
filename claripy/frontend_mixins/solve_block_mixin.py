@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 class SolveBlockMixin:
     """SolveBlockMixin that adds the ability to block solving by setting can_solve to False."""
 

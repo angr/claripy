@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 class ConcreteHandlerMixin:
     def eval(self, e, n, extra_constraints=(), exact=None):
         c = self._concrete_value(e)

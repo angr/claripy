@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from claripy import backends
 from claripy.errors import BackendError
 
