@@ -1,4 +1,3 @@
-# pylint:disable=no-self-use
 import logging
 
 from pysmt.shortcuts import (
@@ -306,7 +305,7 @@ class BackendSMTLibBase(Backend):
         return StrSuffixOf(suffix, input_string)
 
     def _op_raw_str_indexof(self, *args):
-        input_string, substring, start, _ = args  # pylint:disable=unused-variable
+        input_string, substring, start, _ = args
         return StrIndexOf(input_string, substring, start)
 
     def _op_raw_str_strtoint(self, *args):

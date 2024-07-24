@@ -78,7 +78,7 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
     def combine(self, others):
         combined = self.blank_copy()
 
-        combined.add(self.constraints)  # pylint:disable=E1101
+        combined.add(self.constraints)  # pylint:disable=no-member
         for o in others:
             combined.add(o.constraints)
         return combined

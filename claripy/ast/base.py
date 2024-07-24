@@ -33,9 +33,6 @@ WORKER = bool(os.environ.get("WORKER", False))
 md5_unpacker = struct.Struct("2Q")
 from_iterable = chain.from_iterable
 
-# pylint:enable=unused-argument
-# pylint:disable=unidiomatic-typecheck
-
 T = TypeVar("T", bound="Base")
 
 
@@ -133,7 +130,7 @@ class Base:
     MID_REPR = 1
     FULL_REPR = 2
 
-    def __new__(  # pylint:disable=redefined-builtin
+    def __new__(
         cls,
         op,
         args,
@@ -510,7 +507,7 @@ class Base:
         depth=None,
         uneliminatable_annotations=None,
         relocatable_annotations=None,
-    ):  # pylint:disable=unused-argument
+    ):
         """
         Initializes an AST. Takes the same arguments as ``Base.__new__()``
 
@@ -565,7 +562,7 @@ class Base:
     @property
     def _encoded_name(self):
         if self._cached_encoded_name is None:
-            self._cached_encoded_name = self.args[0].encode()  # pylint: disable=attribute-defined-outside-init
+            self._cached_encoded_name = self.args[0].encode()
         return self._cached_encoded_name
 
     #
@@ -751,7 +748,7 @@ class Base:
     # Viewing and debugging
     #
 
-    def dbg_repr(self, prefix=None) -> str:  # pylint:disable=unused-argument
+    def dbg_repr(self) -> str:
         """
         Returns a debug representation of this AST.
         """
@@ -1102,7 +1099,7 @@ class Base:
 
         return rep_queue.pop()
 
-    def replace(self: T, old, new, variable_set=None, leaf_operation=None) -> T:  # pylint:disable=unused-argument
+    def replace(self: T, old, new) -> T:
         """
         Returns this AST but with the AST 'old' replaced with AST 'new' in its subexpressions.
         """
@@ -1269,8 +1266,8 @@ class Base:
         printing.
         """
         if self._burrowed is None:
-            self._burrowed = self._burrow_ite()  # pylint:disable=attribute-defined-outside-init
-            self._burrowed._burrowed = self._burrowed  # pylint:disable=attribute-defined-outside-init
+            self._burrowed = self._burrow_ite()
+            self._burrowed._burrowed = self._burrowed
         return self._burrowed
 
     @property
@@ -1280,7 +1277,7 @@ class Base:
         AST, for processing in static analyses.
         """
         if self._excavated is None:
-            self._excavated = self._excavate_ite()  # pylint:disable=attribute-defined-outside-init
+            self._excavated = self._excavate_ite()
 
             # we set the flag for the children so that we avoid re-excavating during
             # VSA backend evaluation (since the backend evaluation recursively works on

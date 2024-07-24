@@ -94,8 +94,8 @@ class BV(Bits):
                 "Incorrect index %d. Your index must be between %d and %d." % (index, 0, self.size() // 8 - 1)
             )
         r = self[min(pos * 8 + 7, self.size() - 1) : pos * 8]
-        if r.size() % 8 != 0:  # pylint:disable=no-member
-            r = r.zero_extend(8 - r.size() % 8)  # pylint:disable=no-member
+        if r.size() % 8 != 0:
+            r = r.zero_extend(8 - r.size() % 8)
         return r
 
     def get_bytes(self, index, size):
@@ -114,8 +114,8 @@ class BV(Bits):
         if size == 0:
             return BVV(0, 0)
         r = self[min(pos * 8 + 7, self.size() - 1) : (pos - size + 1) * 8]
-        if r.size() % 8 != 0:  # pylint:disable=no-member
-            r = r.zero_extend(8 - r.size() % 8)  # pylint:disable=no-member
+        if r.size() % 8 != 0:
+            r = r.zero_extend(8 - r.size() % 8)
         return r
 
     def zero_extend(self, n):
@@ -210,7 +210,7 @@ def BVS(
     min=None,
     max=None,
     stride=None,
-    uninitialized=False,  # pylint:disable=redefined-builtin
+    uninitialized=False,
     explicit_name=None,
     discrete_set=False,
     discrete_set_max_card=None,

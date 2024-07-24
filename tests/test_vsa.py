@@ -676,7 +676,6 @@ def test_vsa():
 def test_vsa_constraint_to_si():
     # Set backend
     b = claripy.backends.vsa
-    s = claripy.SolverVSA()  # pylint:disable=unused-variable
 
     SI = claripy.SI
     BVV = claripy.BVV
@@ -910,8 +909,6 @@ def test_vsa_discrete_value_set():
     """
     # Set backend
     b = claripy.backends.vsa
-
-    s = claripy.SolverVSA()  # pylint:disable=unused-variable
 
     SI = claripy.SI
     BVV = claripy.BVV

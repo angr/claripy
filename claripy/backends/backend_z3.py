@@ -373,7 +373,7 @@ class BackendZ3(Backend):
         )
 
     @condom
-    def BoolV(self, ast):  # pylint:disable=unused-argument
+    def BoolV(self, ast):
         # TODO: Here the checks performed by the high level API are mandatory before calling the low level API
         #       So we can keep the high level API call here
         return z3.BoolVal(ast.args[0], ctx=self._context)

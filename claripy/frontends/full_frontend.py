@@ -215,7 +215,6 @@ class FullFrontend(ConstrainedFrontend):
 
         l.debug("Frontend.max() with %d extra_constraints", len(extra_constraints))
 
-        # pylint: disable=unsubscriptable-object
         two = self.eval(e, 2, extra_constraints=extra_constraints)
         if len(two) == 0:
             raise UnsatError("unsat during max()")

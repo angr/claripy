@@ -160,7 +160,7 @@ Bool.__or__ = Or
 Bool.__ror__ = Or
 
 
-def is_true(e, exact=None):  # pylint:disable=unused-argument
+def is_true(e):
     for b in backends._quick_backends:
         try:
             return b.is_true(e)
@@ -171,7 +171,7 @@ def is_true(e, exact=None):  # pylint:disable=unused-argument
     return False
 
 
-def is_false(e, exact=None):  # pylint:disable=unused-argument
+def is_false(e):
     for b in backends._quick_backends:
         try:
             return b.is_false(e)
@@ -260,8 +260,8 @@ def constraint_to_si(expr):
     satisfiable, replace_list = backends.vsa.constraint_to_si(expr)
 
     # Make sure the replace_list are all ast.bvs
-    for i in range(len(replace_list)):  # pylint:disable=consider-using-enumerate
-        ori, new = replace_list[i]
+    for i, val in enumerate(replace_list):
+        ori, new = val
         if not isinstance(new, Base):
             new = BVS(
                 new.name, new._bits, min=new._lower_bound, max=new._upper_bound, stride=new._stride, explicit_name=True

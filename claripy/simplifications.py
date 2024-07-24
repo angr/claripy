@@ -1,4 +1,3 @@
-# pylint:disable=isinstance-second-argument-not-valid-type
 import collections
 import itertools
 import operator
@@ -58,8 +57,6 @@ class SimplificationManager:
     #
     # The simplifiers.
     #
-
-    # pylint:disable=inconsistent-return-statements
 
     @staticmethod
     def if_simplifier(cond, if_true, if_false):

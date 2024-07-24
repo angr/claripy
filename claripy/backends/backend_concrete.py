@@ -1,4 +1,3 @@
-# pylint:disable=duplicate-value,missing-class-docstring
 import logging
 import numbers
 import operator
@@ -18,6 +17,8 @@ l = logging.getLogger("claripy.backends.backend_concrete")
 
 
 class BackendConcrete(Backend):
+    """BackendConcrete is a backend that can handle concrete values only."""
+
     __slots__ = ()
 
     def __init__(self):
@@ -121,31 +122,37 @@ class BackendConcrete(Backend):
             return expr.args[0]
         return super().convert(expr)
 
-    def _If(self, b, t, f):  # pylint:disable=no-self-use,unused-argument
+    @staticmethod
+    def _If(b, t, f):
         if not isinstance(b, bool):
             raise BackendError("BackendConcrete can't handle non-bool condition in If.")
         return t if b else f
 
-    def _name(self, e):  # pylint:disable=unused-argument,no-self-use
+    @staticmethod
+    def _name(e):  # pylint:disable=unused-argument
         return None
 
-    def _identical(self, a, b):
+    @staticmethod
+    def _identical(a, b):
         if type(a) is bv.BVV and type(b) is bv.BVV and a.size() != b.size():
             return False
         else:
             return a == b
 
-    def _convert(self, a):
+    @staticmethod
+    def _convert(a):
         if type(a) in {int, str, bytes}:
             return a
         if isinstance(a, numbers.Number | bv.BVV | fp.FPV | fp.RM | fp.FSort | strings.StringV):
             return a
         raise BackendError(f"can't handle AST of type {type(a)}")
 
-    def _simplify(self, e):
+    @staticmethod
+    def _simplify(e):
         return e
 
-    def _abstract(self, e):  # pylint:disable=no-self-use
+    @staticmethod
+    def _abstract(e):
         if isinstance(e, bv.BVV):
             return BVV(e.value, e.size())
         elif isinstance(e, bool):
@@ -157,7 +164,8 @@ class BackendConcrete(Backend):
         else:
             raise BackendError(f"Couldn't abstract object of type {type(e)}")
 
-    def _cardinality(self, b):
+    @staticmethod
+    def _cardinality(b):
         # if we got here, it's a cardinality of 1
         return 1
 

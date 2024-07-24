@@ -457,7 +457,7 @@ def normalizer(*args):
 
 
 def If(c, t, f):
-    t, f = normalizer(t, f)  # pylint:disable=unbalanced-tuple-unpacking
+    t, f = normalizer(t, f)
     if c:
         return t
     else:

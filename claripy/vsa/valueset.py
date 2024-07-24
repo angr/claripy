@@ -1,4 +1,4 @@
-# pylint:disable=unused-argument,no-self-use,wrong-import-position
+# pylint:disable=wrong-import-position
 import functools
 import itertools
 import numbers

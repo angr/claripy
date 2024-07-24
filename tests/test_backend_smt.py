@@ -21,7 +21,7 @@ class TestSMTLibBackend(unittest.TestCase):
             frontend_mixins.EagerResolutionMixin,
             frontend_mixins.SMTLibScriptDumperMixin,
             ConstrainedFrontend,
-        ):  # pylint:disable=abstract-method
+        ):
             def __init__(self, *args, **kwargs):
                 self._solver_backend = backend_manager.backends.smt
                 super().__init__(*args, **kwargs)

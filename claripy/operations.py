@@ -6,9 +6,9 @@ from .errors import ClaripyOperationError, ClaripyTypeError
 
 
 def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coerce=True):
-    if type(arg_types) in (tuple, list):  # pylint:disable=unidiomatic-typecheck
+    if isinstance(arg_types, tuple | list):
         expected_num_args = len(arg_types)
-    elif type(arg_types) is type:  # pylint:disable=unidiomatic-typecheck
+    elif isinstance(arg_types, type):
         expected_num_args = None
     else:
         raise ClaripyOperationError(f"op {name} got weird arg_types")
@@ -49,7 +49,6 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
                 if not success:
                     raise ClaripyOperationError(msg)
 
-        # pylint:disable=too-many-nested-blocks
         simp = _handle_annotations(simplifications.simpleton.simplify(name, fixed_args), args)
         if simp is not None:
             return simp
@@ -59,7 +58,6 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
             kwargs["length"] = calc_length(*fixed_args)
 
         kwargs["uninitialized"] = None
-        # pylint:disable=isinstance-second-argument-not-valid-type
         if any(a.uninitialized is True for a in args if isinstance(a, ast.Base)):
             kwargs["uninitialized"] = True
         if name in preprocessors:
@@ -75,7 +73,6 @@ def _handle_annotations(simp, args):
     if simp is None:
         return None
 
-    # pylint:disable=isinstance-second-argument-not-valid-type
     ast_args = tuple(a for a in args if isinstance(a, ast.Base))
     preserved_relocatable = frozenset(simp._relocatable_annotations)
     relocated_annotations = set()

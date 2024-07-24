@@ -1450,10 +1450,10 @@ class StridedInterval(BackendObject):
         """
         if stride >= 1:
             offset = i % stride
-            max = StridedInterval.max_int(bits)  # pylint:disable=redefined-builtin
-            max_offset = max % stride
+            max_ = StridedInterval.max_int(bits)
+            max_offset = max_ % stride
 
-            o = max - (max_offset - offset) if max_offset >= offset else max - (max_offset + stride - offset)
+            o = max_ - (max_offset - offset) if max_offset >= offset else max_ - (max_offset + stride - offset)
             return o
         else:
             return StridedInterval.max_int(bits)
@@ -1466,7 +1466,7 @@ class StridedInterval(BackendObject):
         """
         if stride >= 1:
             offset = i % stride
-            min = StridedInterval.min_int(bits)  # pylint:disable=redefined-builtin
+            min = StridedInterval.min_int(bits)
             min_offset = min % stride
 
             o = min + (offset - min_offset) if offset >= min_offset else min + (offset + stride - min_offset)
@@ -2238,7 +2238,7 @@ class StridedInterval(BackendObject):
             :return: A tuple of maximum and minimum bits to shift
             """
 
-            def round(max, x):  # pylint:disable=redefined-builtin
+            def round_(max, x):
                 if x < 0 or x > max:
                     return max
                 else:
@@ -2250,7 +2250,7 @@ class StridedInterval(BackendObject):
             assert type(expr) is StridedInterval
 
             if expr.is_integer:
-                return (round(self.bits, expr.lower_bound), round(self.bits, expr.lower_bound))
+                return (round_(self.bits, expr.lower_bound), round_(self.bits, expr.lower_bound))
             else:
                 if expr.lower_bound < 0:
                     if expr.upper_bound >= 0:
@@ -2258,7 +2258,7 @@ class StridedInterval(BackendObject):
                     else:
                         return (self.bits, self.bits)
                 else:
-                    return (round(self.bits, self.lower_bound), round(self.bits, self.upper_bound))
+                    return (round_(self.bits, self.lower_bound), round_(self.bits, self.upper_bound))
 
         lower, upper = get_range(shift_amount)
         # TODO: Is trancating necessary?

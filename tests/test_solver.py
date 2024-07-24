@@ -72,7 +72,7 @@ def raw_replacement_solver(reuse_z3_solver):
     assert sr._replacement(y + 1) is claripy.BVV(200, 32)
 
     srb = sr.branch()
-    assert len(srb.constraints) == len(sr.constraints)  # pylint:disable=no-member
+    assert len(srb.constraints) == len(sr.constraints)
     assert (y + 1).cache_key in sr._replacements
     assert sr._replacement(y + 1) is claripy.BVV(200, 32)
 
@@ -324,7 +324,6 @@ def raw_combine(solver_type, reuse_z3_solver):
 def raw_composite_solver(reuse_z3_solver):
     claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
 
-    # pylint:disable=no-member
     s = claripy.SolverComposite()
     x = claripy.BVS("x", 32)
     y = claripy.BVS("y", 32)

@@ -1,4 +1,4 @@
-# pylint: disable=F0401,W0401,W0603,
+# pylint: disable=import-error,wildcard-import
 
 __version__ = "9.2.113.dev0"
 

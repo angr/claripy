@@ -25,12 +25,12 @@ l = logging.getLogger("claripy.backends.backend_vsa")
 
 def arg_filter(f):
     @functools.wraps(f)
-    def filter(*args):  # pylint:disable=redefined-builtin
-        if isinstance(args[0], numbers.Number):  # pylint:disable=unidiomatic-typecheck
+    def filter_(*args):
+        if isinstance(args[0], numbers.Number):
             raise BackendError(f"Unsupported argument type {type(args[0])}")
         return f(*args)
 
-    return filter
+    return filter_
 
 
 def normalize_arg_order(f):
@@ -39,16 +39,8 @@ def normalize_arg_order(f):
         if len(args) != 2:
             raise BackendError("Unsupported arguments number %d" % len(args))
 
-        if type(args[0]) not in {
-            StridedInterval,
-            DiscreteStridedIntervalSet,
-            ValueSet,
-        }:  # pylint:disable=unidiomatic-typecheck
-            if type(args[1]) not in {
-                StridedInterval,
-                DiscreteStridedIntervalSet,
-                ValueSet,
-            }:  # pylint:disable=unidiomatic-typecheck
+        if not isinstance(args[0], StridedInterval | DiscreteStridedIntervalSet | ValueSet):
+            if not isinstance(args[1], StridedInterval | DiscreteStridedIntervalSet | ValueSet):
                 raise BackendError("Unsupported arguments")
             args = [args[1], args[0]]
 
@@ -216,13 +208,15 @@ class BackendVSA(Backend):
             return False
         return a.identical(b)
 
-    def _unique(self, obj):  # pylint:disable=unused-argument,no-self-use
+    @staticmethod
+    def _unique(obj):
         if isinstance(obj, StridedInterval | ValueSet):
             return obj.unique
         else:
             raise BackendError(f"Not supported type of operand {type(obj)}")
 
-    def _cardinality(self, a):  # pylint:disable=unused-argument,no-self-use
+    @staticmethod
+    def _cardinality(a):
         return a.cardinality
 
     def name(self, a):
@@ -255,14 +249,14 @@ class BackendVSA(Backend):
 
         return bo.apply_annotation(annotation)
 
-    def BVV(self, ast):  # pylint:disable=unused-argument,no-self-use
+    def BVV(self, ast):  # pylint:disable=no-self-use
         if ast.args[0] is None:
             return StridedInterval.empty(ast.args[1])
         else:
             return CreateStridedInterval(bits=ast.args[1], stride=0, lower_bound=ast.args[0], upper_bound=ast.args[0])
 
     @staticmethod
-    def BoolV(ast):  # pylint:disable=unused-argument
+    def BoolV(ast):
         return TrueResult() if ast.args[0] else FalseResult()
 
     @staticmethod
@@ -314,7 +308,7 @@ class BackendVSA(Backend):
         return a.SGE(b)
 
     @staticmethod
-    def BVS(ast):  # pylint:disable=unused-argument
+    def BVS(ast):
         size = ast.size()
         name, mn, mx, stride, uninitialized, discrete_set, max_card = ast.args
         return CreateStridedInterval(

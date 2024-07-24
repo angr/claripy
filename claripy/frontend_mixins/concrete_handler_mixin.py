@@ -1,12 +1,12 @@
 class ConcreteHandlerMixin:
-    def eval(self, e, n, **kwargs):  # pylint:disable=unused-argument
+    def eval(self, e, n, **kwargs):
         c = self._concrete_value(e)
         if c is not None:
             return (c,)
         else:
             return super().eval(e, n, **kwargs)
 
-    def batch_eval(self, exprs, n, **kwargs):  # pylint:disable=unused-argument
+    def batch_eval(self, exprs, n, **kwargs):
         concrete_exprs = [self._concrete_value(e) for e in exprs]
         symbolic_exprs = [e for e, c in zip(exprs, concrete_exprs) if c is None]
 
