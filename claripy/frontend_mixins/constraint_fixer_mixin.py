@@ -1,17 +1,16 @@
-from typing import TYPE_CHECKING, Union
-
 from claripy import BoolV
-
-if TYPE_CHECKING:
-    from claripy.ast.bool import Bool
 
 
 class ConstraintFixerMixin:
-    def add(self, constraints: Union["Bool", list["Bool"], set["Bool"], tuple["Bool", ...]], **kwargs) -> list["Bool"]:
+    """ConstraintFixerMixin is a mixin that overrides add() to support various
+    unexpected inputs. It converts various inputs to a list of BoolV objects.
+    """
+
+    def add(self, constraints, invalidate_cache=True):
         constraints = [constraints] if not isinstance(constraints, list | tuple | set) else constraints
 
         if len(constraints) == 0:
             return []
 
         constraints = [BoolV(c) if isinstance(c, bool) else c for c in constraints]
-        return super().add(constraints, **kwargs)
+        return super().add(constraints, invalidate_cache=invalidate_cache)

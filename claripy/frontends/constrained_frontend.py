@@ -98,7 +98,7 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
     # Light functionality
     #
 
-    def add(self, constraints):
+    def add(self, constraints, invalidate_cache=True):
         self.constraints += constraints
         for c in constraints:
             self.variables.update(c.variables)

@@ -3,6 +3,9 @@ from claripy.errors import BackendError
 
 
 class EagerResolutionMixin:
+    """EagerResolutionMixin is a mixin that overrides _concrete_value to add
+    eager evaluation."""
+
     def _concrete_value(self, e):
         r = super()._concrete_value(e)
         if r is not None:
@@ -15,5 +18,3 @@ class EagerResolutionMixin:
                 pass
 
         return None
-
-    _concrete_constraint = _concrete_value
