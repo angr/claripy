@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import itertools
 import logging
 import weakref
@@ -133,7 +135,7 @@ class CompositeFrontend(ConstrainedFrontend):
     def _merged_solver_for(self, *args, **kwargs):
         return self._solver_for_names(self._names_for(*args, **kwargs))
 
-    def _solver_for_names(self, names: set[str]) -> "SolverCompositeChild":
+    def _solver_for_names(self, names: set[str]) -> SolverCompositeChild:
         """
         Get a merged child solver for variables specified in `names`.
 

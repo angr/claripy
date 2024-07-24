@@ -1,4 +1,6 @@
 # pylint:disable=unused-argument,no-self-use,wrong-import-position
+from __future__ import annotations
+
 import functools
 import itertools
 import numbers

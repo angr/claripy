@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import logging
 import threading
-from collections.abc import Iterable
-from typing import TYPE_CHECKING, Any, Optional, TypeVar, overload
+from typing import TYPE_CHECKING, Any, TypeVar, overload
 
 from claripy.ast.bv import SGE, SLE, UGE, ULE
 from claripy.backend_manager import backends
@@ -10,6 +11,8 @@ from claripy.errors import BackendError, ClaripyFrontendError, UnsatError
 from .constrained_frontend import ConstrainedFrontend
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from claripy.ast.bool import Bool
     from claripy.ast.bv import BV
     from claripy.ast.fp import FP
@@ -120,7 +123,7 @@ class FullFrontend(ConstrainedFrontend):
         except BackendError as e:
             raise ClaripyFrontendError("Backend error during solve") from e
 
-    def satisfiable(self, extra_constraints: Iterable["Bool"] = (), exact: bool | None = None) -> bool:
+    def satisfiable(self, extra_constraints: Iterable[Bool] = (), exact: bool | None = None) -> bool:
         try:
             return self._solver_backend.satisfiable(
                 extra_constraints=extra_constraints, solver=self._get_solver(), model_callback=self._model_hook
@@ -130,17 +133,17 @@ class FullFrontend(ConstrainedFrontend):
 
     @overload
     def eval(
-        self, e: "BV", n: int, extra_constraints: tuple["Bool", ...] = ..., exact: Optional["Bool"] = ...
+        self, e: BV, n: int, extra_constraints: tuple[Bool, ...] = ..., exact: Bool | None = ...
     ) -> tuple[int, ...]: ...
 
     @overload
     def eval(
-        self, e: "Bool", n: int, extra_constraints: tuple["Bool", ...] = ..., exact: Optional["Bool"] = ...
+        self, e: Bool, n: int, extra_constraints: tuple[Bool, ...] = ..., exact: Bool | None = ...
     ) -> tuple[bool, ...]: ...
 
     @overload
     def eval(
-        self, e: "FP", n: int, extra_constraints: tuple["Bool", ...] = ..., exact: Optional["Bool"] = ...
+        self, e: FP, n: int, extra_constraints: tuple[Bool, ...] = ..., exact: Bool | None = ...
     ) -> tuple[float, ...]: ...
 
     def eval(self, e, n, extra_constraints=(), exact=None) -> tuple[Any, ...]:
@@ -164,17 +167,17 @@ class FullFrontend(ConstrainedFrontend):
     # if you need another overload, add one
     @overload
     def batch_eval(
-        self, exprs: Iterable["BV"], n: int, extra_constraints: tuple["Bool", ...] = ..., exact: bool | None = ...
+        self, exprs: Iterable[BV], n: int, extra_constraints: tuple[Bool, ...] = ..., exact: bool | None = ...
     ) -> list[tuple[int, ...]]: ...
 
     @overload
     def batch_eval(
-        self, exprs: Iterable["Bool"], n: int, extra_constraints: tuple["Bool", ...] = ..., exact: bool | None = ...
+        self, exprs: Iterable[Bool], n: int, extra_constraints: tuple[Bool, ...] = ..., exact: bool | None = ...
     ) -> list[tuple[bool, ...]]: ...
 
     @overload
     def batch_eval(
-        self, exprs: Iterable["FP"], n: int, extra_constraints: tuple["Bool", ...] = ..., exact: bool | None = ...
+        self, exprs: Iterable[FP], n: int, extra_constraints: tuple[Bool, ...] = ..., exact: bool | None = ...
     ) -> list[tuple[float, ...]]: ...
 
     def batch_eval(self, exprs, n, extra_constraints=(), exact=None):
@@ -194,17 +197,17 @@ class FullFrontend(ConstrainedFrontend):
 
     @overload
     def max(
-        self, e: "BV", extra_constraints: tuple["Bool", ...] = ..., signed: bool = ..., exact: Optional["Bool"] = ...
+        self, e: BV, extra_constraints: tuple[Bool, ...] = ..., signed: bool = ..., exact: Bool | None = ...
     ) -> int: ...
 
     @overload
     def max(
-        self, e: "Bool", extra_constraints: tuple["Bool", ...] = ..., signed: bool = ..., exact: Optional["Bool"] = ...
+        self, e: Bool, extra_constraints: tuple[Bool, ...] = ..., signed: bool = ..., exact: Bool | None = ...
     ) -> bool: ...
 
     @overload
     def max(
-        self, e: "FP", extra_constraints: tuple["Bool", ...] = ..., signed: bool = ..., exact: Optional["Bool"] = ...
+        self, e: FP, extra_constraints: tuple[Bool, ...] = ..., signed: bool = ..., exact: Bool | None = ...
     ) -> float: ...
 
     def max(self, e, extra_constraints=(), signed=False, exact=None):
@@ -237,17 +240,17 @@ class FullFrontend(ConstrainedFrontend):
 
     @overload
     def min(
-        self, e: "BV", extra_constraints: tuple["Bool", ...] = ..., signed: bool = ..., exact: Optional["Bool"] = ...
+        self, e: BV, extra_constraints: tuple[Bool, ...] = ..., signed: bool = ..., exact: Bool | None = ...
     ) -> int: ...
 
     @overload
     def min(
-        self, e: "Bool", extra_constraints: tuple["Bool", ...] = ..., signed: bool = ..., exact: Optional["Bool"] = ...
+        self, e: Bool, extra_constraints: tuple[Bool, ...] = ..., signed: bool = ..., exact: Bool | None = ...
     ) -> bool: ...
 
     @overload
     def min(
-        self, e: "FP", extra_constraints: tuple["Bool", ...] = ..., signed: bool = ..., exact: Optional["Bool"] = ...
+        self, e: FP, extra_constraints: tuple[Bool, ...] = ..., signed: bool = ..., exact: Bool | None = ...
     ) -> float: ...
 
     def min(self, e, extra_constraints=(), signed=False, exact=None):
@@ -279,18 +282,16 @@ class FullFrontend(ConstrainedFrontend):
             raise ClaripyFrontendError("Backend error during min") from exc
 
     @overload
+    def solution(self, e: BV, v: int, extra_constraints: tuple[Bool, ...] = ..., exact: Bool | None = ...) -> bool: ...
+
+    @overload
     def solution(
-        self, e: "BV", v: int, extra_constraints: tuple["Bool", ...] = ..., exact: Optional["Bool"] = ...
+        self, e: Bool, v: bool, extra_constraints: tuple[Bool, ...] = ..., exact: Bool | None = ...
     ) -> bool: ...
 
     @overload
     def solution(
-        self, e: "Bool", v: bool, extra_constraints: tuple["Bool", ...] = ..., exact: Optional["Bool"] = ...
-    ) -> bool: ...
-
-    @overload
-    def solution(
-        self, e: "FP", v: float, extra_constraints: tuple["Bool", ...] = ..., exact: Optional["Bool"] = ...
+        self, e: FP, v: float, extra_constraints: tuple[Bool, ...] = ..., exact: Bool | None = ...
     ) -> bool: ...
 
     def solution(self, e, v, extra_constraints=(), exact=None):
@@ -301,13 +302,13 @@ class FullFrontend(ConstrainedFrontend):
         except BackendError as exc:
             raise ClaripyFrontendError("Backend error during solution") from exc
 
-    def is_true(self, e: "Bool", extra_constraints: tuple["Bool", ...] = (), exact: bool | None = None) -> bool:
+    def is_true(self, e: Bool, extra_constraints: tuple[Bool, ...] = (), exact: bool | None = None) -> bool:
         return e.is_true()
 
-    def is_false(self, e: "Bool", extra_constraints: tuple["Bool", ...] = (), exact: bool | None = None) -> bool:
+    def is_false(self, e: Bool, extra_constraints: tuple[Bool, ...] = (), exact: bool | None = None) -> bool:
         return e.is_false()
 
-    def unsat_core(self, extra_constraints: tuple["Bool", ...] = ()) -> Iterable["Bool"]:
+    def unsat_core(self, extra_constraints: tuple[Bool, ...] = ()) -> Iterable[Bool]:
         if self.satisfiable(extra_constraints=extra_constraints):
             # all constraints are satisfied
             return ()

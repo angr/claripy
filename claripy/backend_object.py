@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 class BackendObject:
     """
     This is a base class for custom backend objects to implement.

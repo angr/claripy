@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 class SimplifyHelperMixin:
     def max(self, e, extra_constraints=(), signed=False, exact=None):
         self.simplify()

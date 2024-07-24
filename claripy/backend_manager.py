@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 class BackendManager:
     def __init__(self):
         self._eager_backends = []

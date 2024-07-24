@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from claripy import operations
 from claripy.ast.base import _make_name
 

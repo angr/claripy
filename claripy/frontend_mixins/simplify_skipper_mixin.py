@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 class SimplifySkipperMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
