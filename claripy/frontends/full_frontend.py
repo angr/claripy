@@ -20,8 +20,6 @@ T = TypeVar("T", bound="FullFrontend")
 
 
 class FullFrontend(ConstrainedFrontend):
-    _model_hook = None
-
     def __init__(self, solver_backend, timeout=None, max_memory=None, track=False, **kwargs):
         ConstrainedFrontend.__init__(self, **kwargs)
         self._track = track
@@ -100,12 +98,12 @@ class FullFrontend(ConstrainedFrontend):
     # Constraint management
     #
 
-    def add(self, constraints: list["Bool"]) -> list["Bool"]:
+    def add(self, constraints, invalidate_cache=True):
         to_add = ConstrainedFrontend.add(self, constraints)
         self._to_add += to_add
         return to_add
 
-    def simplify(self) -> list["Bool"]:
+    def simplify(self):
         ConstrainedFrontend.simplify(self)
 
         # TODO: should we do this?
@@ -336,3 +334,10 @@ class FullFrontend(ConstrainedFrontend):
             self._solver_backend.__class__.__name__ == "BackendZ3",
             ConstrainedFrontend.merge(self, others, merge_conditions, common_ancestor=common_ancestor)[1],
         )
+
+    #
+    # Default model hook
+    #
+
+    def _model_hook(self, m):
+        return None

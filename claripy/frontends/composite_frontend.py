@@ -276,7 +276,7 @@ class CompositeFrontend(ConstrainedFrontend):
         self._store_child(s, invalidate_cache=invalidate_cache)
         return added
 
-    def add(self, constraints, **kwargs):  # pylint:disable=arguments-differ
+    def add(self, constraints, invalidate_cache=True):
         split = self._split_constraints(constraints)
         child_added = []
 
@@ -290,7 +290,7 @@ class CompositeFrontend(ConstrainedFrontend):
                 except BackendError:
                     unsure.extend(set_constraints)
             else:
-                child_added += self._add_dependent_constraints(names, set_constraints, **kwargs)
+                child_added += self._add_dependent_constraints(names, set_constraints)
 
         # l.debug("... solvers after add: %d", len(self._solver_list))
 

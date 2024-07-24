@@ -15,5 +15,3 @@ class EagerResolutionMixin:
                 pass
 
         return None
-
-    _concrete_constraint = _concrete_value

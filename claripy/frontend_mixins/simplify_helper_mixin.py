@@ -1,18 +1,18 @@
 class SimplifyHelperMixin:
-    def max(self, *args, **kwargs):
+    def max(self, e, extra_constraints=(), signed=False, exact=None):
         self.simplify()
-        return super().max(*args, **kwargs)
+        return super().max(e, extra_constraints=extra_constraints, signed=signed, exact=exact)
 
-    def min(self, *args, **kwargs):
+    def min(self, e, extra_constraints=(), signed=False, exact=None):
         self.simplify()
-        return super().min(*args, **kwargs)
+        return super().min(e, extra_constraints=extra_constraints, signed=signed, exact=exact)
 
-    def eval(self, e, n, *args, **kwargs):
+    def eval(self, e, n, extra_constraints=(), exact=None):
         if n > 1:
             self.simplify()
-        return super().eval(e, n, *args, **kwargs)
+        return super().eval(e, n, extra_constraints=extra_constraints, exact=exact)
 
-    def batch_eval(self, e, n, *args, **kwargs):
+    def batch_eval(self, exprs, n, extra_constraints=(), exact=None):
         if n > 1:
             self.simplify()
-        return super().batch_eval(e, n, *args, **kwargs)
+        return super().batch_eval(exprs, n, extra_constraints=extra_constraints, exact=exact)

@@ -18,19 +18,19 @@ class ConstraintDeduplicatorMixin:
         self._constraint_hashes, base_state = s
         super().__setstate__(base_state)
 
-    def simplify(self, **kwargs):
-        added = super().simplify(**kwargs)
+    def simplify(self):
+        added = super().simplify()
         # we only add to the constraint hashes because we want to
         # prevent previous (now simplified) constraints from
         # being re-added
         self._constraint_hashes.update(map(hash, added))
         return added
 
-    def add(self, constraints, **kwargs):
+    def add(self, constraints, invalidate_cache=True):
         filtered = tuple(c for c in constraints if hash(c) not in self._constraint_hashes)
         if len(filtered) == 0:
             return filtered
 
-        added = super().add(filtered, **kwargs)
+        added = super().add(filtered, invalidate_cache=invalidate_cache)
         self._constraint_hashes.update(map(hash, added))
         return added

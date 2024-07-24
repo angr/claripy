@@ -26,8 +26,8 @@ class SatCacheMixin:
     # SAT caching
     #
 
-    def add(self, constraints, **kwargs):
-        added = super().add(constraints, **kwargs)
+    def add(self, constraints, invalidate_cache=True):
+        added = super().add(constraints, invalidate_cache=invalidate_cache)
         if len(added) > 0 and any(c is false for c in added):
             self._cached_satness = False
         elif self._cached_satness is True:
@@ -40,21 +40,21 @@ class SatCacheMixin:
             self._cached_satness = False
         return new_constraints
 
-    def satisfiable(self, extra_constraints=(), **kwargs):
+    def satisfiable(self, extra_constraints=(), exact=None):
         if self._cached_satness is False:
             return False
         if self._cached_satness is True and len(extra_constraints) == 0:
             return True
-        r = super().satisfiable(extra_constraints=extra_constraints, **kwargs)
+        r = super().satisfiable(extra_constraints=extra_constraints, exact=exact)
         if len(extra_constraints) == 0:
             self._cached_satness = r
         return r
 
-    def eval(self, e, n, extra_constraints=(), **kwargs):
+    def eval(self, e, n, extra_constraints=(), exact=None):
         if self._cached_satness is False:
             raise UnsatError("cached unsat")
         try:
-            r = super().eval(e, n, extra_constraints=extra_constraints, **kwargs)
+            r = super().eval(e, n, extra_constraints=extra_constraints, exact=exact)
             self._cached_satness = True
             return r
         except UnsatError:
@@ -62,11 +62,11 @@ class SatCacheMixin:
                 self._cached_satness = False
             raise
 
-    def batch_eval(self, e, n, extra_constraints=(), **kwargs):
+    def batch_eval(self, e, n, extra_constraints=(), exact=None):
         if self._cached_satness is False:
             raise UnsatError("cached unsat")
         try:
-            r = super().batch_eval(e, n, extra_constraints=extra_constraints, **kwargs)
+            r = super().batch_eval(e, n, extra_constraints=extra_constraints, exact=exact)
             self._cached_satness = True
             return r
         except UnsatError:
@@ -74,11 +74,11 @@ class SatCacheMixin:
                 self._cached_satness = False
             raise
 
-    def max(self, e, extra_constraints=(), **kwargs):
+    def max(self, e, extra_constraints=(), signed=False, exact=None):
         if self._cached_satness is False:
             raise UnsatError("cached unsat")
         try:
-            r = super().max(e, extra_constraints=extra_constraints, **kwargs)
+            r = super().max(e, extra_constraints=extra_constraints, signed=signed, exact=exact)
             self._cached_satness = True
             return r
         except UnsatError:
@@ -86,11 +86,11 @@ class SatCacheMixin:
                 self._cached_satness = False
             raise
 
-    def min(self, e, extra_constraints=(), **kwargs):
+    def min(self, e, extra_constraints=(), signed=False, exact=None):
         if self._cached_satness is False:
             raise UnsatError("cached unsat")
         try:
-            r = super().min(e, extra_constraints=extra_constraints, **kwargs)
+            r = super().min(e, extra_constraints=extra_constraints, signed=signed, exact=exact)
             self._cached_satness = True
             return r
         except UnsatError:
@@ -98,11 +98,11 @@ class SatCacheMixin:
                 self._cached_satness = False
             raise
 
-    def solution(self, e, v, extra_constraints=(), **kwargs):
+    def solution(self, e, v, extra_constraints=(), exact=None):
         if self._cached_satness is False:
             raise UnsatError("cached unsat")
         try:
-            r = super().solution(e, v, extra_constraints=extra_constraints, **kwargs)
+            r = super().solution(e, v, extra_constraints=extra_constraints, exact=exact)
             self._cached_satness = True
             return r
         except UnsatError:

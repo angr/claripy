@@ -62,7 +62,7 @@ class Frontend:
     def split(self):
         raise NotImplementedError("split() is not implemented")
 
-    def add(self, constraints):
+    def add(self, constraints, invalidate_cache=True):
         """
         Adds constraint(s) to constraints list.
 
@@ -220,7 +220,8 @@ class Frontend:
         else:
             return None
 
-    _concrete_constraint = _concrete_value
+    def _concrete_constraint(self, e):  # pylint:disable=no-self-use
+        return self._concrete_value(e)
 
     def _constraint_filter(self, c):  # pylint:disable=no-self-use
         return c
