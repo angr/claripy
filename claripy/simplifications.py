@@ -731,10 +731,10 @@ class SimplificationManager:
             # if(cond0, 1, 0) & if(cond1, 1, 0)  ->  if(cond0 & cond1, 1, 0)
             if a.op == "If" and b.op == "If":
                 if (
-                    (a.args[1] == ast.all_operations.BVV(1, 1)).is_true()
-                    and (a.args[2] == ast.all_operations.BVV(0, 1)).is_true()
-                    and (b.args[1] == ast.all_operations.BVV(1, 1)).is_true()
-                    and (b.args[2] == ast.all_operations.BVV(0, 1)).is_true()
+                    a.args[1].length == 1 and (a.args[1] == ast.all_operations.BVV(1, 1)).is_true()
+                    and a.args[2].length == 1 and (a.args[2] == ast.all_operations.BVV(0, 1)).is_true()
+                    and b.args[1].length == 1 and (b.args[1] == ast.all_operations.BVV(1, 1)).is_true()
+                    and b.args[2].length == 1 and (b.args[2] == ast.all_operations.BVV(0, 1)).is_true()
                 ):
                     cond0 = a.args[0]
                     cond1 = b.args[0]
