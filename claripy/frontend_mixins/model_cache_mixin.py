@@ -187,12 +187,12 @@ class ModelCacheMixin:
         self._max_signed_exhausted.add(c.args[0].cache_key)
         self._min_signed_exhausted.add(c.args[0].cache_key)
 
-    def add(self, constraints, invalidate_cache=True):
+    def _add(self, constraints, invalidate_cache=True):
         if len(constraints) == 0:
             return constraints
 
         old_vars = frozenset(self.variables)
-        added = super().add(constraints, invalidate_cache=invalidate_cache)
+        added = super()._add(constraints, invalidate_cache=invalidate_cache)
         if len(added) == 0:
             return added
 

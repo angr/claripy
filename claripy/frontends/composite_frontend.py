@@ -278,7 +278,7 @@ class CompositeFrontend(ConstrainedFrontend):
         self._store_child(s, invalidate_cache=invalidate_cache)
         return added
 
-    def add(self, constraints, invalidate_cache=True):
+    def _add(self, constraints, invalidate_cache=True):
         split = self._split_constraints(constraints)
         child_added = []
 
@@ -302,7 +302,7 @@ class CompositeFrontend(ConstrainedFrontend):
                 s.add(unsure)
                 self._store_child(s)
 
-        return super().add(child_added)
+        return super()._add(child_added)
 
     #
     # Solving

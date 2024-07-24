@@ -4,7 +4,6 @@ from . import backends, frontend_mixins, frontends
 
 
 class Solver(
-    frontend_mixins.ConstraintFixerMixin,
     frontend_mixins.ConcreteHandlerMixin,
     frontend_mixins.EagerResolutionMixin,
     frontend_mixins.ConstraintFilterMixin,
@@ -21,7 +20,6 @@ class Solver(
 
 
 class SolverCacheless(
-    frontend_mixins.ConstraintFixerMixin,
     frontend_mixins.ConcreteHandlerMixin,
     frontend_mixins.EagerResolutionMixin,
     frontend_mixins.ConstraintFilterMixin,
@@ -34,7 +32,6 @@ class SolverCacheless(
 
 
 class SolverReplacement(
-    frontend_mixins.ConstraintFixerMixin,
     frontend_mixins.ConcreteHandlerMixin,
     frontend_mixins.ConstraintDeduplicatorMixin,
     frontends.ReplacementFrontend,
@@ -45,7 +42,6 @@ class SolverReplacement(
 
 
 class SolverHybrid(
-    frontend_mixins.ConstraintFixerMixin,
     frontend_mixins.ConcreteHandlerMixin,
     frontend_mixins.EagerResolutionMixin,
     frontend_mixins.ConstraintFilterMixin,
@@ -78,7 +74,6 @@ class SolverHybrid(
 
 
 class SolverVSA(
-    frontend_mixins.ConstraintFixerMixin,
     frontend_mixins.ConcreteHandlerMixin,
     frontend_mixins.ConstraintFilterMixin,
     frontends.LightFrontend,
@@ -88,7 +83,6 @@ class SolverVSA(
 
 
 class SolverConcrete(
-    frontend_mixins.ConstraintFixerMixin,
     frontend_mixins.ConcreteHandlerMixin,
     frontend_mixins.ConstraintFilterMixin,
     frontends.LightFrontend,
@@ -99,7 +93,6 @@ class SolverConcrete(
 
 class SolverStrings(
     # TODO: Figure ot if we need to use all these mixins
-    frontend_mixins.ConstraintFixerMixin,
     frontend_mixins.ConcreteHandlerMixin,
     frontend_mixins.ConstraintFilterMixin,
     frontend_mixins.ConstraintDeduplicatorMixin,
@@ -132,7 +125,6 @@ class SolverCompositeChild(
 
 
 class SolverComposite(
-    frontend_mixins.ConstraintFixerMixin,
     frontend_mixins.ConcreteHandlerMixin,
     frontend_mixins.EagerResolutionMixin,
     frontend_mixins.ConstraintFilterMixin,

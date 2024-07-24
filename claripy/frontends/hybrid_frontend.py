@@ -130,7 +130,7 @@ class HybridFrontend(Frontend):
     # Lifecycle
     #
 
-    def add(self, constraints, invalidate_cache=True):
+    def _add(self, constraints, invalidate_cache=True):
         added = self._exact_frontend.add(constraints)
         self._approximate_frontend.add(constraints)
         return added
