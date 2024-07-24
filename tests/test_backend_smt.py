@@ -16,7 +16,6 @@ class TestSMTLibBackend(unittest.TestCase):
         backend_manager.backends._register_backend(BackendSMTLibBase(), "smt", False, False)
 
         class SolverSMT(
-            frontend_mixins.ConstraintFixerMixin,
             frontend_mixins.ConcreteHandlerMixin,
             frontend_mixins.ConstraintFilterMixin,
             frontend_mixins.ConstraintDeduplicatorMixin,

@@ -3,6 +3,8 @@ from __future__ import annotations
 import logging
 import numbers
 
+from claripy.ast.bool import BoolV
+
 from . import ast
 
 l = logging.getLogger("claripy.frontends.frontend")
@@ -67,6 +69,21 @@ class Frontend:
     def add(self, constraints, invalidate_cache=True):
         """
         Adds constraint(s) to constraints list.
+
+        :param constraints:             constraint(s) to add
+
+        :return:
+        """
+        constraints = [constraints] if not isinstance(constraints, list | tuple | set) else constraints
+        if len(constraints) == 0:
+            return []
+        constraints = [BoolV(c) if isinstance(c, bool) else c for c in constraints]
+        return self._add(constraints, invalidate_cache=invalidate_cache)
+
+    def _add(self, constraints, invalidate_cache=True):
+        """
+        Adds constraint(s) to constraints list. This version is called by add()
+        with constrained constraints.
 
         :param constraints:             constraint(s) to add
 

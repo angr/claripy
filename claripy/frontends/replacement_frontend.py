@@ -262,7 +262,7 @@ class ReplacementFrontend(ConstrainedFrontend):
         else:
             return super()._concrete_constraint(e)
 
-    def add(self, constraints, invalidate_cache=True):
+    def _add(self, constraints, invalidate_cache=True):
         if self._auto_replace:
             for c in constraints:
                 # the badass thing here would be to use the *replaced* constraint, but
@@ -295,7 +295,7 @@ class ReplacementFrontend(ConstrainedFrontend):
 
                         self.add_replacement(old, rold.intersection(new))
 
-        added = super().add(constraints)
+        added = super()._add(constraints)
         cr = self._replace_list(added)
         if not self._allow_symbolic and any(c.symbolic for c in cr):
             raise ClaripyFrontendError(

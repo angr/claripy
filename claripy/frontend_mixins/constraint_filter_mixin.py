@@ -19,7 +19,7 @@ class ConstraintFilterMixin:
         else:
             return tuple((o if n is None else o) for o, n in zip(constraints, ccs) if n is not True)
 
-    def add(self, constraints, invalidate_cache=True):
+    def _add(self, constraints, invalidate_cache=True):
         try:
             ec = self._constraint_filter(constraints)
         except UnsatError:
@@ -30,7 +30,7 @@ class ConstraintFilterMixin:
             return []
 
         if len(ec) > 0:
-            return super().add(ec, invalidate_cache=invalidate_cache)
+            return super()._add(ec, invalidate_cache=invalidate_cache)
         else:
             return []
 

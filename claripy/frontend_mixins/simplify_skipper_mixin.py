@@ -25,8 +25,8 @@ class SimplifySkipperMixin:
     # Simplification skipping
     #
 
-    def add(self, constraints, invalidate_cache=True):
-        added = super().add(constraints, invalidate_cache=invalidate_cache)
+    def _add(self, constraints, invalidate_cache=True):
+        added = super()._add(constraints, invalidate_cache=invalidate_cache)
         if len(added) > 0:
             self._simplified = False
         return added

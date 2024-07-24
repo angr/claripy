@@ -29,11 +29,11 @@ class ConstraintDeduplicatorMixin:
         self._constraint_hashes.update(map(hash, added))
         return added
 
-    def add(self, constraints, invalidate_cache=True):
+    def _add(self, constraints, invalidate_cache=True):
         filtered = tuple(c for c in constraints if hash(c) not in self._constraint_hashes)
         if len(filtered) == 0:
             return filtered
 
-        added = super().add(filtered, invalidate_cache=invalidate_cache)
+        added = super()._add(filtered, invalidate_cache=invalidate_cache)
         self._constraint_hashes.update(map(hash, added))
         return added

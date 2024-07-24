@@ -101,8 +101,8 @@ class FullFrontend(ConstrainedFrontend):
     # Constraint management
     #
 
-    def add(self, constraints, invalidate_cache=True):
-        to_add = ConstrainedFrontend.add(self, constraints)
+    def _add(self, constraints, invalidate_cache=True):
+        to_add = ConstrainedFrontend._add(self, constraints)
         self._to_add += to_add
         return to_add
 
