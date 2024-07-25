@@ -4,8 +4,8 @@ import logging
 import threading
 from typing import TYPE_CHECKING, Any, TypeVar, overload
 
+from claripy import backends
 from claripy.ast.bv import SGE, SLE, UGE, ULE
-from claripy.backend_manager import backends
 from claripy.errors import BackendError, ClaripyFrontendError, UnsatError
 
 from .constrained_frontend import ConstrainedFrontend
@@ -63,7 +63,6 @@ class FullFrontend(ConstrainedFrontend):
     def __setstate__(self, s):
         backend_name, self.timeout, self.max_memory, self._track, base_state = s
         self._solver_backend = backends._backends_by_type[backend_name]
-        # self._tls = None
         self._tls = threading.local()
         self._to_add = []
         super().__setstate__(base_state)

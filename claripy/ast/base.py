@@ -10,8 +10,8 @@ from collections import OrderedDict, deque
 from itertools import chain
 from typing import TYPE_CHECKING, Generic, NoReturn, TypeVar
 
-from claripy import operations, simplifications
-from claripy.backend_manager import backends
+import claripy
+from claripy import operations
 from claripy.errors import BackendError, ClaripyOperationError, ClaripyReplacementError
 
 if TYPE_CHECKING:
@@ -217,7 +217,7 @@ class Base:
             variables = variables | add_variables
 
         if eager_backends is None:
-            eager_backends = list(backends._eager_backends)
+            eager_backends = list(claripy.backends._eager_backends) if hasattr(claripy, "backends") else []
 
         if not symbolic and op not in operations.leaf_operations:
             for eb in eager_backends:
@@ -594,7 +594,7 @@ class Base:
         length=None,
     ) -> T:
         # Try to simplify the expression again
-        simplified = simplifications.simpleton.simplify(op, args) if simplify else None
+        simplified = claripy.simplifications.simpleton.simplify(op, args) if simplify else None
         if simplified is not None:
             op = simplified.op
         if (  # fast path
@@ -1123,10 +1123,10 @@ class Base:
     def _identify_vars(self, all_vars, counter):
         if self.op == "BVS":
             if self.args not in all_vars:
-                all_vars[self.args] = BV("BVS", self.args, length=self.length, explicit_name=True)
+                all_vars[self.args] = claripy.ast.bv.BV("BVS", self.args, length=self.length, explicit_name=True)
         elif self.op == "BoolS":
             if self.args not in all_vars:
-                all_vars[self.args] = BoolS("var_" + str(next(counter)))
+                all_vars[self.args] = claripy.ast.bool.BoolS("var_" + str(next(counter)))
         else:
             for arg in self.args:
                 if isinstance(arg, Base):
@@ -1178,7 +1178,7 @@ class Base:
             return self
 
         different_idx = matches.index(False)
-        inner_if = If(self.args[0], old_true.args[different_idx], old_false.args[different_idx])
+        inner_if = claripy.ast.bool.If(self.args[0], old_true.args[different_idx], old_false.args[different_idx])
         new_args = list(old_true.args)
         new_args[different_idx] = inner_if.ite_burrowed
         # print("replaced the",different_idx,"arg:",new_args)
@@ -1221,7 +1221,7 @@ class Base:
 
                     if op.op == "If":
                         # if we are an If, call the If handler so that we can take advantage of its simplifiers
-                        excavated = If(*args)
+                        excavated = claripy.ast.bool.If(*args)
 
                     elif ite_args.count(True) == 0:
                         # if there are no ifs that came to the surface, there's nothing more to do
@@ -1241,7 +1241,7 @@ class Base:
                             elif a.args[0] is cond:
                                 new_true_args.append(a.args[1])
                                 new_false_args.append(a.args[2])
-                            elif a.args[0] is Not(cond):
+                            elif a.args[0] is claripy.ast.bool.Not(cond):
                                 new_true_args.append(a.args[2])
                                 new_false_args.append(a.args[1])
                             else:
@@ -1250,7 +1250,7 @@ class Base:
                                 break
 
                         else:
-                            excavated = If(
+                            excavated = claripy.ast.bool.If(
                                 cond,
                                 op.swap_args(new_true_args, simplify=True),
                                 op.swap_args(new_false_args, simplify=True),
@@ -1296,7 +1296,7 @@ class Base:
     #
 
     def _first_backend(self, what):
-        for b in backends._all_backends:
+        for b in claripy.backends._all_backends:
             if b in self._errored or b.is_smt_backend:
                 continue
 
@@ -1341,7 +1341,7 @@ class Base:
             return False
         if self.variables:
             return False
-        return backends.concrete.handles(self)
+        return claripy.backends.concrete.handles(self)
 
     @property
     def uninitialized(self) -> bool:
@@ -1384,11 +1384,11 @@ class Base:
             raise AttributeError(a)
 
         model_name = a[7:]
-        if not hasattr(backends, model_name):
+        if not hasattr(claripy.backends, model_name):
             raise AttributeError(a)
 
         try:
-            return getattr(backends, model_name).convert(self)
+            return getattr(claripy.backends, model_name).convert(self)
         except BackendError:
             return self
 
@@ -1418,8 +1418,3 @@ def simplify(e: T) -> T:
                 s = s.annotate(*annotations)
 
         return s
-
-
-# pylint:disable=wrong-import-position
-from claripy.ast.bool import BoolS, If, Not  # noqa: E402
-from claripy.ast.bv import BV  # noqa: E402
