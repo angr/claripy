@@ -15,7 +15,7 @@ class TestZ3(unittest.TestCase):
         """
         Test the _extrema function within the z3 backend
         """
-        z = claripy.backend_manager.backends.z3
+        z = claripy.backends.z3
 
         s = z.solver()
         x = claripy.BVS("x", 8)

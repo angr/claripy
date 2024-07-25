@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 
-from claripy.backend_manager import backends
+from claripy import backends
 from claripy.errors import BackendError, ClaripyFrontendError
 
 from .constrained_frontend import ConstrainedFrontend

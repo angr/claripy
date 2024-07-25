@@ -6,8 +6,9 @@ import itertools
 import operator
 from functools import reduce
 
+from claripy import backends
+
 from . import ast, fp
-from .backend_manager import backends
 
 
 class SimplificationManager:
