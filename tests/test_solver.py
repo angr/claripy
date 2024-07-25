@@ -1,3 +1,4 @@
+# pylint: disable=missing-class-docstring,no-self-use
 from __future__ import annotations
 
 import logging
@@ -49,7 +50,6 @@ def raw_hybrid_solver(reuse_z3_solver):
     t = claripy.SolverHybrid()
     x = claripy.BVS("x", 32)
     t.add(x <= 10)
-    print(t.eval(x, 80, exact=False))
     assert len(t.eval(x, 5, exact=False)) == 5
     assert len(t.eval(x, 5, exact=False)) == 5
     assert len(t.eval(x, 6, exact=False)) == 6
@@ -163,36 +163,13 @@ def raw_solver(solver_type, reuse_z3_solver):
     s.add(claripy.ULT(z, 5))
     assert len(s.constraints) == old_count
 
-    # print("========================================================================================")
-    # print("========================================================================================")
-    # print("========================================================================================")
-    # print("========================================================================================")
-    # a = s.eval(z, 100)
-    # print("ANY:", a)
-    # print("========================================================================================")
-    # mx = s.max(z)
-    # print("MAX",mx)
-    # print("========================================================================================")
-    # mn = s.min(z)
-    # print("MIN",mn)
-    # print("========================================================================================")
-    # print("========================================================================================")
-    # print("========================================================================================")
-    # print("========================================================================================")
-
-    print("CONSTRAINT COUNTS:", [len(_.constraints) for _ in s.split()])
-
     assert s.max(z) == 4
     assert s.min(z) == 0
     assert s.min(y) == 22
     assert s.max(y) == 2 ** y.size() - 1
 
-    print("CONSTRAINT COUNTS:", [len(_.constraints) for _ in s.split()])
-
     ss = s.split()
     assert len(ss) == 2
-    # if isinstance(s, claripy.frontend_mixins.ConstraintExpansionMixin):
-    #   assert { len(_.constraints) for _ in ss } == { 3, 2 }
 
     # Batch evaluation
     s.add(y < 24)
@@ -416,8 +393,6 @@ def raw_composite_discrepancy(reuse_z3_solver):
 
     sn.add(constraints)
     sc.add(constraints)
-    print(sn.max(dst), sc.max(dst))
-    print(sn.min(dst), sc.min(dst))
     assert sn.max(dst) == sc.max(dst)
     assert sn.min(dst) == sc.min(dst)
 
@@ -541,7 +516,7 @@ class StandardTests(TestCase):
         s = claripy.Solver()
         s.add(e == 8)
         assert s.satisfiable()
-        s.add(claripy.If(denum == 0, 0, num / denum) == e)
+        s.add(claripy.If(denum == 0, 0, num // denum) == e)
         assert s.satisfiable()
         # As a bonus:
         s.add(num == 16)
@@ -585,13 +560,11 @@ class StandardTests(TestCase):
         s = claripy.Solver()
         x = claripy.BVS("x", 32)
         s.add(x >= 19)
-        print(s.min(x, extra_constraints=[x >= 20]))
         assert s.min(x) == 19
 
         s = claripy.Solver()
         x = claripy.BVS("x", 32)
         s.add(x <= 19)
-        print(s.max(x, extra_constraints=[x <= 18]))
         assert s.max(x) == 19
 
     def test_cached_max(self):
@@ -707,19 +680,15 @@ class TestComposite(TestCase, UnsatCore):
         s.add(claripy.If(aa[15:0] >= 0x1, claripy.BVV(0x1, 32), claripy.BVV(0x0, 32)) == 1)
         s.add(0xFFFFFFF + cc + bb == 0)
         s.add(claripy.If((claripy.If(bb == 0x0, bb, dd) | ee) == 0, claripy.BVV(1, 1), claripy.BVV(0, 1)) != 1)
-        # print(s._solvers)
 
         s.add(dd == 0xB)
         s.simplify()
-        # print(s._solvers)
 
         s.add(bb == 0x8004)
         s.simplify()
-        # print(s._solvers)
 
         s.add(ee == 0)
         s.simplify()
-        # print(s._solvers)
 
         bb_values = s.eval(bb, n=8)
         assert len(bb_values) == 1

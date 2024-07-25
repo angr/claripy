@@ -1,4 +1,4 @@
-# pylint: disable= [no-self-use, missing-class-docstring]
+# pylint: disable=missing-class-docstring,no-self-use
 from __future__ import annotations
 
 import contextlib
@@ -284,7 +284,7 @@ class TestExpression(unittest.TestCase):
         ss = s.branch()
         ss.add(z == itz)
         ss.add(itz != 0)
-        self.assertEqual(ss.eval(y / x, 100), (2,))
+        self.assertEqual(ss.eval(y // x, 100), (2,))
         self.assertEqual(sorted(ss.eval(x, 100)), [1, 10, 100])
         self.assertEqual(sorted(ss.eval(y, 100)), [2, 20, 200])
 
@@ -448,10 +448,10 @@ class TestExpression(unittest.TestCase):
         d = claripy.BVV(-3, 32)
 
         # test unsigned
-        assert bc.convert(a / c) == 1
-        assert bc.convert(a / d) == 0
-        assert bc.convert(b / c) == 0x55555553
-        assert bc.convert(b / d) == 0
+        assert bc.convert(a // c) == 1
+        assert bc.convert(a // d) == 0
+        assert bc.convert(b // c) == 0x55555553
+        assert bc.convert(b // d) == 0
         assert bc.convert(a % c) == 2
         assert bc.convert(a % d) == 5
         assert bc.convert(b % c) == 2
@@ -479,10 +479,10 @@ class TestExpression(unittest.TestCase):
         solver.add(d == -3)
 
         # test unsigned
-        assert list(solver.eval(a / c, 2)) == [1]
-        assert list(solver.eval(a / d, 2)) == [0]
-        assert list(solver.eval(b / c, 2)) == [0x55555553]
-        assert list(solver.eval(b / d, 2)) == [0]
+        assert list(solver.eval(a // c, 2)) == [1]
+        assert list(solver.eval(a // d, 2)) == [0]
+        assert list(solver.eval(b // c, 2)) == [0x55555553]
+        assert list(solver.eval(b // d, 2)) == [0]
         assert list(solver.eval(a % c, 2)) == [2]
         assert list(solver.eval(a % d, 2)) == [5]
         assert list(solver.eval(b % c, 2)) == [2]
