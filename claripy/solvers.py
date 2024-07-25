@@ -98,10 +98,9 @@ class SolverStrings(
     frontend_mixins.ConstraintDeduplicatorMixin,
     frontend_mixins.EagerResolutionMixin,
     frontend_mixins.EvalStringsToASTsMixin,
-    frontend_mixins.SMTLibScriptDumperMixin,
     frontends.FullFrontend,
 ):
-    def __init__(self, backend, *args, **kwargs):
+    def __init__(self, *args, backend=backends.z3, **kwargs):
         super().__init__(backend, *args, **kwargs)
 
 

@@ -3,8 +3,6 @@ from __future__ import annotations
 import logging
 from unittest import TestCase, main
 
-from common_backend_smt_solver import if_installed
-
 import claripy
 
 l = logging.getLogger("claripy.test.solver")
@@ -480,11 +478,8 @@ def raw_unsat_core(solver, reuse_z3_solver):
 
 
 class StandardTests(TestCase):
-    @if_installed
     def test_composite_solver_with_strings(self):
-        s = claripy.SolverComposite(
-            template_solver_string=claripy.SolverCompositeChild(backend=claripy.backend_manager.backends.smtlib_cvc4)
-        )
+        s = claripy.SolverComposite(template_solver_string=claripy.SolverCompositeChild())
         x = claripy.BVS("x", 32)
         y = claripy.BVS("y", 32)
         z = claripy.BVS("z", 32)
@@ -622,6 +617,8 @@ class StandardTests(TestCase):
 
 
 class Base:
+    solver: type[claripy.Solver]
+
     def test_solver_with_reuse(self):
         raw_solver(self.solver, True)
 
