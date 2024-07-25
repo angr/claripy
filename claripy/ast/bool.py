@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import atexit
 import logging
 
@@ -149,9 +151,9 @@ def If(*args):
         return ty("If", tuple(args))
 
 
-And = operations.op("And", Bool, Bool, bound=False)
-Or = operations.op("Or", Bool, Bool, bound=False)
-Not = operations.op("Not", (Bool,), Bool, bound=False)
+And = operations.op("And", Bool, Bool)
+Or = operations.op("Or", Bool, Bool)
+Not = operations.op("Not", (Bool,), Bool)
 
 Bool.__invert__ = Not
 Bool.__and__ = And

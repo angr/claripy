@@ -1,4 +1,6 @@
 # pylint:disable=isinstance-second-argument-not-valid-type
+from __future__ import annotations
+
 import collections
 import itertools
 import operator

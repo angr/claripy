@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from claripy import operations
 from claripy.ast.base import _make_name
 
@@ -168,26 +170,23 @@ def StringV(value, length: int | None = None, **kwargs):
     return result
 
 
-StrConcat = operations.op("StrConcat", String, String, calc_length=operations.str_concat_length_calc, bound=False)
-StrSubstr = operations.op("StrSubstr", (BV, BV, String), String, calc_length=operations.substr_length_calc, bound=False)
-StrLen = operations.op("StrLen", (String, int), BV, calc_length=operations.strlen_bv_size_calc, bound=False)
+StrConcat = operations.op("StrConcat", String, String, calc_length=operations.str_concat_length_calc)
+StrSubstr = operations.op("StrSubstr", (BV, BV, String), String, calc_length=operations.substr_length_calc)
+StrLen = operations.op("StrLen", (String, int), BV, calc_length=operations.strlen_bv_size_calc)
 StrReplace = operations.op(
     "StrReplace",
     (String, String, String),
     String,
     extra_check=operations.str_replace_check,
     calc_length=operations.str_replace_length_calc,
-    bound=False,
 )
-StrContains = operations.op("StrContains", (String, String), Bool, bound=False)
-StrPrefixOf = operations.op("StrPrefixOf", (String, String), Bool, bound=False)
-StrSuffixOf = operations.op("StrSuffixOf", (String, String), Bool, bound=False)
-StrIndexOf = operations.op(
-    "StrIndexOf", (String, String, BV, int), BV, calc_length=operations.strindexof_bv_size_calc, bound=False
-)
-StrToInt = operations.op("StrToInt", (String, int), BV, calc_length=operations.strtoint_bv_size_calc, bound=False)
-IntToStr = operations.op("IntToStr", (BV,), String, calc_length=operations.int_to_str_length_calc, bound=False)
-StrIsDigit = operations.op("StrIsDigit", (String,), Bool, bound=False)
+StrContains = operations.op("StrContains", (String, String), Bool)
+StrPrefixOf = operations.op("StrPrefixOf", (String, String), Bool)
+StrSuffixOf = operations.op("StrSuffixOf", (String, String), Bool)
+StrIndexOf = operations.op("StrIndexOf", (String, String, BV, int), BV, calc_length=operations.strindexof_bv_size_calc)
+StrToInt = operations.op("StrToInt", (String, int), BV, calc_length=operations.strtoint_bv_size_calc)
+IntToStr = operations.op("IntToStr", (BV,), String, calc_length=operations.int_to_str_length_calc)
+StrIsDigit = operations.op("StrIsDigit", (String,), Bool)
 
 # Equality / inequality check
 String.__eq__ = operations.op("__eq__", (String, String), Bool)

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import unittest
 
 import claripy
@@ -6,12 +8,13 @@ KEEP_TEST_PERFORMANT = True
 
 
 class TestStrings(unittest.TestCase):
-    """TestStrings tests string operations in Claripy."""
+    def get_solver(self):
+        return claripy.SolverStrings(backend=claripy.backends.z3)
 
     def test_concat(self):
         str_concrete = claripy.StringV("conc")
         str_symbol = claripy.StringS("symb_concat", 4, explicit_name=True)
-        solver = claripy.SolverStrings()
+        solver = self.get_solver()
         res = str_concrete + str_symbol
         solver.add(res == claripy.StringV("concrete"))
         self.assertTrue(solver.satisfiable())
@@ -23,7 +26,7 @@ class TestStrings(unittest.TestCase):
         self.assertEqual([claripy.StringV("rete")], list(result))
 
     def test_concat_simplification(self):
-        solver = claripy.SolverStrings()
+        solver = self.get_solver()
         str_concrete = claripy.StringV("conc")
         res = str_concrete + str_concrete + str_concrete
         res2 = claripy.StrConcat(str_concrete, str_concrete)
@@ -35,7 +38,7 @@ class TestStrings(unittest.TestCase):
 
     def test_substr(self):
         str_symbol = claripy.StringS("symb_subst", 4, explicit_name=True)
-        solver = claripy.SolverStrings()
+        solver = self.get_solver()
         solver.add(claripy.StrSubstr(1, 2, str_symbol) == claripy.StringV("o"))
         self.assertTrue(solver.satisfiable())
         results = solver.eval(str_symbol, 2 if KEEP_TEST_PERFORMANT else 100)
@@ -45,7 +48,7 @@ class TestStrings(unittest.TestCase):
 
     def test_substr_simplification(self):
         str_concrete = claripy.StringV("concrete")
-        solver = claripy.SolverStrings()
+        solver = self.get_solver()
         # TODO: Make sure that semantics of Substr match the ones of SMTLib substr
         solver.add(claripy.StrSubstr(1, 2, str_concrete) == claripy.StringV("on"))
         self.assertTrue(solver.satisfiable())
@@ -56,7 +59,7 @@ class TestStrings(unittest.TestCase):
         str_to_replace_symb = claripy.StringS("symb_repl", 4, explicit_name=True)
         sub_str_to_repl = claripy.StringV("a")
         replacement = claripy.StringV("b")
-        solver = claripy.SolverStrings()
+        solver = self.get_solver()
         repl_stringa = claripy.StrReplace(str_to_replace_symb, sub_str_to_repl, replacement)
         solver.add(repl_stringa == claripy.StringV("cbne"))
         self.assertTrue(solver.satisfiable())
@@ -72,7 +75,7 @@ class TestStrings(unittest.TestCase):
         sub_str_to_repl = claripy.StringV("a")
         replacement = claripy.StringV("b")
         repl_stringa = claripy.StrReplace(str_to_replace, sub_str_to_repl, replacement)
-        solver = claripy.SolverStrings()
+        solver = self.get_solver()
         solver.add(repl_stringa == claripy.StringV("cbne"))
 
         self.assertTrue(solver.satisfiable())
@@ -85,7 +88,7 @@ class TestStrings(unittest.TestCase):
 
     def test_ne(self):
         str_symb = claripy.StringS("symb_ne", 12, explicit_name=True)
-        solver = claripy.SolverStrings()
+        solver = self.get_solver()
         solver.add(str_symb != claripy.StringV("concrete"))
         self.assertTrue(solver.satisfiable())
 
@@ -94,7 +97,7 @@ class TestStrings(unittest.TestCase):
 
     def test_length(self):
         str_symb = claripy.StringS("symb_length", 12, explicit_name=True)
-        solver = claripy.SolverStrings()
+        solver = self.get_solver()
         # TODO: How do we want to deal with the size of a symbolic string?
         solver.add(claripy.StrLen(str_symb, 32) == 14)
         self.assertTrue(solver.satisfiable())
@@ -105,7 +108,7 @@ class TestStrings(unittest.TestCase):
 
     def test_length_simplification(self):
         str_concrete = claripy.StringV("concrete")
-        solver = claripy.SolverStrings()
+        solver = self.get_solver()
         solver.add(claripy.StrLen(str_concrete, 32) == 8)
         self.assertTrue(solver.satisfiable())
 
@@ -116,7 +119,7 @@ class TestStrings(unittest.TestCase):
 
     def test_or(self):
         str_symb = claripy.StringS("Symb_or", 4, explicit_name=True)
-        solver = claripy.SolverStrings()
+        solver = self.get_solver()
         res = claripy.Or((str_symb == claripy.StringV("abc")), (str_symb == claripy.StringV("ciao")))
         solver.add(res)
         self.assertTrue(solver.satisfiable())
@@ -126,7 +129,7 @@ class TestStrings(unittest.TestCase):
 
     def test_lt_etc(self):
         str_symb = claripy.StringS("Symb_2", 4)
-        solver = claripy.SolverStrings()
+        solver = self.get_solver()
         c1 = claripy.StrLen(str_symb, 32) <= 4
         c2 = claripy.StrLen(str_symb, 32) < 4
         c3 = claripy.StrLen(str_symb, 32) >= 4
@@ -139,7 +142,7 @@ class TestStrings(unittest.TestCase):
 
     def test_substr_BV_concrete_index(self):
         str_symbol = claripy.StringS("symb_subst", 4, explicit_name=True)
-        solver = claripy.SolverStrings()
+        solver = self.get_solver()
         bv1 = claripy.BVV(1, 32)
         bv2 = claripy.BVV(2, 32)
         res = claripy.StrSubstr(bv1, bv2, str_symbol) == claripy.StringV("on")
@@ -149,7 +152,7 @@ class TestStrings(unittest.TestCase):
 
     def test_substr_BV_symbolic_index(self):
         str_symbol = claripy.StringS("symb_subst", 4, explicit_name=True)
-        solver = claripy.SolverStrings()
+        solver = self.get_solver()
         start = claripy.BVS("start_idx", 32)
         count = claripy.BVS("count", 32)
         res = claripy.StrSubstr(start, count, str_symbol) == claripy.StringV("on")
@@ -167,7 +170,7 @@ class TestStrings(unittest.TestCase):
 
     def test_substr_BV_mixed_index(self):
         str_symbol = claripy.StringS("symb_subst", 4, explicit_name=True)
-        solver = claripy.SolverStrings()
+        solver = self.get_solver()
         start = claripy.BVS("symb_subst_start_idx", 32, explicit_name=True)
         count = claripy.BVV(2, 32)
         res = claripy.StrSubstr(start, count, str_symbol) == claripy.StringV("on")
@@ -180,7 +183,7 @@ class TestStrings(unittest.TestCase):
     def test_contains(self):
         str_symb = claripy.StringS("symb_contains", 4, explicit_name=True)
         res = claripy.StrContains(str_symb, claripy.StringV("an"))
-        solver = claripy.SolverStrings()
+        solver = self.get_solver()
         solver.add(res)
         self.assertTrue(solver.satisfiable())
         solutions = solver.eval(str_symb, 4 if KEEP_TEST_PERFORMANT else 100)
@@ -189,7 +192,7 @@ class TestStrings(unittest.TestCase):
 
     def test_contains_simplification(self):
         str_concrete = claripy.StringV("concrete")
-        solver = claripy.SolverStrings()
+        solver = self.get_solver()
         res = claripy.StrContains(str_concrete, claripy.StringV("nc"))
         solver.add(res)
         self.assertTrue(solver.satisfiable())
@@ -200,7 +203,7 @@ class TestStrings(unittest.TestCase):
     def test_prefix(self):
         str_symb = claripy.StringS("symb_prefix", 4, explicit_name=True)
         res = claripy.StrPrefixOf(claripy.StringV("an"), str_symb)
-        solver = claripy.SolverStrings()
+        solver = self.get_solver()
         solver.add(res)
         self.assertTrue(solver.satisfiable())
 
@@ -211,7 +214,7 @@ class TestStrings(unittest.TestCase):
     def test_suffix(self):
         str_symb = claripy.StringS("symb_suffix", 4, explicit_name=True)
         res = claripy.StrSuffixOf(claripy.StringV("an"), str_symb)
-        solver = claripy.SolverStrings()
+        solver = self.get_solver()
         solver.add(res)
         self.assertTrue(solver.satisfiable())
 
@@ -221,7 +224,7 @@ class TestStrings(unittest.TestCase):
 
     def test_prefix_simplification(self):
         str_concrete = claripy.StringV("concrete")
-        solver = claripy.SolverStrings()
+        solver = self.get_solver()
         res = claripy.StrPrefixOf(claripy.StringV("conc"), str_concrete)
         solver.add(res)
         self.assertTrue(solver.satisfiable())
@@ -231,7 +234,7 @@ class TestStrings(unittest.TestCase):
 
     def test_suffix_simplification(self):
         str_concrete = claripy.StringV("concrete")
-        solver = claripy.SolverStrings()
+        solver = self.get_solver()
         res = claripy.StrSuffixOf(claripy.StringV("rete"), str_concrete)
         solver.add(res)
         self.assertTrue(solver.satisfiable())
@@ -242,7 +245,7 @@ class TestStrings(unittest.TestCase):
     def test_index_of(self):
         str_symb = claripy.StringS("symb_suffix", 4, explicit_name=True)
         res = claripy.StrIndexOf(str_symb, claripy.StringV("an"), 0, 32)
-        solver = claripy.SolverStrings()
+        solver = self.get_solver()
 
         target_idx = 4 if KEEP_TEST_PERFORMANT else 100
         solver.add(res == target_idx)
@@ -256,7 +259,7 @@ class TestStrings(unittest.TestCase):
 
     def test_index_of_simplification(self):
         str_concrete = claripy.StringV("concrete")
-        solver = claripy.SolverStrings()
+        solver = self.get_solver()
         res = claripy.StrIndexOf(str_concrete, claripy.StringV("rete"), 0, 32)
         target_idx = 4 if KEEP_TEST_PERFORMANT else 100
         solver.add(res == target_idx)
@@ -269,7 +272,7 @@ class TestStrings(unittest.TestCase):
         str_symb = claripy.StringS("symb_index_of", 4, explicit_name=True)
         start_idx = claripy.BVS("symb_start_idx", 32, explicit_name=True)
 
-        solver = claripy.SolverStrings()
+        solver = self.get_solver()
 
         solver.add(start_idx > 32)
         solver.add(start_idx < 35)
@@ -287,7 +290,7 @@ class TestStrings(unittest.TestCase):
     def test_str_to_int(self):
         str_symb = claripy.StringS("symb_strtoint", 4, explicit_name=True)
         res = claripy.StrToInt(str_symb, 32)
-        solver = claripy.SolverStrings()
+        solver = self.get_solver()
         target_num = 12 if KEEP_TEST_PERFORMANT else 100000
         solver.add(res == target_num)
         self.assertTrue(solver.satisfiable())
@@ -300,7 +303,7 @@ class TestStrings(unittest.TestCase):
         target_num = 12 if not KEEP_TEST_PERFORMANT else 1000000
 
         str_concrete = claripy.StringV(str(target_num))
-        solver = claripy.SolverStrings()
+        solver = self.get_solver()
         res = claripy.StrToInt(str_concrete, 32)
 
         solver.add(res == target_num)

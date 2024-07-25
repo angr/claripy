@@ -1,6 +1,7 @@
 # hits = 0
 # misses = 0
 # ejects = 0
+from __future__ import annotations
 
 
 class CompositedCacheMixin:
@@ -50,6 +51,6 @@ class CompositedCacheMixin:
         super().downsize()
         self._merged_solvers = {}
 
-    def _store_child(self, s, **kwargs):
-        self._remove_cached(s.variables)
-        return super()._store_child(s, **kwargs)
+    def _store_child(self, ns, extra_names=frozenset(), invalidate_cache=True):
+        self._remove_cached(ns.variables)
+        return super()._store_child(ns, extra_names=extra_names, invalidate_cache=invalidate_cache)

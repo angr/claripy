@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 class SimplifySkipperMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -22,15 +25,15 @@ class SimplifySkipperMixin:
     # Simplification skipping
     #
 
-    def add(self, *args, **kwargs):
-        added = super().add(*args, **kwargs)
+    def _add(self, constraints, invalidate_cache=True):
+        added = super()._add(constraints, invalidate_cache=invalidate_cache)
         if len(added) > 0:
             self._simplified = False
         return added
 
-    def simplify(self, *args, **kwargs):
+    def simplify(self):
         if self._simplified:
             return self.constraints
         else:
             self._simplified = True
-            return super().simplify(*args, **kwargs)
+            return super().simplify()
