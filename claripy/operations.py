@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import itertools
 
-from . import ast, fp, simplifications
-from . import debug as _d
-from .errors import ClaripyOperationError, ClaripyTypeError
+import claripy
+from claripy import debug, fp
+from claripy.errors import ClaripyOperationError, ClaripyTypeError
 
 
 def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coerce=True):
@@ -42,7 +42,7 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
 
     def _op(*args):
         fixed_args = tuple(_type_fixer(args))
-        if _d._DEBUG:
+        if debug._DEBUG:
             for i in fixed_args:
                 if i is NotImplemented:
                     return NotImplemented
@@ -52,6 +52,8 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
                     raise ClaripyOperationError(msg)
 
         # pylint:disable=too-many-nested-blocks
+        from claripy import simplifications
+
         simp = _handle_annotations(simplifications.simpleton.simplify(name, fixed_args), args)
         if simp is not None:
             return simp
@@ -62,7 +64,7 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
 
         kwargs["uninitialized"] = None
         # pylint:disable=isinstance-second-argument-not-valid-type
-        if any(a.uninitialized is True for a in args if isinstance(a, ast.Base)):
+        if any(a.uninitialized is True for a in args if isinstance(a, claripy.ast.Base)):
             kwargs["uninitialized"] = True
         if name in preprocessors:
             args, kwargs = preprocessors[name](*args, **kwargs)
@@ -78,7 +80,7 @@ def _handle_annotations(simp, args):
         return None
 
     # pylint:disable=isinstance-second-argument-not-valid-type
-    ast_args = tuple(a for a in args if isinstance(a, ast.Base))
+    ast_args = tuple(a for a in args if isinstance(a, claripy.ast.Base))
     preserved_relocatable = frozenset(simp._relocatable_annotations)
     relocated_annotations = set()
     bad_eliminated = 0
@@ -173,7 +175,7 @@ def str_basic_length_calc(str_1):
 
 
 def int_to_str_length_calc(int_val):  # pylint: disable=unused-argument
-    return 8 * ast.String.MAX_LENGTH
+    return 8 * claripy.ast.String.MAX_LENGTH
 
 
 def str_replace_check(*args):

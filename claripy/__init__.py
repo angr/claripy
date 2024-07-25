@@ -42,12 +42,6 @@ from .ast.bool import *
 from .ast.strings import *
 from . import ast
 
-del BV
-del Bool
-del FP
-del Base
-ast._import()
-
 
 def BV(name, size, explicit_name=None):  # pylint:disable=function-redefined
     l.critical(
@@ -83,6 +77,9 @@ def downsize():
     Clear all temporary data associated with any backend
     """
     backends.downsize()
+
+
+from . import simplifications
 
 
 #
