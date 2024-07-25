@@ -1,5 +1,9 @@
+from __future__ import annotations
+
 import logging
 import numbers
+
+from claripy.ast.bool import BoolV
 
 from . import ast
 
@@ -62,9 +66,24 @@ class Frontend:
     def split(self):
         raise NotImplementedError("split() is not implemented")
 
-    def add(self, constraints):
+    def add(self, constraints, invalidate_cache=True):
         """
         Adds constraint(s) to constraints list.
+
+        :param constraints:             constraint(s) to add
+
+        :return:
+        """
+        constraints = [constraints] if not isinstance(constraints, list | tuple | set) else constraints
+        if len(constraints) == 0:
+            return []
+        constraints = [BoolV(c) if isinstance(c, bool) else c for c in constraints]
+        return self._add(constraints, invalidate_cache=invalidate_cache)
+
+    def _add(self, constraints, invalidate_cache=True):
+        """
+        Adds constraint(s) to constraints list. This version is called by add()
+        with constrained constraints.
 
         :param constraints:             constraint(s) to add
 
@@ -220,7 +239,8 @@ class Frontend:
         else:
             return None
 
-    _concrete_constraint = _concrete_value
+    def _concrete_constraint(self, e):  # pylint:disable=no-self-use
+        return self._concrete_value(e)
 
     def _constraint_filter(self, c):  # pylint:disable=no-self-use
         return c

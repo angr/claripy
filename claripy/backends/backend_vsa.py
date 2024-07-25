@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import functools
 import logging
 import numbers
@@ -5,7 +7,9 @@ import operator
 from functools import reduce
 
 from claripy.ast.base import Base
+from claripy.backends.backend import Backend
 from claripy.balancer import Balancer
+from claripy.errors import BackendError
 from claripy.operations import backend_operations_vsa_compliant, expression_set_operations
 from claripy.vsa import (
     BoolResult,
@@ -17,8 +21,6 @@ from claripy.vsa import (
     TrueResult,
     ValueSet,
 )
-
-from . import Backend, BackendError
 
 l = logging.getLogger("claripy.backends.backend_vsa")
 
@@ -212,7 +214,7 @@ class BackendVSA(Backend):
         raise BackendError("nope")
 
     def _identical(self, a, b):
-        if type(a) != type(b):
+        if type(a) != type(b):  # noqa: E721
             return False
         return a.identical(b)
 

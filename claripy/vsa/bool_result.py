@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from claripy.ast.base import Base
 from claripy.backend_object import BackendObject
 from claripy.errors import BackendError, ClaripyValueError
@@ -31,9 +33,7 @@ class BoolResult(BackendObject):
             return False
         if self._op != other._op:
             return False
-        if self._args != other._args:
-            return False
-        return True
+        return self._args == other._args
 
     def union(self, other):
         raise NotImplementedError

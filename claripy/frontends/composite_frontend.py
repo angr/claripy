@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import itertools
 import logging
 import weakref
@@ -133,7 +135,7 @@ class CompositeFrontend(ConstrainedFrontend):
     def _merged_solver_for(self, *args, **kwargs):
         return self._solver_for_names(self._names_for(*args, **kwargs))
 
-    def _solver_for_names(self, names: set[str]) -> "SolverCompositeChild":
+    def _solver_for_names(self, names: set[str]) -> SolverCompositeChild:
         """
         Get a merged child solver for variables specified in `names`.
 
@@ -276,7 +278,7 @@ class CompositeFrontend(ConstrainedFrontend):
         self._store_child(s, invalidate_cache=invalidate_cache)
         return added
 
-    def add(self, constraints, **kwargs):  # pylint:disable=arguments-differ
+    def _add(self, constraints, invalidate_cache=True):
         split = self._split_constraints(constraints)
         child_added = []
 
@@ -290,7 +292,7 @@ class CompositeFrontend(ConstrainedFrontend):
                 except BackendError:
                     unsure.extend(set_constraints)
             else:
-                child_added += self._add_dependent_constraints(names, set_constraints, **kwargs)
+                child_added += self._add_dependent_constraints(names, set_constraints)
 
         # l.debug("... solvers after add: %d", len(self._solver_list))
 
@@ -300,7 +302,7 @@ class CompositeFrontend(ConstrainedFrontend):
                 s.add(unsure)
                 self._store_child(s)
 
-        return super().add(child_added)
+        return super()._add(child_added)
 
     #
     # Solving

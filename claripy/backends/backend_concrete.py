@@ -1,4 +1,6 @@
-# pylint:disable=duplicate-value,missing-class-docstring,wrong-import-position
+# pylint:disable=duplicate-value,missing-class-docstring
+from __future__ import annotations
+
 import logging
 import numbers
 import operator
@@ -10,10 +12,9 @@ from claripy.ast.bool import Bool, BoolV
 from claripy.ast.bv import BV, BVV
 from claripy.ast.fp import FPV
 from claripy.ast.strings import StringV
-from claripy.errors import UnsatError
+from claripy.backends.backend import Backend
+from claripy.errors import BackendError, UnsatError
 from claripy.operations import backend_fp_operations, backend_operations, backend_strings_operations
-
-from . import Backend, BackendError
 
 l = logging.getLogger("claripy.backends.backend_concrete")
 

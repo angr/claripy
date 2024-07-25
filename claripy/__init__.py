@@ -1,6 +1,6 @@
 # pylint: disable=F0401,W0401,W0603,
 
-__version__ = "9.2.109.dev0"
+__version__ = "9.2.113.dev0"
 
 if bytes is str:
     raise Exception("This module is designed for python 3 only. Please install an older version to use python 2.")
@@ -17,7 +17,7 @@ from . import ops as _all_operations
 
 # This is here for later, because we'll fuck the namespace in a few lines
 from . import backends as _backends_module
-from .backends import Backend as Backend
+from .backends.backend import Backend as Backend
 from .backend_object import BackendObject as BackendObject
 
 

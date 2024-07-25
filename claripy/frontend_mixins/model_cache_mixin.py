@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import itertools
 import weakref
 
@@ -7,8 +9,6 @@ from claripy.errors import UnsatError
 
 
 class ModelCache:
-    _defaults = {0, 0.0, True}
-
     def __init__(self, model):
         self.model = model
         self.replacements = weakref.WeakKeyDictionary()
@@ -116,6 +116,8 @@ class ModelCache:
 
 
 class ModelCacheMixin:
+    """ModelCacheMixin is a mixin that caches models for a solver."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._models = set()
@@ -160,8 +162,8 @@ class ModelCacheMixin:
     # Model cleaning
     #
 
-    def simplify(self, *args, **kwargs):
-        results = super().simplify(*args, **kwargs)
+    def simplify(self):
+        results = super().simplify()
         if len(results) > 0 and any(c is false for c in results):
             self._models.clear()
         return results
@@ -185,12 +187,12 @@ class ModelCacheMixin:
         self._max_signed_exhausted.add(c.args[0].cache_key)
         self._min_signed_exhausted.add(c.args[0].cache_key)
 
-    def add(self, constraints, invalidate_cache=True, **kwargs):
+    def _add(self, constraints, invalidate_cache=True):
         if len(constraints) == 0:
             return constraints
 
         old_vars = frozenset(self.variables)
-        added = super().add(constraints, **kwargs)
+        added = super()._add(constraints, invalidate_cache=invalidate_cache)
         if len(added) == 0:
             return added
 
@@ -300,12 +302,12 @@ class ModelCacheMixin:
     # Cached functions
     #
 
-    def satisfiable(self, extra_constraints=(), **kwargs):
+    def satisfiable(self, extra_constraints=(), exact=None):
         for _ in self._get_models(extra_constraints=extra_constraints):
             return True
-        return super().satisfiable(extra_constraints=extra_constraints, **kwargs)
+        return super().satisfiable(extra_constraints=extra_constraints, exact=exact)
 
-    def batch_eval(self, asts, n, extra_constraints=(), **kwargs):
+    def batch_eval(self, asts, n, extra_constraints=(), exact=None):
         results = self._get_batch_solutions(asts, n=n, extra_constraints=extra_constraints)
 
         if len(results) == n or (len(asts) == 1 and asts[0].cache_key in self._eval_exhausted):
@@ -323,7 +325,7 @@ class ModelCacheMixin:
             constraints = extra_constraints
 
         try:
-            results.update(super().batch_eval(asts, remaining, extra_constraints=constraints, **kwargs))
+            results.update(super().batch_eval(asts, remaining, extra_constraints=constraints, exact=exact))
         except UnsatError:
             if len(results) == 0:
                 raise
@@ -337,10 +339,12 @@ class ModelCacheMixin:
 
         return results
 
-    def eval(self, e, n, **kwargs):
-        return tuple(r[0] for r in ModelCacheMixin.batch_eval(self, [e], n=n, **kwargs))
+    def eval(self, e, n, extra_constraints=(), exact=None):
+        return tuple(
+            r[0] for r in ModelCacheMixin.batch_eval(self, [e], n, extra_constraints=extra_constraints, exact=exact)
+        )
 
-    def min(self, e, extra_constraints=(), signed=False, **kwargs):
+    def min(self, e, extra_constraints=(), signed=False, exact=None):
         cached = []
         if e.cache_key in self._eval_exhausted or e.cache_key in self._min_exhausted:
             # we set allow_unconstrained to False because we expect all returned values for e are returned by Z3,
@@ -348,29 +352,35 @@ class ModelCacheMixin:
             cached = self._get_solutions(e, extra_constraints=extra_constraints, allow_unconstrained=False)
 
         if len(cached) > 0:
-            signed_key = lambda v: v if v < 2 ** (len(e) - 1) else v - 2 ** len(e)
+
+            def signed_key(v):
+                return v if v >= 0 else v + 2 ** len(e)
+
             return min(cached, key=signed_key if signed else lambda v: v)
         else:
-            m = super().min(e, extra_constraints=extra_constraints, signed=signed, **kwargs)
+            m = super().min(e, extra_constraints=extra_constraints, signed=signed, exact=exact)
             if len(extra_constraints) == 0:
                 (self._min_signed_exhausted if signed else self._min_exhausted).add(e.cache_key)
             return m
 
-    def max(self, e, extra_constraints=(), signed=False, **kwargs):
+    def max(self, e, extra_constraints=(), signed=False, exact=None):
         cached = []
         if e.cache_key in self._eval_exhausted or e.cache_key in self._max_exhausted:
             cached = self._get_solutions(e, extra_constraints=extra_constraints, allow_unconstrained=False)
 
         if len(cached) > 0:
-            signed_key = lambda v: v if v < 2 ** (len(e) - 1) else v - 2 ** len(e)
+
+            def signed_key(v):
+                return v if v < 2 ** (len(e) - 1) else v - 2 ** len(e)
+
             return max(cached, key=signed_key if signed else lambda v: v)
         else:
-            m = super().max(e, extra_constraints=extra_constraints, signed=signed, **kwargs)
+            m = super().max(e, extra_constraints=extra_constraints, signed=signed, exact=exact)
             if len(extra_constraints) == 0:
                 (self._max_signed_exhausted if signed else self._max_exhausted).add(e.cache_key)
             return m
 
-    def solution(self, e, v, extra_constraints=(), **kwargs):
+    def solution(self, e, v, extra_constraints=(), exact=None):
         if isinstance(v, Base):
             cached = self._get_batch_solutions([e, v], extra_constraints=extra_constraints)
             if any(ec == vc for ec, vc in cached):
@@ -380,4 +390,4 @@ class ModelCacheMixin:
             if v in cached:
                 return True
 
-        return super().solution(e, v, extra_constraints=extra_constraints, **kwargs)
+        return super().solution(e, v, extra_constraints=extra_constraints, exact=exact)

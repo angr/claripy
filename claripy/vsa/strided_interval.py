@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import functools
 import itertools
 import logging
@@ -470,9 +472,7 @@ class StridedInterval(BackendObject):
                 "Oops, Strided intervals cannot be passed as parameter to function solution. To implement"
             )
 
-        if self.intersection(b).is_empty:
-            return False
-        return True
+        return not self.intersection(b).is_empty
 
     #
     # Private methods
@@ -1900,17 +1900,16 @@ class StridedInterval(BackendObject):
         elif b.is_top:
             return True
 
-        if (
+        return bool(
             b._surrounds_member(a.lower_bound)
             and b._surrounds_member(a.upper_bound)
             and (
-                (b.lower_bound == a.lower_bound and b.upper_bound == a.upper_bound)
+                b.lower_bound == a.lower_bound
+                and b.upper_bound == a.upper_bound
                 or not a._surrounds_member(b.lower_bound)
                 or not a._surrounds_member(b.upper_bound)
             )
-        ):
-            return True
-        return False
+        )
 
     #
     # Arithmetic operations

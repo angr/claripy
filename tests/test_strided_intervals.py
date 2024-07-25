@@ -1,4 +1,6 @@
 # pylint: disable=missing-class-docstring,no-self-use
+from __future__ import annotations
+
 import unittest
 
 from claripy.vsa import StridedInterval
@@ -11,9 +13,7 @@ def check_si_fields(si, stride, lb, ub):
         return False
     if si.lower_bound != lb:
         return False
-    if si.upper_bound != ub:
-        return False
-    return True
+    return si.upper_bound == ub
 
 
 class TestDivision(unittest.TestCase):

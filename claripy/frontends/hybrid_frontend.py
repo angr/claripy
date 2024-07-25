@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 
 from claripy.errors import ClaripyFrontendError
@@ -128,7 +130,7 @@ class HybridFrontend(Frontend):
     # Lifecycle
     #
 
-    def add(self, constraints):
+    def _add(self, constraints, invalidate_cache=True):
         added = self._exact_frontend.add(constraints)
         self._approximate_frontend.add(constraints)
         return added

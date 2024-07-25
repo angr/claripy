@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import atexit
 import logging
 import numbers
@@ -413,14 +415,14 @@ def DSIS(
 
 
 # comparisons
-ULT = operations.op("__lt__", (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
-ULE = operations.op("__le__", (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
-UGT = operations.op("__gt__", (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
-UGE = operations.op("__ge__", (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
-SLT = operations.op("SLT", (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
-SLE = operations.op("SLE", (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
-SGT = operations.op("SGT", (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
-SGE = operations.op("SGE", (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
+ULT = operations.op("__lt__", (BV, BV), Bool, extra_check=operations.length_same_check)
+ULE = operations.op("__le__", (BV, BV), Bool, extra_check=operations.length_same_check)
+UGT = operations.op("__gt__", (BV, BV), Bool, extra_check=operations.length_same_check)
+UGE = operations.op("__ge__", (BV, BV), Bool, extra_check=operations.length_same_check)
+SLT = operations.op("SLT", (BV, BV), Bool, extra_check=operations.length_same_check)
+SLE = operations.op("SLE", (BV, BV), Bool, extra_check=operations.length_same_check)
+SGT = operations.op("SGT", (BV, BV), Bool, extra_check=operations.length_same_check)
+SGE = operations.op("SGE", (BV, BV), Bool, extra_check=operations.length_same_check)
 
 # division
 SDiv = operations.op(
@@ -428,7 +430,6 @@ SDiv = operations.op(
     (BV, BV),
     BV,
     extra_check=operations.length_same_check,
-    bound=False,
     calc_length=operations.basic_length_calc,
 )
 SMod = operations.op(
@@ -436,7 +437,6 @@ SMod = operations.op(
     (BV, BV),
     BV,
     extra_check=operations.length_same_check,
-    bound=False,
     calc_length=operations.basic_length_calc,
 )
 
@@ -447,13 +447,12 @@ LShR = operations.op(
     BV,
     extra_check=operations.length_same_check,
     calc_length=operations.basic_length_calc,
-    bound=False,
 )
 SignExt = operations.op(
-    "SignExt", (int, BV), BV, extra_check=operations.extend_check, calc_length=operations.ext_length_calc, bound=False
+    "SignExt", (int, BV), BV, extra_check=operations.extend_check, calc_length=operations.ext_length_calc
 )
 ZeroExt = operations.op(
-    "ZeroExt", (int, BV), BV, extra_check=operations.extend_check, calc_length=operations.ext_length_calc, bound=False
+    "ZeroExt", (int, BV), BV, extra_check=operations.extend_check, calc_length=operations.ext_length_calc
 )
 Extract = operations.op(
     "Extract",
@@ -461,10 +460,9 @@ Extract = operations.op(
     BV,
     extra_check=operations.extract_check,
     calc_length=operations.extract_length_calc,
-    bound=False,
 )
 
-Concat = operations.op("Concat", BV, BV, calc_length=operations.concat_length_calc, bound=False)
+Concat = operations.op("Concat", BV, BV, calc_length=operations.concat_length_calc)
 
 RotateLeft = operations.op(
     "RotateLeft",
@@ -472,7 +470,6 @@ RotateLeft = operations.op(
     BV,
     extra_check=operations.length_same_check,
     calc_length=operations.basic_length_calc,
-    bound=False,
 )
 RotateRight = operations.op(
     "RotateRight",
@@ -480,9 +477,8 @@ RotateRight = operations.op(
     BV,
     extra_check=operations.length_same_check,
     calc_length=operations.basic_length_calc,
-    bound=False,
 )
-Reverse = operations.op("Reverse", (BV,), BV, calc_length=operations.basic_length_calc, bound=False)
+Reverse = operations.op("Reverse", (BV,), BV, calc_length=operations.basic_length_calc)
 
 union = operations.op(
     "union",
@@ -490,7 +486,6 @@ union = operations.op(
     BV,
     extra_check=operations.length_same_check,
     calc_length=operations.basic_length_calc,
-    bound=False,
 )
 widen = operations.op(
     "widen",
@@ -498,7 +493,6 @@ widen = operations.op(
     BV,
     extra_check=operations.length_same_check,
     calc_length=operations.basic_length_calc,
-    bound=False,
 )
 intersection = operations.op(
     "intersection",
@@ -506,7 +500,6 @@ intersection = operations.op(
     BV,
     extra_check=operations.length_same_check,
     calc_length=operations.basic_length_calc,
-    bound=False,
 )
 
 #
@@ -544,7 +537,6 @@ BV.SDiv = operations.op(
     (BV, BV),
     BV,
     extra_check=operations.length_same_check,
-    bound=False,
     calc_length=operations.basic_length_calc,
 )
 BV.SMod = operations.op(
@@ -552,7 +544,6 @@ BV.SMod = operations.op(
     (BV, BV),
     BV,
     extra_check=operations.length_same_check,
-    bound=False,
     calc_length=operations.basic_length_calc,
 )
 
@@ -607,10 +598,9 @@ BV.Extract = staticmethod(
         BV,
         extra_check=operations.extract_check,
         calc_length=operations.extract_length_calc,
-        bound=False,
     )
 )
-BV.Concat = staticmethod(operations.op("Concat", BV, BV, calc_length=operations.concat_length_calc, bound=False))
+BV.Concat = staticmethod(operations.op("Concat", BV, BV, calc_length=operations.concat_length_calc))
 BV.reversed = property(operations.op("Reverse", (BV,), BV, calc_length=operations.basic_length_calc))
 
 BV.union = operations.op(

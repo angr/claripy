@@ -1,7 +1,10 @@
 # pylint: disable=missing-class-docstring,no-self-use
+from __future__ import annotations
+
 import unittest
 
 import claripy
+from claripy.backends.backend import Backend
 
 
 class AnnotationA(claripy.Annotation):
@@ -48,9 +51,9 @@ class AnnotationD(claripy.Annotation):
         return True
 
 
-class BackendA(claripy.Backend):
+class BackendA(Backend):
     def __init__(self):
-        claripy.Backend.__init__(self)
+        super().__init__(self)
         self._op_expr["BVV"] = lambda e, result=None: e.args[0]
 
     def apply_annotation(self, o, a):
@@ -160,6 +163,15 @@ class TestAnnotation(unittest.TestCase):
         assert len(y0.annotations) == 1
         assert len(y1.annotations) == 0
         assert y0._hash != y1._hash
+
+    def test_clear_annotations(self):
+        x = claripy.BVS("x", 32).annotate(AnnotationA("a", 1))
+        y = x.clear_annotations()
+        assert len(y.annotations) == 0
+
+        x2 = claripy.BVS("x", 32).annotate(AnnotationA("a", 1)).annotate(AnnotationA("b", 2))
+        y2 = x2.clear_annotations()
+        assert len(y2.annotations) == 0
 
     def test_remove_relocatable_annotations(self):
         relocatable_anno = AnnotationC("a", 2)

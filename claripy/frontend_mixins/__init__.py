@@ -1,5 +1,4 @@
 # mixins for frontends
-from .constraint_fixer_mixin import ConstraintFixerMixin
 from .constraint_expansion_mixin import ConstraintExpansionMixin
 from .model_cache_mixin import ModelCacheMixin
 from .constraint_filter_mixin import ConstraintFilterMixin
@@ -13,4 +12,3 @@ from .simplify_skipper_mixin import SimplifySkipperMixin
 from .composited_cache_mixin import CompositedCacheMixin
 from .sat_cache_mixin import SatCacheMixin
 from .eval_string_to_ast_mixin import EvalStringsToASTsMixin
-from .smtlib_script_dumper_mixin import SMTLibScriptDumperMixin
