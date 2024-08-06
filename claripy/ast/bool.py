@@ -46,6 +46,9 @@ class Bool(Base):
         """
         return is_false(self)
 
+    def size(self):
+        return 1
+
 
 def BoolS(name, explicit_name=None) -> Bool:
     """
