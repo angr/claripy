@@ -525,12 +525,6 @@ class Base:
     # Collapsing and simplification
     #
 
-    # def _models_for(self, backend):
-    #    for a in self.args:
-    #        backend.convert_expr(a)
-    #        else:
-    #            yield backend.convert(a)
-
     def make_like(
         self: T,
         op: str,
