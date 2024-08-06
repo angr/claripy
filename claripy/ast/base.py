@@ -1260,7 +1260,7 @@ class Base:
     @property
     def concrete_value(self):
         try:
-            backends.concrete.convert(self).value
+            return backends.concrete.convert(self).value
         except BackendError:
             return self
 
