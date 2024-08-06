@@ -71,7 +71,7 @@ class TestBalancer(unittest.TestCase):
         s, r = claripy.balancer.Balancer(claripy.backends.vsa, x + 1 <= claripy.BVV(39, 32)).compat_ret
         assert s
         assert r[0][0] is x
-        all_vals = r[0][1]._model_vsa.eval(1000)
+        all_vals = claripy.backends.vsa.convert(r[0][1]).eval(1000)
         assert len(all_vals)
         assert min(all_vals) == 0
         assert max(all_vals) == 4294967295
@@ -90,7 +90,7 @@ class TestBalancer(unittest.TestCase):
         assert s
         assert r[0][0] is w
         assert claripy.backends.vsa.min(r[0][1]) == 0
-        all_vals = r[0][1]._model_vsa.eval(1000)
+        all_vals = claripy.backends.vsa.convert(r[0][1]).eval(1000)
         assert set(all_vals) == {4294967295, 0, 1}
 
     def test_overflow(self):

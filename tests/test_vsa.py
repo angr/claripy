@@ -69,16 +69,16 @@ class TestVSA(unittest.TestCase):  # pylint: disable=no-member,function-redefine
         assert claripy.backends.vsa.max(reversed_b) == 0xFF000000
 
         a_concat_b = claripy.Concat(a, b)
-        assert a_concat_b._model_vsa._reversed is False
+        assert claripy.backends.vsa.convert(a_concat_b)._reversed is False
 
         ra_concat_b = claripy.Concat(reversed_a, b)
-        assert ra_concat_b._model_vsa._reversed is False
+        assert claripy.backends.vsa.convert(ra_concat_b)._reversed is False
 
         a_concat_rb = claripy.Concat(a, reversed_b)
-        assert a_concat_rb._model_vsa._reversed is False
+        assert claripy.backends.vsa.convert(a_concat_rb)._reversed is False
 
         ra_concat_rb = claripy.Concat(reversed_a, reversed_b)
-        assert ra_concat_rb._model_vsa._reversed is False
+        assert claripy.backends.vsa.convert(ra_concat_rb)._reversed is False
 
     def test_simple_cardinality(self):
         x = claripy.BVS("x", 32, 0xA, 0x14, 0xA)
@@ -523,7 +523,7 @@ class TestVSA(unittest.TestCase):  # pylint: disable=no-member,function-redefine
 
         # Comparison between claripy.SI and BVV
         si = claripy.SI(bits=32, stride=1, lower_bound=-0x7F, upper_bound=0x7F)
-        si._model_vsa.uninitialized = True
+        claripy.backends.vsa.convert(si).uninitialized = True
         bvv = BVV(0x30, 32)
         comp = si < bvv
         assert vsa_model(comp).identical(MaybeResult())
@@ -1028,9 +1028,9 @@ class TestVSA(unittest.TestCase):  # pylint: disable=no-member,function-redefine
         si = claripy.SI(bits=32, stride=0, lower_bound=3, upper_bound=3)
         si2 = claripy.SI(bits=32, stride=10, lower_bound=32, upper_bound=320)
 
-        vs = VS(bits=si.size(), region="foo", val=si._model_vsa)
+        vs = VS(bits=si.size(), region="foo", val=claripy.backends.vsa.convert(si))
         # vs = vs.annotate(RegionAnnotation('foo', 0, si2))
-        vs2 = VS(bits=si2.size(), region="foo", val=si2._model_vsa)
+        vs2 = VS(bits=si2.size(), region="foo", val=claripy.backends.vsa.convert(si2))
         vs = vs.union(vs2)
 
         assert s.solution(vs, 3)
@@ -1088,10 +1088,10 @@ class TestVSA(unittest.TestCase):  # pylint: disable=no-member,function-redefine
         r2 = x.intersection(y.reversed).reversed
         r3 = x.reversed.intersection(y.reversed).reversed
 
-        assert r0._model_vsa.max == 1337
-        assert r1._model_vsa.max == 1337
-        assert r2._model_vsa.max == 1337
-        assert r3._model_vsa.max == 1337
+        assert claripy.backends.vsa.convert(r0).max == 1337
+        assert claripy.backends.vsa.convert(r1).max == 1337
+        assert claripy.backends.vsa.convert(r2).max == 1337
+        assert claripy.backends.vsa.convert(r3).max == 1337
 
         # See claripy issue #95 for details.
         si0 = StridedInterval(name="a", bits=32, stride=0, lower_bound=0xFFFF0000, upper_bound=0xFFFF0000)

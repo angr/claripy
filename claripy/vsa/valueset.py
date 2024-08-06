@@ -5,6 +5,7 @@ import functools
 import itertools
 import numbers
 
+import claripy
 from claripy.annotation import Annotation
 from claripy.ast.base import Base
 from claripy.backend_object import BackendObject
@@ -63,9 +64,9 @@ class RegionAnnotation(Annotation):
 
         # Do necessary conversion here
         if isinstance(self.region_base_addr, Base):
-            self.region_base_addr = self.region_base_addr._model_vsa
+            self.region_base_addr = claripy.backends.vsa.convert(self.region_base_addr)
         if isinstance(self.offset, Base):
-            self.offset = self.offset._model_vsa
+            self.offset = claripy.backends.vsa.convert(self.offset)
 
     @property
     def eliminatable(self):
