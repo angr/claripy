@@ -559,8 +559,8 @@ class Base:
             uneliminatable_annotations = frozenset(
                 anno for anno in annotations if not anno.eliminatable and not anno.relocatable
             )
-            relocatable_annotations = tuple(
-                frozenset(anno for anno in annotations if not anno.eliminatable and anno.relocatable)
+            relocatable_annotations = frozenset(
+                anno for anno in annotations if not anno.eliminatable and anno.relocatable
             )
 
             cache = type(self)._hash_cache
