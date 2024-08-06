@@ -5,7 +5,6 @@ __version__ = "9.2.115.dev0"
 if bytes is str:
     raise Exception("This module is designed for python 3 only. Please install an older version to use python 2.")
 
-import os
 import logging
 
 l = logging.getLogger("claripy")
@@ -65,16 +64,7 @@ from . import backend_manager as _backend_manager
 
 _backend_manager.backends._register_backend(_backends_module.BackendConcrete(), "concrete", True, True)
 _backend_manager.backends._register_backend(_backends_module.BackendVSA(), "vsa", False, False)
-
-if not os.environ.get("WORKER", False) and os.environ.get("REMOTE", False):
-    try:
-        _backend_z3 = _backends_module.backendremote.BackendRemote()
-    except OSError:
-        raise ImportError("can't connect to backend")
-else:
-    _backend_z3 = _backends_module.BackendZ3()
-
-_backend_manager.backends._register_backend(_backend_z3, "z3", False, False)
+_backend_manager.backends._register_backend(_backends_module.BackendZ3(), "z3", False, False)
 backends = _backend_manager.backends
 
 

@@ -100,9 +100,6 @@ def _add_memory_pressure(p):
 # Some global variables
 #
 
-# track the count of solves
-solve_count = 0
-
 # as of z3 4.8.7.0 this seems to matter
 z3.set_param("rewriter.hi_fp_unspecified", "true")
 
@@ -212,6 +209,8 @@ class BackendZ3(Backend):
         self._op_raw["__or__"] = self._op_or
         self._op_raw["__xor__"] = self._op_xor
         self._op_raw["__and__"] = self._op_and
+
+        self.solve_count = 0
 
     # XXX this is a HUGE HACK that should be removed whenever uninitialized gets moved to the
     # "proposed annotation backend" or wherever will prevent it from being part of the object
@@ -783,9 +782,7 @@ class BackendZ3(Backend):
         return model
 
     def _satisfiable(self, extra_constraints=(), solver=None, model_callback=None):
-        global solve_count  # pylint: disable=global-statement
-
-        solve_count += 1
+        self.solve_count += 1
 
         l.debug("Doing a check! (satisfiable)")
         if not z3_solver_sat(solver, extra_constraints, "satisfiable"):
@@ -805,15 +802,13 @@ class BackendZ3(Backend):
 
     @condom
     def _batch_eval(self, exprs, n, extra_constraints=(), solver=None, model_callback=None):
-        global solve_count  # pylint: disable=global-statement
-
         result_values = []
 
         if n > 1:
             solver.push()
 
         for i in range(n):
-            solve_count += 1
+            self.solve_count += 1
             if not z3_solver_sat(solver, extra_constraints, "batch_eval"):
                 break
             model = solver.model()
@@ -849,8 +844,6 @@ class BackendZ3(Backend):
         """
         _max if is_max else _min
         """
-        global solve_count  # pylint: disable=global-statement
-
         lo = -(2 ** (expr.size() - 1)) if signed else 0
         hi = 2 ** (expr.size() - 1) - 1 if signed else 2 ** expr.size() - 1
 
@@ -872,7 +865,7 @@ class BackendZ3(Backend):
                 z3.And(GE(expr, middle), LE(expr, hi)) if is_max else z3.And(GE(expr, lo), LE(expr, middle))
             )
 
-            solve_count += 1
+            self.solve_count += 1
             sat = z3_solver_sat(solver, constraints, comment)
             constraints.pop()
             if sat:
