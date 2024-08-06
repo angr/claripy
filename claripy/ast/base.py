@@ -1089,18 +1089,6 @@ class Base:
         if type(old) is not type(new):
             raise ClaripyReplacementError(f"cannot replace type {type(old)} ast with type {type(new)} ast")
 
-    def _identify_vars(self, all_vars, counter):
-        if self.op == "BVS":
-            if self.args not in all_vars:
-                all_vars[self.args] = BV("BVS", self.args, length=self.length, explicit_name=True)
-        elif self.op == "BoolS":
-            if self.args not in all_vars:
-                all_vars[self.args] = BoolS("var_" + str(next(counter)))
-        else:
-            for arg in self.args:
-                if isinstance(arg, Base):
-                    arg._identify_vars(all_vars, counter)
-
     def canonicalize(self: T, var_map=None, counter=None) -> T:
         counter = itertools.count() if counter is None else counter
         var_map = {} if var_map is None else var_map
@@ -1390,5 +1378,4 @@ def simplify(e: T) -> T:
 
 
 # pylint:disable=wrong-import-position
-from claripy.ast.bool import BoolS, If, Not  # noqa: E402
-from claripy.ast.bv import BV  # noqa: E402
+from claripy.ast.bool import If, Not  # noqa: E402
