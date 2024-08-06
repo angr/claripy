@@ -3,7 +3,9 @@ from __future__ import annotations
 import logging
 import operator
 
-from . import _all_operations, vsa
+import claripy
+
+from . import vsa
 from .ast.base import Base
 from .ast.bool import Bool
 from .ast.bv import BV, BVS, BVV
@@ -141,7 +143,7 @@ class Balancer:
 
     @staticmethod
     def _invert_comparison(a):
-        return _all_operations.Not(a)
+        return claripy.Not(a)
 
     #
     # Truism alignment
@@ -187,9 +189,9 @@ class Balancer:
             raise ClaripyBalancerError(f"unable to reverse comparison {a.op} (missing from 'opposites')") from err
 
         try:
-            op = getattr(operator, new_op) if new_op.startswith("__") else getattr(_all_operations, new_op)
-        except AttributeError as err:
-            raise ClaripyBalancerError(f"unable to reverse comparison {a.op} (AttributeError)") from err
+            op = getattr(operator, new_op)
+        except AttributeError:
+            raise ClaripyBalancerError(f"unable to reverse comparison {a.op} (AttributeError)")
 
         try:
             return op(*a.args[::-1])
@@ -305,11 +307,12 @@ class Balancer:
             return [t.args[0] >= 0]
         if t.op in ("__ge__", "__gt__", "UGE", "UGT"):
             return [t.args[0] <= 2 ** len(t.args[0]) - 1]
-        if t.op in ("SLE", "SLT"):
-            return [_all_operations.SGE(t.args[0], -(1 << (len(t.args[0]) - 1)))]
-        if t.op in ("SGE", "SGT"):
-            return [_all_operations.SLE(t.args[0], (1 << (len(t.args[0]) - 1)) - 1)]
-        return []
+        elif t.op in ("SLE", "SLT"):
+            return [claripy.SGE(t.args[0], -(1 << (len(t.args[0]) - 1)))]
+        elif t.op in ("SGE", "SGT"):
+            return [claripy.SLE(t.args[0], (1 << (len(t.args[0]) - 1)) - 1)]
+        else:
+            return []
 
     #
     # Truism extractor
@@ -332,10 +335,11 @@ class Balancer:
 
     def _unpack_truisms_Not(self, c):
         if c.args[0].op == "And":
-            return self._unpack_truisms(_all_operations.Or(*[_all_operations.Not(a) for a in c.args[0].args]))
-        if c.args[0].op == "Or":
-            return self._unpack_truisms(_all_operations.And(*[_all_operations.Not(a) for a in c.args[0].args]))
-        return set()
+            return self._unpack_truisms(claripy.Or(*[claripy.Not(a) for a in c.args[0].args]))
+        elif c.args[0].op == "Or":
+            return self._unpack_truisms(claripy.And(*[claripy.Not(a) for a in c.args[0].args]))
+        else:
+            return set()
 
     def _unpack_truisms_Or(self, c):
         vals = [is_false(v) for v in c.args]
@@ -471,22 +475,22 @@ class Balancer:
 
         if left_msb_zero and left_lsb_zero:
             new_left = inner
-            new_right = _all_operations.Concat(BVV(0, len(left_msb)), truism.args[1], BVV(0, len(left_lsb)))
+            new_right = claripy.Concat(BVV(0, len(left_msb)), truism.args[1], BVV(0, len(left_lsb)))
             return truism.make_like(truism.op, (new_left, new_right))
         if left_msb_zero:
             new_left = inner
-            new_right = _all_operations.Concat(BVV(0, len(left_msb)), truism.args[1])
+            new_right = claripy.Concat(BVV(0, len(left_msb)), truism.args[1])
             return truism.make_like(truism.op, (new_left, new_right))
         if left_lsb_zero:
             new_left = inner
-            new_right = _all_operations.Concat(truism.args[1], BVV(0, len(left_lsb)))
+            new_right = claripy.Concat(truism.args[1], BVV(0, len(left_lsb)))
             return truism.make_like(truism.op, (new_left, new_right))
 
         if low == 0 and truism.args[1].op == "BVV" and truism.op not in {"SGE", "SLE", "SGT", "SLT"}:
             # single-valued rhs value with an unsigned operator
             # Eliminate Extract on lhs and zero-extend the value on rhs
             new_left = inner
-            new_right = _all_operations.ZeroExt(inner.size() - truism.args[1].size(), truism.args[1])
+            new_right = claripy.ZeroExt(inner.size() - truism.args[1].size(), truism.args[1])
             return truism.make_like(truism.op, (new_left, new_right))
 
         return truism
@@ -528,7 +532,7 @@ class Balancer:
 
         if is_true(left_msb == 0) and is_true(right_msb == 0):
             # we can cut these guys off!
-            remaining_left = _all_operations.Concat(*truism.args[0].args[1:])
+            remaining_left = claripy.Concat(*truism.args[0].args[1:])
             remaining_right = truism.args[1][size - len(left_msb) - 1 : 0]
             return truism.make_like(truism.op, (remaining_left, remaining_right))
         # TODO: handle non-zero single-valued cases
@@ -545,7 +549,7 @@ class Balancer:
             return truism
         shift_amount = shift_amount_values[0]
 
-        rhs_lower = _all_operations.Extract(shift_amount - 1, 0, rhs)
+        rhs_lower = claripy.Extract(shift_amount - 1, 0, rhs)
         rhs_lower_values = self._helper.eval(rhs_lower, 2)
         if len(rhs_lower_values) == 1 and rhs_lower_values[0] == 0:
             # we can remove the __lshift__
@@ -562,8 +566,8 @@ class Balancer:
                 true_condition = getattr(operator, truism.op)(true_expr, truism.args[1])
                 false_condition = getattr(operator, truism.op)(false_expr, truism.args[1])
             else:
-                true_condition = getattr(_all_operations, truism.op)(true_expr, truism.args[1])
-                false_condition = getattr(_all_operations, truism.op)(false_expr, truism.args[1])
+                true_condition = getattr(claripy, truism.op)(true_expr, truism.args[1])
+                false_condition = getattr(claripy, truism.op)(false_expr, truism.args[1])
         except ClaripyOperationError:
             # the condition was probably a Not (TODO)
             return truism
