@@ -1254,7 +1254,7 @@ class Base:
 
     def _first_backend(self, what):
         for b in backends._all_backends:
-            if b in self._errored or b.is_smt_backend:
+            if b in self._errored:
                 continue
 
             try:
@@ -1265,17 +1265,7 @@ class Base:
 
     @property
     def concrete_value(self):
-        return self._model_concrete.value
-
-    # yan I'm gonna kill you
-
-    @property
-    def cv(self):
-        return self._model_concrete.value
-
-    @property
-    def v(self):
-        return self._model_concrete.value
+        backends.concrete.convert(self)
 
     @property
     def singlevalued(self) -> bool:
@@ -1331,23 +1321,6 @@ class Base:
         method to unwrap to an AST.
         """
         return self
-
-    #
-    # Backwards compatibility crap
-    #
-
-    def __getattr__(self, a):
-        if not a.startswith("_model_"):
-            raise AttributeError(a)
-
-        model_name = a[7:]
-        if not hasattr(backends, model_name):
-            raise AttributeError(a)
-
-        try:
-            return getattr(backends, model_name).convert(self)
-        except BackendError:
-            return self
 
 
 def simplify(e: T) -> T:
