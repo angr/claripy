@@ -1265,7 +1265,7 @@ class Base:
 
     @property
     def concrete_value(self):
-        backends.concrete.convert(self)
+        backends.concrete.convert(self).value
 
     @property
     def singlevalued(self) -> bool:
