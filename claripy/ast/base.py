@@ -8,7 +8,7 @@ import struct
 import weakref
 from collections import OrderedDict, deque
 from itertools import chain
-from typing import TYPE_CHECKING, Generic, NoReturn, TypeVar
+from typing import TYPE_CHECKING, Generic, NoReturn, TypeVar, cast
 
 from claripy import operations, simplifications
 from claripy.backend_manager import backends
@@ -328,56 +328,6 @@ class Base:
 
         return self
 
-    @classmethod
-    def __init_with_annotations__(
-        cls,
-        op,
-        a_args,
-        variables,
-        symbolic,
-        annotations,
-        depth=None,
-        uneliminatable_annotations=None,
-        relocatable_annotations=None,
-        length=None,
-        uninitialized=None,
-        eager_backends=None,
-        uc_alloc_depth=None,
-    ):
-        cache = cls._hash_cache
-        h = Base._calc_hash(
-            op,
-            a_args,
-            variables,
-            symbolic,
-            annotations,
-            length=length,
-        )
-        self = cache.get(h, None)
-        if self is not None:
-            return self
-
-        self = super().__new__(cls)
-        self.__a_init__(
-            op,
-            a_args,
-            depth=depth,
-            uneliminatable_annotations=uneliminatable_annotations,
-            relocatable_annotations=relocatable_annotations,
-            variables=variables,
-            symbolic=symbolic,
-            annotations=annotations,
-            length=length,
-            uninitialized=uninitialized,
-            eager_backends=eager_backends,
-            uc_alloc_depth=uc_alloc_depth,
-        )
-
-        self._hash = h
-        cache[h] = self
-
-        return self
-
     def __reduce__(self):
         # HASHCONS: these attributes key the cache
         # BEFORE CHANGING THIS, SEE ALL OTHER INSTANCES OF "HASHCONS" IN THIS FILE
@@ -609,24 +559,43 @@ class Base:
             uneliminatable_annotations = frozenset(
                 anno for anno in annotations if not anno.eliminatable and not anno.relocatable
             )
-            relocatable_annotations = tuple(
-                frozenset(anno for anno in annotations if not anno.eliminatable and anno.relocatable)
+            relocatable_annotations = frozenset(
+                anno for anno in annotations if not anno.eliminatable and anno.relocatable
             )
 
-            return type(self).__init_with_annotations__(
+            cache = type(self)._hash_cache
+            h = Base._calc_hash(
                 op,
                 args,
+                variables,
+                symbolic,
+                annotations,
+                length=length,
+            )
+            cached_ast = cast(T | None, cache.get(h, None))
+            if cached_ast is not None:
+                return cached_ast
+
+            result: T = super().__new__(type(self))
+            result.__a_init__(
+                op,
+                args,
+                depth=self.depth,
                 uneliminatable_annotations=uneliminatable_annotations,
                 relocatable_annotations=relocatable_annotations,
-                annotations=annotations,
                 variables=self.variables,
-                uninitialized=self._uninitialized,
                 symbolic=self.symbolic,
+                annotations=annotations,
                 length=length,
-                depth=self.depth,
+                uninitialized=self._uninitialized,
                 eager_backends=self._eager_backends,
-                uc_alloc_depth=self._uc_alloc_depth,
+                uc_alloc_depth=self.uc_alloc_depth,
             )
+
+            result._hash = h
+            cache[h] = result
+
+            return result
 
         all_operations = operations.leaf_operations_symbolic_with_union
         # special case: if self is one of the args, we do not copy annotations over from self since child
