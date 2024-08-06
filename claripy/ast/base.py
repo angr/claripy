@@ -1265,7 +1265,10 @@ class Base:
 
     @property
     def concrete_value(self):
-        backends.concrete.convert(self).value
+        try:
+            backends.concrete.convert(self).value
+        except BackendError:
+            return self
 
     @property
     def singlevalued(self) -> bool:
