@@ -7,6 +7,7 @@ import math
 import numbers
 from functools import reduce
 
+import claripy
 from claripy.ast.base import Base
 from claripy.backend_object import BackendObject
 from claripy.bv import BVV
@@ -3567,7 +3568,7 @@ def CreateStridedInterval(
     """
     if to_conv is not None:
         if isinstance(to_conv, Base):
-            to_conv = to_conv._model_vsa
+            to_conv = claripy.backends.vsa.convert(to_conv)
         if isinstance(to_conv, StridedInterval):
             # No conversion will be done
             return to_conv
