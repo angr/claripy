@@ -139,7 +139,7 @@ def StringS(name, size, uninitialized=False, explicit_name=False, **kwargs):
     n = _make_name(String.STRING_TYPE_IDENTIFIER + name, size, False if explicit_name is None else explicit_name)
     result = String(
         "StringS",
-        (n, uninitialized),
+        n,
         length=8 * size,
         symbolic=True,
         eager_backends=None,
