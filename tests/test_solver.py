@@ -10,7 +10,7 @@ l = logging.getLogger("claripy.test.solver")
 
 
 def raw_hybrid_solver(reuse_z3_solver):
-    claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
+    claripy.backends.z3.reuse_z3_solver = reuse_z3_solver
 
     s = claripy.SolverHybrid()
 
@@ -33,10 +33,10 @@ def raw_hybrid_solver(reuse_z3_solver):
 
     # test approximate_first option
     s._approximate_first = True
-    old_solve_count = claripy._backends_module.backend_z3.solve_count
+    old_solve_count = claripy.backends.z3.solve_count
     assert sorted(s.eval(x, 20)) == [0, 2, 4, 6, 8, 10]
-    assert claripy._backends_module.backend_z3.solve_count == old_solve_count
-    s._approximate_firsrt = False
+    assert claripy.backends.z3.solve_count == old_solve_count
+    s._approximate_first = False
 
     # now constrain things further so that the VSA overapproximates
     s.add(x <= 4)
@@ -58,7 +58,7 @@ def raw_hybrid_solver(reuse_z3_solver):
 
 
 def raw_replacement_solver(reuse_z3_solver):
-    claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
+    claripy.backends.z3.reuse_z3_solver = reuse_z3_solver
 
     sr = claripy.SolverReplacement()
     x = claripy.BVS("x", 32)
@@ -90,11 +90,7 @@ def raw_replacement_solver(reuse_z3_solver):
 
 
 def raw_solver(solver_type, reuse_z3_solver):
-    # bc = claripy.backends.BackendConcrete(clrp)
-    # bz = claripy.backends.BackendZ3(clrp)
-    # claripy.expression_backends = [ bc, bz, ba ]
-
-    claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
+    claripy.backends.z3.reuse_z3_solver = reuse_z3_solver
 
     s = solver_type()
 
@@ -221,30 +217,30 @@ def raw_solver(solver_type, reuse_z3_solver):
     # test result caching
 
     if isinstance(s, claripy.frontend_mixins.ModelCacheMixin):
-        count = claripy._backends_module.backend_z3.solve_count
+        count = claripy.backends.z3.solve_count
 
         s = solver_type()
         x = claripy.BVS("x", 32)
         s.add(x == 10)
         assert s.satisfiable()
-        assert claripy._backends_module.backend_z3.solve_count == count
+        assert claripy.backends.z3.solve_count == count
         assert s.eval(x, 1)[0] == 10
-        assert claripy._backends_module.backend_z3.solve_count == count
+        assert claripy.backends.z3.solve_count == count
         s.add(x == 10)
         s.add(x > 9)
         assert s.eval(x, 1)[0] == 10
-        assert claripy._backends_module.backend_z3.solve_count == count
+        assert claripy.backends.z3.solve_count == count
 
         y = claripy.BVS("y", 32)
         s.add(y < 999)
         assert s.satisfiable()
-        assert claripy._backends_module.backend_z3.solve_count == count
+        assert claripy.backends.z3.solve_count == count
         assert s.eval(y, 1)[0] == 0
-        assert claripy._backends_module.backend_z3.solve_count == count
+        assert claripy.backends.z3.solve_count == count
 
 
 def raw_solver_branching(solver_type, reuse_z3_solver):
-    claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
+    claripy.backends.z3.reuse_z3_solver = reuse_z3_solver
 
     s = solver_type()
     x = claripy.BVS("x", 32)
@@ -276,7 +272,7 @@ def raw_solver_branching(solver_type, reuse_z3_solver):
 
 
 def raw_combine(solver_type, reuse_z3_solver):
-    claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
+    claripy.backends.z3.reuse_z3_solver = reuse_z3_solver
 
     s10 = solver_type()
     s20 = solver_type()
@@ -299,7 +295,7 @@ def raw_combine(solver_type, reuse_z3_solver):
 
 
 def raw_composite_solver(reuse_z3_solver):
-    claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
+    claripy.backends.z3.reuse_z3_solver = reuse_z3_solver
 
     # pylint:disable=no-member
     s = claripy.SolverComposite()
@@ -345,15 +341,15 @@ def raw_composite_solver(reuse_z3_solver):
 
     if isinstance(s._template_frontend, claripy.frontend_mixins.ModelCacheMixin):
         assert len(s._solver_list) == 3
-        count = claripy._backends_module.backend_z3.solve_count
+        count = claripy.backends.z3.solve_count
         assert s.satisfiable()
-        assert claripy._backends_module.backend_z3.solve_count == count + 3
+        assert claripy.backends.z3.solve_count == count + 3
         assert list(s.eval(x + y, 1)) == [3]
-        assert claripy._backends_module.backend_z3.solve_count == count + 3
+        assert claripy.backends.z3.solve_count == count + 3
 
 
 def raw_minmax(reuse_z3_solver):
-    claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
+    claripy.backends.z3.reuse_z3_solver = reuse_z3_solver
 
     s = claripy.Solver()
     x = claripy.BVS("x", 32)
@@ -364,7 +360,7 @@ def raw_minmax(reuse_z3_solver):
 
 
 def raw_composite_discrepancy(reuse_z3_solver):
-    claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
+    claripy.backends.z3.reuse_z3_solver = reuse_z3_solver
 
     a = claripy.BVS("a", 8)
     b = claripy.BVS("b", 8)
@@ -398,7 +394,7 @@ def raw_composite_discrepancy(reuse_z3_solver):
 
 
 def raw_ancestor_merge(solver, reuse_z3_solver):
-    claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
+    claripy.backends.z3.reuse_z3_solver = reuse_z3_solver
 
     s = solver()
     x = claripy.BVS("x", 32)
@@ -425,7 +421,7 @@ def raw_ancestor_merge(solver, reuse_z3_solver):
 
 
 def raw_unsat_core(solver, reuse_z3_solver):
-    claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
+    claripy.backends.z3.reuse_z3_solver = reuse_z3_solver
 
     s = solver(track=True)
     x = claripy.BVS("x", 32)
