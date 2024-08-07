@@ -7,8 +7,10 @@ import struct
 from collections import OrderedDict, deque
 from enum import IntEnum
 from itertools import chain
-from typing import TYPE_CHECKING, Any, Generic, NoReturn, Self, TypeVar, Union, cast
+from typing import TYPE_CHECKING, Any, Generic, NoReturn, TypeVar, Union, cast
 from weakref import WeakValueDictionary
+
+from typing_extensions import Self
 
 from claripy import operations, simplifications
 from claripy.backend_manager import backends
