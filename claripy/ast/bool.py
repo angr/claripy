@@ -47,6 +47,7 @@ class Bool(Base):
         return is_false(self)
 
     def size(self):
+        """Returns the size of the AST in bits. A boolean is 1 bit."""
         return 1
 
 
