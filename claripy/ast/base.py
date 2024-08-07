@@ -39,7 +39,6 @@ md5_unpacker = struct.Struct("2Q")
 from_iterable = chain.from_iterable
 
 # pylint:enable=unused-argument
-# pylint:disable=unidiomatic-typecheck
 
 ArgType = Union["Base", bool, int, float, str, tuple["ArgType"], None]
 # TODO: HashType should be int, but it isn't always int
@@ -49,6 +48,8 @@ T = TypeVar("T", bound="Base")
 
 
 class ASTCacheKey(Generic[T]):
+    """ASTCacheKey is a wrapper around an AST that is used as a key in caches."""
+
     def __init__(self, a: T):
         self.ast: T = a
 
@@ -1100,7 +1101,7 @@ class Base:
                     rep_queue.append(repl)
                     continue
 
-                elif ast.cache_key in replacements:
+                if ast.cache_key in replacements:
                     repl = replacements[ast.cache_key]
 
                 elif ast.variables >= variable_set:
@@ -1115,7 +1116,6 @@ class Base:
                         continue
 
                 rep_queue.append(repl)
-                continue
 
             except StopIteration:
                 arg_queue.pop()
@@ -1140,9 +1140,7 @@ class Base:
 
         return rep_queue.pop()
 
-    def replace(
-        self, old: T, new: T, variable_set: set[str] | None = None, leaf_operation: Callable[[Base], Base] | None = None
-    ) -> Self:  # pylint:disable=unused-argument
+    def replace(self, old: T, new: T) -> Self:
         """
         Returns this AST but with the AST 'old' replaced with AST 'new' in its subexpressions.
         """
