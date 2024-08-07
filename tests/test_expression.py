@@ -563,6 +563,15 @@ class TestExpression(unittest.TestCase):
         except claripy.ClaripyOperationError:
             pass
 
+    def test_bool_replace_in_ite(self):
+        b = claripy.BoolS("b")
+        expr = claripy.If(b, claripy.BVV(2, 32), claripy.BVV(3, 32))
+        new_expr = expr.replace(b, claripy.BoolV(True))
+
+        # Replace calls make_like which will simplify the expression. As a
+        # result, the new expression will be a BVV.
+        assert new_expr.op == "BVV" and new_expr.args == (2, 32)
+
 
 if __name__ == "__main__":
     unittest.main()
