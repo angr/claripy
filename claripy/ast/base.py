@@ -3,20 +3,21 @@ from __future__ import annotations
 import itertools
 import logging
 import math
-import os
 import struct
-import weakref
 from collections import OrderedDict, deque
+from enum import IntEnum
 from itertools import chain
-from typing import TYPE_CHECKING, Generic, NoReturn, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Generic, NoReturn, Self, TypeVar, Union, cast
+from weakref import WeakValueDictionary
 
 from claripy import operations, simplifications
 from claripy.backend_manager import backends
 from claripy.errors import BackendError, ClaripyOperationError, ClaripyReplacementError
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Iterator
+    from collections.abc import Callable, Iterable, Iterator
 
+    from claripy import Backend
     from claripy.annotation import Annotation
 
 try:
@@ -32,12 +33,15 @@ except ImportError:
 
 l = logging.getLogger("claripy.ast")
 
-WORKER = bool(os.environ.get("WORKER", False))
 md5_unpacker = struct.Struct("2Q")
 from_iterable = chain.from_iterable
 
 # pylint:enable=unused-argument
 # pylint:disable=unidiomatic-typecheck
+
+ArgType = Union["Base", bool, int, float, str, tuple["ArgType"], None]
+# TODO: HashType should be int, but it isn't always int
+HashType = int | bytes | tuple[Any, ...]
 
 T = TypeVar("T", bound="Base")
 
@@ -54,6 +58,26 @@ class ASTCacheKey(Generic[T]):
 
     def __repr__(self):
         return f"<Key {self.ast._type_name()} {self.ast.__repr__(inner=True)}>"
+
+
+class SimplificationLevel(IntEnum):
+    """
+    Simplification levels for ASTs.
+    """
+
+    UNSIMPLIFIED = 0
+    LITE_SIMPLIFY = 1
+    FULL_SIMPLIFY = 2
+
+
+class ReprLevel(IntEnum):
+    """
+    Representation levels for ASTs.
+    """
+
+    LITE_REPR = 0
+    MID_REPR = 1
+    FULL_REPR = 2
 
 
 #
@@ -102,56 +126,76 @@ class Base:
     :ivar args:                     The arguments that are being used
     """
 
+    # Hashcons
+    op: str
+    args: tuple[ArgType, ...]
+    length: int | None
+    variables: frozenset[str]
+    symbolic: bool
+    annotations: tuple[Annotation, ...]
+
+    # Derived information
+    depth: int
+    _hash: int | bytes  # TODO: This should be int, but it isn't always int
+    _simplified: SimplificationLevel
+    _uneliminatable_annotations: frozenset[Annotation]
+
+    # Backend information
+    _eager_backends: list[Backend]
+    _errored: set[Backend]
+
+    # Caching
+    _ast_cache_key: ASTCacheKey[Self]
+    _cached_encoded_name: bytes | None
+
+    # Extra information
+    _excavated: Base | None
+    _burrowed: Base | None
+    _uninitialized: bool
+    _uc_alloc_depth: int
+
     __slots__ = [
         "op",
         "args",
+        "length",
         "variables",
         "symbolic",
+        "annotations",
+        "depth",
         "_hash",
         "_simplified",
-        "_cached_encoded_name",
-        "_cache_key",
-        "_errored",
+        "_uneliminatable_annotations",
+        "_relocatable_annotations",
         "_eager_backends",
-        "length",
+        "_errored",
+        "_cache_key",
+        "_cached_encoded_name",
         "_excavated",
         "_burrowed",
         "_uninitialized",
         "_uc_alloc_depth",
-        "annotations",
-        "simplifiable",
-        "_uneliminatable_annotations",
-        "_relocatable_annotations",
-        "depth",
         "__weakref__",
     ]
-    _hash_cache = weakref.WeakValueDictionary()
-    _leaf_cache = weakref.WeakValueDictionary()
 
-    FULL_SIMPLIFY = 1
-    LITE_SIMPLIFY = 2
-    UNSIMPLIFIED = 0
-
-    LITE_REPR = 0
-    MID_REPR = 1
-    FULL_REPR = 2
+    _hash_cache: WeakValueDictionary[HashType, Base] = WeakValueDictionary()
+    _leaf_cache: WeakValueDictionary[HashType, Base] = WeakValueDictionary()
 
     def __new__(  # pylint:disable=redefined-builtin
-        cls,
-        op,
-        args,
-        add_variables=None,
-        hash=None,
-        symbolic=None,
-        variables=None,
-        errored=None,
-        eager_backends=None,
-        uninitialized=None,
-        uc_alloc_depth=None,
-        annotations=(),
-        skip_child_annotations=False,
-        length=None,
-        encoded_name=None,
+        cls: type[Base],
+        op: str,
+        args: Iterable[ArgType],
+        add_variables: Iterable[str] | None = None,
+        hash: int | None = None,
+        symbolic: bool | None = None,
+        variables: set[str] | None = None,
+        errored: set[Backend] | None = None,
+        eager_backends: set[Backend] | None = None,
+        uninitialized: bool | None = None,
+        uc_alloc_depth: int | None = None,
+        annotations: tuple[Annotation, ...] = (),
+        skip_child_annotations: bool = False,
+        length: int | None = None,
+        encoded_name: bytes | None = None,
     ):
         """
         This is called when you create a new Base object, whether directly or through an operation.
@@ -341,7 +385,14 @@ class Base:
         pass
 
     @staticmethod
-    def _calc_hash(op, args, variables, symbolic, annotations, length=None):
+    def _calc_hash(
+        op: str,
+        args: tuple[Base, ...],
+        variables: set[str],
+        symbolic: bool,
+        annotations: set[Annotation],
+        length: int | None = None,
+    ) -> bytes:
         """
         Calculates the hash of an AST, given the operation, args, and kwargs.
 
@@ -384,7 +435,7 @@ class Base:
         return md5_unpacker.unpack(hd)[0]  # 64 bits
 
     @staticmethod
-    def _arg_serialize(arg) -> bytes | None:
+    def _arg_serialize(arg: ArgType) -> bytes | None:
         if arg is None:
             return b"\x0f"
         elif arg is True:
@@ -424,7 +475,14 @@ class Base:
         return None
 
     @staticmethod
-    def _ast_serialize(op: str, args_tup, length, variables, symbolic, annotations) -> bytes | None:
+    def _ast_serialize(
+        op: str,
+        args_tup: tuple[ArgType, ...],
+        length: int,
+        variables: set[str],
+        symbolic: bool,
+        annotations: set[Annotation],
+    ) -> bytes | None:
         """
         Serialize the AST and get a bytestring for hashing.
 
@@ -448,22 +506,22 @@ class Base:
     # pylint:disable=attribute-defined-outside-init
     def __a_init__(
         self,
-        op,
-        args,
-        variables=None,
-        symbolic=None,
-        length=None,
-        simplified=0,
-        errored=None,
-        eager_backends=None,
-        uninitialized=None,
-        uc_alloc_depth=None,
-        annotations=None,
-        encoded_name=None,
-        depth=None,
-        uneliminatable_annotations=None,
-        relocatable_annotations=None,
-    ):  # pylint:disable=unused-argument
+        op: str,
+        args: tuple[ArgType, ...],
+        variables: Iterable[str] | None = None,
+        symbolic: bool | None = None,
+        length: int | None = None,
+        simplified: SimplificationLevel = SimplificationLevel.UNSIMPLIFIED,
+        errored: set[Backend] | None = None,
+        eager_backends: set[Backend] | None = None,
+        uninitialized: bool | None = None,
+        uc_alloc_depth: int | None = None,
+        annotations: Iterable[Annotation] | None = None,
+        encoded_name: bytes | None = None,
+        depth: int | None = None,
+        uneliminatable_annotations: frozenset[Annotation] | None = None,
+        relocatable_annotations: frozenset[Annotation] | None = None,
+    ) -> None:
         """
         Initializes an AST. Takes the same arguments as ``Base.__new__()``
 
@@ -502,23 +560,23 @@ class Base:
 
     # pylint:enable=attribute-defined-outside-init
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         res = self._hash
         if not isinstance(self._hash, int):
             res = hash(self._hash)
         return res
 
     @property
-    def cache_key(self: T) -> ASTCacheKey[T]:
+    def cache_key(self: Self) -> ASTCacheKey[Self]:
         """
         A key that refers to this AST - this value is appropriate for usage as a key in dictionaries.
         """
         return self._cache_key
 
     @property
-    def _encoded_name(self):
+    def _encoded_name(self) -> bytes:
         if self._cached_encoded_name is None:
-            self._cached_encoded_name = self.args[0].encode()  # pylint: disable=attribute-defined-outside-init
+            self._cached_encoded_name = self.args[0].encode()
         return self._cached_encoded_name
 
     #
@@ -526,17 +584,17 @@ class Base:
     #
 
     def make_like(
-        self: T,
+        self,
         op: str,
-        args: Iterable,
-        simplify=False,
-        annotations=None,
-        variables=None,
-        symbolic=None,
-        uninitialized=None,
-        skip_child_annotations=False,
-        length=None,
-    ) -> T:
+        args: Iterable[ArgType],
+        simplify: bool = False,
+        annotations: set[Annotation] | None = None,
+        variables: set[str] | None = None,
+        symbolic: bool | None = None,
+        uninitialized: bool | None = None,
+        skip_child_annotations: bool = False,
+        length: int | None = None,
+    ) -> Self:
         # Try to simplify the expression again
         simplified = simplifications.simpleton.simplify(op, args) if simplify else None
         if simplified is not None:
@@ -614,7 +672,7 @@ class Base:
             length=length,
         )
 
-    def _rename(self, new_name):
+    def _rename(self, new_name: str) -> Self:
         if self.op not in {"BVS", "BoolS", "FPS"}:
             raise ClaripyOperationError("rename is only supported on leaf nodes")
         new_args = (new_name,) + self.args[1:]
@@ -627,7 +685,7 @@ class Base:
     def _apply_to_annotations(self, f):
         return self.make_like(self.op, self.args, annotations=f(self.annotations), skip_child_annotations=True)
 
-    def append_annotation(self: T, a: Annotation) -> T:
+    def append_annotation(self, a: Annotation) -> Self:
         """
         Appends an annotation to this AST.
 
@@ -636,7 +694,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: (*alist, a))
 
-    def append_annotations(self: T, new_tuple: tuple[Annotation, ...]) -> T:
+    def append_annotations(self, new_tuple: tuple[Annotation, ...]) -> Self:
         """
         Appends several annotations to this AST.
 
@@ -645,7 +703,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: alist + new_tuple)
 
-    def annotate(self: T, *args: Annotation, remove_annotations: Iterable[Annotation] | None = None) -> T:
+    def annotate(self, *args: Annotation, remove_annotations: Iterable[Annotation] | None = None) -> Self:
         """
         Appends annotations to this AST.
 
@@ -660,7 +718,7 @@ class Base:
                 lambda alist: tuple(arg for arg in alist if arg not in remove_annotations) + args
             )
 
-    def insert_annotation(self: T, a: Annotation) -> T:
+    def insert_annotation(self, a: Annotation) -> Self:
         """
         Inserts an annotation to this AST.
 
@@ -669,7 +727,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: (a, *alist))
 
-    def insert_annotations(self: T, new_tuple: tuple[Annotation, ...]) -> T:
+    def insert_annotations(self, new_tuple: tuple[Annotation, ...]) -> Self:
         """
         Inserts several annotations to this AST.
 
@@ -678,7 +736,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: new_tuple + alist)
 
-    def replace_annotations(self: T, new_tuple: tuple[Annotation, ...]) -> T:
+    def replace_annotations(self, new_tuple: tuple[Annotation, ...]) -> Self:
         """
         Replaces annotations on this AST.
 
@@ -687,7 +745,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: new_tuple)
 
-    def remove_annotation(self: T, a: Annotation) -> T:
+    def remove_annotation(self, a: Annotation) -> Self:
         """
         Removes an annotation from this AST.
 
@@ -696,7 +754,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: tuple(oa for oa in alist if oa != a))
 
-    def remove_annotations(self: T, remove_sequence: Iterable[Annotation]) -> T:
+    def remove_annotations(self, remove_sequence: Iterable[Annotation]) -> Self:
         """
         Removes several annotations from this AST.
 
@@ -705,7 +763,7 @@ class Base:
         """
         return self._apply_to_annotations(lambda alist: tuple(oa for oa in alist if oa not in remove_sequence))
 
-    def clear_annotations(self: T) -> T:
+    def clear_annotations(self) -> Self:
         """
         Removes all annotations from this AST.
 
@@ -721,19 +779,22 @@ class Base:
         """
         Returns a debug representation of this AST.
         """
-        return self.shallow_repr(max_depth=None, details=Base.FULL_REPR)
+        return self.shallow_repr(max_depth=None, details=ReprLevel.FULL_REPR)
 
-    def _type_name(self):
+    def _type_name(self) -> str:
         return self.__class__.__name__
 
     def __repr__(self, inner=False, max_depth=None, explicit_length=False):
-        if WORKER:
-            return "<AST something>"
-        else:
-            return self.shallow_repr(max_depth=max_depth, explicit_length=explicit_length, inner=inner)
+        return self.shallow_repr(max_depth=max_depth, explicit_length=explicit_length, inner=inner)
 
     def shallow_repr(
-        self, max_depth=8, explicit_length=False, details=LITE_REPR, inner=False, parent_prec=15, left=True
+        self,
+        max_depth: int = 8,
+        explicit_length: bool = False,
+        details: ReprLevel = ReprLevel.LITE_REPR,
+        inner: bool = False,
+        parent_prec: int = 15,
+        left: bool = True,
     ) -> str:
         """
         Returns a string representation of this AST, but with a maximum depth to
@@ -784,8 +845,15 @@ class Base:
             return inner_repr
 
     @staticmethod
-    def _op_repr(op, args, inner, length, details, inner_infix_use_par):
-        if details < Base.FULL_REPR:
+    def _op_repr(
+        op: str,
+        args: tuple[ArgType, ...],
+        inner: ArgType,
+        length: int | None,
+        details: ReprLevel,
+        inner_infix_use_par: bool,
+    ):
+        if details < ReprLevel.FULL_REPR:
             if op == "BVS":
                 extras = []
                 if args[1] is not None:
@@ -813,7 +881,7 @@ class Base:
                     value = format(args[0], "#x")
                 return value + "#%d" % length if length is not None else value
 
-        if details < Base.MID_REPR:
+        if details < ReprLevel.MID_REPR:
             if op == "If":
                 value = f"if {args[0]} then {args[1]} else {args[2]}"
                 return f"({value})" if inner else value
@@ -892,7 +960,7 @@ class Base:
         """
         return self.leaf_asts()
 
-    def dbg_is_looped(self):
+    def dbg_is_looped(self) -> bool:
         l.debug("Checking AST with hash %s for looping", hash(self))
 
         seen = set()
@@ -907,7 +975,7 @@ class Base:
     # Various AST modifications (replacements)
     #
 
-    def swap_args(self: T, new_args, new_length=None, **kwargs) -> T:
+    def swap_args(self, new_args: tuple[ArgType, ...], new_length: int | None = None, **kwargs) -> Self:
         """
         This returns the same AST, with the arguments swapped out for new_args.
         """
@@ -927,7 +995,7 @@ class Base:
     # Other helper functions
     #
 
-    def split(self, split_on: Iterable[str]) -> list:
+    def split(self, split_on: Iterable[str]) -> list[ArgType]:
         """
         Splits the AST if its operation is `split_on` (i.e., return all the arguments). Otherwise, return a list with
         just the AST.
@@ -961,7 +1029,7 @@ class Base:
             "testing Expressions for truthiness does not do what you want, as these expressions can be symbolic"
         )
 
-    def structurally_match(self: T, o: T) -> bool:
+    def structurally_match(self, o: Self) -> bool:
         """
         Structurally compares two A objects, and check if their corresponding leaves are definitely the same A object
         (name-wise or hash-identity wise).
@@ -998,7 +1066,9 @@ class Base:
 
         return True
 
-    def replace_dict(self: T, replacements, variable_set=None, leaf_operation=None) -> T:
+    def replace_dict(
+        self, replacements, variable_set: set[str] | None = None, leaf_operation: Callable[[Base], Base] | None = None
+    ) -> Self:
         """
         Returns this AST with subexpressions replaced by those that can be found in `replacements`
         dict.
@@ -1068,7 +1138,9 @@ class Base:
 
         return rep_queue.pop()
 
-    def replace(self: T, old, new, variable_set=None, leaf_operation=None) -> T:  # pylint:disable=unused-argument
+    def replace(
+        self, old: T, new: T, variable_set: set[str] | None = None, leaf_operation: Callable[[Base], Base] | None = None
+    ) -> Self:  # pylint:disable=unused-argument
         """
         Returns this AST but with the AST 'old' replaced with AST 'new' in its subexpressions.
         """
@@ -1077,13 +1149,13 @@ class Base:
         return self.replace_dict(replacements, variable_set=old.variables)
 
     @staticmethod
-    def _check_replaceability(old, new):
+    def _check_replaceability(old: T, new: T) -> None:
         if not isinstance(old, Base) or not isinstance(new, Base):
             raise ClaripyReplacementError("replacements must be AST nodes")
         if type(old) is not type(new):
             raise ClaripyReplacementError(f"cannot replace type {type(old)} ast with type {type(new)} ast")
 
-    def canonicalize(self: T, var_map=None, counter=None) -> T:
+    def canonicalize(self, var_map=None, counter=None) -> Self:
         counter = itertools.count() if counter is None else counter
         var_map = {} if var_map is None else var_map
 
@@ -1332,7 +1404,7 @@ def simplify(e: T) -> T:
         # Copy some parameters (that should really go to the Annotation backend)
         s._uninitialized = e.uninitialized
         s._uc_alloc_depth = e._uc_alloc_depth
-        s._simplified = Base.FULL_SIMPLIFY
+        s._simplified = SimplificationLevel.FULL_SIMPLIFY
 
         # dealing with annotations
         if e.annotations:

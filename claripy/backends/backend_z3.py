@@ -16,7 +16,7 @@ import z3
 from cachetools import LRUCache
 
 from claripy import _all_operations
-from claripy.ast.base import Base
+from claripy.ast.base import SimplificationLevel
 from claripy.ast.bool import Bool, BoolV
 from claripy.ast.bv import BV, BVV
 from claripy.ast.fp import FP, FPV
@@ -925,7 +925,7 @@ class BackendZ3(Backend):
         # l.debug("... after:\n%s", z3_expr_to_smt2(s))
 
         o = self._abstract(s)
-        o._simplified = Base.FULL_SIMPLIFY
+        o._simplified = SimplificationLevel.FULL_SIMPLIFY
 
         return o
 
