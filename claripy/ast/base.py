@@ -604,7 +604,7 @@ class Base:
             op = simplified.op
         if (  # fast path
             simplified is None
-            and annotations is not None
+            and annotations
             and variables is None
             and symbolic is None
             and uninitialized is None
@@ -622,8 +622,8 @@ class Base:
             h = Base._calc_hash(
                 op,
                 args,
-                variables,
-                symbolic,
+                self.variables,
+                self.symbolic,
                 annotations,
                 length=length,
             )
