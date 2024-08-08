@@ -8,7 +8,7 @@ import operator
 import threading
 import weakref
 
-from claripy.ast.base import Base
+from claripy.ast.base import Base, SimplificationLevel
 from claripy.errors import BackendError, BackendUnsupportedError, ClaripyRecursionError
 
 log = logging.getLogger(__name__)
@@ -300,7 +300,7 @@ class Backend:
 
     def simplify(self, e):
         o = self._abstract(self._simplify(self.convert(e)))
-        o._simplified = Base.FULL_SIMPLIFY
+        o._simplified = SimplificationLevel.FULL_SIMPLIFY
         return o
 
     def _simplify(self, e):  # pylint:disable=R0201,unused-argument
