@@ -622,8 +622,8 @@ class Base:
             h = Base._calc_hash(
                 op,
                 args,
-                variables,
-                symbolic,
+                self.variables,
+                self.symbolic,
                 annotations,
                 length=length,
             )
