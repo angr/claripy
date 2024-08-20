@@ -11,7 +11,7 @@ class Bits(Base):
     :ivar length:       The length of this value in bits.
     """
 
-    length: int
+    __slots__ = ()
 
     def make_like(self, op, args, **kwargs):
         if "length" not in kwargs:
