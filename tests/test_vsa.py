@@ -11,8 +11,10 @@ from claripy.vsa import (
     StridedInterval,
 )
 
+
 def vsa_model(a):
     return claripy.backends.vsa.convert(a)
+
 
 class TestVSA(unittest.TestCase):  # pylint: disable=no-member,function-redefined
     def test_fucked_extract(self):
@@ -138,7 +140,6 @@ class TestVSA(unittest.TestCase):  # pylint: disable=no-member,function-redefine
         si2 = claripy.SI(bits=8, stride=1, lower_bound=0, upper_bound=0)
         assert not vsa_model(si1 + si2).is_top
 
-
     def test_subtraction(self):
         si1 = claripy.SI(bits=8, stride=1, lower_bound=10, upper_bound=15)
         si2 = claripy.SI(bits=8, stride=1, lower_bound=11, upper_bound=12)
@@ -157,8 +158,7 @@ class TestVSA(unittest.TestCase):  # pylint: disable=no-member,function-redefine
         si1 = claripy.SI(bits=32, stride=1, lower_bound=10, upper_bound=15)
         si2 = claripy.SI(bits=32, stride=1, lower_bound=20, upper_bound=30)
         si3 = claripy.SI(bits=32, stride=1, lower_bound=200, upper_bound=450)
-        assert claripy.backends.vsa.identical(si1 * si2, si3)   
-
+        assert claripy.backends.vsa.identical(si1 * si2, si3)
 
     def test_integer_division(self):
         # integer division
@@ -196,37 +196,37 @@ class TestVSA(unittest.TestCase):  # pylint: disable=no-member,function-redefine
         si1 = claripy.SI(bits=8, stride=1, lower_bound=-1, upper_bound=-1)
         si2 = claripy.SI(bits=8, stride=1, lower_bound=0xFF, upper_bound=0xFF)
         assert claripy.backends.vsa.is_true(si1 == si2)
-    
+
     def test_comparison_not_equal(self):
         # -2 != 0xff
         si1 = claripy.SI(bits=8, stride=1, lower_bound=-2, upper_bound=-2)
         si2 = claripy.SI(bits=8, stride=1, lower_bound=0xFF, upper_bound=0xFF)
         assert claripy.backends.vsa.is_true(si1 != si2)
-    
+
     def test_comparison_signed_less_than(self):
         # [-2, -1] < [1, 2] (signed arithmetic)
         si1 = claripy.SI(bits=8, stride=1, lower_bound=1, upper_bound=2)
         si2 = claripy.SI(bits=8, stride=1, lower_bound=-2, upper_bound=-1)
         assert claripy.backends.vsa.is_true(si2.SLT(si1))
-    
-    def test_comparison_signed_less_equal(self):        
+
+    def test_comparison_signed_less_equal(self):
         # [-2, -1] <= [1, 2] (signed arithmetic)
         si1 = claripy.SI(bits=8, stride=1, lower_bound=1, upper_bound=2)
         si2 = claripy.SI(bits=8, stride=1, lower_bound=-2, upper_bound=-1)
         assert claripy.backends.vsa.is_true(si2.SLE(si1))
-    
+
     def test_comparison_unsigned_greater_than(self):
         # [0xfe, 0xff] > [1, 2] (unsigned arithmetic)
         si1 = claripy.SI(bits=8, stride=1, lower_bound=1, upper_bound=2)
-        si2 = claripy.SI(bits=8, stride=1, lower_bound=0xfe, upper_bound=0xff)
+        si2 = claripy.SI(bits=8, stride=1, lower_bound=0xFE, upper_bound=0xFF)
         assert claripy.backends.vsa.is_true(si2.UGT(si1))
-    
+
     def test_comparison_unsigned_greater_equal(self):
         # [0xfe, 0xff] >= [1, 2] (unsigned arithmetic)
         si1 = claripy.SI(bits=8, stride=1, lower_bound=1, upper_bound=2)
-        si2 = claripy.SI(bits=8, stride=1, lower_bound=0xfe, upper_bound=0xff)
+        si2 = claripy.SI(bits=8, stride=1, lower_bound=0xFE, upper_bound=0xFF)
         assert claripy.backends.vsa.is_true(si2.UGE(si1))
-        
+
     def test_wrapped_intervals(self):
         # SI = claripy.StridedInterval
 
@@ -240,6 +240,7 @@ class TestVSA(unittest.TestCase):  # pylint: disable=no-member,function-redefine
         si1 = claripy.SI(bits=32, stride=1, lower_bound=0, upper_bound=0xFFFFFFFF)
         assert vsa_model(si1)._signed_bounds() == [(0x0, 0x7FFFFFFF), (-0x80000000, -0x1)]
         assert vsa_model(si1)._unsigned_bounds() == [(0x0, 0xFFFFFFFF)]
+
 
 class TestVSAJoin(unittest.TestCase):  # pylint: disable=no-member,function-redefined
 
@@ -257,7 +258,7 @@ class TestVSAJoin(unittest.TestCase):  # pylint: disable=no-member,function-rede
         self.e = self.SI(bits=8, to_conv=132)
         self.f = self.SI(bits=8, to_conv=135)
 
-    def test_union_5_elements(self):        
+    def test_union_5_elements(self):
         # Test the union of a, b, c, d, e => [2, 132] with a stride of 2
         tmp1 = self.a.union(self.b)
         assert claripy.backends.vsa.identical(tmp1, self.SI(bits=8, stride=8, lower_bound=2, upper_bound=10))
@@ -271,7 +272,7 @@ class TestVSAJoin(unittest.TestCase):  # pylint: disable=no-member,function-rede
         tmp = self.a.union(self.b).union(self.c).union(self.d).union(self.e).union(self.f)
         assert claripy.backends.vsa.identical(tmp, self.SI(bits=8, stride=1, lower_bound=2, upper_bound=135))
 
-    def test_union_8_elements(self):        
+    def test_union_8_elements(self):
         # Test the union of a, b, c, d, e, f, g, h => [220, 135] with a stride of 1
         a = self.SI(bits=8, to_conv=1)
         b = self.SI(bits=8, to_conv=10)
@@ -289,6 +290,7 @@ class TestVSAJoin(unittest.TestCase):  # pylint: disable=no-member,function-rede
         assert 0 in vsa_model(tmp).eval(255)
         assert 135 in vsa_model(tmp).eval(255)
         assert 138 not in vsa_model(tmp).eval(255)
+
 
 class TestVSAOperations(unittest.TestCase):  # pylint: disable=no-member function-redefined
 
@@ -308,7 +310,7 @@ class TestVSAOperations(unittest.TestCase):  # pylint: disable=no-member functio
         self.si1 = self.SI(bits=32, stride=0, lower_bound=10, upper_bound=10)
         self.si2 = self.SI(bits=32, stride=0, lower_bound=10, upper_bound=10)
         self.si3 = self.SI(bits=32, stride=0, lower_bound=28, upper_bound=28)
-        
+
         # Strided intervals
         self.si_a = self.SI(bits=32, stride=2, lower_bound=10, upper_bound=20)
         self.si_b = self.SI(bits=32, stride=2, lower_bound=-100, upper_bound=200)
@@ -321,7 +323,7 @@ class TestVSAOperations(unittest.TestCase):  # pylint: disable=no-member functio
 
     def is_equal(self, ast_0, ast_1):
         return claripy.backends.vsa.identical(ast_0, ast_1)
-    
+
     # Check this
     def test_foo(self):
         si1 = claripy.TSI(32, name="foo", explicit_name=True)
@@ -638,7 +640,6 @@ class TestVSAOperations(unittest.TestCase):  # pylint: disable=no-member functio
         si_2 = si_1.reversed[63:56]
         assert self.is_equal(si_2, self.SI(bits=8, stride=0xFF, lower_bound=0x0, upper_bound=0xFF))
 
-
     def test_value_set_operations(self):
         # ValueSet operations
         def VS(name=None, bits=None, region=None, val=None):  # noqa: F811
@@ -671,15 +672,14 @@ class TestVSAOperations(unittest.TestCase):  # pylint: disable=no-member functio
         vsa_model(vs_1)._merge_si("global", 0, vsa_model(self.SI(bits=32, stride=18, lower_bound=10, upper_bound=28)))
         assert not self.is_equal(vs_1, vs_2)
 
-
     def test_value_set_subtraction(self):
         # Subtraction of two pointers yields a concrete value
         vs_1 = self.VS(name="foo", region="global", bits=32, val=0x400010)
         vs_2 = self.VS(name="bar", region="global", bits=32, val=0x400000)
-        si = vs_1 - vs_2        
-        # assert isinstance(vsa_model(si), claripy.SI) 
+        si = vs_1 - vs_2
+        # assert isinstance(vsa_model(si), claripy.SI)
         assert type(vsa_model(si)) is StridedInterval
-               
+
         assert self.is_equal(si, self.SI(bits=32, stride=0, lower_bound=0x10, upper_bound=0x10))
 
     def test_if_proxy(self):
@@ -750,6 +750,7 @@ class TestVSAOperations(unittest.TestCase):  # pylint: disable=no-member functio
         # if_3 = if_1 + if_2
         # assert claripy.backends.vsa.is_true(vsa_model(if_3.ite_excavated.args[1]) == vsa_model(vs_3)))
         # assert claripy.backends.vsa.is_true(vsa_model(if_3.ite_excavated.args[1]) == vsa_model(vs_2)))
+
 
 class TestVSAConstraintToSI(unittest.TestCase):  # pylint: disable=no-member,function-redefined
 
@@ -847,8 +848,14 @@ class TestVSAConstraintToSI(unittest.TestCase):  # pylint: disable=no-member,fun
     def test_extract_and_concat(self):
         # Extract(0, 0, Concat(BVV(0, 63), If(SI == 0, 1, 0))) == 1
         s2 = self.SI(bits=32, stride=1, lower_bound=0, upper_bound=2)
-        ast_true = claripy.Extract(0, 0, claripy.Concat(self.BVV(0, 63), claripy.If(s2 == 0, self.BVV(1, 1), self.BVV(0, 1)))) == 1
-        ast_false = claripy.Extract(0, 0, claripy.Concat(self.BVV(0, 63), claripy.If(s2 == 0, self.BVV(1, 1), self.BVV(0, 1)))) != 1
+        ast_true = (
+            claripy.Extract(0, 0, claripy.Concat(self.BVV(0, 63), claripy.If(s2 == 0, self.BVV(1, 1), self.BVV(0, 1))))
+            == 1
+        )
+        ast_false = (
+            claripy.Extract(0, 0, claripy.Concat(self.BVV(0, 63), claripy.If(s2 == 0, self.BVV(1, 1), self.BVV(0, 1))))
+            != 1
+        )
 
         trueside_sat, trueside_replacement = self.b.constraint_to_si(ast_true)
         assert trueside_sat
@@ -871,8 +878,12 @@ class TestVSAConstraintToSI(unittest.TestCase):  # pylint: disable=no-member,fun
     def test_zero_extend_and_extract(self):
         # Extract(0, 0, ZeroExt(32, If(SI == 0, BVV(1, 32), BVV(0, 32)))) == 1
         s3 = self.SI(bits=32, stride=1, lower_bound=0, upper_bound=2)
-        ast_true = claripy.Extract(0, 0, claripy.ZeroExt(32, claripy.If(s3 == 0, self.BVV(1, 32), self.BVV(0, 32)))) == 1
-        ast_false = claripy.Extract(0, 0, claripy.ZeroExt(32, claripy.If(s3 == 0, self.BVV(1, 32), self.BVV(0, 32)))) != 1
+        ast_true = (
+            claripy.Extract(0, 0, claripy.ZeroExt(32, claripy.If(s3 == 0, self.BVV(1, 32), self.BVV(0, 32)))) == 1
+        )
+        ast_false = (
+            claripy.Extract(0, 0, claripy.ZeroExt(32, claripy.If(s3 == 0, self.BVV(1, 32), self.BVV(0, 32)))) != 1
+        )
 
         trueside_sat, trueside_replacement = self.b.constraint_to_si(ast_true)
         assert trueside_sat
@@ -964,8 +975,8 @@ class TestVSAConstraintToSI(unittest.TestCase):  # pylint: disable=no-member,fun
             self.SI(bits=32, stride=1, lower_bound=0, upper_bound=0xFFFFFFFE),
         )
 
-
     #     # TODO: Add some more insane test cases
+
 
 class TestVSADiscreteValueSet(unittest.TestCase):  # pylint: disable=no-member,function-redefined
 
@@ -1052,6 +1063,7 @@ class TestVSADiscreteValueSet(unittest.TestCase):  # pylint: disable=no-member,f
         assert isinstance(vsa_model(r), DiscreteStridedIntervalSet)
         assert vsa_model(r).collapse().identical(vsa_model(self.SI(bits=32, stride=1, lower_bound=0, upper_bound=35)))
 
+
 class TestSolution(unittest.TestCase):  # pylint: disable=no-member,function-redefined
 
     def setUp(self):
@@ -1096,6 +1108,7 @@ class TestSolution(unittest.TestCase):  # pylint: disable=no-member,function-red
         assert not self.solver.solution(vs, 2)
         assert not self.solver.solution(vs, 322)
 
+
 class TestVSAReasonableBounds(unittest.TestCase):  # pylint: disable=no-member,function-redefined
 
     def setUp(self):
@@ -1113,6 +1126,7 @@ class TestVSAReasonableBounds(unittest.TestCase):  # pylint: disable=no-member,f
         si = self.SI(bits=32, stride=1, lower_bound=-20, upper_bound=10)
         assert self.backend.max(si) == 0xFFFFFFFF
         assert self.backend.min(si) == 0
+
 
 class TestVSAShiftingOperations(unittest.TestCase):  # pylint: disable=no-member,function-redefined
 
@@ -1150,6 +1164,7 @@ class TestVSAShiftingOperations(unittest.TestCase):  # pylint: disable=no-member
         r = si.LShR(1)
         assert self.identical(r, self.SI(bits=32, stride=1, lower_bound=0x7FFFFFFE, upper_bound=0x7FFFFFFF))
 
+
 class TestReverseOperations(unittest.TestCase):  # pylint: disable=no-member,function-redefined
 
     def setUp(self):
@@ -1184,6 +1199,7 @@ class TestReverseOperations(unittest.TestCase):  # pylint: disable=no-member,fun
         dsis_r = dsis.reverse()
         solver = self.SolverVSA()
         assert set(solver.eval(dsis_r, 3)) == {0xFFFF, 0x100FFFF}
+
 
 if __name__ == "__main__":
     unittest.main()
