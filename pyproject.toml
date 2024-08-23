@@ -20,8 +20,11 @@ select = [
     "F",
     "FLY",
     "FURB",
+    "G",
     "I",
+    "INP",
     "ISC",
+    "LOG",
     "PERF",
     "PIE",
     "RSE",
@@ -61,6 +64,10 @@ ignore = [
     "B011",
     "BLE",
     "F841",
+    "INP001",
+]
+"docs/conf.py" = [
+    "INP001",
 ]
 
 [tool.ruff.lint.isort]
