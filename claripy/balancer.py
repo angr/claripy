@@ -186,19 +186,19 @@ class Balancer:
     def _reverse_comparison(a):
         try:
             new_op = opposites[a.op]
-        except KeyError:
-            raise ClaripyBalancerError(f"unable to reverse comparison {a.op} (missing from 'opposites')")
+        except KeyError as err:
+            raise ClaripyBalancerError(f"unable to reverse comparison {a.op} (missing from 'opposites')") from err
 
         try:
             op = getattr(operator, new_op) if new_op.startswith("__") else getattr(_all_operations, new_op)
-        except AttributeError:
-            raise ClaripyBalancerError(f"unable to reverse comparison {a.op} (AttributeError)")
+        except AttributeError as err:
+            raise ClaripyBalancerError(f"unable to reverse comparison {a.op} (AttributeError)") from err
 
         try:
             return op(*a.args[::-1])
-        except ClaripyOperationError:
+        except ClaripyOperationError as err:
             # TODO: copy trace
-            raise ClaripyBalancerError(f"unable to reverse comparison {a.op} (ClaripyOperationError)")
+            raise ClaripyBalancerError(f"unable to reverse comparison {a.op} (ClaripyOperationError)") from err
 
     def _align_bv(self, a):
         if a.op in commutative_operations:

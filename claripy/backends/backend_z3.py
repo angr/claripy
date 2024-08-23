@@ -749,7 +749,7 @@ class BackendZ3(Backend):
     def add(self, s, c, track=False):
         converted = self.convert_list(c)
         if track:
-            for a, nice_ast in zip(c, converted):
+            for a, nice_ast in zip(c, converted, strict=False):
                 ast = nice_ast.ast
                 h = self._z3_ast_hash(ast)
                 self._ast_cache[h] = (a, ast)
@@ -832,7 +832,7 @@ class BackendZ3(Backend):
                 if len(exprs) == 1:
                     solver.add(exprs[0] != r[0])
                 else:
-                    solver.add(self._op_raw_Not(self._op_raw_And(*[(ex == ex_v) for ex, ex_v in zip(exprs, r)])))
+                    solver.add(self._op_raw_Not(self._op_raw_And(*[(ex == ex_v) for ex, ex_v in zip(exprs, r, strict=False)])))
                 model = None
 
         if n > 1:

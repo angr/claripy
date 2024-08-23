@@ -13,7 +13,7 @@ def deprecated(new: str, old: str | None = None):
         old_name = old.__name__ if old is None else old
 
         def inner(*args, **kwargs):
-            warnings.warn(f"Use {new} instead of {old_name}", DeprecationWarning)
+            warnings.warn(f"Use {new} instead of {old_name}", DeprecationWarning, stacklevel=2)
             return func(*args, **kwargs)
 
         return inner

@@ -12,6 +12,7 @@ line-length = 120
 
 [tool.ruff.lint]
 select = [
+    "B",
     "BLE",
     "C4",
     "E",
@@ -57,6 +58,7 @@ ignore = [
     "F405",
 ]
 "tests/**" = [
+    "B011",
     "BLE",
     "F841",
 ]

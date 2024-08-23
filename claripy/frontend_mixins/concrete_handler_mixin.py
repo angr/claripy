@@ -11,7 +11,7 @@ class ConcreteHandlerMixin:
 
     def batch_eval(self, exprs, n, extra_constraints=(), exact=None):
         concrete_exprs = [self._concrete_value(e) for e in exprs]
-        symbolic_exprs = [e for e, c in zip(exprs, concrete_exprs) if c is None]
+        symbolic_exprs = [e for e, c in zip(exprs, concrete_exprs, strict=False) if c is None]
 
         if len(symbolic_exprs) == 0:
             return [concrete_exprs]

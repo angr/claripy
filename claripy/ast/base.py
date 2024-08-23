@@ -983,7 +983,7 @@ class Base:
         This returns the same AST, with the arguments swapped out for new_args.
         """
 
-        if len(self.args) == len(new_args) and all(a is b for a, b in zip(self.args, new_args)):
+        if len(self.args) == len(new_args) and all(a is b for a, b in zip(self.args, new_args, strict=False)):
             return self
 
         # symbolic = any(a.symbolic for a in new_args if isinstance(a, Base))
@@ -1049,7 +1049,7 @@ class Base:
         if len(self.args) != len(o.args):
             return False
 
-        for arg_a, arg_b in zip(self.args, o.args):
+        for arg_a, arg_b in zip(self.args, o.args, strict=False):
             if not isinstance(arg_a, Base):
                 if type(arg_a) != type(arg_b):  # noqa: E721
                     return False
@@ -1128,7 +1128,7 @@ class Base:
                     del rep_queue[-len(ast.args) :]
 
                     # Check if replacement occurred.
-                    if any((a is not b for a, b in zip(ast.args, args))):
+                    if any((a is not b for a, b in zip(ast.args, args, strict=False))):
                         repl = ast.make_like(ast.op, tuple(args))
                         replacements[ast.cache_key] = repl
 

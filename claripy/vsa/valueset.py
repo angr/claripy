@@ -421,7 +421,7 @@ class ValueSet(BackendObject):
             # We return a StridedInterval instead
             ret = None
 
-            for region, si in self._regions.items():
+            for si in self._regions.values():
                 r = si.__and__(other)
                 ret = r if ret is None else ret.union(r)
 
@@ -618,7 +618,7 @@ class ValueSet(BackendObject):
                 merged_vs._si = merged_vs._si.union(b._si)
 
         else:
-            for region, si in merged_vs._regions.items():
+            for region in merged_vs._regions:
                 merged_vs._regions[region] = merged_vs._regions[region].union(b)
 
             merged_vs._si = merged_vs._si.union(b)
