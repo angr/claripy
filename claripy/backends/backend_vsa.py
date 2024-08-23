@@ -62,18 +62,7 @@ def normalize_arg_order(f):
 def convert_args(f):
     @functools.wraps(f)
     def converter(self, ast):
-        raw_args = []
-        for i in range(len(ast.args)):
-            # It's not reversed
-            raw_args.append(ast.args[i])
-
-        for i in range(len(raw_args)):
-            raw_args[i] = self.convert(raw_args[i])
-
-        normalized = ast.swap_args(raw_args)
-        ret = f(self, normalized)
-
-        return ret
+        return f(self, ast.swap_args([self.convert(arg) for arg in ast.args]))
 
     return converter
 

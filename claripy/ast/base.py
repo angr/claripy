@@ -274,7 +274,7 @@ class Base:
                         return r
                     else:
                         eager_backends.remove(eb)
-                except BackendError:
+                except BackendError:  # noqa: PERF203
                     eager_backends.remove(eb)
 
             # if we can't be eager anymore, null out the eagerness

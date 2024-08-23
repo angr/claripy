@@ -342,16 +342,13 @@ class ValueSet(BackendObject):
         :return: A StridedInterval or a ValueSet.
         """
 
-        deltas = []
-
         # TODO: Handle more cases
 
         if isinstance(other, ValueSet):
             # A subtraction between two ValueSets produces a StridedInterval
 
             if self.regions.keys() == other.regions.keys():
-                for region in self._regions:
-                    deltas.append(self._regions[region] - other._regions[region])
+                deltas = [self._regions[region] - other._regions[region] for region in self._regions]
 
             else:
                 # TODO: raise the proper exception here
@@ -525,13 +522,7 @@ class ValueSet(BackendObject):
             # How are you going to deal with a negative pointer?
             raise ClaripyVSAOperationError("`signed` cannot be True when calling ValueSet.eval().")
 
-        results = []
-
-        for _, si in self._regions.items():
-            if len(results) < n:
-                results.extend(si.eval(n))
-
-        return results
+        return list(itertools.chain(si.eval(n) for si in self._regions.values()))
 
     @property
     def min(self):

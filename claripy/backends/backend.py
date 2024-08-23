@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import contextlib
 import ctypes
 import logging
 import numbers
 import operator
 import threading
 import weakref
+from contextlib import suppress
 
 from claripy.ast.base import Base, SimplificationLevel
 from claripy.errors import BackendError, BackendUnsupportedError, ClaripyRecursionError
@@ -272,7 +272,7 @@ class Backend:
             obj = NotImplemented
 
             # first, try the operation with the first guy
-            with contextlib.suppress(TypeError, ValueError):
+            with suppress(TypeError, ValueError):
                 obj = getattr(operator, op)(*args)
 
         if obj is NotImplemented:

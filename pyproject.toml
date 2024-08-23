@@ -21,6 +21,7 @@ select = [
     "FURB",
     "I",
     "ISC",
+    "PERF",
     "PIE",
     "RSE",
     "RUF",

@@ -6,6 +6,7 @@ import logging
 import math
 import numbers
 from functools import reduce
+from itertools import chain, product
 
 import claripy
 from claripy.ast.base import Base
@@ -2024,15 +2025,18 @@ class StridedInterval(BackendObject):
             # Cut from both north pole and south pole
             si1_psplit = self._psplit()
             si2_psplit = o._psplit()
-            all_resulting_intervals = []
+            all_resulting_intervals = list(
+                chain(
+                    *[
+                        self._wrapped_unsigned_mul(si1, si2)._multi_valued_intersection(
+                            self._wrapped_signed_mul(si1, si2)
+                        )
+                        for si1, si2 in product(si1_psplit, si2_psplit)
+                    ]
+                )
+            )
 
-            for si1 in si1_psplit:
-                for si2 in si2_psplit:
-                    tmp_unsigned_mul = self._wrapped_unsigned_mul(si1, si2)
-                    tmp_signed_mul = self._wrapped_signed_mul(si1, si2)
-                    for tmp_meet in tmp_unsigned_mul._multi_valued_intersection(tmp_signed_mul):
-                        all_resulting_intervals.append(tmp_meet)
-        return StridedInterval.least_upper_bound(*all_resulting_intervals).normalize()
+            return StridedInterval.least_upper_bound(*all_resulting_intervals).normalize()
 
     @normalize_types
     def sdiv(self, o):

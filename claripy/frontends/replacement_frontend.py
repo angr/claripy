@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import numbers
 import weakref
+from contextlib import suppress
 
 from claripy.ast.base import Base
 from claripy.ast.bool import BoolV, false
@@ -243,10 +244,8 @@ class ReplacementFrontend(ConstrainedFrontend):
 
         cr = self._replacement(e)
         for b in backends._eager_backends:
-            try:
+            with suppress(BackendError):
                 return b.eval(cr, 1)[0]
-            except BackendError:
-                pass
         return None
 
     def _concrete_constraint(self, e):

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import atexit
 import logging
+from contextlib import suppress
 
 from claripy import operations
 from claripy.ast.base import ASTCacheKey, Base, _make_name
@@ -168,10 +169,8 @@ Bool.__ror__ = Or
 
 def is_true(e, exact=None):  # pylint:disable=unused-argument
     for b in backends._quick_backends:
-        try:
+        with suppress(BackendError):
             return b.is_true(e)
-        except BackendError:
-            pass
 
     l.debug("Unable to tell the truth-value of this expression")
     return False
@@ -179,10 +178,8 @@ def is_true(e, exact=None):  # pylint:disable=unused-argument
 
 def is_false(e, exact=None):  # pylint:disable=unused-argument
     for b in backends._quick_backends:
-        try:
+        with suppress(BackendError):
             return b.is_false(e)
-        except BackendError:
-            pass
 
     l.debug("Unable to tell the truth-value of this expression")
     return False
