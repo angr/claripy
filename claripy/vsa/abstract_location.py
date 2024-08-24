@@ -90,9 +90,7 @@ class AbstractLocation(BackendObject):
         return self._segment_list
 
     def update(self, region_offset, size):
-        updated = self._add_segment(region_offset, size)
-
-        return updated
+        return self._add_segment(region_offset, size)
 
     def copy(self):
         return AbstractLocation(self._bbl_key, self._stmt_id, self._region_id, self._segment_list)

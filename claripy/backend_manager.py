@@ -22,8 +22,7 @@ class BackendManager:
     def __getattr__(self, a):
         if a in self._backends_by_name:
             return self._backends_by_name[a]
-        else:
-            raise AttributeError(a)
+        raise AttributeError(a)
 
     def downsize(self):
         for b in self._all_backends:

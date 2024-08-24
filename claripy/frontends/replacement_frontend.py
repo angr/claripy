@@ -258,8 +258,7 @@ class ReplacementFrontend(ConstrainedFrontend):
         if self._replace_constraints:
             er = self._replacement(e)
             return super()._concrete_constraint(er)
-        else:
-            return super()._concrete_constraint(e)
+        return super()._concrete_constraint(e)
 
     def _add(self, constraints, invalidate_cache=True):
         if self._auto_replace:

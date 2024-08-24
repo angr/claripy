@@ -148,9 +148,9 @@ def basic_length_calc(*args):
 def extract_check(high, low, bv):
     if high < 0 or low < 0:
         return False, "Extract high and low must be nonnegative"
-    elif low > high:
+    if low > high:
         return False, "Extract low must be <= high"
-    elif high >= bv.size():
+    if high >= bv.size():
         return False, "Extract bound must be less than BV size"
 
     return True, ""

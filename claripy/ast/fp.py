@@ -130,8 +130,7 @@ def _fp_length_calc(a1, a2, a3=None):
         raise Exception
     if a3 is None:
         return a2.length
-    else:
-        return a3.length
+    return a3.length
 
 
 fpToFP = operations.op("fpToFP", object, FP, calc_length=_fp_length_calc)

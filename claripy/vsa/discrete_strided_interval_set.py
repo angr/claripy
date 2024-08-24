@@ -38,7 +38,7 @@ def apply_on_each_si(f):
             ret = DiscreteStridedIntervalSet(bits=self.bits, si_set=new_si_set)
             return ret.normalize()
 
-        elif isinstance(o, StridedInterval | numbers.Number | BVV):
+        if isinstance(o, StridedInterval | numbers.Number | BVV):
             new_si_set = set()
             for si in self._si_set:
                 new_si_set.add(getattr(si, f.__name__)(o))
@@ -46,8 +46,7 @@ def apply_on_each_si(f):
             ret = DiscreteStridedIntervalSet(bits=self.bits, si_set=new_si_set)
             return ret.normalize()
 
-        else:
-            raise ClaripyVSAOperationError(f"Unsupported operand type {type(o)}")
+        raise ClaripyVSAOperationError(f"Unsupported operand type {type(o)}")
 
     return operator
 
@@ -70,8 +69,7 @@ def collapse_operand(f):
     def collapser(self, o):
         if isinstance(o, DiscreteStridedIntervalSet):
             return f(self, o.collapse())
-        else:
-            return f(self, o)
+        return f(self, o)
 
     return collapser
 
@@ -158,9 +156,8 @@ class DiscreteStridedIntervalSet(StridedInterval):
 
             return r
 
-        else:
-            # This is an empty StridedInterval...
-            return StridedInterval.empty(self._bits)
+        # This is an empty StridedInterval...
+        return StridedInterval.empty(self._bits)
 
     def normalize(self):
         """
@@ -170,19 +167,16 @@ class DiscreteStridedIntervalSet(StridedInterval):
         """
         if self.should_collapse():
             return self.collapse()
-        elif self.number_of_values == 1:
+        if self.number_of_values == 1:
             return next(iter(self._si_set))
-        else:
-            for si in self._si_set:
-                self._update_bits(si)
-            return self
+        for si in self._si_set:
+            self._update_bits(si)
+        return self
 
     def copy(self):
-        copied = DiscreteStridedIntervalSet(
+        return DiscreteStridedIntervalSet(
             bits=self._bits, si_set=self._si_set.copy(), max_cardinality=self._max_cardinality
         )
-
-        return copied
 
     def __hash__(self):
         return id(self)  # ...not sure how to do this. these objects are mutable.
@@ -360,8 +354,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
         if len(ret) > 1:
             return DiscreteStridedIntervalSet(bits=bits, si_set=ret)
 
-        else:
-            return next(iter(ret))
+        return next(iter(ret))
 
     # Arithmetic operations
 
@@ -450,27 +443,24 @@ class DiscreteStridedIntervalSet(StridedInterval):
         if isinstance(b, DiscreteStridedIntervalSet):
             return self._union_with_dsis(b)
 
-        elif isinstance(b, StridedInterval):
+        if isinstance(b, StridedInterval):
             if not b.is_empty:
                 return self._union_with_si(b)
-            else:
-                return self.copy()
+            return self.copy()
 
-        elif isinstance(b, ValueSet):
+        if isinstance(b, ValueSet):
             return b.union(self)
 
-        else:
-            raise ClaripyVSAOperationError(f"Unsupported operand type {type(b)} for operation union.")
+        raise ClaripyVSAOperationError(f"Unsupported operand type {type(b)} for operation union.")
 
     def intersection(self, b):
         if isinstance(b, DiscreteStridedIntervalSet):
             return self._intersection_with_dsis(b)
 
-        elif isinstance(b, StridedInterval):
+        if isinstance(b, StridedInterval):
             return self._intersection_with_si(b)
 
-        else:
-            raise ClaripyVSAOperationError(f"Unsupported operand type {type(b)} for operation intersection.")
+        raise ClaripyVSAOperationError(f"Unsupported operand type {type(b)} for operation intersection.")
 
     # Other operations
 
@@ -568,12 +558,10 @@ class DiscreteStridedIntervalSet(StridedInterval):
 
             if ret.should_collapse():
                 return ret.collapse()
-            else:
-                return ret
+            return ret
 
-        else:
-            # There is no intersection between two operands
-            return StridedInterval.empty(self.bits)
+        # There is no intersection between two operands
+        return StridedInterval.empty(self.bits)
 
     def _intersection_with_dsis(self, dsis):
         """
@@ -596,11 +584,9 @@ class DiscreteStridedIntervalSet(StridedInterval):
 
         if len(new_si_set):
             ret = DiscreteStridedIntervalSet(bits=self.bits, si_set=new_si_set)
-
             return ret.normalize()
 
-        else:
-            return StridedInterval.empty(self.bits)
+        return StridedInterval.empty(self.bits)
 
     def _update_bounds(self, val):
         if not isinstance(val, StridedInterval):

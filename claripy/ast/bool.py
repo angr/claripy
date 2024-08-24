@@ -131,7 +131,7 @@ def If(*args):
 
     if is_true(args[0]):
         return args[1].append_annotations(args[0].annotations)
-    elif is_false(args[0]):
+    if is_false(args[0]):
         return args[2].append_annotations(args[0].annotations)
 
     if isinstance(args[1], Base) and args[1].op == "If" and args[1].args[0] is args[0]:
@@ -152,8 +152,7 @@ def If(*args):
 
     if issubclass(ty, Bits):
         return ty("If", tuple(args), length=args[1].length)
-    else:
-        return ty("If", tuple(args))
+    return ty("If", tuple(args))
 
 
 And = operations.op("And", Bool, Bool)

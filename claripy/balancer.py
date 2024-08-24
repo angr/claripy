@@ -117,8 +117,7 @@ class Balancer:
                 # the minimum value will be 0 or MIN_INT
                 if signed:
                     return -(1 << (len(converted) - 1))
-                else:
-                    return 0
+                return 0
         bounds = converted._unsigned_bounds() if not signed else converted._signed_bounds()
         return min(mn for mn, mx in bounds)
 
@@ -133,8 +132,7 @@ class Balancer:
                 # the minimum value will be 0 or MIN_INT
                 if signed:
                     return (1 << (len(converted) - 1)) - 1
-                else:
-                    return (1 << len(converted)) - 1
+                return (1 << len(converted)) - 1
         bounds = converted._unsigned_bounds() if not signed else converted._signed_bounds()
         return max(mx for mn, mx in bounds)
 
@@ -175,10 +173,9 @@ class Balancer:
         try:
             if isinstance(a, BV):
                 return self._align_bv(a)
-            elif isinstance(a, Bool) and len(a.args) == 2 and a.args[1].cardinality > a.args[0].cardinality:
+            if isinstance(a, Bool) and len(a.args) == 2 and a.args[1].cardinality > a.args[0].cardinality:
                 return self._reverse_comparison(a)
-            else:
-                return a
+            return a
         except ClaripyBalancerError:
             return a
 
@@ -203,12 +200,11 @@ class Balancer:
     def _align_bv(self, a):
         if a.op in commutative_operations:
             return a.make_like(a.op, tuple(sorted(a.args, key=lambda v: -self._cardinality(v))))
-        else:
-            try:
-                op = getattr(self, "_align_" + a.op)
-            except AttributeError:
-                return a
-            return op(a)
+        try:
+            op = getattr(self, "_align_" + a.op)
+        except AttributeError:
+            return a
+        return op(a)
 
     def _align___sub__(self, a):
         cardinalities = [self._cardinality(v) for v in a.args]
@@ -275,14 +271,14 @@ class Balancer:
         """
         if len(t.args) < 2:
             l.debug("can't do anything with an unop bool")
-        elif t.args[0].cardinality > 1 and t.args[1].cardinality > 1:
+            return None
+        if t.args[0].cardinality > 1 and t.args[1].cardinality > 1:
             l.debug("can't do anything because we have multiple multivalued guys")
             return False
-        elif t.op == "If":
+        if t.op == "If":
             l.debug("can't handle If")
             return False
-        else:
-            return True
+        return True
 
     @staticmethod
     def _adjust_truism(t):
@@ -291,8 +287,7 @@ class Balancer:
         left side.
         """
         if t.args[0].cardinality == 1 and t.args[1].cardinality > 1:
-            swapped = Balancer._reverse_comparison(t)
-            return swapped
+            return Balancer._reverse_comparison(t)
         return t
 
     #
@@ -308,14 +303,13 @@ class Balancer:
 
         if t.op in ("__le__", "__lt__", "ULE", "ULT"):
             return [t.args[0] >= 0]
-        elif t.op in ("__ge__", "__gt__", "UGE", "UGT"):
+        if t.op in ("__ge__", "__gt__", "UGE", "UGT"):
             return [t.args[0] <= 2 ** len(t.args[0]) - 1]
-        elif t.op in ("SLE", "SLT"):
+        if t.op in ("SLE", "SLT"):
             return [_all_operations.SGE(t.args[0], -(1 << (len(t.args[0]) - 1)))]
-        elif t.op in ("SGE", "SGT"):
+        if t.op in ("SGE", "SGT"):
             return [_all_operations.SLE(t.args[0], (1 << (len(t.args[0]) - 1)) - 1)]
-        else:
-            return []
+        return []
 
     #
     # Truism extractor
@@ -339,19 +333,17 @@ class Balancer:
     def _unpack_truisms_Not(self, c):
         if c.args[0].op == "And":
             return self._unpack_truisms(_all_operations.Or(*[_all_operations.Not(a) for a in c.args[0].args]))
-        elif c.args[0].op == "Or":
+        if c.args[0].op == "Or":
             return self._unpack_truisms(_all_operations.And(*[_all_operations.Not(a) for a in c.args[0].args]))
-        else:
-            return set()
+        return set()
 
     def _unpack_truisms_Or(self, c):
         vals = [is_false(v) for v in c.args]
         if all(vals):
             raise ClaripyBalancerUnsatError
-        elif vals.count(False) == 1:
+        if vals.count(False) == 1:
             return self._unpack_truisms(c.args[vals.index(False)])
-        else:
-            return set()
+        return set()
 
     #
     # Dealing with constraints
@@ -400,10 +392,8 @@ class Balancer:
 
             balanced = balancer(inner_aligned)
             if balanced is inner_aligned:
-                # print("... balanced:", balanced)
                 return balanced
-            else:
-                return self._balance(balanced)
+            return self._balance(balanced)
         except ClaripyBalancerError:
             l.warning("Balance handler for operation %s raised exception.", truism.args[0].op)
             return truism
@@ -412,8 +402,7 @@ class Balancer:
     def _balance_Reverse(truism):
         if truism.op in ["__eq__", "__ne__"]:
             return truism.make_like(truism.op, (truism.args[0].args[0], truism.args[1].reversed))
-        else:
-            return truism
+        return truism
 
     @staticmethod
     def _balance___add__(truism):
@@ -484,11 +473,11 @@ class Balancer:
             new_left = inner
             new_right = _all_operations.Concat(BVV(0, len(left_msb)), truism.args[1], BVV(0, len(left_lsb)))
             return truism.make_like(truism.op, (new_left, new_right))
-        elif left_msb_zero:
+        if left_msb_zero:
             new_left = inner
             new_right = _all_operations.Concat(BVV(0, len(left_msb)), truism.args[1])
             return truism.make_like(truism.op, (new_left, new_right))
-        elif left_lsb_zero:
+        if left_lsb_zero:
             new_left = inner
             new_right = _all_operations.Concat(truism.args[1], BVV(0, len(left_lsb)))
             return truism.make_like(truism.op, (new_left, new_right))
@@ -542,9 +531,8 @@ class Balancer:
             remaining_left = _all_operations.Concat(*truism.args[0].args[1:])
             remaining_right = truism.args[1][size - len(left_msb) - 1 : 0]
             return truism.make_like(truism.op, (remaining_left, remaining_right))
-        else:
-            # TODO: handle non-zero single-valued cases
-            return truism
+        # TODO: handle non-zero single-valued cases
+        return truism
 
     def _balance___lshift__(self, truism):
         lhs = truism.args[0]
@@ -588,17 +576,18 @@ class Balancer:
         if can_true and can_false:
             # always satisfiable
             return truism
-        elif not (can_true or can_false):
+        if not (can_true or can_false):
             # neither are satisfiable. This truism is fucked
             raise ClaripyBalancerUnsatError
-        elif must_true or (can_true and not can_false):
+        if must_true or (can_true and not can_false):
             # it will always be true
             self._queue_truism(condition)
             return truism.make_like(truism.op, (true_expr, truism.args[1]))
-        elif must_false or (can_false and not can_true):
+        if must_false or (can_false and not can_true):
             # it will always be false
             self._queue_truism(self._invert_comparison(condition))
             return truism.make_like(truism.op, (false_expr, truism.args[1]))
+        return None
 
     #
     # Constraint handlers
@@ -609,7 +598,7 @@ class Balancer:
 
         if is_false(truism):
             raise ClaripyBalancerUnsatError
-        elif self._cardinality(truism.args[0]) == 1:
+        if self._cardinality(truism.args[0]) == 1:
             # we are down to single-cardinality arguments, so our work is not
             # necessary
             return
@@ -645,7 +634,7 @@ class Balancer:
         if is_lt and bound_max < int_min:
             # if the bound max is negative and we're unsigned less than, we're fucked
             raise ClaripyBalancerUnsatError
-        elif not is_lt and bound_min > int_max:
+        if not is_lt and bound_min > int_max:
             # if the bound min is too big, we're fucked
             raise ClaripyBalancerUnsatError
 

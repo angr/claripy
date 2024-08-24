@@ -27,6 +27,7 @@ select = [
     "LOG",
     "PERF",
     "PIE",
+    "RET",
     "RSE",
     "RUF",
     "SIM",

@@ -360,18 +360,17 @@ class ValueSet(BackendObject):
 
             return delta
 
-        else:
-            # A subtraction between a ValueSet and a StridedInterval produces another ValueSet
+        # A subtraction between a ValueSet and a StridedInterval produces another ValueSet
 
-            new_vs = self.copy()
+        new_vs = self.copy()
 
-            # Call __sub__ on the base class
-            new_vs._si = self._si.__sub__(other)
+        # Call __sub__ on the base class
+        new_vs._si = self._si.__sub__(other)
 
-            for region, si in new_vs._regions.items():
-                new_vs._regions[region] = si - other
+        for region, si in new_vs._regions.items():
+            new_vs._regions[region] = si - other
 
-            return new_vs
+        return new_vs
 
     @normalize_types_one_arg
     def __mod__(self, other):
@@ -427,17 +426,15 @@ class ValueSet(BackendObject):
 
             return ret
 
-        else:
-            # We should return a ValueSet here
+        # We should return a ValueSet here
+        new_vs = self.copy()
 
-            new_vs = self.copy()
+        for region, si in self._regions.items():
+            r = si.__and__(other)
 
-            for region, si in self._regions.items():
-                r = si.__and__(other)
+            new_vs._regions[region] = r
 
-                new_vs._regions[region] = r
-
-            return new_vs
+        return new_vs
 
     def LShR(self, other):
         if BoolResult.is_true(other == 0):
@@ -471,13 +468,11 @@ class ValueSet(BackendObject):
             if same and different:
                 return MaybeResult()
             return FalseResult()
-        elif isinstance(other, StridedInterval):
+        if isinstance(other, StridedInterval):
             if "global" in self.regions:
                 return self.regions["global"] == other
-            else:
-                return FalseResult()
-        else:
             return FalseResult()
+        return FalseResult()
 
     def __ne__(self, other):
         """

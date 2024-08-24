@@ -38,9 +38,8 @@ class CompositedCacheMixin:
 
         n = frozenset(names)
         try:
-            r = self._merged_solvers[frozenset(n)]
+            return self._merged_solvers[frozenset(n)]
             # hits += 1
-            return r
         except KeyError:
             # misses += 1
             s = super()._solver_for_names(names)

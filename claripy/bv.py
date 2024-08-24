@@ -318,24 +318,23 @@ def Reverse(a):
     size = a.size()
     if size == 8:
         return a
-    elif size % 8 != 0:
+    if size % 8 != 0:
         raise ClaripyOperationError("can't reverse non-byte sized bitvectors")
+    value = a.value
+    out = 0
+    if size == 64:
+        out = _reverse_64(value)
+    elif size == 32:
+        out = _reverse_32(value)
+    elif size == 16:
+        out = _reverse_16(value)
     else:
-        value = a.value
-        out = 0
-        if size == 64:
-            out = _reverse_64(value)
-        elif size == 32:
-            out = _reverse_32(value)
-        elif size == 16:
-            out = _reverse_16(value)
-        else:
-            for i in range(0, size, 8):
-                out |= ((value & (0xFF << i)) >> i) << (size - 8 - i)
-        return BVV(out, size)
+        for i in range(0, size, 8):
+            out |= ((value & (0xFF << i)) >> i) << (size - 8 - i)
+    return BVV(out, size)
 
-        # the RIGHT way to do it:
-        # return BVV(int(("%x" % a.value).rjust(size/4, '0').decode('hex')[::-1].encode('hex'), 16), size)
+    # the RIGHT way to do it:
+    # return BVV(int(("%x" % a.value).rjust(size/4, '0').decode('hex')[::-1].encode('hex'), 16), size)
 
 
 def _reverse_16(v):
@@ -462,8 +461,7 @@ def If(c, t, f):
     t, f = normalizer(t, f)  # pylint:disable=unbalanced-tuple-unpacking
     if c:
         return t
-    else:
-        return f
+    return f
 
 
 @normalize_types

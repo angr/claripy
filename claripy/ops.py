@@ -10,8 +10,7 @@ l = logging.getLogger("claripy.ops")
 
 
 def AbstractLocation(*args, **kwargs):  # pylint:disable=no-self-use
-    aloc = vsa.AbstractLocation(*args, **kwargs)
-    return aloc
+    return vsa.AbstractLocation(*args, **kwargs)
 
 
 #

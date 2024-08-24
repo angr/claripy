@@ -61,8 +61,7 @@ class String(Bits):
             if high > low:
                 return StrSubstr(start_idx, 0, self)
             return StrSubstr(start_idx, 1 + low - high, self)
-        else:
-            raise ValueError("Only slices allowed for string extraction")
+        raise ValueError("Only slices allowed for string extraction")
 
     @staticmethod
     # TODO: Figure out what to convert here
@@ -117,8 +116,7 @@ class String(Bits):
                 next(iter(self.variables)).replace(self.STRING_TYPE_IDENTIFIER, self.GENERATED_BVS_IDENTIFIER),
                 self.length,
             )
-        else:
-            return BVV(ord(self.args[0]), self.length)
+        return BVV(ord(self.args[0]), self.length)
 
     def raw_to_fp(self):
         return self.raw_to_bv().raw_to_fp()
@@ -137,7 +135,7 @@ def StringS(name, size, uninitialized=False, explicit_name=False, **kwargs):
     :returns:                    The String object representing the symbolic string
     """
     n = _make_name(String.STRING_TYPE_IDENTIFIER + name, size, False if explicit_name is None else explicit_name)
-    result = String(
+    return String(
         "StringS",
         n,
         length=8 * size,
@@ -147,7 +145,6 @@ def StringS(name, size, uninitialized=False, explicit_name=False, **kwargs):
         variables={n},
         **kwargs,
     )
-    return result
 
 
 def StringV(value, length: int | None = None, **kwargs):
@@ -166,8 +163,7 @@ def StringV(value, length: int | None = None, **kwargs):
     if length < len(value):
         raise ValueError("Can't make a concrete string value longer than the specified length!")
 
-    result = String("StringV", (value, length), length=8 * length, **kwargs)
-    return result
+    return String("StringV", (value, length), length=8 * length, **kwargs)
 
 
 StrConcat = operations.op("StrConcat", String, String, calc_length=operations.str_concat_length_calc)

@@ -134,8 +134,7 @@ class BackendConcrete(Backend):
     def _identical(self, a, b):
         if type(a) is bv.BVV and type(b) is bv.BVV and a.size() != b.size():
             return False
-        else:
-            return a == b
+        return a == b
 
     def _convert(self, a):
         if type(a) in {int, str, bytes}:
@@ -150,14 +149,13 @@ class BackendConcrete(Backend):
     def _abstract(self, e):  # pylint:disable=no-self-use
         if isinstance(e, bv.BVV):
             return BVV(e.value, e.size())
-        elif isinstance(e, bool):
+        if isinstance(e, bool):
             return BoolV(e)
-        elif isinstance(e, fp.FPV):
+        if isinstance(e, fp.FPV):
             return FPV(e.value, e.sort)
-        elif isinstance(e, strings.StringV):
+        if isinstance(e, strings.StringV):
             return StringV(e.value)
-        else:
-            raise BackendError(f"Couldn't abstract object of type {type(e)}")
+        raise BackendError(f"Couldn't abstract object of type {type(e)}")
 
     def _cardinality(self, b):
         # if we got here, it's a cardinality of 1
@@ -171,10 +169,9 @@ class BackendConcrete(Backend):
     def _to_primitive(expr):
         if isinstance(expr, bv.BVV | fp.FPV | strings.StringV):
             return expr.value
-        elif isinstance(expr, bool | numbers.Number):
+        if isinstance(expr, bool | numbers.Number):
             return expr
-        else:
-            raise BackendError("idk how to turn this into a primitive")
+        raise BackendError("idk how to turn this into a primitive")
 
     def _eval(self, expr, n, extra_constraints=(), solver=None, model_callback=None):
         if not all(extra_constraints):
