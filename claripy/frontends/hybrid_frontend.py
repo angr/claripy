@@ -80,12 +80,12 @@ class HybridFrontend(Frontend):
         return solution
 
     def _approximate_first_call(self, f_name, e, n, *args, **kwargs):
-        exact_used, solutions = self._do_call(f_name, e, n + 1, exact=False, *args, **kwargs)
+        exact_used, solutions = self._do_call(f_name, e, n + 1, *args, exact=False, **kwargs)
 
         if (exact_used is False and len(solutions) > n) and any(
             getattr(c, "variables", set()) & e.variables for c in self.constraints
         ):
-            _, _solutions = self._do_call(f_name, e, n + 1, exact=True, *args, **kwargs)
+            _, _solutions = self._do_call(f_name, e, n + 1, *args, exact=True, **kwargs)
             return _solutions[:n] if len(_solutions) < len(solutions) else solutions[:n]
 
         return solutions[:n]

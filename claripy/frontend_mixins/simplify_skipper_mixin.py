@@ -34,6 +34,5 @@ class SimplifySkipperMixin:
     def simplify(self):
         if self._simplified:
             return self.constraints
-        else:
-            self._simplified = True
-            return super().simplify()
+        self._simplified = True
+        return super().simplify()

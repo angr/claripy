@@ -25,8 +25,7 @@ def _debugged(f):
 
         if hasattr(r, "__iter__") and hasattr(r, "next"):
             return _debug_iterator(r)
-        else:
-            return r
+        return r
 
     return debugged
 
@@ -46,12 +45,11 @@ class DebugMixin:
         o = super().__getattribute__(a)
         if a.startswith("__"):
             return o
-        elif hasattr(o, "__call__"):
+        if callable(o):
             return _debugged(o)
-        elif hasattr(o, "__next__"):
+        if hasattr(o, "__next__"):
             return _debug_iterator(o)
-        else:
-            return o
+        return o
 
 
 def debug_decorator(o):
@@ -62,5 +60,6 @@ def debug_decorator(o):
 
         Debugged.__name__ = "Debugged" + o.__name__
         return Debugged
-    elif hasattr(o, "__call__"):
+    if callable(o):
         return _debugged(o)
+    return None

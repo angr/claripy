@@ -68,8 +68,7 @@ class BV(Bits):
             raise ValueError("expression length (%d) should be a multiple of 'bits' (%d)" % (len(self), bits))
         if s == bits:
             return [self]
-        else:
-            return list(reversed([self[(n + 1) * bits - 1 : n * bits] for n in range(s // bits)]))
+        return list(reversed([self[(n + 1) * bits - 1 : n * bits] for n in range(s // bits)]))
 
     def __getitem__(self, rng):
         if type(rng) is slice:
@@ -80,8 +79,7 @@ class BV(Bits):
             if right < 0:
                 right = len(self) + right
             return Extract(left, right, self)
-        else:
-            return Extract(int(rng), int(rng), self)
+        return Extract(int(rng), int(rng), self)
 
     def get_byte(self, index):
         """
@@ -374,8 +372,7 @@ def ValueSet(bits, region=None, region_base_addr=None, value=None, name=None, va
     bvs = BVS(name, bits, min=region_base_addr + min_v, max=region_base_addr + max_v, stride=stride)
 
     # Annotate the bvs and return the new AST
-    vs = bvs.annotate(vsa.RegionAnnotation(region, region_base_addr, value))
-    return vs
+    return bvs.annotate(vsa.RegionAnnotation(region, region_base_addr, value))
 
 
 VS = ValueSet
@@ -396,17 +393,16 @@ def DSIS(
             discrete_set=True,
             discrete_set_max_card=max_card,
         )
-    else:
-        return SI(
-            name=name,
-            bits=bits,
-            lower_bound=lower_bound,
-            upper_bound=upper_bound,
-            stride=stride,
-            explicit_name=explicit_name,
-            discrete_set=True,
-            discrete_set_max_card=max_card,
-        )
+    return SI(
+        name=name,
+        bits=bits,
+        lower_bound=lower_bound,
+        upper_bound=upper_bound,
+        stride=stride,
+        explicit_name=explicit_name,
+        discrete_set=True,
+        discrete_set_max_card=max_card,
+    )
 
 
 #

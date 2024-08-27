@@ -90,10 +90,9 @@ class TrueResult(BoolResult):
     def __eq__(self, other):
         if isinstance(other, FalseResult):
             return FalseResult()
-        elif isinstance(other, TrueResult):
+        if isinstance(other, TrueResult):
             return TrueResult()
-        else:
-            return MaybeResult()
+        return MaybeResult()
 
     def __invert__(self):
         return FalseResult()
@@ -104,18 +103,16 @@ class TrueResult(BoolResult):
     def __and__(self, other):
         if BoolResult.is_maybe(other):
             return MaybeResult()
-        elif BoolResult.is_false(other):
+        if BoolResult.is_false(other):
             return FalseResult()
-        else:
-            return TrueResult()
+        return TrueResult()
 
     def union(self, other):
         if other is True or isinstance(other, TrueResult):
             return TrueResult()
-        elif other is False or isinstance(other, FalseResult | MaybeResult):
+        if other is False or isinstance(other, FalseResult | MaybeResult):
             return MaybeResult()
-        else:
-            return NotImplemented
+        return NotImplemented
 
     def __repr__(self):
         return "<True>"
@@ -137,10 +134,9 @@ class FalseResult(BoolResult):
     def __eq__(self, other):
         if isinstance(other, FalseResult):
             return TrueResult()
-        elif isinstance(other, TrueResult):
+        if isinstance(other, TrueResult):
             return FalseResult()
-        else:
-            return MaybeResult()
+        return MaybeResult()
 
     def __invert__(self):
         return TrueResult()
@@ -157,12 +153,11 @@ class FalseResult(BoolResult):
     def union(self, other):
         if other is True or type(other) is TrueResult:
             return MaybeResult()
-        elif other is False or type(other) is FalseResult:
+        if other is False or type(other) is FalseResult:
             return FalseResult()
-        elif type(other) is MaybeResult:
+        if type(other) is MaybeResult:
             return MaybeResult()
-        else:
-            return NotImplemented
+        return NotImplemented
 
     def __bool__(self):
         return False
@@ -187,8 +182,7 @@ class MaybeResult(BoolResult):
     def __and__(self, other):
         if BoolResult.is_false(other):
             return FalseResult()
-        else:
-            return MaybeResult()
+        return MaybeResult()
 
     def union(self, other):
         return MaybeResult()
@@ -196,14 +190,12 @@ class MaybeResult(BoolResult):
     def __or__(self, other):
         if BoolResult.is_true(other):
             return TrueResult()
-        else:
-            return self
+        return self
 
     def __repr__(self):
         if self._op is None:
             return "<Maybe>"
-        else:
-            return f"<Maybe({self._op}, {self._args})>"
+        return f"<Maybe({self._op}, {self._args})>"
 
     def __bool__(self):
         return False

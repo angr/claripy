@@ -166,15 +166,13 @@ class CompositeFrontend(ConstrainedFrontend):
             if any(var for var in names if var.startswith(String.STRING_TYPE_IDENTIFIER)):
                 l.debug("... creating new solver for strings")
                 return self._template_frontend_string.blank_copy()
-            else:
-                l.debug("... creating new solver")
-                return self._template_frontend.blank_copy()
-        elif len(solvers) == 1:
+            l.debug("... creating new solver")
+            return self._template_frontend.blank_copy()
+        if len(solvers) == 1:
             l.debug("... got one solver")
             return solvers[0]
-        else:
-            l.debug(".... combining %d solvers", len(solvers))
-            return solvers[0].combine(solvers[1:])
+        l.debug(".... combining %d solvers", len(solvers))
+        return solvers[0].combine(solvers[1:])
 
     def _shared_solvers(self, others):
         """
@@ -264,8 +262,7 @@ class CompositeFrontend(ConstrainedFrontend):
             sc = s.branch()
             self._owned_solvers.add(sc)
             return sc
-        else:
-            return s
+        return s
 
     def _add_dependent_constraints(self, names, constraints, invalidate_cache=True, **kwargs):
         if not invalidate_cache and len(self._solvers_for_variables(names)) > 1:
@@ -389,17 +386,15 @@ class CompositeFrontend(ConstrainedFrontend):
         # self._ensure_sat(extra_constraints=extra_constraints)
 
         ms = self._merged_solver_for(e=e, lst=extra_constraints)
-        r = ms.is_true(e, extra_constraints=extra_constraints, exact=exact)
+        return ms.is_true(e, extra_constraints=extra_constraints, exact=exact)
         # self._reabsorb_solver(ms)
-        return r
 
     def is_false(self, e, extra_constraints=(), exact=None):
         # self._ensure_sat(extra_constraints=extra_constraints)
 
         ms = self._merged_solver_for(e=e, lst=extra_constraints)
-        r = ms.is_false(e, extra_constraints=extra_constraints, exact=exact)
+        return ms.is_false(e, extra_constraints=extra_constraints, exact=exact)
         # self._reabsorb_solver(ms)
-        return r
 
     def unsat_core(self, extra_constraints=()):
         if self.satisfiable(extra_constraints=extra_constraints):

@@ -318,7 +318,9 @@ class ModelCacheMixin:
         # TODO: faster to concat?
         if len(results) != 0:
             constraints = (
-                all_operations.And(*[all_operations.Or(*[a != v for a, v in zip(asts, r)]) for r in results]),
+                all_operations.And(
+                    *[all_operations.Or(*[a != v for a, v in zip(asts, r, strict=False)]) for r in results]
+                ),
                 *tuple(extra_constraints),
             )
         else:
@@ -357,11 +359,11 @@ class ModelCacheMixin:
                 return v if v >= 0 else v + 2 ** len(e)
 
             return min(cached, key=signed_key if signed else lambda v: v)
-        else:
-            m = super().min(e, extra_constraints=extra_constraints, signed=signed, exact=exact)
-            if len(extra_constraints) == 0:
-                (self._min_signed_exhausted if signed else self._min_exhausted).add(e.cache_key)
-            return m
+
+        m = super().min(e, extra_constraints=extra_constraints, signed=signed, exact=exact)
+        if len(extra_constraints) == 0:
+            (self._min_signed_exhausted if signed else self._min_exhausted).add(e.cache_key)
+        return m
 
     def max(self, e, extra_constraints=(), signed=False, exact=None):
         cached = []
@@ -374,11 +376,11 @@ class ModelCacheMixin:
                 return v if v < 2 ** (len(e) - 1) else v - 2 ** len(e)
 
             return max(cached, key=signed_key if signed else lambda v: v)
-        else:
-            m = super().max(e, extra_constraints=extra_constraints, signed=signed, exact=exact)
-            if len(extra_constraints) == 0:
-                (self._max_signed_exhausted if signed else self._max_exhausted).add(e.cache_key)
-            return m
+
+        m = super().max(e, extra_constraints=extra_constraints, signed=signed, exact=exact)
+        if len(extra_constraints) == 0:
+            (self._max_signed_exhausted if signed else self._max_exhausted).add(e.cache_key)
+        return m
 
     def solution(self, e, v, extra_constraints=(), exact=None):
         if isinstance(v, Base):

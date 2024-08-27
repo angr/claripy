@@ -6,12 +6,11 @@ class ConcreteHandlerMixin:
         c = self._concrete_value(e)
         if c is not None:
             return (c,)
-        else:
-            return super().eval(e, n, extra_constraints=extra_constraints, exact=exact)
+        return super().eval(e, n, extra_constraints=extra_constraints, exact=exact)
 
     def batch_eval(self, exprs, n, extra_constraints=(), exact=None):
         concrete_exprs = [self._concrete_value(e) for e in exprs]
-        symbolic_exprs = [e for e, c in zip(exprs, concrete_exprs) if c is None]
+        symbolic_exprs = [e for e, c in zip(exprs, concrete_exprs, strict=False) if c is None]
 
         if len(symbolic_exprs) == 0:
             return [concrete_exprs]
@@ -25,15 +24,13 @@ class ConcreteHandlerMixin:
         c = self._concrete_value(e)
         if c is not None:
             return c
-        else:
-            return super().max(e, extra_constraints=extra_constraints, signed=signed, exact=exact)
+        return super().max(e, extra_constraints=extra_constraints, signed=signed, exact=exact)
 
     def min(self, e, extra_constraints=(), signed=False, exact=None):
         c = self._concrete_value(e)
         if c is not None:
             return c
-        else:
-            return super().min(e, extra_constraints=extra_constraints, signed=signed, exact=exact)
+        return super().min(e, extra_constraints=extra_constraints, signed=signed, exact=exact)
 
     def solution(self, e, v, extra_constraints=(), exact=None):
         ce = self._concrete_value(e)
@@ -41,19 +38,16 @@ class ConcreteHandlerMixin:
 
         if ce is None or cv is None:
             return super().solution(e, v, extra_constraints=extra_constraints, exact=exact)
-        else:
-            return ce == cv
+        return ce == cv
 
     def is_true(self, e, extra_constraints=(), exact=None):
         c = self._concrete_value(e)
         if c is not None:
             return c
-        else:
-            return super().is_true(e, extra_constraints=extra_constraints, exact=exact)
+        return super().is_true(e, extra_constraints=extra_constraints, exact=exact)
 
     def is_false(self, e, extra_constraints=(), exact=None):
         c = self._concrete_value(e)
         if c is not None:
             return not c
-        else:
-            return super().is_false(e, extra_constraints=extra_constraints, exact=exact)
+        return super().is_false(e, extra_constraints=extra_constraints, exact=exact)

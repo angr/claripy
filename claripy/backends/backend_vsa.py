@@ -62,18 +62,7 @@ def normalize_arg_order(f):
 def convert_args(f):
     @functools.wraps(f)
     def converter(self, ast):
-        raw_args = []
-        for i in range(len(ast.args)):
-            # It's not reversed
-            raw_args.append(ast.args[i])
-
-        for i in range(len(raw_args)):
-            raw_args[i] = self.convert(raw_args[i])
-
-        normalized = ast.swap_args(raw_args)
-        ret = f(self, normalized)
-
-        return ret
+        return f(self, ast.swap_args([self.convert(arg) for arg in ast.args]))
 
     return converter
 
@@ -134,7 +123,7 @@ class BackendVSA(Backend):
     def _convert(self, a):
         if isinstance(a, numbers.Number):
             return a
-        elif isinstance(a, bool):
+        if isinstance(a, bool):
             return TrueResult() if a else FalseResult()
         if isinstance(a, StridedInterval | DiscreteStridedIntervalSet | ValueSet):
             return a
@@ -147,10 +136,9 @@ class BackendVSA(Backend):
     def _eval(self, expr, n, extra_constraints=(), solver=None, model_callback=None):
         if isinstance(expr, StridedInterval | ValueSet):
             return expr.eval(n)
-        elif isinstance(expr, BoolResult):
+        if isinstance(expr, BoolResult):
             return expr.value
-        else:
-            raise BackendError(f"Unsupported type {type(expr)}")
+        raise BackendError(f"Unsupported type {type(expr)}")
 
     def _min(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None):
         # TODO: signed min
@@ -161,11 +149,10 @@ class BackendVSA(Backend):
 
             return expr.min
 
-        elif isinstance(expr, ValueSet):
+        if isinstance(expr, ValueSet):
             return expr.min
 
-        else:
-            raise BackendError(f"Unsupported expr type {type(expr)}")
+        raise BackendError(f"Unsupported expr type {type(expr)}")
 
     def _max(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None):
         # TODO: signed max
@@ -176,11 +163,10 @@ class BackendVSA(Backend):
 
             return expr.max
 
-        elif isinstance(expr, ValueSet):
+        if isinstance(expr, ValueSet):
             return expr.max
 
-        else:
-            raise BackendError(f"Unsupported expr type {type(expr)}")
+        raise BackendError(f"Unsupported expr type {type(expr)}")
 
     def _solution(self, obj, v, extra_constraints=(), solver=None, model_callback=None):
         if isinstance(obj, BoolResult):
@@ -221,8 +207,7 @@ class BackendVSA(Backend):
     def _unique(self, obj):  # pylint:disable=unused-argument,no-self-use
         if isinstance(obj, StridedInterval | ValueSet):
             return obj.unique
-        else:
-            raise BackendError(f"Not supported type of operand {type(obj)}")
+        raise BackendError(f"Not supported type of operand {type(obj)}")
 
     def _cardinality(self, a):  # pylint:disable=unused-argument,no-self-use
         return a.cardinality
@@ -231,8 +216,7 @@ class BackendVSA(Backend):
         if isinstance(a, StridedInterval):
             return a.name
 
-        else:
-            return None
+        return None
 
     def apply_annotation(self, bo, annotation):
         """
@@ -260,8 +244,7 @@ class BackendVSA(Backend):
     def BVV(self, ast):  # pylint:disable=unused-argument,no-self-use
         if ast.args[0] is None:
             return StridedInterval.empty(ast.args[1])
-        else:
-            return CreateStridedInterval(bits=ast.args[1], stride=0, lower_bound=ast.args[0], upper_bound=ast.args[0])
+        return CreateStridedInterval(bits=ast.args[1], stride=0, lower_bound=ast.args[0], upper_bound=ast.args[0])
 
     @staticmethod
     def BoolV(ast):  # pylint:disable=unused-argument
@@ -333,10 +316,9 @@ class BackendVSA(Backend):
     def If(self, cond, t, f):
         if not self.has_true(cond):
             return f
-        elif not self.has_false(cond):
+        if not self.has_false(cond):
             return t
-        else:
-            return t.union(f)
+        return t.union(f)
 
     # TODO: Implement other operations!
 
@@ -385,9 +367,7 @@ class BackendVSA(Backend):
         }:  # pylint:disable=unidiomatic-typecheck
             raise BackendError(f"Unsupported expr type {type(expr)}")
 
-        ret = expr.extract(high_bit, low_bit)
-
-        return ret
+        return expr.extract(high_bit, low_bit)
 
     @staticmethod
     def SignExt(*args):

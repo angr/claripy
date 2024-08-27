@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import atexit
 import logging
+from contextlib import suppress
 
 from claripy import operations
 from claripy.ast.base import ASTCacheKey, Base, _make_name
@@ -46,7 +47,7 @@ class Bool(Base):
         """
         return is_false(self)
 
-    def size(self):
+    def size(self):  # pylint:disable=no-self-use
         """Returns the size of the AST in bits. A boolean is 1 bit."""
         return 1
 
@@ -130,7 +131,7 @@ def If(*args):
 
     if is_true(args[0]):
         return args[1].append_annotations(args[0].annotations)
-    elif is_false(args[0]):
+    if is_false(args[0]):
         return args[2].append_annotations(args[0].annotations)
 
     if isinstance(args[1], Base) and args[1].op == "If" and args[1].args[0] is args[0]:
@@ -151,8 +152,7 @@ def If(*args):
 
     if issubclass(ty, Bits):
         return ty("If", tuple(args), length=args[1].length)
-    else:
-        return ty("If", tuple(args))
+    return ty("If", tuple(args))
 
 
 And = operations.op("And", Bool, Bool)
@@ -168,10 +168,8 @@ Bool.__ror__ = Or
 
 def is_true(e, exact=None):  # pylint:disable=unused-argument
     for b in backends._quick_backends:
-        try:
+        with suppress(BackendError):
             return b.is_true(e)
-        except BackendError:
-            pass
 
     l.debug("Unable to tell the truth-value of this expression")
     return False
@@ -179,10 +177,8 @@ def is_true(e, exact=None):  # pylint:disable=unused-argument
 
 def is_false(e, exact=None):  # pylint:disable=unused-argument
     for b in backends._quick_backends:
-        try:
+        with suppress(BackendError):
             return b.is_false(e)
-        except BackendError:
-            pass
 
     l.debug("Unable to tell the truth-value of this expression")
     return False
@@ -277,4 +273,5 @@ def constraint_to_si(expr):
     return satisfiable, replace_list
 
 
+# pylint: disable=wrong-import-position
 from .bv import BVS  # noqa: E402

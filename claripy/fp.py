@@ -88,19 +88,17 @@ class FSort:
     def from_size(n):
         if n == 32:
             return FSORT_FLOAT
-        elif n == 64:
+        if n == 64:
             return FSORT_DOUBLE
-        else:
-            raise ClaripyOperationError(f"{n} is not a valid FSort size")
+        raise ClaripyOperationError(f"{n} is not a valid FSort size")
 
     @staticmethod
     def from_params(exp, mantissa):
         if exp == 8 and mantissa == 24:
             return FSORT_FLOAT
-        elif exp == 11 and mantissa == 53:
+        if exp == 11 and mantissa == 53:
             return FSORT_DOUBLE
-        else:
-            raise ClaripyOperationError("unrecognized FSort params")
+        raise ClaripyOperationError("unrecognized FSort params")
 
 
 FSORT_FLOAT = FSort("FLOAT", 8, 24)
@@ -163,8 +161,7 @@ class FPV(BackendObject):
         except ZeroDivisionError:
             if str(self.value * o.value)[0] == "-":
                 return FPV(float("-inf"), self.sort)
-            else:
-                return FPV(float("inf"), self.sort)
+            return FPV(float("inf"), self.sort)
 
     def __floordiv__(self, other):  # decline to involve integers in this floating point process
         return self.__truediv__(other)
@@ -201,8 +198,7 @@ class FPV(BackendObject):
         except ZeroDivisionError:
             if str(o.value * self.value)[0] == "-":
                 return FPV(float("-inf"), self.sort)
-            else:
-                return FPV(float("inf"), self.sort)
+            return FPV(float("inf"), self.sort)
 
     def __rfloordiv__(self, other):  # decline to involve integers in this floating point process
         return self.__rtruediv__(other)
@@ -278,12 +274,11 @@ def fpToFP(a1, a2, a3=None):
             raise ClaripyOperationError("OverflowError: " + str(e)) from e
 
         return FPV(unpacked, sort)
-    elif isinstance(a1, RM) and isinstance(a2, FPV) and isinstance(a3, FSort):
+    if isinstance(a1, RM) and isinstance(a2, FPV) and isinstance(a3, FSort):
         return FPV(a2.value, a3)
-    elif isinstance(a1, RM) and isinstance(a2, BVV) and isinstance(a3, FSort):
+    if isinstance(a1, RM) and isinstance(a2, BVV) and isinstance(a3, FSort):
         return FPV(float(a2.signed), a3)
-    else:
-        raise ClaripyOperationError("unknown types passed to fpToFP")
+    raise ClaripyOperationError("unknown types passed to fpToFP")
 
 
 def fpToFPUnsigned(_rm, thing, sort):

@@ -24,13 +24,13 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
                 raise ClaripyTypeError(f"Operation {name} takes exactly {len(arg_types)} arguments ({len(args)} given)")
 
         actual_arg_types = (arg_types,) * num_args if isinstance(arg_types, type) else arg_types
-        matches = list(itertools.starmap(isinstance, zip(args, actual_arg_types)))
+        matches = list(itertools.starmap(isinstance, zip(args, actual_arg_types, strict=False)))
 
         # heuristically, this works!
         thing = args[matches.index(True, 1 if actual_arg_types[0] is fp.RM else 0)] if True in matches else None
 
-        for arg, argty, matches in zip(args, actual_arg_types, matches):
-            if not matches:
+        for arg, argty, match in zip(args, actual_arg_types, matches, strict=False):
+            if not match:
                 if do_coerce and hasattr(argty, "_from_" + type(arg).__name__):
                     convert = getattr(argty, "_from_" + type(arg).__name__)
                     yield convert(thing, arg)
@@ -148,9 +148,9 @@ def basic_length_calc(*args):
 def extract_check(high, low, bv):
     if high < 0 or low < 0:
         return False, "Extract high and low must be nonnegative"
-    elif low > high:
+    if low > high:
         return False, "Extract low must be <= high"
-    elif high >= bv.size():
+    if high >= bv.size():
         return False, "Extract bound must be less than BV size"
 
     return True, ""

@@ -342,16 +342,13 @@ class ValueSet(BackendObject):
         :return: A StridedInterval or a ValueSet.
         """
 
-        deltas = []
-
         # TODO: Handle more cases
 
         if isinstance(other, ValueSet):
             # A subtraction between two ValueSets produces a StridedInterval
 
             if self.regions.keys() == other.regions.keys():
-                for region in self._regions:
-                    deltas.append(self._regions[region] - other._regions[region])
+                deltas = [self._regions[region] - other._regions[region] for region in self._regions]
 
             else:
                 # TODO: raise the proper exception here
@@ -363,18 +360,17 @@ class ValueSet(BackendObject):
 
             return delta
 
-        else:
-            # A subtraction between a ValueSet and a StridedInterval produces another ValueSet
+        # A subtraction between a ValueSet and a StridedInterval produces another ValueSet
 
-            new_vs = self.copy()
+        new_vs = self.copy()
 
-            # Call __sub__ on the base class
-            new_vs._si = self._si.__sub__(other)
+        # Call __sub__ on the base class
+        new_vs._si = self._si.__sub__(other)
 
-            for region, si in new_vs._regions.items():
-                new_vs._regions[region] = si - other
+        for region, si in new_vs._regions.items():
+            new_vs._regions[region] = si - other
 
-            return new_vs
+        return new_vs
 
     @normalize_types_one_arg
     def __mod__(self, other):
@@ -424,23 +420,21 @@ class ValueSet(BackendObject):
             # We return a StridedInterval instead
             ret = None
 
-            for region, si in self._regions.items():
+            for si in self._regions.values():
                 r = si.__and__(other)
                 ret = r if ret is None else ret.union(r)
 
             return ret
 
-        else:
-            # We should return a ValueSet here
+        # We should return a ValueSet here
+        new_vs = self.copy()
 
-            new_vs = self.copy()
+        for region, si in self._regions.items():
+            r = si.__and__(other)
 
-            for region, si in self._regions.items():
-                r = si.__and__(other)
+            new_vs._regions[region] = r
 
-                new_vs._regions[region] = r
-
-            return new_vs
+        return new_vs
 
     def LShR(self, other):
         if BoolResult.is_true(other == 0):
@@ -474,13 +468,11 @@ class ValueSet(BackendObject):
             if same and different:
                 return MaybeResult()
             return FalseResult()
-        elif isinstance(other, StridedInterval):
+        if isinstance(other, StridedInterval):
             if "global" in self.regions:
                 return self.regions["global"] == other
-            else:
-                return FalseResult()
-        else:
             return FalseResult()
+        return FalseResult()
 
     def __ne__(self, other):
         """
@@ -525,13 +517,7 @@ class ValueSet(BackendObject):
             # How are you going to deal with a negative pointer?
             raise ClaripyVSAOperationError("`signed` cannot be True when calling ValueSet.eval().")
 
-        results = []
-
-        for _, si in self._regions.items():
-            if len(results) < n:
-                results.extend(si.eval(n))
-
-        return results
+        return list(itertools.islice(itertools.chain.from_iterable(si.eval(n) for si in self._regions.values()), n))
 
     @property
     def min(self):
@@ -627,7 +613,7 @@ class ValueSet(BackendObject):
                 merged_vs._si = merged_vs._si.union(b._si)
 
         else:
-            for region, si in merged_vs._regions.items():
+            for region in merged_vs._regions:
                 merged_vs._regions[region] = merged_vs._regions[region].union(b)
 
             merged_vs._si = merged_vs._si.union(b)

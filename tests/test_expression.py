@@ -1,8 +1,8 @@
 # pylint: disable=missing-class-docstring,no-self-use
 from __future__ import annotations
 
-import contextlib
 import unittest
+from contextlib import suppress
 
 import claripy
 
@@ -437,7 +437,7 @@ class TestExpression(unittest.TestCase):
 
         # make sure that all backends handle this properly
         for b in claripy.backends._all_backends:
-            with contextlib.suppress(claripy.BackendError):
+            with suppress(claripy.BackendError):
                 b.convert(x + x + x + x)
 
     def test_signed_concrete(self):

@@ -236,8 +236,7 @@ class Frontend:
     def _concrete_value(self, e):  # pylint:disable=no-self-use
         if isinstance(e, numbers.Number):
             return e
-        else:
-            return None
+        return None
 
     def _concrete_constraint(self, e):  # pylint:disable=no-self-use
         return self._concrete_value(e)

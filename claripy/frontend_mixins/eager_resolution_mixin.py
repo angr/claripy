@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from contextlib import suppress
+
 from claripy import backends
 from claripy.errors import BackendError
 
@@ -14,9 +16,7 @@ class EagerResolutionMixin:
             return r
 
         for b in backends._eager_backends:
-            try:
+            with suppress(BackendError):
                 return b.eval(e, 1)[0]
-            except BackendError:
-                pass
 
         return None

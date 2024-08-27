@@ -94,8 +94,7 @@ _unique_names = True
 def _make_name(name: str, size: int, explicit_name: bool = False, prefix: str = "") -> str:
     if _unique_names and not explicit_name:
         return "%s%s_%d_%d" % (prefix, name, next(var_counter), size)
-    else:
-        return name
+    return name
 
 
 def _d(h, cls, state):
@@ -272,9 +271,8 @@ class Base:
                     r = operations._handle_annotations(eb._abstract(eb.call(op, args)), args)
                     if r is not None:
                         return r
-                    else:
-                        eager_backends.remove(eb)
-                except BackendError:
+                    eager_backends.remove(eb)
+                except BackendError:  # noqa: PERF203
                     eager_backends.remove(eb)
 
             # if we can't be eager anymore, null out the eagerness
@@ -441,32 +439,31 @@ class Base:
     def _arg_serialize(arg: ArgType) -> bytes | None:
         if arg is None:
             return b"\x0f"
-        elif arg is True:
+        if arg is True:
             return b"\x1f"
-        elif arg is False:
+        if arg is False:
             return b"\x2e"
-        elif isinstance(arg, int):
+        if isinstance(arg, int):
             if arg < 0:
                 if arg >= -0x7FFF:
                     return b"-" + struct.pack("<h", arg)
-                elif arg >= -0x7FFF_FFFF:
+                if arg >= -0x7FFF_FFFF:
                     return b"-" + struct.pack("<i", arg)
-                elif arg >= -0x7FFF_FFFF_FFFF_FFFF:
+                if arg >= -0x7FFF_FFFF_FFFF_FFFF:
                     return b"-" + struct.pack("<q", arg)
                 return None
-            else:
-                if arg <= 0xFFFF:
-                    return struct.pack("<H", arg)
-                elif arg <= 0xFFFF_FFFF:
-                    return struct.pack("<I", arg)
-                elif arg <= 0xFFFF_FFFF_FFFF_FFFF:
-                    return struct.pack("<Q", arg)
-                return None
-        elif isinstance(arg, str):
+            if arg <= 0xFFFF:
+                return struct.pack("<H", arg)
+            if arg <= 0xFFFF_FFFF:
+                return struct.pack("<I", arg)
+            if arg <= 0xFFFF_FFFF_FFFF_FFFF:
+                return struct.pack("<Q", arg)
+            return None
+        if isinstance(arg, str):
             return arg.encode()
-        elif isinstance(arg, float):
+        if isinstance(arg, float):
             return struct.pack("f", arg)
-        elif isinstance(arg, tuple):
+        if isinstance(arg, tuple):
             arr = []
             for elem in arg:
                 b = Base._arg_serialize(elem)
@@ -716,10 +713,9 @@ class Base:
         """
         if not remove_annotations:
             return self._apply_to_annotations(lambda alist: alist + args)
-        else:
-            return self._apply_to_annotations(
-                lambda alist: tuple(arg for arg in alist if arg not in remove_annotations) + args
-            )
+        return self._apply_to_annotations(
+            lambda alist: tuple(arg for arg in alist if arg not in remove_annotations) + args
+        )
 
     def insert_annotation(self, a: Annotation) -> Self:
         """
@@ -817,7 +813,7 @@ class Base:
         if max_depth is not None and max_depth <= 0:
             return "<...>"
 
-        elif self.op in operations.reversed_ops:
+        if self.op in operations.reversed_ops:
             op = operations.reversed_ops[self.op]
             args = reversed(self.args)
         else:
@@ -844,8 +840,7 @@ class Base:
 
         if not inner:
             return f"<{self._type_name()} {inner_repr}>"
-        else:
-            return inner_repr
+        return inner_repr
 
     @staticmethod
     def _op_repr(
@@ -872,10 +867,10 @@ class Base:
                     extras.append("UNINITIALIZED")
                 return "{}{}".format(args[0], "{{{}}}".format(", ".join(extras)) if extras else "")
 
-            elif op == "BoolV":
+            if op == "BoolV":
                 return str(args[0])
 
-            elif op == "BVV":
+            if op == "BVV":
                 if args[0] is None:
                     value = "!"
                 elif args[1] < 10:
@@ -889,22 +884,22 @@ class Base:
                 value = f"if {args[0]} then {args[1]} else {args[2]}"
                 return f"({value})" if inner else value
 
-            elif op == "Not":
+            if op == "Not":
                 return f"!{args[0]}"
 
-            elif op == "Extract":
+            if op == "Extract":
                 return f"{args[2]}[{args[0]}:{args[1]}]"
 
-            elif op == "ZeroExt":
+            if op == "ZeroExt":
                 value = f"0#{args[0]} .. {args[1]}"
                 return f"({value})" if inner else value
 
-            elif op in operations.prefix:
+            if op in operations.prefix:
                 assert len(args) == 1
                 value = f"{operations.prefix[op]}{args[0]}"
                 return f"({value})" if inner and inner_infix_use_par else value
 
-            elif op in operations.infix:
+            if op in operations.infix:
                 value = f" {operations.infix[op]} ".join(args)
                 return f"({value})" if inner and inner_infix_use_par else value
 
@@ -983,16 +978,15 @@ class Base:
         This returns the same AST, with the arguments swapped out for new_args.
         """
 
-        if len(self.args) == len(new_args) and all(a is b for a, b in zip(self.args, new_args)):
+        if len(self.args) == len(new_args) and all(a is b for a, b in zip(self.args, new_args, strict=False)):
             return self
 
         # symbolic = any(a.symbolic for a in new_args if isinstance(a, Base))
         # variables = frozenset.union(frozenset(), *(a.variables for a in new_args if isinstance(a, Base)))
         length = self.length if new_length is None else new_length
-        a = self.make_like(self.op, new_args, length=length, **kwargs)
+        return self.make_like(self.op, new_args, length=length, **kwargs)
         # if a.op != self.op or a.symbolic != self.symbolic or a.variables != self.variables:
         #   raise ClaripyOperationError("major bug in swap_args()")
-        return a
 
     #
     # Other helper functions
@@ -1005,8 +999,7 @@ class Base:
         """
         if self.op in split_on:
             return list(self.args)
-        else:
-            return [self]
+        return [self]
 
     # we don't support iterating over Base objects
     def __iter__(self) -> NoReturn:
@@ -1049,15 +1042,14 @@ class Base:
         if len(self.args) != len(o.args):
             return False
 
-        for arg_a, arg_b in zip(self.args, o.args):
+        for arg_a, arg_b in zip(self.args, o.args, strict=False):
             if not isinstance(arg_a, Base):
                 if type(arg_a) != type(arg_b):  # noqa: E721
                     return False
                 # They are not ASTs
                 if arg_a != arg_b:
                     return False
-                else:
-                    continue
+                continue
 
             if arg_a.op in operations.leaf_operations:
                 if arg_a is not arg_b:
@@ -1128,7 +1120,7 @@ class Base:
                     del rep_queue[-len(ast.args) :]
 
                     # Check if replacement occurred.
-                    if any((a is not b for a, b in zip(ast.args, args))):
+                    if any((a is not b for a, b in zip(ast.args, args, strict=False))):
                         repl = ast.make_like(ast.op, tuple(args))
                         replacements[ast.cache_key] = repl
 
@@ -1400,23 +1392,23 @@ def simplify(e: T) -> T:
     if s is None:
         l.debug("Unable to simplify expression")
         return e
-    else:
-        # Copy some parameters (that should really go to the Annotation backend)
-        s._uninitialized = e.uninitialized
-        s._uc_alloc_depth = e._uc_alloc_depth
-        s._simplified = SimplificationLevel.FULL_SIMPLIFY
 
-        # dealing with annotations
-        if e.annotations:
-            ast_args = tuple(a for a in e.args if isinstance(a, Base))
-            annotations = tuple(
-                set(chain(from_iterable(a._relocatable_annotations for a in ast_args), tuple(a for a in e.annotations)))
-            )
-            if annotations != s.annotations:
-                s = s.remove_annotations(s.annotations)
-                s = s.annotate(*annotations)
+    # Copy some parameters (that should really go to the Annotation backend)
+    s._uninitialized = e.uninitialized
+    s._uc_alloc_depth = e._uc_alloc_depth
+    s._simplified = SimplificationLevel.FULL_SIMPLIFY
 
-        return s
+    # dealing with annotations
+    if e.annotations:
+        ast_args = tuple(a for a in e.args if isinstance(a, Base))
+        annotations = tuple(
+            set(chain(from_iterable(a._relocatable_annotations for a in ast_args), tuple(a for a in e.annotations)))
+        )
+        if annotations != s.annotations:
+            s = s.remove_annotations(s.annotations)
+            s = s.annotate(*annotations)
+
+    return s
 
 
 # pylint:disable=wrong-import-position

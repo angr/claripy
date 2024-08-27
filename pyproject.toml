@@ -12,6 +12,7 @@ line-length = 120
 
 [tool.ruff.lint]
 select = [
+    "B",
     "BLE",
     "C4",
     "E",
@@ -19,9 +20,14 @@ select = [
     "F",
     "FLY",
     "FURB",
+    "G",
     "I",
+    "INP",
     "ISC",
+    "LOG",
+    "PERF",
     "PIE",
+    "RET",
     "RSE",
     "RUF",
     "SIM",
@@ -56,8 +62,13 @@ ignore = [
     "F405",
 ]
 "tests/**" = [
+    "B011",
     "BLE",
     "F841",
+    "INP001",
+]
+"docs/conf.py" = [
+    "INP001",
 ]
 
 [tool.ruff.lint.isort]
