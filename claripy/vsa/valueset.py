@@ -517,7 +517,7 @@ class ValueSet(BackendObject):
             # How are you going to deal with a negative pointer?
             raise ClaripyVSAOperationError("`signed` cannot be True when calling ValueSet.eval().")
 
-        return list(itertools.chain(si.eval(n) for si in self._regions.values()))
+        return list(itertools.islice(itertools.chain.from_iterable(si.eval(n) for si in self._regions.values()), n))
 
     @property
     def min(self):
