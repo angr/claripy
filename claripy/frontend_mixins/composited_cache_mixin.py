@@ -25,7 +25,7 @@ class CompositedCacheMixin:
     #
 
     def _remove_cached(self, names):
-        self._merged_solvers = {k: v for k, v in self._merged_solvers.items() if not (k & names)}
+        self._merged_solvers = {k: v for k, v in self._merged_solvers.items() if not k & names}
 
     def _solver_for_names(self, names):
         n = frozenset(names)
