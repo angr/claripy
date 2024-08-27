@@ -22,7 +22,7 @@ def AbstractLocation(*args, **kwargs):  # pylint:disable=no-self-use
 # sigh
 #
 
-# pylint:disable=wildcard-import,unused-wildcard-import
+# pylint:disable=wildcard-import,unused-wildcard-import,wrong-import-position
 from . import vsa
 from .ast.base import *
 from .ast.bool import *

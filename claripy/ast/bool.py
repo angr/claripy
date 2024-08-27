@@ -47,7 +47,7 @@ class Bool(Base):
         """
         return is_false(self)
 
-    def size(self):
+    def size(self):  # pylint:disable=no-self-use
         """Returns the size of the AST in bits. A boolean is 1 bit."""
         return 1
 
@@ -273,4 +273,5 @@ def constraint_to_si(expr):
     return satisfiable, replace_list
 
 
+# pylint: disable=wrong-import-position
 from .bv import BVS  # noqa: E402

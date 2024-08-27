@@ -1,10 +1,9 @@
-# hits = 0
-# misses = 0
-# ejects = 0
 from __future__ import annotations
 
 
 class CompositedCacheMixin:
+    """CompositedCacheMixin is a mixin for frontends that preserves caches from merged solvers."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._merged_solvers = {}
@@ -26,22 +25,15 @@ class CompositedCacheMixin:
     #
 
     def _remove_cached(self, names):
-        # global ejects
-
-        for k in list(self._merged_solvers.keys()):
+        for k in self._merged_solvers:
             if k & names:
-                # ejects += 1
                 self._merged_solvers.pop(k)
 
     def _solver_for_names(self, names):
-        # global hits, misses
-
         n = frozenset(names)
         try:
-            return self._merged_solvers[frozenset(n)]
-            # hits += 1
+            return self._merged_solvers[n]
         except KeyError:
-            # misses += 1
             s = super()._solver_for_names(names)
             self._merged_solvers[n] = s
             return s

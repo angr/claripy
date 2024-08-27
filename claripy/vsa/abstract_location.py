@@ -105,7 +105,7 @@ class AbstractLocation(BackendObject):
 
     def __contains__(self, offset):
         for s in self._segment_list:
-            if s.offset <= offset and s.offset + s.size > offset:
+            if s.offset <= offset < s.offset + s.size:
                 return True
 
             if s.offset > offset:
