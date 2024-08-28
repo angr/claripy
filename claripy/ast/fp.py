@@ -211,5 +211,22 @@ FP.__rsub__ = operations.reversed_op(FP.__sub__)
 FP.__rmul__ = operations.reversed_op(FP.__mul__)
 FP.__rtruediv__ = operations.reversed_op(FP.__truediv__)
 
+FP.fpAbs = fpAbs
+FP.fpNeg = fpNeg
+FP.fpSub = fpSub
+FP.fpAdd = fpAdd
+FP.fpMul = fpMul
+FP.fpDiv = fpDiv
+FP.fpSqrt = fpSqrt
+
+FP.fpEQ = fpEQ
+FP.fpNE = fpEQ
+FP.fpGT = fpGT
+FP.fpGEQ = fpGEQ
+FP.fpLT = fpLT
+FP.fpLEQ = fpLEQ
 FP.isNaN = fpIsNaN
 FP.isInf = fpIsInf
+
+FP.fpToIEEEBV = fpToIEEEBV
+FP.fpToFP = fpToFP
