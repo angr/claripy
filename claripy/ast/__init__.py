@@ -10,7 +10,6 @@ if TYPE_CHECKING:
     from .bool import Bool, true, false
     from .base import Base
     from .strings import String
-    from claripy import ops as all_operations
 else:
     Bits = lambda *args, **kwargs: None
     BV = lambda *args, **kwargs: None
@@ -20,11 +19,10 @@ else:
     true = lambda *args, **kwargs: None
     false = lambda *args, **kwargs: None
     String = lambda *args, **kwargs: None
-    all_operations = None
 
 
 def _import():
-    global Bits, BV, FP, Bool, Base, String, true, false, all_operations
+    global Bits, BV, FP, Bool, Base, String, true, false
 
     from .bits import Bits
     from .bv import BV
@@ -32,7 +30,6 @@ def _import():
     from .bool import Bool, true, false
     from .base import Base
     from .strings import String
-    from claripy import ops as all_operations
 
 
 __all__ = ("Bits", "BV", "FP", "Bool", "true", "false", "Base", "String", "all_operations")

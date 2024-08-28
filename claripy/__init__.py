@@ -12,7 +12,6 @@ l.addHandler(logging.NullHandler())
 
 from .errors import *
 from . import operations as operations
-from . import ops as _all_operations
 
 # This is here for later, because we'll fuck the namespace in a few lines
 from . import backends as _backends_module
