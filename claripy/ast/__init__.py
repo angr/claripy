@@ -1,4 +1,4 @@
-# pylint:disable=redefined-outer-name
+# pylint:disable=redefined-outer-name,unnecessary-lambda-assignment,global-statement,import-outside-toplevel
 from typing import TYPE_CHECKING
 
 # Mypy is severely confused by this delayed import trickery, but works if we just pretend that the import
@@ -32,4 +32,4 @@ def _import():
     from .strings import String
 
 
-__all__ = ("Bits", "BV", "FP", "Bool", "true", "false", "Base", "String", "all_operations")
+__all__ = ("Bits", "BV", "FP", "Bool", "true", "false", "Base", "String")

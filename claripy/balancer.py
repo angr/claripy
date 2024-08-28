@@ -157,7 +157,9 @@ class Balancer:
 
         if not backends.vsa.identical(inner_aligned, truism):
             l.critical(
-                "ERROR: the balancer is messing up an AST. This must be looked into. Please submit the binary and script to the angr project, if possible. Outer op is %s and inner op is %s.",
+                "ERROR: the balancer is messing up an AST. This must be looked into. "
+                "Please submit the binary and script to the angr project, if possible. "
+                "Outer op is %s and inner op is %s.",
                 truism.op,
                 truism.args[0].op,
             )
@@ -190,8 +192,8 @@ class Balancer:
 
         try:
             op = getattr(operator, new_op)
-        except AttributeError:
-            raise ClaripyBalancerError(f"unable to reverse comparison {a.op} (AttributeError)")
+        except AttributeError as err:
+            raise ClaripyBalancerError(f"unable to reverse comparison {a.op} (AttributeError)") from err
 
         try:
             return op(*a.args[::-1])
@@ -307,12 +309,11 @@ class Balancer:
             return [t.args[0] >= 0]
         if t.op in ("__ge__", "__gt__", "UGE", "UGT"):
             return [t.args[0] <= 2 ** len(t.args[0]) - 1]
-        elif t.op in ("SLE", "SLT"):
+        if t.op in ("SLE", "SLT"):
             return [claripy.SGE(t.args[0], -(1 << (len(t.args[0]) - 1)))]
-        elif t.op in ("SGE", "SGT"):
+        if t.op in ("SGE", "SGT"):
             return [claripy.SLE(t.args[0], (1 << (len(t.args[0]) - 1)) - 1)]
-        else:
-            return []
+        return []
 
     #
     # Truism extractor
@@ -336,10 +337,9 @@ class Balancer:
     def _unpack_truisms_Not(self, c):
         if c.args[0].op == "And":
             return self._unpack_truisms(claripy.Or(*[claripy.Not(a) for a in c.args[0].args]))
-        elif c.args[0].op == "Or":
+        if c.args[0].op == "Or":
             return self._unpack_truisms(claripy.And(*[claripy.Not(a) for a in c.args[0].args]))
-        else:
-            return set()
+        return set()
 
     def _unpack_truisms_Or(self, c):
         vals = [is_false(v) for v in c.args]
@@ -674,7 +674,7 @@ class Balancer:
 
             if val == 0:
                 self._add_lower_bound(lhs, val + 1)
-            elif val == max_int or val == -1:
+            elif val in (max_int, val - 1):
                 self._add_upper_bound(lhs, max_int - 1)
 
     def _handle_If(self, truism):

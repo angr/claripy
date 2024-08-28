@@ -560,7 +560,6 @@ class SimplificationManager:
             *args,
             initial_value=claripy.BVV(0, len(args[0])),
         )
-        return None
 
     @staticmethod
     def bitwise_mul_simplifier(*args):
@@ -831,7 +830,7 @@ class SimplificationManager:
         if high - low + 1 == val.size():
             return val
 
-        if (val.op == "SignExt" or val.op == "ZeroExt") and low == 0 and high + 1 == val.args[1].size():
+        if val.op in {"SignExt", "ZeroExt"} and low == 0 and high + 1 == val.args[1].size():
             return val.args[1]
 
         if val.op == "ZeroExt":
@@ -843,7 +842,8 @@ class SimplificationManager:
         if val.op == "Reverse" and val.args[0].op == "Concat" and all(a.length % 8 == 0 for a in val.args[0].args):
             val = claripy.Concat(*reversed([a.reversed for a in val.args[0].args]))
 
-        # Reading one byte from a reversed claripy can be converted to reading the corresponding byte from the original claripy
+        # Reading one byte from a reversed claripy can be converted to reading
+        # the corresponding byte from the original claripy
         # No Reverse is required then
         if val.op == "Reverse" and high - low + 1 == 8 and low % 8 == 0:
             byte_pos = low // 8
