@@ -6,7 +6,9 @@ import itertools
 import operator
 from functools import reduce
 
-from . import ast, fp
+import claripy
+
+from . import fp
 from .backend_manager import backends
 
 
@@ -95,7 +97,7 @@ class SimplificationManager:
                     and backends.concrete.handles(previous)
                     and backends.concrete.handles(current)
                 ):
-                    concatted = ast.all_operations.Concat(previous, current)
+                    concatted = claripy.Concat(previous, current)
                     # If the concrete arguments to concat have non-relocatable annotations attached,
                     # we may not be able to simplify the concrete concat. This check makes sure we don't
                     # create a nested concat in that case.
@@ -140,7 +142,7 @@ class SimplificationManager:
                 i += 1
             elif prev_var is args[i].args[2] and prev_right == args[i].args[0] + 1:
                 prev_right = args[i].args[1]
-                args[i - 1 : i + 1] = [ast.all_operations.Extract(prev_left, prev_right, prev_var)]
+                args[i - 1 : i + 1] = [claripy.Extract(prev_left, prev_right, prev_var)]
                 simplified = True
             else:
                 prev_left = args[i].args[0]
@@ -153,7 +155,7 @@ class SimplificationManager:
         # 	  args = [a.reversed for a in args]
 
         if simplified:
-            return ast.all_operations.Concat(*args)
+            return claripy.Concat(*args)
 
         return None
 
@@ -162,9 +164,9 @@ class SimplificationManager:
         if (shift == 0).is_true():
             return val
         if val.op == "Concat" and (val.args[0] == 0).is_true() and (shift > val.size() - val.args[0].size()).is_true():
-            return ast.all_operations.BVV(0, val.size())
+            return claripy.BVV(0, val.size())
         if val.op == "ZeroExt" and (shift > val.size() - val.args[0]).is_true():
-            return ast.all_operations.BVV(0, val.size())
+            return claripy.BVV(0, val.size())
         return None
 
     @staticmethod
@@ -172,9 +174,9 @@ class SimplificationManager:
         if (shift == 0).is_true():
             return val
         if val.op == "Concat" and (val.args[0] == 0).is_true() and (shift > val.size() - val.args[0].size()).is_true():
-            return ast.all_operations.BVV(0, val.size())
+            return claripy.BVV(0, val.size())
         if val.op == "ZeroExt" and (shift > val.size() - val.args[0]).is_true():
-            return ast.all_operations.BVV(0, val.size())
+            return claripy.BVV(0, val.size())
         return None
 
     @staticmethod
@@ -189,16 +191,16 @@ class SimplificationManager:
     @staticmethod
     def eq_simplifier(a, b):
         if a is b:
-            return ast.true
+            return claripy.true
 
-        if isinstance(a, ast.Bool) and b is ast.true:
+        if isinstance(a, claripy.ast.Bool) and b is claripy.true:
             return a
-        if isinstance(b, ast.Bool) and a is ast.true:
+        if isinstance(b, claripy.ast.Bool) and a is claripy.true:
             return b
-        if isinstance(a, ast.Bool) and b is ast.false:
-            return ast.all_operations.Not(a)
-        if isinstance(b, ast.Bool) and a is ast.false:
-            return ast.all_operations.Not(b)
+        if isinstance(a, claripy.ast.Bool) and b is claripy.false:
+            return claripy.Not(a)
+        if isinstance(b, claripy.ast.Bool) and a is claripy.false:
+            return claripy.Not(b)
 
         if a.op == "Reverse" and b.op == "Reverse":
             return a.args[0] == b.args[0]
@@ -220,24 +222,24 @@ class SimplificationManager:
 
         # TODO: all these ==/!= might really slow things down...
         if a.op == "If":
-            if a.args[1] is b and ast.all_operations.is_true(a.args[2] != b):
+            if a.args[1] is b and claripy.is_true(a.args[2] != b):
                 # (If(c, x, y) == x, x != y) -> c
                 return a.args[0]
-            if a.args[2] is b and ast.all_operations.is_true(a.args[1] != b):
+            if a.args[2] is b and claripy.is_true(a.args[1] != b):
                 # (If(c, x, y) == y, x != y) -> !c
-                return ast.all_operations.Not(a.args[0])
+                return claripy.Not(a.args[0])
             # elif a._claripy.is_true(a.args[1] == b) and a._claripy.is_true(a.args[2] == b):
             # 	  return a._claripy.true
             # elif a._claripy.is_true(a.args[1] != b) and a._claripy.is_true(a.args[2] != b):
             # 	  return a._claripy.false
 
         if b.op == "If":
-            if b.args[1] is a and ast.all_operations.is_true(b.args[2] != b):
+            if b.args[1] is a and claripy.is_true(b.args[2] != b):
                 # (x == If(c, x, y)) -> c
                 return b.args[0]
-            if b.args[2] is a and ast.all_operations.is_true(b.args[1] != a):
+            if b.args[2] is a and claripy.is_true(b.args[1] != a):
                 # (y == If(c, x, y)) -> !c
-                return ast.all_operations.Not(b.args[0])
+                return claripy.Not(b.args[0])
             # elif b._claripy.is_true(b.args[1] == a) and b._claripy.is_true(b.args[2] == a):
             # 	  return b._claripy.true
             # elif b._claripy.is_true(b.args[1] != a) and b._claripy.is_true(b.args[2] != a):
@@ -268,38 +270,38 @@ class SimplificationManager:
                 if b_bit.symbolic:
                     break
 
-                if ast.all_operations.is_false(a_bit == b_bit):
-                    return ast.all_operations.false
+                if claripy.is_false(a_bit == b_bit):
+                    return claripy.false
             return None
         return None
 
     @staticmethod
     def ne_simplifier(a, b):
         if a is b:
-            return ast.false
+            return claripy.false
 
         if a.op == "Reverse" and b.op == "Reverse":
             return a.args[0] != b.args[0]
 
         if a.op == "If":
-            if a.args[2] is b and ast.all_operations.is_true(a.args[1] != b):
+            if a.args[2] is b and claripy.is_true(a.args[1] != b):
                 # (If(c, x, y) == x, x != y) -> c
                 return a.args[0]
-            if a.args[1] is b and ast.all_operations.is_true(a.args[2] != b):
+            if a.args[1] is b and claripy.is_true(a.args[2] != b):
                 # (If(c, x, y) == y, x != y) -> !c
-                return ast.all_operations.Not(a.args[0])
+                return claripy.Not(a.args[0])
             # elif a._claripy.is_true(a.args[1] == b) and a._claripy.is_true(a.args[2] == b):
             # 	  return a._claripy.false
             # elif a._claripy.is_true(a.args[1] != b) and a._claripy.is_true(a.args[2] != b):
             # 	  return a._claripy.true
 
         if b.op == "If":
-            if b.args[2] is a and ast.all_operations.is_true(b.args[1] != a):
+            if b.args[2] is a and claripy.is_true(b.args[1] != a):
                 # (x == If(c, x, y)) -> c
                 return b.args[0]
-            if b.args[1] is a and ast.all_operations.is_true(b.args[2] != a):
+            if b.args[1] is a and claripy.is_true(b.args[2] != a):
                 # (y == If(c, x, y)) -> !c
-                return ast.all_operations.Not(b.args[0])
+                return claripy.Not(b.args[0])
             # elif b._claripy.is_true(b.args[1] != a) and b._claripy.is_true(b.args[2] != a):
             # 	  return b._claripy.true
             # elif b._claripy.is_true(b.args[1] == a) and b._claripy.is_true(b.args[2] == a):
@@ -337,8 +339,8 @@ class SimplificationManager:
                 if b_bit.symbolic:
                     break
 
-                if ast.all_operations.is_true(a_bit != b_bit):
-                    return ast.all_operations.true
+                if claripy.is_true(a_bit != b_bit):
+                    return claripy.true
             return None
         return None
 
@@ -404,17 +406,17 @@ class SimplificationManager:
         for a in args:
             if a.op == "BoolV":
                 if a.is_false():
-                    return ast.all_operations.false
+                    return claripy.false
             else:
                 new_args[ctr] = a
                 ctr += 1
         new_args = new_args[:ctr]
 
         if not new_args:
-            return ast.true
+            return claripy.true
 
         if len(new_args) < len(args):
-            return ast.all_operations.And(*new_args)
+            return claripy.And(*new_args)
 
         # a >= c && a != c    ->   a>c
         if len(args) == 2:
@@ -428,7 +430,7 @@ class SimplificationManager:
                 and a.op == "__ge__"
                 and b.op == "__ne__"
             ):
-                return ast.all_operations.UGT(a.args[0], a.args[1])
+                return claripy.UGT(a.args[0], a.args[1])
 
         flattened = SimplificationManager._flatten_simplifier("And", SimplificationManager._deduplicate_filter, *args)
         if flattened is None:
@@ -480,11 +482,11 @@ class SimplificationManager:
         if not eq_list:
             return flattened
         if any(any(ne is eq for eq in eq_list) for ne in ne_list):
-            return ast.all_operations.false
+            return claripy.false
         if all(v.op == "BVV" for v in eq_list) and all(v.op == "BVV" for v in ne_list):
             mustbe = eq_list[0]
             if any(eq.args[0] != mustbe.args[0] for eq in eq_list):
-                return ast.all_operations.false
+                return claripy.false
             return target_var == eq_list[0]
         return flattened
 
@@ -496,14 +498,14 @@ class SimplificationManager:
         new_args = []
         for a in args:
             if a.is_true():
-                return ast.all_operations.true
+                return claripy.true
             if not a.is_false():
                 new_args.append(a)
 
         if not new_args:
-            return ast.false
+            return claripy.false
         if len(new_args) < len(args):
-            return ast.all_operations.Or(*new_args)
+            return claripy.Or(*new_args)
 
         return SimplificationManager._flatten_simplifier("Or", SimplificationManager._deduplicate_filter, *args)
 
@@ -515,7 +517,8 @@ class SimplificationManager:
 
         new_args = tuple(
             itertools.chain.from_iterable(
-                (a.args if isinstance(a, ast.Base) and a.op == op_name and len(a.args) < 1000 else (a,)) for a in args
+                (a.args if isinstance(a, claripy.ast.Base) and a.op == op_name and len(a.args) < 1000 else (a,))
+                for a in args
             )
         )
 
@@ -531,7 +534,9 @@ class SimplificationManager:
             value_arg = value_args[0].make_like(op_name, tuple(value_args), simplify=False)
             new_args = (*tuple(other_args), value_arg)
 
-        variables = frozenset(itertools.chain.from_iterable(a.variables for a in args if isinstance(a, ast.Base)))
+        variables = frozenset(
+            itertools.chain.from_iterable(a.variables for a in args if isinstance(a, claripy.ast.Base))
+        )
         if filter_func:
             new_args = filter_func(new_args)
         if not new_args and "initial_value" in kwargs:
@@ -539,7 +544,7 @@ class SimplificationManager:
         # if a single arg is left, don't create an op for it
         if len(new_args) == 1:
             return new_args[0]
-        return next(a for a in args if isinstance(a, ast.Base)).make_like(
+        return next(a for a in args if isinstance(a, claripy.ast.Base)).make_like(
             op_name, new_args, variables=variables, simplify=False
         )
 
@@ -553,9 +558,8 @@ class SimplificationManager:
             "__add__",
             lambda new_args: tuple(a for a in new_args if a.op != "BVV" or a.args[0] != 0),
             *args,
-            initial_value=ast.all_operations.BVV(0, len(args[0])),
+            initial_value=claripy.BVV(0, len(args[0])),
         )
-        return None
 
     @staticmethod
     def bitwise_mul_simplifier(*args):
@@ -578,7 +582,7 @@ class SimplificationManager:
                     return a.args[0] + (a.args[-1] - b)
                 return a.swap_args(a.args[:-1] + (a.args[-1] - b,))
         elif a is b or (a == b).is_true():
-            return ast.all_operations.BVV(0, a.size())
+            return claripy.BVV(0, a.size())
         return None
 
     # recognize b-bit z=signedmax(q,r) from this idiom:
@@ -606,7 +610,7 @@ class SimplificationManager:
         w, dist = x.args
 
         bits = a.size()
-        if dist is not ast.all_operations.BVV(bits - 1, bits):
+        if dist is not claripy.BVV(bits - 1, bits):
             return None
         if w.op != "__xor__":
             return None
@@ -643,25 +647,25 @@ class SimplificationManager:
         if (u.args[0] is s and u.args[1] is q) or (u.args[0] is q and u.args[1] is s):
             if not (s.args[0] is q and s.args[1] is r):
                 return None
-            cond = ast.all_operations.SLE(q, r)
-            return ast.all_operations.If(cond, r, q)
+            cond = claripy.SLE(q, r)
+            return claripy.If(cond, r, q)
 
         if (u.args[0] is s and u.args[1] is r) or (u.args[0] is r and u.args[1] is s):
             if not (s.args[0] is r and s.args[1] is q):
                 return None
-            cond = ast.all_operations.SLE(q, r)
-            return ast.all_operations.If(cond, q, r)
+            cond = claripy.SLE(q, r)
+            return claripy.If(cond, q, r)
         return None
 
     @staticmethod
     def bitwise_xor_simplifier(a, b, *args):
         if not args:
-            if a is ast.all_operations.BVV(0, a.size()):
+            if a is claripy.BVV(0, a.size()):
                 return b
-            if b is ast.all_operations.BVV(0, a.size()):
+            if b is claripy.BVV(0, a.size()):
                 return a
             if a is b or (a == b).is_true():
-                return ast.all_operations.BVV(0, a.size())
+                return claripy.BVV(0, a.size())
 
             result = SimplificationManager.bitwise_xor_simplifier_minmax(a, b)
             if result is not None:
@@ -689,15 +693,15 @@ class SimplificationManager:
             a,
             b,
             *args,
-            initial_value=ast.all_operations.BVV(0, a.size()),
+            initial_value=claripy.BVV(0, a.size()),
         )
 
     @staticmethod
     def bitwise_or_simplifier(a, b, *args):
         if not args:
-            if a is ast.all_operations.BVV(0, a.size()):
+            if a is claripy.BVV(0, a.size()):
                 return b
-            if b is ast.all_operations.BVV(0, a.size()):
+            if b is claripy.BVV(0, a.size()):
                 return a
             if a.op == b.op and a.op in {"BVV", "BoolV", "FPV"}:
                 if a.args == b.args and (a == b).is_true():
@@ -718,46 +722,46 @@ class SimplificationManager:
             r = SimplificationManager.rotate_shift_mask_simplifier(a, b)
             if r is not None:
                 return r
-            # we do not use (a == 2 ** a.size()-1).is_true() to avoid creating redundant ASTs
+            # we do not use (a == 2 ** a.size()-1).is_true() to avoid creating redundant claripys
             if a.op == "BVV" and a.args[0] == 2 ** a.size() - 1:
                 return b
             if b.op == "BVV" and b.args[0] == 2 ** b.size() - 1:
                 return a
             if a is b:
                 return a
-            # for concrete values, we delay the AST creation as much as possible
+            # for concrete values, we delay the claripy creation as much as possible
             if a.op == b.op and a.op in {"BVV", "BoolV", "FPV"}:
                 if a.args == b.args and (a == b).is_true():
                     return a
             elif (a == b).is_true():
                 return a
             if a.op == "BVV" and a.args[0] == 0:
-                return ast.all_operations.BVV(0, a.size())
+                return claripy.BVV(0, a.size())
             if b.op == "BVV" and b.args[0] == 0:
-                return ast.all_operations.BVV(0, a.size())
+                return claripy.BVV(0, a.size())
             # Concat(a.args[0], a.args[1]) & b  ==>  ZeroExt(size, a.args[1])
             # maybe we can drop the second argument
             if a.op == "Concat" and len(a.args) == 2 and (b == 2 ** (a.size() - a.args[0].size()) - 1).is_true():
                 # yes!
-                return ast.all_operations.ZeroExt(a.args[0].size(), a.args[1])
+                return claripy.ZeroExt(a.args[0].size(), a.args[1])
 
             # if(cond0, 1, 0) & if(cond1, 1, 0)  ->  if(cond0 & cond1, 1, 0)
             if (
                 a.op == "If"
                 and b.op == "If"
                 and (
-                    (a.args[1] == ast.all_operations.BVV(1, 1)).is_true()
-                    and (a.args[2] == ast.all_operations.BVV(0, 1)).is_true()
-                    and (b.args[1] == ast.all_operations.BVV(1, 1)).is_true()
-                    and (b.args[2] == ast.all_operations.BVV(0, 1)).is_true()
+                    (a.args[1] == claripy.BVV(1, 1)).is_true()
+                    and (a.args[2] == claripy.BVV(0, 1)).is_true()
+                    and (b.args[1] == claripy.BVV(1, 1)).is_true()
+                    and (b.args[2] == claripy.BVV(0, 1)).is_true()
                 )
             ):
                 cond0 = a.args[0]
                 cond1 = b.args[0]
-                return ast.all_operations.If(
+                return claripy.If(
                     cond0 & cond1,
-                    ast.all_operations.BVV(1, 1),
-                    ast.all_operations.BVV(0, 1),
+                    claripy.BVV(1, 1),
+                    claripy.BVV(0, 1),
                 )
 
         return SimplificationManager._flatten_simplifier(
@@ -775,31 +779,31 @@ class SimplificationManager:
             return body.args[0]
 
         if body.op == "SLT":
-            return ast.all_operations.SGE(body.args[0], body.args[1])
+            return claripy.SGE(body.args[0], body.args[1])
         if body.op == "SLE":
-            return ast.all_operations.SGT(body.args[0], body.args[1])
+            return claripy.SGT(body.args[0], body.args[1])
         if body.op == "SGT":
-            return ast.all_operations.SLE(body.args[0], body.args[1])
+            return claripy.SLE(body.args[0], body.args[1])
         if body.op == "SGE":
-            return ast.all_operations.SLT(body.args[0], body.args[1])
+            return claripy.SLT(body.args[0], body.args[1])
 
         if body.op == "ULT":
-            return ast.all_operations.UGE(body.args[0], body.args[1])
+            return claripy.UGE(body.args[0], body.args[1])
         if body.op == "ULE":
-            return ast.all_operations.UGT(body.args[0], body.args[1])
+            return claripy.UGT(body.args[0], body.args[1])
         if body.op == "UGT":
-            return ast.all_operations.ULE(body.args[0], body.args[1])
+            return claripy.ULE(body.args[0], body.args[1])
         if body.op == "UGE":
-            return ast.all_operations.ULT(body.args[0], body.args[1])
+            return claripy.ULT(body.args[0], body.args[1])
 
         if body.op == "__lt__":
-            return ast.all_operations.UGE(body.args[0], body.args[1])
+            return claripy.UGE(body.args[0], body.args[1])
         if body.op == "__le__":
-            return ast.all_operations.UGT(body.args[0], body.args[1])
+            return claripy.UGT(body.args[0], body.args[1])
         if body.op == "__gt__":
-            return ast.all_operations.ULE(body.args[0], body.args[1])
+            return claripy.ULE(body.args[0], body.args[1])
         if body.op == "__ge__":
-            return ast.all_operations.ULT(body.args[0], body.args[1])
+            return claripy.ULT(body.args[0], body.args[1])
         return None
 
     @staticmethod
@@ -826,22 +830,20 @@ class SimplificationManager:
         if high - low + 1 == val.size():
             return val
 
-        if (val.op == "SignExt" or val.op == "ZeroExt") and low == 0 and high + 1 == val.args[1].size():
+        if val.op in {"SignExt", "ZeroExt"} and low == 0 and high + 1 == val.args[1].size():
             return val.args[1]
 
         if val.op == "ZeroExt":
             extending_bits = val.args[0]
-            if extending_bits == 0:
-                val = val.args[1]
-            else:
-                val = ast.all_operations.Concat(ast.all_operations.BVV(0, extending_bits), val.args[1])
+            val = val.args[1] if extending_bits == 0 else claripy.Concat(claripy.BVV(0, extending_bits), val.args[1])
 
         # Reverse(concat(a, b)) -> concat(Reverse(b), Reverse(a))
         # a and b must have lengths that are a multiple of 8
         if val.op == "Reverse" and val.args[0].op == "Concat" and all(a.length % 8 == 0 for a in val.args[0].args):
-            val = ast.all_operations.Concat(*reversed([a.reversed for a in val.args[0].args]))
+            val = claripy.Concat(*reversed([a.reversed for a in val.args[0].args]))
 
-        # Reading one byte from a reversed ast can be converted to reading the corresponding byte from the original ast
+        # Reading one byte from a reversed claripy can be converted to reading
+        # the corresponding byte from the original claripy
         # No Reverse is required then
         if val.op == "Reverse" and high - low + 1 == 8 and low % 8 == 0:
             byte_pos = low // 8
@@ -851,7 +853,7 @@ class SimplificationManager:
             high = (new_byte_pos + 1) * 8 - 1
             low = new_byte_pos * 8
 
-            return ast.all_operations.Extract(high, low, val)
+            return claripy.Extract(high, low, val)
 
         if val.op == "Concat":
             pos = val.length
@@ -887,7 +889,7 @@ class SimplificationManager:
             if low_loc != 0:
                 used[-1] = used[-1][:low_loc]
 
-            return ast.all_operations.Concat(*used)
+            return claripy.Concat(*used)
 
         if val.op == "Extract":
             _, inner_low = val.args[:2]
@@ -916,8 +918,8 @@ class SimplificationManager:
         if val.op in extract_distributable:
             all_args = tuple(a[high:low] for a in val.args)
             if val.op in flattenable:
-                # directly create a flattened AST
-                return next(a for a in all_args if isinstance(a, ast.Base)).make_like(val.op, all_args)
+                # directly create a flattened claripy
+                return next(a for a in all_args if isinstance(a, claripy.ast.Base)).make_like(val.op, all_args)
             return reduce(getattr(operator, val.op), all_args)
 
         #  (if cond then 1 else 0)[0:0]  ->  if(cond then 1[0:0] else 0[0:0])
@@ -925,11 +927,11 @@ class SimplificationManager:
             ifcond, iftrue, iffalse = val.args
             if iftrue.op == "BVV" and iffalse.op == "BVV":
                 # extract from iftrue and iffalse
-                return ast.bool.If(ifcond, iftrue[high:low], iffalse[high:low])
+                return claripy.If(ifcond, iftrue[high:low], iffalse[high:low])
 
         # invert(expr)[0:0]   ->   invert(expr[0:0])
         if val.op == "__invert__":
-            return ast.BV.__invert__(val.args[0][high:low])
+            return claripy.ast.BV.__invert__(val.args[0][high:low])
         return None
 
     # oh gods
@@ -1011,7 +1013,7 @@ class SimplificationManager:
     def invert_simplifier(expr):
         # ~ if(cond then 1 else 0)  ->  if(cond, ~1, ~0)  ->    if(!cond, 1,0)
         if expr.op == "If" and expr.args[1].op == "BVV" and expr.args[1].args[0] == 1 and expr.args[2].args[0] == 0:
-            return ast.bool.If(ast.all_operations.Not(expr.args[0]), expr.args[1], expr.args[2])
+            return claripy.If(claripy.Not(expr.args[0]), expr.args[1], expr.args[2])
         return None
 
     @staticmethod
@@ -1050,7 +1052,7 @@ class SimplificationManager:
                         # extra check: can we get rid of the mask
                         if zero_bits == b.size():
                             # the mask is 0, which means the left-hand side becomes 0 after masking
-                            return op(ast.all_operations.BVV(0, b.size()), b)
+                            return op(claripy.BVV(0, b.size()), b)
 
                         b_highbit_idx = b.size() - 1 - zero_bits
                         # originally, b was 8-bit aligned. Can we keep the size of the new expression 8-byte aligned?
@@ -1066,7 +1068,7 @@ class SimplificationManager:
                             return None
                         return op(a_arg0[b_highbit_idx:0] & a_arg1.args[0], b_lower)
                     if b_higher_bits_are_0 is False:
-                        return ast.all_operations.false if op is operator.__eq__ else ast.all_operations.true
+                        return claripy.false if op is operator.__eq__ else claripy.true
 
         return None
 
@@ -1114,7 +1116,7 @@ class SimplificationManager:
             to_extend = b.size() - a_inner_expr.size()
             if to_extend == 0:
                 return op(a_inner_expr, b)
-            return op(ast.all_operations.ZeroExt(to_extend, a_inner_expr), b)
+            return op(claripy.ZeroExt(to_extend, a_inner_expr), b)
 
         return None
 
@@ -1127,7 +1129,7 @@ class SimplificationManager:
             ZeroExt(n, A) != b, and
             ZeroExt(n, A) >= b
 
-        If the high bits of b are all zeros (in case of ==, !=, and >=) or have at least one ones (in case of !=),
+        If the high bits of b are all zeros (in case of ==, !=, and >=) or have at leclaripy one ones (in case of !=),
         ZeroExt can be eliminated.
         """
         if op in {operator.__eq__, operator.__ne__, operator.__ge__} and b.op == "BVV":
@@ -1140,7 +1142,7 @@ class SimplificationManager:
                     return op(a.args[1], b[b.size() - a_zeroext_bits - 1 : 0])
                 if (b_highbits == 0).is_false():
                     # unsat
-                    return ast.all_operations.false if op is operator.__eq__ else ast.all_operations.true
+                    return claripy.false if op is operator.__eq__ else claripy.true
 
             if (
                 a.op == "Concat" and len(a.args) == 2 and a.args[0].op == "BVV" and a.args[0].args[0] == 0
@@ -1152,7 +1154,7 @@ class SimplificationManager:
                     return op(a.args[1], b[b.size() - a_zero_bits - 1 : 0])
                 if (b_highbits == 0).is_false():
                     # unsat
-                    return ast.all_operations.false if op is operator.__eq__ else ast.all_operations.true
+                    return claripy.false if op is operator.__eq__ else claripy.true
 
         return None
 

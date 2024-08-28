@@ -589,3 +589,9 @@ commutative_operations = {
     "Or",
     "Xor",
 }
+
+bound_ops = {
+    "Not": "__invert__",
+    "And": "__and__",
+    "Or": "__or__",
+}

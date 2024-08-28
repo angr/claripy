@@ -3,8 +3,9 @@ from __future__ import annotations
 import itertools
 import weakref
 
+import claripy
 from claripy import backends, errors, false
-from claripy.ast import Base, all_operations
+from claripy.ast import Base
 from claripy.errors import UnsatError
 
 
@@ -47,30 +48,30 @@ class ModelCache:
 
     def _leaf_op(self, a):
         return (
-            all_operations.BVV(self.model.get(a.args[0], 0), a.length)
+            claripy.BVV(self.model.get(a.args[0], 0), a.length)
             if a.op == "BVS"
             else (
-                all_operations.BoolV(self.model.get(a.args[0], True))
+                claripy.BoolV(self.model.get(a.args[0], True))
                 if a.op == "BoolS"
                 else (
-                    all_operations.FPV(self.model.get(a.args[0], 0.0), a.args[1])
+                    claripy.FPV(self.model.get(a.args[0], 0.0), a.args[1])
                     if a.op == "FPS"
-                    else all_operations.StringV(self.model.get(a.args[0], "")) if a.op == "StringS" else a
+                    else claripy.StringV(self.model.get(a.args[0], "")) if a.op == "StringS" else a
                 )
             )
         )
 
     def _leaf_op_existonly(self, a):
         return (
-            all_operations.BVV(self.model[a.args[0]], a.length)
+            claripy.BVV(self.model[a.args[0]], a.length)
             if a.op == "BVS"
             else (
-                all_operations.BoolV(self.model[a.args[0]])
+                claripy.BoolV(self.model[a.args[0]])
                 if a.op == "BoolS"
                 else (
-                    all_operations.FPV(self.model[a.args[0]], a.args[1])
+                    claripy.FPV(self.model[a.args[0]], a.args[1])
                     if a.op == "FPS"
-                    else all_operations.StringV(self.model[a.args[0]]) if a.op == "StringS" else a
+                    else claripy.StringV(self.model[a.args[0]]) if a.op == "StringS" else a
                 )
             )
         )
@@ -318,9 +319,7 @@ class ModelCacheMixin:
         # TODO: faster to concat?
         if len(results) != 0:
             constraints = (
-                all_operations.And(
-                    *[all_operations.Or(*[a != v for a, v in zip(asts, r, strict=False)]) for r in results]
-                ),
+                claripy.And(*[claripy.Or(*[a != v for a, v in zip(asts, r, strict=False)]) for r in results]),
                 *tuple(extra_constraints),
             )
         else:

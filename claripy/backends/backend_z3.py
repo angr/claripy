@@ -15,7 +15,6 @@ from functools import reduce
 import z3
 from cachetools import LRUCache
 
-from claripy import _all_operations
 from claripy.ast.base import SimplificationLevel
 from claripy.ast.bool import Bool, BoolV
 from claripy.ast.bv import BV, BVV
@@ -30,7 +29,7 @@ from claripy.errors import (
     ClaripyZ3Error,
 )
 from claripy.fp import RM, FSort
-from claripy.operations import backend_fp_operations, backend_operations, backend_strings_operations
+from claripy.operations import backend_fp_operations, backend_operations, backend_strings_operations, bound_ops
 
 l = logging.getLogger("claripy.backends.backend_z3")
 
@@ -554,8 +553,11 @@ class BackendZ3(Backend):
             ty = type(args[1])
 
             a = ty("If", tuple(args), length=args[1].length)
-        elif hasattr(ty, op_name) or hasattr(_all_operations, op_name):
-            op = getattr(ty if hasattr(ty, op_name) else _all_operations, op_name)
+        elif (
+            op := getattr(ty, op_name, None)
+            or getattr(result_ty, op_name, None)
+            or (op_name in bound_ops and getattr(ty, bound_ops[op_name], None))
+        ):
             if op.calc_length is not None:
                 length = op.calc_length(*args)
                 a = result_ty(op_name, tuple(args), length=length)
