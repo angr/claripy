@@ -205,7 +205,7 @@ def ite_dict(i, d, default):
     # Find the median:
     keys = list(d.keys())
     keys.sort()
-    split_val = keys[len(keys) // 2]
+    split_val = keys[(len(keys) - 1) // 2]
 
     # split the dictionary
     dictLow = {c: v for c, v in d.items() if c <= split_val}
