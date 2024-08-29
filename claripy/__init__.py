@@ -61,9 +61,9 @@ def BV(name, size, explicit_name=None):  # pylint:disable=function-redefined
 
 from . import backend_manager as _backend_manager
 
-_backend_manager.backends._register_backend(_backends_module.BackendConcrete(), "concrete", True, True)
-_backend_manager.backends._register_backend(_backends_module.BackendVSA(), "vsa", False, False)
-_backend_manager.backends._register_backend(_backends_module.BackendZ3(), "z3", False, False)
+_backend_manager.backends._register_backend(_backends_module.BackendConcrete(), "concrete")
+_backend_manager.backends._register_backend(_backends_module.BackendVSA(), "vsa")
+_backend_manager.backends._register_backend(_backends_module.BackendZ3(), "z3")
 backends = _backend_manager.backends
 
 

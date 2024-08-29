@@ -15,8 +15,7 @@ class EagerResolutionMixin:
         if r is not None:
             return r
 
-        for b in backends._eager_backends:
-            with suppress(BackendError):
-                return b.eval(e, 1)[0]
+        with suppress(BackendError):
+            return backends.concrete.eval(e, 1)[0]
 
         return None

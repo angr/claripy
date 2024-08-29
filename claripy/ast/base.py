@@ -5,6 +5,7 @@ import logging
 import math
 import struct
 from collections import OrderedDict, deque
+from contextlib import suppress
 from enum import IntEnum
 from itertools import chain
 from typing import TYPE_CHECKING, Any, Generic, NoReturn, TypeVar, Union, cast
@@ -38,7 +39,7 @@ l = logging.getLogger("claripy.ast")
 md5_unpacker = struct.Struct("2Q")
 from_iterable = chain.from_iterable
 
-# pylint:enable=unused-argument
+# pylint:enable=unused-argument,too-many-boolean-expressions
 
 ArgType = Union["Base", bool, int, float, str, tuple["ArgType"], None]
 # TODO: HashType should be int, but it isn't always int
@@ -143,7 +144,6 @@ class Base:
     _uneliminatable_annotations: frozenset[Annotation]
 
     # Backend information
-    _eager_backends: list[Backend]
     _errored: set[Backend]
 
     # Caching
@@ -168,7 +168,6 @@ class Base:
         "_simplified",
         "_uneliminatable_annotations",
         "_relocatable_annotations",
-        "_eager_backends",
         "_errored",
         "_cache_key",
         "_cached_encoded_name",
@@ -191,7 +190,6 @@ class Base:
         symbolic: bool | None = None,
         variables: set[str] | None = None,
         errored: set[Backend] | None = None,
-        eager_backends: set[Backend] | None = None,
         uninitialized: bool | None = None,
         uc_alloc_depth: int | None = None,
         annotations: tuple[Annotation, ...] = (),
@@ -214,7 +212,6 @@ class Base:
                                         1 means fast-simplified (basically, just undoing the Reverse
                                         op), and 2 means simplified through z3.
         :param errored:             A set of backends that are known to be unable to handle this AST.
-        :param eager_backends:      A list of backends with which to attempt eager evaluation
         :param annotations:         A frozenset of annotations applied onto this AST.
         """
 
@@ -262,21 +259,11 @@ class Base:
         if add_variables:
             variables = variables | add_variables
 
-        if eager_backends is None:
-            eager_backends = list(backends._eager_backends)
-
         if not symbolic and op not in operations.leaf_operations:
-            for eb in eager_backends:
-                try:
-                    r = operations._handle_annotations(eb._abstract(eb.call(op, args)), args)
-                    if r is not None:
-                        return r
-                    eager_backends.remove(eb)
-                except BackendError:  # noqa: PERF203
-                    eager_backends.remove(eb)
-
-            # if we can't be eager anymore, null out the eagerness
-            eager_backends = None
+            with suppress(BackendError):
+                r = operations._handle_annotations(backends.concrete._abstract(backends.concrete.call(op, args)), args)
+                if r is not None:
+                    return r
 
         # process annotations
         if not annotations and not args_have_annotations:
@@ -356,7 +343,6 @@ class Base:
                 symbolic=symbolic,
                 length=length,
                 errored=errored,
-                eager_backends=eager_backends,
                 uninitialized=uninitialized,
                 uc_alloc_depth=uc_alloc_depth,
                 annotations=annotations,
@@ -513,7 +499,6 @@ class Base:
         length: int | None = None,
         simplified: SimplificationLevel = SimplificationLevel.UNSIMPLIFIED,
         errored: set[Backend] | None = None,
-        eager_backends: set[Backend] | None = None,
         uninitialized: bool | None = None,
         uc_alloc_depth: int | None = None,
         annotations: Iterable[Annotation] | None = None,
@@ -542,7 +527,6 @@ class Base:
 
         self.depth = depth if depth is not None else 1
 
-        self._eager_backends = eager_backends
         self._cached_encoded_name = encoded_name
 
         self._errored = errored if errored is not None else set()
@@ -640,7 +624,6 @@ class Base:
                 annotations=annotations,
                 length=length,
                 uninitialized=self._uninitialized,
-                eager_backends=self._eager_backends,
                 uc_alloc_depth=self.uc_alloc_depth,
             )
 
@@ -1062,7 +1045,7 @@ class Base:
         return True
 
     def replace_dict(
-        self, replacements, variable_set: set[str] | None = None, leaf_operation: Callable[[Base], Base] | None = None
+        self, replacements, variable_set: set[str] | None = None, leaf_operation: Callable[[Base], Base] = lambda x: x
     ) -> Self:
         """
         Returns this AST with subexpressions replaced by those that can be found in `replacements`
@@ -1076,9 +1059,6 @@ class Base:
         """
         if variable_set is None:
             variable_set = set()
-
-        if leaf_operation is None:
-            leaf_operation = lambda x: x
 
         arg_queue = [iter([self])]
         rep_queue = []
@@ -1411,5 +1391,5 @@ def simplify(e: T) -> T:
     return s
 
 
-# pylint:disable=wrong-import-position
+# pylint:disable=wrong-import-position,ungrouped-imports
 from claripy.ast.bool import If, Not  # noqa: E402

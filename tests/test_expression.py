@@ -345,17 +345,13 @@ class TestExpression(unittest.TestCase):
         assert claripy.is_true(b_concat == a100)
 
     def test_true_false_cache(self):
-        claripy.backends._quick_backends.append(claripy.backends.z3)
-
         a = claripy.BVS("a_WILL_BE_VIOLATED", 32)
         c = a == a + 1
-        assert claripy.is_false(c)
+        assert claripy.backends.z3.is_false(c)
         c.args[1].args = (a, claripy.BVV(0, 32))
-        assert claripy.is_false(c)
-        assert not claripy.is_true(c)
-        assert not claripy.is_false(a == a)
-
-        claripy.backends._quick_backends[-1:] = []
+        assert claripy.backends.z3.is_false(c)
+        assert not claripy.backends.z3.is_true(c)
+        assert not claripy.backends.z3.is_false(a == a)
 
     def test_depth_repr(self):
         x = claripy.BVS("x", 32)
