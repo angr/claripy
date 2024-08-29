@@ -4,7 +4,7 @@ import itertools
 import logging
 import math
 import struct
-from collections import OrderedDict, deque
+from collections import deque
 from contextlib import suppress
 from enum import IntEnum
 from itertools import chain
@@ -188,7 +188,7 @@ class Base:
         add_variables: Iterable[str] | None = None,
         hash: int | None = None,
         symbolic: bool | None = None,
-        variables: set[str] | None = None,
+        variables: frozenset[str] | None = None,
         errored: set[Backend] | None = None,
         uninitialized: bool | None = None,
         uc_alloc_depth: int | None = None,
@@ -219,45 +219,22 @@ class Base:
         #   raise Exception('asdf')
 
         a_args = args if type(args) is tuple else tuple(args)
+        b_args = tuple(a for a in a_args if isinstance(a, Base))
 
-        # initialize the following properties: symbolic, variables and errored
-        need_symbolic = symbolic is None
-        need_variables = variables is None
-        need_errored = errored is None
-        args_have_annotations = None
-        # Note that `args_have_annotations` may not be set if we don't need to set any of the above variables, in which
-        # case it will stay as None, and will be passed to __a_init__() "as is". __a_init__() will properly handle it
-        # there.
-        arg_max_depth = 0
-        if need_symbolic or need_variables or need_errored:
-            symbolic_flag = False
-            variables_set = set()
-            errored_set = set()
-            for a in a_args:
-                if not isinstance(a, Base):
-                    continue
-                if need_symbolic and not symbolic_flag:
-                    symbolic_flag |= a.symbolic
-                if need_variables:
-                    variables_set |= a.variables
-                if need_errored:
-                    errored_set |= a._errored
-                if args_have_annotations is not True:
-                    args_have_annotations = args_have_annotations or bool(a.annotations)
-                arg_max_depth = max(arg_max_depth, a.depth)
+        if symbolic is None:
+            symbolic = any(a.symbolic for a in b_args)
+        if variables is None:
+            variables = frozenset(chain.from_iterable(a.variables for a in b_args))
+        if errored is None:
+            errored = set(chain.from_iterable(a._errored for a in b_args))
+        arg_max_depth = max((a.depth for a in b_args), default=0)
 
-            if need_symbolic:
-                symbolic = symbolic_flag
-            if need_variables:
-                variables = frozenset(variables_set)
-            if need_errored:
-                errored = errored_set
-
+        # TODO: This shouldn't be nessessary
         if not isinstance(variables, frozenset):
             variables = frozenset(variables)
 
         if add_variables:
-            variables = variables | add_variables
+            variables = frozenset.union(variables, add_variables)
 
         if not symbolic and op not in operations.leaf_operations:
             with suppress(BackendError):
@@ -265,45 +242,15 @@ class Base:
                 if r is not None:
                     return r
 
-        # process annotations
-        if not annotations and not args_have_annotations:
-            uneliminatable_annotations = frozenset()
-            relocatable_annotations = frozenset()
-        else:
-            ast_args = tuple(a for a in a_args if isinstance(a, Base))
-            uneliminatable_annotations = frozenset(
-                chain(
-                    (
-                        from_iterable(a._uneliminatable_annotations for a in ast_args)
-                        if not skip_child_annotations
-                        else ()
-                    ),
-                    tuple(a for a in annotations if not a.eliminatable and not a.relocatable),
-                )
-            )
+        uneliminatable_annotations = frozenset(a for a in annotations if not (a.eliminatable or a.relocatable))
+        relocatable_annotations = frozenset(a for a in annotations if not a.eliminatable and a.relocatable)
 
-            relocatable_annotations = tuple(
-                OrderedDict(
-                    (e, True)
-                    for e in tuple(
-                        chain(
-                            (
-                                from_iterable(a._relocatable_annotations for a in ast_args)
-                                if not skip_child_annotations
-                                else ()
-                            ),
-                            tuple(a for a in annotations if not a.eliminatable and a.relocatable),
-                        )
-                    )
-                ).keys()
-            )
+        if not skip_child_annotations:
+            for a in b_args:
+                uneliminatable_annotations |= a._uneliminatable_annotations
+                relocatable_annotations |= a._relocatable_annotations
 
-            annotations = tuple(
-                chain(
-                    (from_iterable(a._relocatable_annotations for a in ast_args) if not skip_child_annotations else ()),
-                    tuple(a for a in annotations),
-                )
-            )
+            annotations = tuple(frozenset((*annotations, *relocatable_annotations)))
 
         cache = cls._hash_cache
         if hash is not None:
