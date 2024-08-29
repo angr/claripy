@@ -243,9 +243,8 @@ class ReplacementFrontend(ConstrainedFrontend):
             return c
 
         cr = self._replacement(e)
-        for b in backends._eager_backends:
-            with suppress(BackendError):
-                return b.eval(cr, 1)[0]
+        with suppress(BackendError):
+            return backends.concrete.eval(cr, 1)[0]
         return None
 
     def _concrete_constraint(self, e):

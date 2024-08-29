@@ -167,18 +167,16 @@ Bool.__ror__ = Or
 
 
 def is_true(e, exact=None):  # pylint:disable=unused-argument
-    for b in backends._quick_backends:
-        with suppress(BackendError):
-            return b.is_true(e)
+    with suppress(BackendError):
+        return backends.concrete.is_true(e)
 
     l.debug("Unable to tell the truth-value of this expression")
     return False
 
 
 def is_false(e, exact=None):  # pylint:disable=unused-argument
-    for b in backends._quick_backends:
-        with suppress(BackendError):
-            return b.is_false(e)
+    with suppress(BackendError):
+        return backends.concrete.is_false(e)
 
     l.debug("Unable to tell the truth-value of this expression")
     return False

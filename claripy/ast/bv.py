@@ -257,7 +257,6 @@ def BVS(
         variables={n},
         length=size,
         symbolic=True,
-        eager_backends=None,
         uninitialized=uninitialized,
         encoded_name=encoded_name,
         **kwargs,

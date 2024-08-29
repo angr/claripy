@@ -140,7 +140,6 @@ def StringS(name, size, uninitialized=False, explicit_name=False, **kwargs):
         n,
         length=8 * size,
         symbolic=True,
-        eager_backends=None,
         uninitialized=uninitialized,
         variables={n},
         **kwargs,
