@@ -40,7 +40,7 @@ l = logging.getLogger("claripy.ast")
 md5_unpacker = struct.Struct("2Q")
 from_iterable = chain.from_iterable
 
-# pylint:enable=unused-argument,too-many-boolean-expressions
+# pylint:disable=unused-argument,too-many-boolean-expressions
 
 ArgType = Union["Base", bool, int, float, str, FSort, tuple["ArgType"], None]
 
@@ -531,7 +531,7 @@ class Base:
         """
         Check if two ASTs are the same.
         """
-        from claripy.vsa.strided_interval import StridedInterval
+        from claripy.vsa.strided_interval import StridedInterval  # pylint:disable=import-outside-toplevel
 
         # Several types inside of args don't support normall == comparison, so if we see those,
         # we need compare them manually.
