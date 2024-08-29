@@ -253,7 +253,7 @@ class Base:
 
             annotations = tuple(frozenset((*annotations, *relocatable_annotations)))
 
-        hash_ = Base._calc_hash(op, a_args, annotations)
+        hash_ = Base._calc_hash(op, a_args, annotations, length)
         self = cls._hash_cache.get(hash_, None)
         if self is None:
             self = super().__new__(cls)
@@ -314,7 +314,7 @@ class Base:
             )
 
             cache = type(self)._hash_cache
-            h = Base._calc_hash(op, args, annotations)
+            h = Base._calc_hash(op, args, annotations, length)
             cached_ast = cast(T | None, cache.get(h, None))
             if cached_ast is not None:
                 return cached_ast
@@ -433,6 +433,7 @@ class Base:
         op: str,
         args: tuple[Base, ...],
         annotations: tuple[Annotation, ...],
+        length: int | None,
     ) -> int:
         """
         Calculates the hash of an AST, given the operation, args, and kwargs.
@@ -448,7 +449,7 @@ class Base:
         # HASHCONS: these attributes key the cache
         # BEFORE CHANGING THIS, SEE ALL OTHER INSTANCES OF "HASHCONS" IN THIS FILE
 
-        to_hash = Base._ast_serialize(op, args, annotations)
+        to_hash = Base._ast_serialize(op, args, annotations, length)
 
         # Why do we use md5 when it's broken? Because speed is more important
         # than cryptographic integrity here. Then again, look at all those
@@ -461,6 +462,7 @@ class Base:
         op: str,
         args: tuple[ArgType, ...],
         annotations: tuple[Annotation, ...],
+        length: int | None,
     ) -> bytes:
         """
         Serialize the AST and get a bytestring for hashing.
@@ -473,8 +475,9 @@ class Base:
 
         serialized_args = b"".join(b"<" + Base._arg_serialize(a) + b">" for a in args)
         serialized_annotations = b"".join(b"(" + Base._arg_serialize(a) + b")" for a in annotations)
+        serialized_length = b"" if length is None else length.to_bytes(8, "little", signed=False)
 
-        return b"{" + op.encode() + serialized_args + serialized_annotations + b"}"
+        return b"{" + op.encode() + serialized_args + serialized_annotations + serialized_length + b"}"
 
     @staticmethod
     def _arg_serialize(arg: ArgType | Annotation) -> bytes:
