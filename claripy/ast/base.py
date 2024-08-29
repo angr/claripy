@@ -39,7 +39,7 @@ l = logging.getLogger("claripy.ast")
 md5_unpacker = struct.Struct("2Q")
 from_iterable = chain.from_iterable
 
-# pylint:enable=unused-argument
+# pylint:enable=unused-argument,too-many-boolean-expressions
 
 ArgType = Union["Base", bool, int, float, str, tuple["ArgType"], None]
 # TODO: HashType should be int, but it isn't always int
@@ -1045,7 +1045,7 @@ class Base:
         return True
 
     def replace_dict(
-        self, replacements, variable_set: set[str] | None = None, leaf_operation: Callable[[Base], Base] | None = None
+        self, replacements, variable_set: set[str] | None = None, leaf_operation: Callable[[Base], Base] = lambda x: x
     ) -> Self:
         """
         Returns this AST with subexpressions replaced by those that can be found in `replacements`
@@ -1059,9 +1059,6 @@ class Base:
         """
         if variable_set is None:
             variable_set = set()
-
-        if leaf_operation is None:
-            leaf_operation = lambda x: x
 
         arg_queue = [iter([self])]
         rep_queue = []
@@ -1394,5 +1391,5 @@ def simplify(e: T) -> T:
     return s
 
 
-# pylint:disable=wrong-import-position
+# pylint:disable=wrong-import-position,ungrouped-imports
 from claripy.ast.bool import If, Not  # noqa: E402

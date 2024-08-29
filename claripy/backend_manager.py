@@ -2,6 +2,8 @@ from __future__ import annotations
 
 
 class BackendManager:
+    """BackendManager is a class that manages all backends in claripy. It is a singleton class."""
+
     def __init__(self):
         self._all_backends = []
         self._backends_by_type = {}
