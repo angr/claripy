@@ -8,7 +8,7 @@ from collections import deque
 from contextlib import suppress
 from enum import IntEnum
 from itertools import chain
-from typing import TYPE_CHECKING, Any, Generic, NoReturn, TypeVar, Union, cast
+from typing import TYPE_CHECKING, Generic, NoReturn, TypeVar, Union, cast
 from weakref import WeakValueDictionary
 
 from typing_extensions import Self
@@ -16,6 +16,7 @@ from typing_extensions import Self
 from claripy import operations, simplifications
 from claripy.backend_manager import backends
 from claripy.errors import BackendError, ClaripyOperationError, ClaripyReplacementError
+from claripy.fp import FSort
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Iterator
@@ -41,9 +42,7 @@ from_iterable = chain.from_iterable
 
 # pylint:enable=unused-argument,too-many-boolean-expressions
 
-ArgType = Union["Base", bool, int, float, str, tuple["ArgType"], None]
-# TODO: HashType should be int, but it isn't always int
-HashType = int | bytes | tuple[Any, ...]
+ArgType = Union["Base", bool, int, float, str, FSort, tuple["ArgType"], None]
 
 T = TypeVar("T", bound="Base")
 
@@ -139,7 +138,7 @@ class Base:
 
     # Derived information
     depth: int
-    _hash: int | bytes  # TODO: This should be int, but it isn't always int
+    _hash: int
     _simplified: SimplificationLevel
     _uneliminatable_annotations: frozenset[Annotation]
 
@@ -178,8 +177,7 @@ class Base:
         "__weakref__",
     ]
 
-    _hash_cache: WeakValueDictionary[HashType, Base] = WeakValueDictionary()
-    _leaf_cache: WeakValueDictionary[HashType, Base] = WeakValueDictionary()
+    _hash_cache: WeakValueDictionary[int, Base] = WeakValueDictionary()
 
     def __new__(  # pylint:disable=redefined-builtin
         cls: type[Base],
@@ -214,6 +212,9 @@ class Base:
         :param errored:             A set of backends that are known to be unable to handle this AST.
         :param annotations:         A frozenset of annotations applied onto this AST.
         """
+
+        if hash is not None and (self := cls._hash_cache.get(hash, None)) is not None:
+            return self
 
         # if any(isinstance(a, BackendObject) for a in args):
         #   raise Exception('asdf')
@@ -252,34 +253,8 @@ class Base:
 
             annotations = tuple(frozenset((*annotations, *relocatable_annotations)))
 
-        cache = cls._hash_cache
-        if hash is not None:
-            h = hash
-        elif op in {"BVS", "BVV", "BoolS", "BoolV", "FPS", "FPV"} and not annotations:
-            if op == "FPV" and a_args[0] == 0.0 and math.copysign(1, a_args[0]) < 0:
-                # Python does not distinguish between +0.0 and -0.0 so we add sign to tuple to distinguish
-                h = (op, length, ("-", *a_args))
-            elif op == "FPV" and math.isnan(a_args[0]):
-                # cannot compare nans
-                h = (op, length, ("nan",) + a_args[1:])
-            else:
-                h = (op, length, a_args)
-
-            cache = cls._leaf_cache
-        else:
-            h = (
-                Base._calc_hash(
-                    op,
-                    a_args,
-                    variables,
-                    symbolic,
-                    annotations,
-                    length=length,
-                )
-                if hash is None
-                else hash
-            )
-        self = cache.get(h, None)
+        hash_ = Base._calc_hash(op, a_args, annotations)
+        self = cls._hash_cache.get(hash_, None)
         if self is None:
             self = super().__new__(cls)
             depth = arg_max_depth + 1
@@ -298,229 +273,21 @@ class Base:
                 uneliminatable_annotations=uneliminatable_annotations,
                 relocatable_annotations=relocatable_annotations,
             )
-            self._hash = h
-            cache[h] = self
+            self._hash = hash_
+            cls._hash_cache[hash_] = self
         # else:
-        #   if self.args != a_args or self.op != op or self.variables != kwargs['variables']:
-        #       raise Exception("CRAP -- hash collision")
+        #     if not self._check_args_same(a_args) or self.op != op or self.annotations != annotations:
+        #         raise Exception("CRAP -- hash collision")
 
         return self
-
-    def __reduce__(self):
-        # HASHCONS: these attributes key the cache
-        # BEFORE CHANGING THIS, SEE ALL OTHER INSTANCES OF "HASHCONS" IN THIS FILE
-        return _d, (
-            self._hash,
-            self.__class__,
-            (self.op, self.args, self.length, self.variables, self.symbolic, self.annotations),
-        )
-
-    def __init__(self, *args, **kwargs):
-        pass
-
-    @staticmethod
-    def _calc_hash(
-        op: str,
-        args: tuple[Base, ...],
-        variables: set[str],
-        symbolic: bool,
-        annotations: set[Annotation],
-        length: int | None = None,
-    ) -> bytes:
-        """
-        Calculates the hash of an AST, given the operation, args, and kwargs.
-
-        :param op:                  The operation.
-        :param args:                The arguments to the operation.
-        :param keywords:            A dict including the 'symbolic', 'variables', and 'length' items.
-        :returns:                   a hash.
-
-        We do it using md5 to avoid hash collisions.
-        (hash(-1) == hash(-2), for example)
-        """
-        args_tup = tuple(a if type(a) in (int, float) else getattr(a, "_hash", hash(a)) for a in args)
-        # HASHCONS: these attributes key the cache
-        # BEFORE CHANGING THIS, SEE ALL OTHER INSTANCES OF "HASHCONS" IN THIS FILE
-
-        to_hash = Base._ast_serialize(
-            op,
-            args_tup,
-            length,
-            variables,
-            symbolic,
-            annotations,
-        )
-        if to_hash is None:
-            # fall back to pickle.dumps
-            to_hash = (
-                op,
-                args_tup,
-                str(length),
-                hash(variables),
-                symbolic,
-                hash(annotations),
-            )
-            to_hash = pickle.dumps(to_hash, -1)
-
-        # Why do we use md5 when it's broken? Because speed is more important
-        # than cryptographic integrity here. Then again, look at all those
-        # allocations we're doing here... fast python is painful.
-        hd = md5.md5(to_hash).digest()
-        return md5_unpacker.unpack(hd)[0]  # 64 bits
-
-    @staticmethod
-    def _arg_serialize(arg: ArgType) -> bytes | None:
-        if arg is None:
-            return b"\x0f"
-        if arg is True:
-            return b"\x1f"
-        if arg is False:
-            return b"\x2e"
-        if isinstance(arg, int):
-            if arg < 0:
-                if arg >= -0x7FFF:
-                    return b"-" + struct.pack("<h", arg)
-                if arg >= -0x7FFF_FFFF:
-                    return b"-" + struct.pack("<i", arg)
-                if arg >= -0x7FFF_FFFF_FFFF_FFFF:
-                    return b"-" + struct.pack("<q", arg)
-                return None
-            if arg <= 0xFFFF:
-                return struct.pack("<H", arg)
-            if arg <= 0xFFFF_FFFF:
-                return struct.pack("<I", arg)
-            if arg <= 0xFFFF_FFFF_FFFF_FFFF:
-                return struct.pack("<Q", arg)
-            return None
-        if isinstance(arg, str):
-            return arg.encode()
-        if isinstance(arg, float):
-            return struct.pack("f", arg)
-        if isinstance(arg, tuple):
-            arr = []
-            for elem in arg:
-                b = Base._arg_serialize(elem)
-                if b is None:
-                    return None
-                arr.append(b)
-            return b"".join(arr)
-
-        return None
-
-    @staticmethod
-    def _ast_serialize(
-        op: str,
-        args_tup: tuple[ArgType, ...],
-        length: int,
-        variables: set[str],
-        symbolic: bool,
-        annotations: set[Annotation],
-    ) -> bytes | None:
-        """
-        Serialize the AST and get a bytestring for hashing.
-
-        :param op:          The operator.
-        :param args_tup:    A tuple of arguments.
-        :param keywords:    A dict of keywords.
-        :return:            The serialized bytestring.
-        """
-
-        serialized_args = Base._arg_serialize(args_tup)
-        if serialized_args is None:
-            return None
-
-        length = Base._arg_serialize(length)
-        variables = struct.pack("<Q", hash(variables) & 0xFFFF_FFFF_FFFF_FFFF)
-        symbolic = b"\x01" if symbolic else b"\x00"
-        annotations = struct.pack("<Q", hash(annotations) & 0xFFFF_FFFF_FFFF_FFFF)
-
-        return op.encode() + serialized_args + length + variables + symbolic + annotations
-
-    # pylint:disable=attribute-defined-outside-init
-    def __a_init__(
-        self,
-        op: str,
-        args: tuple[ArgType, ...],
-        variables: Iterable[str] | None = None,
-        symbolic: bool | None = None,
-        length: int | None = None,
-        simplified: SimplificationLevel = SimplificationLevel.UNSIMPLIFIED,
-        errored: set[Backend] | None = None,
-        uninitialized: bool | None = None,
-        uc_alloc_depth: int | None = None,
-        annotations: Iterable[Annotation] | None = None,
-        encoded_name: bytes | None = None,
-        depth: int | None = None,
-        uneliminatable_annotations: frozenset[Annotation] | None = None,
-        relocatable_annotations: frozenset[Annotation] | None = None,
-    ) -> None:
-        """
-        Initializes an AST. Takes the same arguments as ``Base.__new__()``
-
-        We use this instead of ``__init__`` due to python's undesirable behavior w.r.t. automatically calling it on
-        return from ``__new__``.
-        """
-
-        # HASHCONS: these attributes key the cache
-        # BEFORE CHANGING THIS, SEE ALL OTHER INSTANCES OF "HASHCONS" IN THIS FILE
-        self.op = op
-        self.args = args if type(args) is tuple else tuple(args)
-        self.length = length
-        self.variables = frozenset(variables) if type(variables) is not frozenset else variables
-        self.symbolic = symbolic
-        self.annotations: tuple[Annotation] = annotations
-        self._uneliminatable_annotations = uneliminatable_annotations
-        self._relocatable_annotations = relocatable_annotations
-
-        self.depth = depth if depth is not None else 1
-
-        self._cached_encoded_name = encoded_name
-
-        self._errored = errored if errored is not None else set()
-
-        self._simplified = simplified
-        self._cache_key = ASTCacheKey(self)
-        self._excavated = None
-        self._burrowed = None
-
-        self._uninitialized = uninitialized
-        self._uc_alloc_depth = uc_alloc_depth
-
-        if len(self.args) == 0:
-            raise ClaripyOperationError("AST with no arguments!")
-
-    # pylint:enable=attribute-defined-outside-init
-
-    def __hash__(self) -> int:
-        res = self._hash
-        if not isinstance(self._hash, int):
-            res = hash(self._hash)
-        return res
-
-    @property
-    def cache_key(self: Self) -> ASTCacheKey[Self]:
-        """
-        A key that refers to this AST - this value is appropriate for usage as a key in dictionaries.
-        """
-        return self._cache_key
-
-    @property
-    def _encoded_name(self) -> bytes:
-        if self._cached_encoded_name is None:
-            self._cached_encoded_name = self.args[0].encode()
-        return self._cached_encoded_name
-
-    #
-    # Collapsing and simplification
-    #
 
     def make_like(
         self,
         op: str,
         args: Iterable[ArgType],
         simplify: bool = False,
-        annotations: set[Annotation] | None = None,
-        variables: set[str] | None = None,
+        annotations: tuple[Annotation, ...] | None = None,
+        variables: frozenset[str] | None = None,
         symbolic: bool | None = None,
         uninitialized: bool | None = None,
         skip_child_annotations: bool = False,
@@ -547,14 +314,7 @@ class Base:
             )
 
             cache = type(self)._hash_cache
-            h = Base._calc_hash(
-                op,
-                args,
-                self.variables,
-                self.symbolic,
-                annotations,
-                length=length,
-            )
+            h = Base._calc_hash(op, args, annotations)
             cached_ast = cast(T | None, cache.get(h, None))
             if cached_ast is not None:
                 return cached_ast
@@ -601,6 +361,208 @@ class Base:
             skip_child_annotations=skip_child_annotations,
             length=length,
         )
+
+    # pylint:disable=attribute-defined-outside-init
+    def __a_init__(
+        self,
+        op: str,
+        args: tuple[ArgType, ...],
+        variables: Iterable[str] | None = None,
+        symbolic: bool | None = None,
+        length: int | None = None,
+        simplified: SimplificationLevel = SimplificationLevel.UNSIMPLIFIED,
+        errored: set[Backend] | None = None,
+        uninitialized: bool | None = None,
+        uc_alloc_depth: int | None = None,
+        annotations: tuple[Annotation, ...] | None = None,
+        encoded_name: bytes | None = None,
+        depth: int | None = None,
+        uneliminatable_annotations: frozenset[Annotation] | None = None,
+        relocatable_annotations: frozenset[Annotation] | None = None,
+    ) -> None:
+        """
+        Initializes an AST. Takes the same arguments as ``Base.__new__()``
+
+        We use this instead of ``__init__`` due to python's undesirable behavior w.r.t. automatically calling it on
+        return from ``__new__``.
+        """
+
+        # HASHCONS: these attributes key the cache
+        # BEFORE CHANGING THIS, SEE ALL OTHER INSTANCES OF "HASHCONS" IN THIS FILE
+        self.op = op
+        self.args = args if type(args) is tuple else tuple(args)
+        self.length = length
+        self.variables = frozenset(variables) if type(variables) is not frozenset else variables
+        self.symbolic = symbolic
+        self.annotations: tuple[Annotation] = annotations
+        self._uneliminatable_annotations = uneliminatable_annotations
+        self._relocatable_annotations = relocatable_annotations
+
+        self.depth = depth if depth is not None else 1
+
+        self._cached_encoded_name = encoded_name
+
+        self._errored = errored if errored is not None else set()
+
+        self._simplified = simplified
+        self._cache_key = ASTCacheKey(self)
+        self._excavated = None
+        self._burrowed = None
+
+        self._uninitialized = uninitialized
+        self._uc_alloc_depth = uc_alloc_depth
+
+        if len(self.args) == 0:
+            raise ClaripyOperationError("AST with no arguments!")
+
+    # pylint:enable=attribute-defined-outside-init
+    def __reduce__(self):
+        # HASHCONS: these attributes key the cache
+        # BEFORE CHANGING THIS, SEE ALL OTHER INSTANCES OF "HASHCONS" IN THIS FILE
+        return _d, (
+            self._hash,
+            self.__class__,
+            (self.op, self.args, self.length, self.variables, self.symbolic, self.annotations),
+        )
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    @staticmethod
+    def _calc_hash(
+        op: str,
+        args: tuple[Base, ...],
+        annotations: tuple[Annotation, ...],
+    ) -> int:
+        """
+        Calculates the hash of an AST, given the operation, args, and kwargs.
+
+        :param op:                  The operation.
+        :param args:                The args tuple.
+        :param annotations:         The annotations tuple.
+        :returns:                   a hash, as bytes.
+
+        We do it using md5 to avoid hash collisions.
+        (hash(-1) == hash(-2), for example)
+        """
+        # HASHCONS: these attributes key the cache
+        # BEFORE CHANGING THIS, SEE ALL OTHER INSTANCES OF "HASHCONS" IN THIS FILE
+
+        to_hash = Base._ast_serialize(op, args, annotations)
+
+        # Why do we use md5 when it's broken? Because speed is more important
+        # than cryptographic integrity here. Then again, look at all those
+        # allocations we're doing here... fast python is painful.
+        hd = md5.md5(to_hash).digest()
+        return md5_unpacker.unpack(hd)[0]  # 64 bits
+
+    @staticmethod
+    def _ast_serialize(
+        op: str,
+        args: tuple[ArgType, ...],
+        annotations: tuple[Annotation, ...],
+    ) -> bytes:
+        """
+        Serialize the AST and get a bytestring for hashing.
+
+        :param op:          The operator.
+        :param args:        The args tuple.
+        :param annotations: The annotations tuple.
+        :return:            The serialized bytestring.
+        """
+
+        serialized_args = b"".join(b"<" + Base._arg_serialize(a) + b">" for a in args)
+        serialized_annotations = b"".join(b"(" + Base._arg_serialize(a) + b")" for a in annotations)
+
+        return b"{" + op.encode() + serialized_args + serialized_annotations + b"}"
+
+    @staticmethod
+    def _arg_serialize(arg: ArgType | Annotation) -> bytes:
+        """Serialize one argument."""
+
+        if isinstance(arg, Base):
+            return arg._hash.to_bytes(8, "little", signed=False)
+        if arg is None:
+            return b"\x0f"
+        if arg is True:
+            return b"\x1f"
+        if arg is False:
+            return b"\x2e"
+        if isinstance(arg, int):
+            return arg.to_bytes((arg.bit_length() + 15) // 8, "little", signed=True)
+        if isinstance(arg, str):
+            return arg.encode()
+        if isinstance(arg, float):
+            if math.isnan(arg):
+                return b"nan"
+            if math.isinf(arg):
+                return b"inf"
+            if arg == 0.0 and math.copysign(1, arg) < 0:
+                return b"-0.0"
+            return struct.pack("d", arg)
+        if isinstance(arg, tuple):
+            return b"".join(b"<" + Base._arg_serialize(a) + b">" for a in arg)
+        if hasattr(arg, "__hash__"):
+            return hash(arg).to_bytes(8, "little", signed=True)
+
+        l.debug("Don't know how to serialize %s, consider implementing __hash__", arg)
+        return pickle.dumps(arg)
+
+    def __hash__(self) -> int:
+        return self._hash
+
+    @property
+    def cache_key(self: Self) -> ASTCacheKey[Self]:
+        """
+        A key that refers to this AST - this value is appropriate for usage as a key in dictionaries.
+        """
+        return self._cache_key
+
+    @property
+    def _encoded_name(self) -> bytes:
+        if self._cached_encoded_name is None:
+            self._cached_encoded_name = self.args[0].encode()
+        return self._cached_encoded_name
+
+    def _check_args_same(self, other_args: tuple[ArgType, ...]) -> bool:
+        """
+        Check if two ASTs are the same.
+        """
+        from claripy.vsa.strided_interval import StridedInterval
+
+        # Several types inside of args don't support normall == comparison, so if we see those,
+        # we need compare them manually.
+        for a, b in zip(self.args, other_args, strict=True):
+            if isinstance(a, Base) and isinstance(b, Base):
+                if a._hash != b._hash:
+                    return False
+                continue
+            if isinstance(a, float) and isinstance(b, float):
+                if math.isnan(a) and math.isnan(b):
+                    continue
+                if math.isinf(a) and math.isinf(b):
+                    continue
+                if a != b:
+                    return False
+            if (
+                isinstance(a, StridedInterval)
+                and isinstance(b, StridedInterval)
+                and (
+                    a.bits != b.bits
+                    or a.lower_bound != b.lower_bound
+                    or a.upper_bound != b.upper_bound
+                    or a.stride != b.stride
+                )
+            ):
+                return False
+            if a != b:
+                return False
+
+        return True
+
+    #
+    # Collapsing and simplification
+    #
 
     def _rename(self, new_name: str) -> Self:
         if self.op not in {"BVS", "BoolS", "FPS"}:

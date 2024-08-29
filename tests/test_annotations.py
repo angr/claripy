@@ -98,7 +98,7 @@ class TestAnnotation(unittest.TestCase):
         assert x is xx
 
         a1 = AnnotationA("a", 1)
-        a2 = AnnotationA("a", 1)
+        a2 = AnnotationA("b", 2)
 
         x1 = x.annotate(a1)
         x2 = x1.annotate(a2)
