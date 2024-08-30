@@ -270,7 +270,7 @@ class TestStrings(unittest.TestCase):
 
     def test_index_of_symbolic_start_idx(self):
         str_symb = claripy.StringS("symb_index_of", explicit_name=True)
-        start_idx = claripy.BVS("symb_start_idx", 32, explicit_name=True)
+        start_idx = claripy.BVS("symb_start_idx", 8, explicit_name=True)
 
         solver = self.get_solver()
 
