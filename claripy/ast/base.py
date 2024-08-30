@@ -153,7 +153,6 @@ class Base:
     _excavated: Base | None
     _burrowed: Base | None
     _uninitialized: bool
-    _uc_alloc_depth: int
 
     __slots__ = [
         "op",
@@ -173,7 +172,6 @@ class Base:
         "_excavated",
         "_burrowed",
         "_uninitialized",
-        "_uc_alloc_depth",
         "__weakref__",
     ]
 
@@ -189,7 +187,6 @@ class Base:
         variables: frozenset[str] | None = None,
         errored: set[Backend] | None = None,
         uninitialized: bool | None = None,
-        uc_alloc_depth: int | None = None,
         annotations: tuple[Annotation, ...] = (),
         skip_child_annotations: bool = False,
         length: int | None = None,
@@ -266,7 +263,6 @@ class Base:
                 length=length,
                 errored=errored,
                 uninitialized=uninitialized,
-                uc_alloc_depth=uc_alloc_depth,
                 annotations=annotations,
                 encoded_name=encoded_name,
                 depth=depth,
@@ -331,7 +327,6 @@ class Base:
                 annotations=annotations,
                 length=length,
                 uninitialized=self._uninitialized,
-                uc_alloc_depth=self.uc_alloc_depth,
             )
 
             result._hash = h
@@ -373,7 +368,6 @@ class Base:
         simplified: SimplificationLevel = SimplificationLevel.UNSIMPLIFIED,
         errored: set[Backend] | None = None,
         uninitialized: bool | None = None,
-        uc_alloc_depth: int | None = None,
         annotations: tuple[Annotation, ...] | None = None,
         encoded_name: bytes | None = None,
         depth: int | None = None,
@@ -410,7 +404,6 @@ class Base:
         self._burrowed = None
 
         self._uninitialized = uninitialized
-        self._uc_alloc_depth = uc_alloc_depth
 
         if len(self.args) == 0:
             raise ClaripyOperationError("AST with no arguments!")
@@ -1256,18 +1249,6 @@ class Base:
 
         return self._uninitialized
 
-    @property
-    def uc_alloc_depth(self) -> int:
-        """
-        The depth of allocation by lazy-initialization. It's only used in under-constrained symbolic execution mode.
-
-        :returns:                   An integer indicating the allocation depth, or None if it's not from
-                                    lazy-initialization.
-        """
-        # TODO: It should definitely be moved to the proposed Annotation backend.
-
-        return self._uc_alloc_depth
-
     def to_claripy(self: T) -> T:
         """
         Returns itself. Provides compatibility with other classes (such as SimActionObject) which provide a similar
@@ -1287,7 +1268,6 @@ def simplify(e: T) -> T:
 
     # Copy some parameters (that should really go to the Annotation backend)
     s._uninitialized = e.uninitialized
-    s._uc_alloc_depth = e._uc_alloc_depth
     s._simplified = SimplificationLevel.FULL_SIMPLIFY
 
     # dealing with annotations
