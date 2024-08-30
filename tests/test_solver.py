@@ -506,9 +506,9 @@ class StandardTests(TestCase):
 
     def test_zero_division_in_cache_mixin(self):
         # Bug in the caching backend. See issue #49 on github.
-        num = claripy.BVS("num", 256)
-        denum = claripy.BVS("denum", 256)
-        e = claripy.BVS("e", 256)
+        num = claripy.BVS("num", 8)
+        denum = claripy.BVS("denum", 8)
+        e = claripy.BVS("e", 8)
         s = claripy.Solver()
         s.add(e == 8)
         assert s.satisfiable()
