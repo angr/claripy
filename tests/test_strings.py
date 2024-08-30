@@ -268,7 +268,6 @@ class TestStrings(unittest.TestCase):
         self.assertEqual((), tuple(solver.constraints))
         self.assertEqual((target_idx,), solver.eval(res, 2))
 
-    @unittest.skip("Usually hangs")
     def test_index_of_symbolic_start_idx(self):
         str_symb = claripy.StringS("symb_index_of", explicit_name=True)
         start_idx = claripy.BVS("symb_start_idx", 32, explicit_name=True)
@@ -282,7 +281,7 @@ class TestStrings(unittest.TestCase):
         solver.add(res != -1)
         solver.add(res < 38)
         self.assertTrue(solver.satisfiable())
-        self.assertEqual({33, 34, 35, 36, 37}, set(solver.eval(res, 10)))
+        self.assertEqual({33, 34, 35, 36, 37}, set(solver.eval(res, 5)))
 
         strs = solver.eval(str_symb, 10 if KEEP_TEST_PERFORMANT else 100)
         for s in strs:

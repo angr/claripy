@@ -562,18 +562,18 @@ class BackendZ3(Backend):
         z3.Z3_inc_ref(ctx, ast)
         return a
 
-    def replace_unicode(self, match):
-        """
-        Converts a Unicode escape sequence to the corresponding character.
+    # def replace_unicode(self, match):
+    #     """
+    #     Converts a Unicode escape sequence to the corresponding character.
 
-        Args:
-        - match (re.Match): A regex match object containing a Unicode escape sequence.
+    #     Args:
+    #     - match (re.Match): A regex match object containing a Unicode escape sequence.
 
-        Returns:
-        - str: The Unicode character corresponding to the hexadecimal code.
-        """
-        hex_code = match.group(1)
-        return chr(int(hex_code, 16))
+    #     Returns:
+    #     - str: The Unicode character corresponding to the hexadecimal code.
+    #     """
+    #     hex_code = match.group(1)
+    #     return chr(int(hex_code, 16))
 
     def _abstract_to_primitive(self, ctx, ast):
         decl = z3.Z3_get_app_decl(ctx, ast)
@@ -630,7 +630,8 @@ class BackendZ3(Backend):
         if op_name == "INTERNAL":
             seq = z3.SeqRef(ast)
             if seq.is_string():
-                return re.sub(r"\\u\{([0-9a-fA-F]+)\}", self.replace_unicode, seq.as_string())
+                # Converts a Unicode escape sequence to the corresponding character.
+                return re.sub(r"\\u\{([0-9a-fA-F]+)\}", lambda match: chr(int(match.group(1), 16)), seq.as_string())
         raise BackendError("Unable to abstract Z3 object to primitive")
 
     def _abstract_bv_val(self, ctx, ast):
