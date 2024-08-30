@@ -388,8 +388,8 @@ class TestExpression(unittest.TestCase):
         one_names = frozenset.union(x1.variables, b1.variables, c1.variables)
         two_names = frozenset.union(x2.variables, b2.variables, c2.variables)
 
-        assert frozenset.union(*[a.variables for a in y1.recursive_leaf_asts]) == one_names
-        assert frozenset.union(*[a.variables for a in y2.recursive_leaf_asts]) == two_names
+        assert frozenset.union(*[a.variables for a in y1.leaf_asts()]) == one_names
+        assert frozenset.union(*[a.variables for a in y2.leaf_asts()]) == two_names
         assert y1.canonicalize()[-1] is y2.canonicalize()[-1]
 
     def test_depth(self):
