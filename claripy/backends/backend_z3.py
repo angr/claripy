@@ -562,19 +562,6 @@ class BackendZ3(Backend):
         z3.Z3_inc_ref(ctx, ast)
         return a
 
-    # def replace_unicode(self, match):
-    #     """
-    #     Converts a Unicode escape sequence to the corresponding character.
-
-    #     Args:
-    #     - match (re.Match): A regex match object containing a Unicode escape sequence.
-
-    #     Returns:
-    #     - str: The Unicode character corresponding to the hexadecimal code.
-    #     """
-    #     hex_code = match.group(1)
-    #     return chr(int(hex_code, 16))
-
     def _abstract_to_primitive(self, ctx, ast):
         decl = z3.Z3_get_app_decl(ctx, ast)
         decl_num = z3.Z3_get_decl_kind(ctx, decl)
