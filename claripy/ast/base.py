@@ -830,22 +830,6 @@ class Base:
                 ast_queue.extend(ast.args)
                 continue
 
-    # TODO: Deprecate this property
-    @property
-    def recursive_children_asts(self):
-        """
-        DEPRECATED: Use children_asts() instead.
-        """
-        return self.children_asts()
-
-    # TODO: Deprecate this property
-    @property
-    def recursive_leaf_asts(self):
-        """
-        DEPRECATED: Use leaf_asts() instead.
-        """
-        return self.leaf_asts()
-
     def dbg_is_looped(self) -> bool:
         l.debug("Checking AST with hash %s for looping", hash(self))
 
@@ -1248,13 +1232,6 @@ class Base:
         # TODO: It should definitely be moved to the proposed Annotation backend.
 
         return self._uninitialized
-
-    def to_claripy(self: T) -> T:
-        """
-        Returns itself. Provides compatibility with other classes (such as SimActionObject) which provide a similar
-        method to unwrap to an AST.
-        """
-        return self
 
 
 def simplify(e: T) -> T:
