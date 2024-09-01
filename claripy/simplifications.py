@@ -745,10 +745,14 @@ class SimplificationManager:
                 # yes!
                 return claripy.ZeroExt(a.args[0].size(), a.args[1])
 
+            # lengths come from a.args[1].length + a.args[2].length + b.args[1].length + b.args[2].length
+            lengths = [e.length for pair in zip(a.args[1:3], b.args[1:3]) for e in pair]
+
             # if(cond0, 1, 0) & if(cond1, 1, 0)  ->  if(cond0 & cond1, 1, 0)
             if (
                 a.op == "If"
                 and b.op == "If"
+                and all(l == 1 for l in lengths)
                 and (
                     (a.args[1] == claripy.BVV(1, 1)).is_true()
                     and (a.args[2] == claripy.BVV(0, 1)).is_true()
