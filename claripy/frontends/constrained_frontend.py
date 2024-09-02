@@ -10,7 +10,9 @@ from claripy.frontend import Frontend
 l = logging.getLogger("claripy.frontends.constrained_frontend")
 
 
-class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
+class ConstrainedFrontend(Frontend):
+    """ConstrainedFrontend is a base class for all frontends that support constraints."""
+
     def __init__(self):
         Frontend.__init__(self)
         self.constraints = []
@@ -153,3 +155,54 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
 
     def is_false(self, e, extra_constraints=(), exact=None):
         raise NotImplementedError("is_false() is not implemented")
+
+    #
+    # Some utility functions
+    #
+
+    @staticmethod
+    def _split_constraints(constraints, concrete=True):
+        """
+        Returns independent constraints, split from this Frontend's `constraints`.
+        """
+
+        splitted = []
+        for i in constraints:
+            splitted.extend(i.split(["And"]))
+
+        l.debug("... splitted of size %d", len(splitted))
+
+        concrete_constraints = []
+        variable_connections = {}
+        constraint_connections = {}
+        for n, s in enumerate(splitted):
+            l.debug("... processing constraint with %d variables", len(s.variables))
+
+            connected_variables = set(s.variables)
+            connected_constraints = {n}
+
+            if len(connected_variables) == 0:
+                concrete_constraints.append(s)
+
+            for v in s.variables:
+                if v in variable_connections:
+                    connected_variables |= variable_connections[v]
+                if v in constraint_connections:
+                    connected_constraints |= constraint_connections[v]
+
+            for v in connected_variables:
+                variable_connections[v] = connected_variables
+                constraint_connections[v] = connected_constraints
+
+        unique_constraint_sets = set()
+        for v, c in variable_connections.items():
+            unique_constraint_sets.add((frozenset(c), frozenset(constraint_connections[v])))
+
+        results = []
+        for v, c_indexes in unique_constraint_sets:
+            results.append((set(v), [splitted[c] for c in c_indexes]))
+
+        if concrete and len(concrete_constraints) > 0:
+            results.append(({"CONCRETE"}, concrete_constraints))
+
+        return results
