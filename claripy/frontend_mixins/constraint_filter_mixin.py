@@ -12,8 +12,7 @@ class ConstraintFilterMixin:
         if len(constraints) == 0:
             return constraints
 
-        filtered = super()._constraint_filter(constraints)
-        ccs = [self._concrete_constraint(c) for c in filtered]
+        ccs = [self._concrete_constraint(c) for c in constraints]
         if False in ccs:
             raise UnsatError("Constraints contain False.")
         return tuple((o if n is None else o) for o, n in zip(constraints, ccs, strict=False) if n is not True)
