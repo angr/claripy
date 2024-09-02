@@ -450,7 +450,7 @@ def raw_unsat_core(solver, reuse_z3_solver):
 
 class StandardTests(TestCase):
     def test_composite_solver_with_strings(self):
-        s = claripy.SolverComposite(template_solver_string=claripy.SolverCompositeChild())
+        s = claripy.SolverComposite()
         x = claripy.BVS("x", 32)
         y = claripy.BVS("y", 32)
         z = claripy.BVS("z", 32)
