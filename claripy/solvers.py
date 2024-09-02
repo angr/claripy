@@ -109,7 +109,6 @@ class SolverStrings(
     frontend_mixins.ConstraintFilterMixin,
     frontend_mixins.ConstraintDeduplicatorMixin,
     frontend_mixins.EagerResolutionMixin,
-    frontend_mixins.EvalStringsToASTsMixin,
     frontends.FullFrontend,
 ):
     """SolverStrings is a frontend that uses Z3 to solve string constraints."""
