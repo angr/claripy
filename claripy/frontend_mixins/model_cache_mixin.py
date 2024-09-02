@@ -47,34 +47,26 @@ class ModelCache:
     #
 
     def _leaf_op(self, a):
-        return (
-            claripy.BVV(self.model.get(a.args[0], 0), a.length)
-            if a.op == "BVS"
-            else (
-                claripy.BoolV(self.model.get(a.args[0], True))
-                if a.op == "BoolS"
-                else (
-                    claripy.FPV(self.model.get(a.args[0], 0.0), a.args[1])
-                    if a.op == "FPS"
-                    else claripy.StringV(self.model.get(a.args[0], "")) if a.op == "StringS" else a
-                )
-            )
-        )
+        if a.op == "BVS":
+            return claripy.BVV(self.model.get(a.args[0], 0), a.length)
+        if a.op == "BoolS":
+            return claripy.BoolV(self.model.get(a.args[0], True))
+        if a.op == "FPS":
+            return claripy.FPV(self.model.get(a.args[0], 0.0), a.args[1])
+        if a.op == "StringS":
+            return claripy.StringV(self.model.get(a.args[0], ""))
+        return a
 
     def _leaf_op_existonly(self, a):
-        return (
-            claripy.BVV(self.model[a.args[0]], a.length)
-            if a.op == "BVS"
-            else (
-                claripy.BoolV(self.model[a.args[0]])
-                if a.op == "BoolS"
-                else (
-                    claripy.FPV(self.model[a.args[0]], a.args[1])
-                    if a.op == "FPS"
-                    else claripy.StringV(self.model[a.args[0]]) if a.op == "StringS" else a
-                )
-            )
-        )
+        if a.op == "BVS":
+            return claripy.BVV(self.model[a.args[0]], a.length)
+        if a.op == "BoolS":
+            return claripy.BoolV(self.model[a.args[0]])
+        if a.op == "FPS":
+            return claripy.FPV(self.model[a.args[0]], a.args[1])
+        if a.op == "StringS":
+            return claripy.StringV(self.model[a.args[0]])
+        return a
 
     def eval_ast(self, ast, allow_unconstrained: bool = True):
         """
