@@ -57,7 +57,7 @@ class Frontend:
         if isinstance(e, ast.BV):
             return [ast.bv.BVV(v, e.size()) for v in values]
         if isinstance(e, ast.String):
-            return [ast.strings.StringV(v, length=e.length) for v in values]
+            return [ast.strings.StringV(v, length=e.length // 8) for v in values]
 
         # TODO: Implement support for other types
         raise NotImplementedError
