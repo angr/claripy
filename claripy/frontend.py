@@ -52,7 +52,17 @@ class Frontend:
 
         :return:                        list of concrete ASTs
         """
-        return [ast.bv.BVV(v, e.size()) for v in self.eval(e, n, extra_constraints=extra_constraints, exact=exact)]
+        if isinstance(e, ast.BV):
+            return [ast.bv.BVV(v, e.size()) for v in self.eval(e, n, extra_constraints=extra_constraints, exact=exact)]
+
+        if isinstance(e, ast.String):
+            return [
+                ast.strings.StringV(v, length=e.length)
+                for v in self.eval(e, n, extra_constraints=extra_constraints, exact=exact)
+            ]
+
+        # TODO: Implement support for other types
+        raise NotImplementedError
 
     def finalize(self):
         raise NotImplementedError("finalize() is not implemented")
