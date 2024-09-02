@@ -1193,7 +1193,10 @@ class Base:
     @property
     def concrete_value(self):
         try:
-            return backends.concrete.convert(self).value
+            raw = backends.concrete.convert(self)
+            if isinstance(raw, bool):
+                return raw
+            return raw.value
         except BackendError:
             return self
 
