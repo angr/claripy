@@ -15,6 +15,8 @@ class Solver(
     frontend_mixins.SimplifyHelperMixin,
     frontends.FullFrontend,
 ):
+    """Solver is the default Claripy frontend. It uses Z3 as the backend solver by default."""
+
     def __init__(self, backend=backends.z3, **kwargs):
         super().__init__(backend, **kwargs)
 
@@ -27,6 +29,8 @@ class SolverCacheless(
     frontend_mixins.SimplifySkipperMixin,
     frontends.FullFrontend,
 ):
+    """SolverCacheless is a Solver without caching. It uses Z3 as the backend solver by default."""
+
     def __init__(self, backend=backends.z3, **kwargs):
         super().__init__(backend, **kwargs)
 
@@ -36,6 +40,8 @@ class SolverReplacement(
     frontend_mixins.ConstraintDeduplicatorMixin,
     frontends.ReplacementFrontend,
 ):
+    """SolverReplacement is a frontend wrapper that replaces constraints with their solutions."""
+
     def __init__(self, actual_frontend=None, **kwargs):
         actual_frontend = Solver() if actual_frontend is None else actual_frontend
         super().__init__(actual_frontend, **kwargs)
@@ -50,6 +56,8 @@ class SolverHybrid(
     # TODO: frontend_mixins.ConstraintExpansionMixin,
     frontends.HybridFrontend,
 ):
+    """SolverHybrid is a frontend that uses an exact solver and an approximate solver."""
+
     def __init__(
         self,
         exact_frontend=None,
@@ -78,6 +86,8 @@ class SolverVSA(
     frontend_mixins.ConstraintFilterMixin,
     frontends.LightFrontend,
 ):
+    """SolverVSA is a thin frontend to the VSA backend solver."""
+
     def __init__(self, **kwargs):
         super().__init__(backends.vsa, **kwargs)
 
@@ -87,6 +97,8 @@ class SolverConcrete(
     frontend_mixins.ConstraintFilterMixin,
     frontends.LightFrontend,
 ):
+    """SolverConcrete is a thin frontend to the Concrete backend solver."""
+
     def __init__(self, **kwargs):
         super().__init__(backends.concrete, **kwargs)
 
@@ -100,6 +112,8 @@ class SolverStrings(
     frontend_mixins.EvalStringsToASTsMixin,
     frontends.FullFrontend,
 ):
+    """SolverStrings is a frontend that uses Z3 to solve string constraints."""
+
     def __init__(self, *args, backend=backends.z3, **kwargs):
         super().__init__(backend, *args, **kwargs)
 
@@ -116,6 +130,8 @@ class SolverCompositeChild(
     frontend_mixins.ModelCacheMixin,
     frontends.FullFrontend,
 ):
+    """SolverCompositeChild is a frontend that is used as a child in a SolverComposite."""
+
     def __init__(self, backend=backends.z3, **kwargs):
         super().__init__(backend, **kwargs)
 
@@ -135,14 +151,11 @@ class SolverComposite(
     frontend_mixins.CompositedCacheMixin,
     frontends.CompositeFrontend,
 ):
-    def __init__(self, template_solver=None, track=False, template_solver_string=None, **kwargs):
+    """SolverComposite is a frontend that composes multiple templated frontends."""
+
+    def __init__(self, template_solver=None, track=False, **kwargs):
         template_solver = SolverCompositeChild(track=track) if template_solver is None else template_solver
-        template_solver_string = (
-            SolverCompositeChild(track=track, backend=backends.z3)
-            if template_solver_string is None
-            else template_solver_string
-        )
-        super().__init__(template_solver, template_solver_string, track=track, **kwargs)
+        super().__init__(template_solver, track=track, **kwargs)
 
     def __repr__(self):
         return "<SolverComposite %x, %d children>" % (id(self), len(self._solver_list))

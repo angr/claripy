@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 from claripy import backends
 from claripy.ast import Base
 from claripy.ast.bool import Or
-from claripy.ast.strings import String
 from claripy.errors import BackendError, UnsatError
 from claripy.frontend_mixins.model_cache_mixin import ModelCacheMixin
 from claripy.frontend_mixins.simplify_skipper_mixin import SimplifySkipperMixin
@@ -24,13 +23,12 @@ symbolic_count = itertools.count()
 
 
 class CompositeFrontend(ConstrainedFrontend):
-    def __init__(self, template_frontend, template_frontend_string, track=False, **kwargs):
+    def __init__(self, template_frontend, track=False, **kwargs):
         super().__init__(**kwargs)
         self._solvers = {}
         self._unchecked_solvers = weakref.WeakSet()
         self._owned_solvers = weakref.WeakSet()
         self._template_frontend = template_frontend
-        self._template_frontend_string = template_frontend_string
         self._unsat = False
         self._track = track
 
@@ -40,8 +38,6 @@ class CompositeFrontend(ConstrainedFrontend):
         c._owned_solvers = weakref.WeakSet()
         c._solvers = {}
         c._template_frontend = self._template_frontend
-        if hasattr(self, "_template_frontend_string"):
-            c._template_frontend_string = self._template_frontend_string
         c._unsat = False
         c._track = self._track
 
@@ -163,9 +159,6 @@ class CompositeFrontend(ConstrainedFrontend):
         solvers = list(solvers)
 
         if len(solvers) == 0:
-            if any(var for var in names if var.startswith(String.STRING_TYPE_IDENTIFIER)):
-                l.debug("... creating new solver for strings")
-                return self._template_frontend_string.blank_copy()
             l.debug("... creating new solver")
             return self._template_frontend.blank_copy()
         if len(solvers) == 1:
