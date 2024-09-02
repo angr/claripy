@@ -10,7 +10,9 @@ from claripy.frontend import Frontend
 l = logging.getLogger("claripy.frontends.constrained_frontend")
 
 
-class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
+class ConstrainedFrontend(Frontend):
+    """ConstrainedFrontend is a base class for all frontends that support constraints."""
+
     def __init__(self):
         Frontend.__init__(self)
         self.constraints = []
@@ -193,8 +195,8 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
                 constraint_connections[v] = connected_constraints
 
         unique_constraint_sets = set()
-        for v in variable_connections:
-            unique_constraint_sets.add((frozenset(variable_connections[v]), frozenset(constraint_connections[v])))
+        for v, c in variable_connections.items():
+            unique_constraint_sets.add((frozenset(c), frozenset(constraint_connections[v])))
 
         results = []
         for v, c_indexes in unique_constraint_sets:
