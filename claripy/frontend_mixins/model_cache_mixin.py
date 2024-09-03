@@ -120,6 +120,7 @@ class ModelCacheMixin:
         self._min_exhausted = weakref.WeakSet()
         self._max_signed_exhausted = weakref.WeakSet()
         self._min_signed_exhausted = weakref.WeakSet()
+        self._extra_variables = set()
 
     def _blank_copy(self, c):
         super()._blank_copy(c)
@@ -130,6 +131,7 @@ class ModelCacheMixin:
         c._min_exhausted = weakref.WeakSet()
         c._max_signed_exhausted = weakref.WeakSet()
         c._min_signed_exhausted = weakref.WeakSet()
+        c._extra_variables = set()
 
     def _copy(self, c):
         super()._copy(c)
@@ -140,6 +142,7 @@ class ModelCacheMixin:
         c._min_exhausted = weakref.WeakSet(self._min_exhausted)
         c._max_signed_exhausted = weakref.WeakSet(self._max_signed_exhausted)
         c._min_signed_exhausted = weakref.WeakSet(self._min_signed_exhausted)
+        c._extra_variables = set(self._extra_variables)
 
     def __setstate__(self, base_state):
         super().__setstate__(base_state)
@@ -150,6 +153,7 @@ class ModelCacheMixin:
         self._min_exhausted = weakref.WeakSet()
         self._max_signed_exhausted = weakref.WeakSet()
         self._min_signed_exhausted = weakref.WeakSet()
+        self._extra_variables = set()
 
     #
     # Model cleaning
@@ -257,7 +261,7 @@ class ModelCacheMixin:
     def _model_hook(self, m):
         # Z3 might give us solutions for variables that we did not ask for. so we create a new dict with solutions for
         # only the variables that are under the solver's control
-        m_ = {k: v for k, v in m.items() if k in self.variables}
+        m_ = {k: v for k, v in m.items() if k in self.variables or k in self._extra_variables}
         if m_:
             model = ModelCache(m_)
             self._models.add(model)
@@ -351,6 +355,8 @@ class ModelCacheMixin:
 
             return min(cached, key=signed_key if signed else lambda v: v)
 
+        if len(extra_constraints) == 0:
+            self._extra_variables.update(e.variables)
         m = super().min(e, extra_constraints=extra_constraints, signed=signed, exact=exact)
         if len(extra_constraints) == 0:
             (self._min_signed_exhausted if signed else self._min_exhausted).add(e.cache_key)
@@ -368,6 +374,8 @@ class ModelCacheMixin:
 
             return max(cached, key=signed_key if signed else lambda v: v)
 
+        if len(extra_constraints) == 0:
+            self._extra_variables.update(e.variables)
         m = super().max(e, extra_constraints=extra_constraints, signed=signed, exact=exact)
         if len(extra_constraints) == 0:
             (self._max_signed_exhausted if signed else self._max_exhausted).add(e.cache_key)

@@ -38,6 +38,9 @@ class TestRegressions(unittest.TestCase):
         min_2 = s1.min(ast)
         max_2 = s1.max(ast)
 
+        assert min_1 == min_2
+        assert max_1 == max_2
+
         s2 = claripy.Solver()
 
         min_3 = s2.min(ast)
