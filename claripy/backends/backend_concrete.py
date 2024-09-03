@@ -55,14 +55,10 @@ class BackendConcrete(Backend):
 
     @staticmethod
     def BVV(value, size):
-        if value is None:
-            raise BackendError("can't handle empty BVVs")
         return bv.BVV(value, size)
 
     @staticmethod
     def StringV(value, size):  # pylint: disable=unused-argument
-        if not value:
-            raise BackendError("can't handle empty Strings")
         return strings.StringV(value)
 
     @staticmethod
@@ -128,7 +124,7 @@ class BackendConcrete(Backend):
             raise BackendError("BackendConcrete can't handle non-bool condition in If.")
         return t if b else f
 
-    def _name(self, e):  # pylint:disable=unused-argument,no-self-use
+    def _name(self, o):  # pylint:disable=unused-argument,no-self-use
         return None
 
     def _identical(self, a, b):
@@ -136,12 +132,12 @@ class BackendConcrete(Backend):
             return False
         return a == b
 
-    def _convert(self, a):
-        if type(a) in {int, str, bytes}:
-            return a
-        if isinstance(a, numbers.Number | bv.BVV | fp.FPV | fp.RM | fp.FSort | strings.StringV):
-            return a
-        raise BackendError(f"can't handle AST of type {type(a)}")
+    def _convert(self, r):
+        if type(r) in {int, str, bytes}:
+            return r
+        if isinstance(r, numbers.Number | bv.BVV | fp.FPV | fp.RM | fp.FSort | strings.StringV):
+            return r
+        raise BackendError(f"can't handle AST of type {type(r)}")
 
     def _simplify(self, e):
         return e
