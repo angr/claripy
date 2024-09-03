@@ -28,7 +28,7 @@ class TestRegressions(unittest.TestCase):
         assert s.min(x) == 0
         assert s.min(x, extra_constraints=[x > 0]) == 1
 
-    def test_issue_325_2(self):
+    def test_issue_324_2(self):
         ast = claripy.BVS("a", 64) + 0xFF
 
         s1 = claripy.Solver()
