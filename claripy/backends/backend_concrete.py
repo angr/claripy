@@ -55,14 +55,10 @@ class BackendConcrete(Backend):
 
     @staticmethod
     def BVV(value, size):
-        if value is None:
-            raise BackendError("can't handle empty BVVs")
         return bv.BVV(value, size)
 
     @staticmethod
     def StringV(value, size):  # pylint: disable=unused-argument
-        if not value:
-            raise BackendError("can't handle empty Strings")
         return strings.StringV(value)
 
     @staticmethod
