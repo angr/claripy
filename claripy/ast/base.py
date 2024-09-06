@@ -520,7 +520,7 @@ class Base:
             self._cached_encoded_name = self.args[0].encode()
         return self._cached_encoded_name
 
-    def _check_args_same(self, other_args: tuple[ArgType, ...]) -> bool:
+    def _check_args_same(self, other_args: tuple[ArgType, ...], lenient_names=False) -> bool:
         """
         Check if two ASTs are the same.
         """
@@ -551,10 +551,23 @@ class Base:
                 )
             ):
                 return False
+            if lenient_names and isinstance(a, str) and isinstance(b, str):
+                continue
             if a != b:
                 return False
 
         return True
+
+    def identical(self, other: Self, strict=False) -> bool:
+        """
+        Check if two ASTs are identical. If `strict` is False, the comparison
+        will be lenient on the names of the ASTs.
+        """
+        return self._hash == other._hash or (
+            self.op == other.op
+            and self._check_args_same(other.args, lenient_names=not strict)
+            and self.annotations == other.annotations
+        )
 
     #
     # Collapsing and simplification
