@@ -59,14 +59,6 @@ def normalize_arg_order(f):
     return normalizer
 
 
-def convert_args(f):
-    @functools.wraps(f)
-    def converter(self, ast):
-        return f(self, ast.swap_args([self.convert(arg) for arg in ast.args]))
-
-    return converter
-
-
 class BackendVSA(Backend):
     def __init__(self):
         Backend.__init__(self)
@@ -400,20 +392,22 @@ class BackendVSA(Backend):
 
         return arg.reverse()
 
-    @convert_args
-    def union(self, ast):  # pylint:disable=unused-argument,no-self-use
+    def union(self, ast):
         if len(ast.args) != 2:
             raise BackendError("Incorrect number of arguments (%d) passed to BackendVSA.union()." % len(ast.args))
 
-        ret = ast.args[0].union(ast.args[1])
+        converted_0 = self.convert(ast.args[0])
+        converted_1 = self.convert(ast.args[1])
+
+        ret = converted_0.union(converted_1)
 
         if ret is NotImplemented:
-            ret = ast.args[1].union(ast.args[0])
+            l.debug("Union failed, trying the other way around.")
+            ret = converted_1.union(converted_0)
 
         return ret
 
-    @convert_args
-    def intersection(self, ast):  # pylint:disable=unused-argument,no-self-use
+    def intersection(self, ast):
         if len(ast.args) != 2:
             raise BackendError(
                 "Incorrect number of arguments (%d) passed to BackendVSA.intersection()." % len(ast.args)
@@ -422,17 +416,21 @@ class BackendVSA(Backend):
         ret = None
 
         for arg in ast.args:
+            arg = self.convert(arg)
             ret = arg if ret is None else ret.intersection(arg)
         return ret
 
-    @convert_args
-    def widen(self, ast):  # pylint:disable=unused-argument,no-self-use
+    def widen(self, ast):
         if len(ast.args) != 2:
             raise BackendError("Incorrect number of arguments (%d) passed to BackendVSA.widen()." % len(ast.args))
 
-        ret = ast.args[0].widen(ast.args[1])
+        converted_0 = self.convert(ast.args[0])
+        converted_1 = self.convert(ast.args[1])
+
+        ret = converted_0.widen(converted_1)
         if ret is NotImplemented:
-            ret = ast.args[1].widen(ast.args[0])
+            l.debug("Widening failed, trying the other way around.")
+            ret = converted_1.widen(converted_0)
 
         return ret
 
