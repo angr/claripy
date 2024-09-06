@@ -556,6 +556,12 @@ class Base:
 
         return True
 
+    def identical(self, other: Base) -> bool:
+        """
+        Check if two ASTs are identical based on their hash values.
+        """
+        return self._hash == other._hash
+
     #
     # Collapsing and simplification
     #
