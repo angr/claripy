@@ -558,7 +558,7 @@ class Base:
 
         return True
 
-    def identical(self, other: Base, strict=False) -> bool:
+    def identical(self, other: Self, strict=False) -> bool:
         """
         Check if two ASTs are identical. If `strict` is False, the comparison
         will be lenient on the names of the ASTs.
