@@ -5,7 +5,8 @@ import logging
 import numbers
 import weakref
 from contextlib import suppress
-from typing import Self
+
+from typing_extensions import Self
 
 import claripy
 from claripy import operations, vsa
