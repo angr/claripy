@@ -103,15 +103,15 @@ class BackendVSA(Backend):
     def convert(self, expr):
         return Backend.convert(self, expr.ite_excavated if isinstance(expr, Base) else expr)
 
-    def _convert(self, a):
-        if isinstance(a, numbers.Number):
-            return a
-        if isinstance(a, bool):
-            return TrueResult() if a else FalseResult()
-        if isinstance(a, StridedInterval | DiscreteStridedIntervalSet | ValueSet):
-            return a
-        if isinstance(a, BoolResult):
-            return a
+    def _convert(self, r):
+        if isinstance(r, numbers.Number):
+            return r
+        if isinstance(r, bool):
+            return TrueResult() if r else FalseResult()
+        if isinstance(r, StridedInterval | DiscreteStridedIntervalSet | ValueSet):
+            return r
+        if isinstance(r, BoolResult):
+            return r
 
         # Not supported
         raise BackendError
@@ -151,29 +151,29 @@ class BackendVSA(Backend):
 
         raise BackendError(f"Unsupported expr type {type(expr)}")
 
-    def _solution(self, obj, v, extra_constraints=(), solver=None, model_callback=None):
-        if isinstance(obj, BoolResult):
-            return len(set(v.value) & set(obj.value)) > 0
+    def _solution(self, expr, v, extra_constraints=(), solver=None, model_callback=None):
+        if isinstance(expr, BoolResult):
+            return len(set(v.value) & set(expr.value)) > 0
 
-        if isinstance(obj, StridedInterval):
-            return not obj.intersection(v).is_empty
+        if isinstance(expr, StridedInterval):
+            return not expr.intersection(v).is_empty
 
-        if isinstance(obj, ValueSet):
-            return any(not si.intersection(v).is_empty for _, si in obj.items())
+        if isinstance(expr, ValueSet):
+            return any(not si.intersection(v).is_empty for _, si in expr.items())
 
-        raise NotImplementedError(type(obj).__name__)
+        raise NotImplementedError(type(expr).__name__)
 
-    def _has_true(self, o, extra_constraints=(), solver=None, model_callback=None):
-        return BoolResult.has_true(o)
+    def _has_true(self, e, extra_constraints=(), solver=None, model_callback=None):
+        return BoolResult.has_true(e)
 
-    def _has_false(self, o, extra_constraints=(), solver=None, model_callback=None):
-        return BoolResult.has_false(o)
+    def _has_false(self, e, extra_constraints=(), solver=None, model_callback=None):
+        return BoolResult.has_false(e)
 
-    def _is_true(self, o, extra_constraints=(), solver=None, model_callback=None):
-        return BoolResult.is_true(o)
+    def _is_true(self, e, extra_constraints=(), solver=None, model_callback=None):
+        return BoolResult.is_true(e)
 
-    def _is_false(self, o, extra_constraints=(), solver=None, model_callback=None):
-        return BoolResult.is_false(o)
+    def _is_false(self, e, extra_constraints=(), solver=None, model_callback=None):
+        return BoolResult.is_false(e)
 
     #
     # Backend Operations
@@ -187,13 +187,13 @@ class BackendVSA(Backend):
             return False
         return a.identical(b)
 
-    def _unique(self, obj):
+    @staticmethod
+    def _unique(obj):
         if isinstance(obj, StridedInterval | ValueSet):
             return obj.unique
         raise BackendError(f"Not supported type of operand {type(obj)}")
 
-    @staticmethod
-    def _cardinality(a):
+    def _cardinality(self, a):
         return a.cardinality
 
     def name(self, a):
@@ -202,7 +202,7 @@ class BackendVSA(Backend):
 
         return None
 
-    def apply_annotation(self, bo, annotation):
+    def apply_annotation(self, o, a):
         """
         Apply an annotation on the backend object.
 
@@ -214,18 +214,19 @@ class BackendVSA(Backend):
 
         # Currently we only support RegionAnnotation
 
-        if not isinstance(annotation, RegionAnnotation):
-            return bo
+        if not isinstance(a, RegionAnnotation):
+            return o
 
-        if not isinstance(bo, ValueSet):
+        if not isinstance(o, ValueSet):
             # Convert it to a ValueSet first
             # Note that the original value is not kept at all. If you want to convert a StridedInterval to a ValueSet,
             # you gotta do the conversion by calling AST.annotate() from outside.
-            bo = ValueSet.empty(bo.bits)
+            o = ValueSet.empty(o.bits)
 
-        return bo.apply_annotation(annotation)
+        return o.apply_annotation(a)
 
-    def BVV(self, ast):
+    @staticmethod
+    def BVV(ast):
         if ast.args[0] is None:
             return StridedInterval.empty(ast.args[1])
         return CreateStridedInterval(bits=ast.args[1], stride=0, lower_bound=ast.args[0], upper_bound=ast.args[0])
