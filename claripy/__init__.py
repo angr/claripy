@@ -61,9 +61,12 @@ def BV(name, size, explicit_name=None):  # pylint:disable=function-redefined
 
 from . import backend_manager as _backend_manager
 
+# The order these backends are registered in is the order they will be tried in
+# certain operations, importantly simplification. VSA is last because if an
+# expression can be simplified with concrete or z3, we want to use that first
 _backend_manager.backends._register_backend(_backends_module.BackendConcrete(), "concrete")
-_backend_manager.backends._register_backend(_backends_module.BackendVSA(), "vsa")
 _backend_manager.backends._register_backend(_backends_module.BackendZ3(), "z3")
+_backend_manager.backends._register_backend(_backends_module.BackendVSA(), "vsa")
 backends = _backend_manager.backends
 
 
