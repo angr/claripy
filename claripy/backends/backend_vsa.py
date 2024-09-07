@@ -6,6 +6,7 @@ import numbers
 import operator
 from functools import reduce
 
+from claripy.annotation import RegionAnnotation
 from claripy.ast.base import Base
 from claripy.ast.bv import ESI, SI, TSI
 from claripy.backends.backend import Backend
@@ -17,7 +18,6 @@ from claripy.vsa import (
     CreateStridedInterval,
     DiscreteStridedIntervalSet,
     FalseResult,
-    RegionAnnotation,
     StridedInterval,
     TrueResult,
     ValueSet,

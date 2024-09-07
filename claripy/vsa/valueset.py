@@ -5,8 +5,6 @@ import functools
 import itertools
 import numbers
 
-import claripy
-from claripy.annotation import Annotation
 from claripy.ast.base import Base
 from claripy.backend_object import BackendObject
 from claripy.errors import ClaripyValueError
@@ -47,73 +45,6 @@ def normalize_types_one_arg(f):
 
 
 vs_id_ctr = itertools.count()
-
-
-class RegionAnnotation(Annotation):
-    """
-    Use RegionAnnotation to annotate ASTs. Normally, an AST annotated by RegionAnnotations is treated as a ValueSet.
-
-    Note that Annotation objects are immutable. Do not change properties of an Annotation object without creating a new
-    one.
-    """
-
-    def __init__(self, region_id, region_base_addr, offset):
-        self.region_id = region_id
-        self.region_base_addr = region_base_addr
-        self.offset = offset
-
-        # Do necessary conversion here
-        if isinstance(self.region_base_addr, Base):
-            self.region_base_addr = claripy.backends.vsa.convert(self.region_base_addr)
-        if isinstance(self.offset, Base):
-            self.offset = claripy.backends.vsa.convert(self.offset)
-
-    @property
-    def eliminatable(self):
-        """
-        A Region annotation is not eliminatable in simplifications.
-
-        :return: False
-        :rtype: bool
-        """
-
-        return False
-
-    @property
-    def relocatable(self):
-        """
-        A Region annotation is not relocatable in simplifications.
-
-        :return: False
-        :rtype: bool
-        """
-
-        return False
-
-    #
-    # Public methods
-    #
-
-    def relocate(self, src, dst):
-        """
-        Override Annotation.relocate().
-
-        :param src: The old AST
-        :param dst: The new AST, as the result of a simplification
-        :return: The new annotation that should be applied on the new AST
-        """
-
-        raise ClaripyVSAError("RegionAnnotation is not relocatable")
-
-    #
-    # Overriding base methods
-    #
-
-    def __hash__(self):
-        return hash((self.region_id, self.region_base_addr, hash(self.offset)))
-
-    def __repr__(self):
-        return f"<RegionAnnotation {self.region_id}:{self.offset:#08x}>"
 
 
 class ValueSet(BackendObject):

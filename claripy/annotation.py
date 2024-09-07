@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from .ast.base import Base
+import claripy
+from claripy.errors import ClaripyOperationError
 
 
 class Annotation:
@@ -30,7 +28,7 @@ class Annotation:
         """
         return False
 
-    def relocate(self, src: Base, dst: Base):  # pylint:disable=no-self-use,unused-argument
+    def relocate(self, src: claripy.ast.Base, dst: claripy.ast.Base):  # pylint:disable=no-self-use,unused-argument
         """
         This is called when an annotation has to be relocated because of simplifications.
 
@@ -55,7 +53,9 @@ class Annotation:
         :param dst: the new AST (the result of a simplification)
         :return: the annotation that will be applied to `dst`
         """
-        return self
+        if self.relocatable:
+            return self
+        raise ClaripyOperationError("Annotation is not relocatable")
 
 
 #
@@ -71,3 +71,31 @@ class SimplificationAvoidanceAnnotation(Annotation):
     @property
     def relocatable(self):
         return False
+
+
+class RegionAnnotation(SimplificationAvoidanceAnnotation):
+    """
+    Use RegionAnnotation to annotate ASTs. Normally, an AST annotated by
+    RegionAnnotations is treated as a ValueSet.
+    """
+
+    def __init__(self, region_id, region_base_addr, offset):
+        self.region_id = region_id
+        self.region_base_addr = region_base_addr
+        self.offset = offset
+
+        # Do necessary conversion here
+        if isinstance(self.region_base_addr, claripy.ast.Base):
+            self.region_base_addr = claripy.backends.vsa.convert(self.region_base_addr)
+        if isinstance(self.offset, claripy.ast.Base):
+            self.offset = claripy.backends.vsa.convert(self.offset)
+
+    #
+    # Overriding base methods
+    #
+
+    def __hash__(self):
+        return hash((self.region_id, self.region_base_addr, hash(self.offset)))
+
+    def __repr__(self):
+        return f"<RegionAnnotation {self.region_id}:{self.offset:#08x}>"
