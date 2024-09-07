@@ -7,6 +7,7 @@ import operator
 from functools import reduce
 
 from claripy.ast.base import Base
+from claripy.ast.bv import ESI, SI, TSI
 from claripy.backends.backend import Backend
 from claripy.balancer import Balancer
 from claripy.errors import BackendError
@@ -116,6 +117,29 @@ class BackendVSA(Backend):
         # Not supported
         raise BackendError
 
+    def _abstract(self, e):
+        if isinstance(e, numbers.Number):
+            return e
+        if isinstance(e, StridedInterval):
+            if e.is_top:
+                return TSI(e.bits, explicit_name=e.name)
+            if e.is_bottom:
+                return ESI(e.bits)
+            return SI(
+                name=e.name,
+                bits=e.bits,
+                lower_bound=e.lower_bound,
+                upper_bound=e.upper_bound,
+                stride=e.stride,
+            )
+        raise BackendError(f"Don't know how to abstract {type(e)}")
+
+    def _simplify(self, e):
+        """This _simplify impementation works because the simplification is done
+        during the conversion from AST to VSA backend objects.
+        """
+        return e
+
     def _eval(self, expr, n, extra_constraints=(), solver=None, model_callback=None):
         if isinstance(expr, StridedInterval | ValueSet):
             return expr.eval(n)
@@ -178,9 +202,6 @@ class BackendVSA(Backend):
     #
     # Backend Operations
     #
-
-    def simplify(self, e):
-        raise BackendError("nope")
 
     def _identical(self, a, b):
         if type(a) != type(b):  # noqa: E721
