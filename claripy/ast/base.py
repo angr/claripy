@@ -586,6 +586,15 @@ class Base:
     def _apply_to_annotations(self, f):
         return self.make_like(self.op, self.args, annotations=f(self.annotations), skip_child_annotations=True)
 
+    def has_annotation_type(self, annotation_type: type[Annotation]) -> bool:
+        """
+        Check if this AST has an annotation of a given type.
+
+        :param annotation_type:     The type of the annotation.
+        :return:                    True if the AST has an annotation of the given type.
+        """
+        return any(isinstance(a, annotation_type) for a in self.annotations)
+
     def append_annotation(self, a: Annotation) -> Self:
         """
         Appends an annotation to this AST.
