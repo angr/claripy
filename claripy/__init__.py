@@ -5,11 +5,6 @@ __version__ = "9.2.118.dev0"
 if bytes is str:
     raise Exception("This module is designed for python 3 only. Please install an older version to use python 2.")
 
-import logging
-
-l = logging.getLogger("claripy")
-l.addHandler(logging.NullHandler())
-
 from .errors import *
 from . import operations as operations
 
