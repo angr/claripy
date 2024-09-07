@@ -680,6 +680,17 @@ class Base:
         """
         return self._apply_to_annotations(lambda _: ())
 
+    def clear_annotation_type(self, annotation_type: type[Annotation]) -> Self:
+        """
+        Removes all annotations of a given type from this AST.
+
+        :param annotation_type:     the type of annotations to remove
+        :returns:                   a new AST, with the annotations removed
+        """
+        return self._apply_to_annotations(
+            lambda alist: tuple(oa for oa in alist if not isinstance(oa, annotation_type))
+        )
+
     #
     # Viewing and debugging
     #
