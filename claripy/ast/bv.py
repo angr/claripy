@@ -380,7 +380,7 @@ def ValueSet(bits, region=None, region_base_addr=None, value=None, name=None, va
     bvs = BVS(name, bits, min=region_base_addr + min_v, max=region_base_addr + max_v, stride=stride)
 
     # Annotate the bvs and return the new AST
-    return bvs.annotate(vsa.RegionAnnotation(region, region_base_addr, value))
+    return bvs.annotate(claripy.annotation.RegionAnnotation(region, region_base_addr, value))
 
 
 VS = ValueSet
