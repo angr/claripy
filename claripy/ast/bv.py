@@ -372,6 +372,14 @@ def ValueSet(bits, region=None, region_base_addr=None, value=None, name=None, va
     elif isinstance(v, vsa.StridedInterval):
         min_v, max_v = v.lower_bound, v.upper_bound
         stride = v.stride
+    elif isinstance(v, claripy.ast.Base):
+        sv = claripy.simplify(v)
+        if sv.op == "BVS":
+            min_v = sv.args[1]
+            max_v = sv.args[2]
+            stride = sv.args[3]
+        else:
+            raise ClaripyValueError(f"ValueSet() does not take `value` ast with op {sv.op}")
     else:
         raise ClaripyValueError(f"ValueSet() does not take `value` of type {type(value)}")
 
