@@ -595,6 +595,15 @@ class Base:
         """
         return any(isinstance(a, annotation_type) for a in self.annotations)
 
+    def get_annotations_by_type(self, annotation_type: type[Annotation]) -> tuple[Annotation, ...]:
+        """
+        Get all annotations of a given type.
+
+        :param annotation_type:     The type of the annotation.
+        :return:                    A tuple of annotations of the given type.
+        """
+        return tuple(a for a in self.annotations if isinstance(a, annotation_type))
+
     def append_annotation(self, a: Annotation) -> Self:
         """
         Appends an annotation to this AST.
