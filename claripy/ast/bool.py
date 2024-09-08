@@ -51,6 +51,8 @@ class Bool(Base):
         """Returns the size of the AST in bits. A boolean is 1 bit."""
         return 1
 
+    __len__ = size
+
 
 def BoolS(name, explicit_name=None) -> Bool:
     """
