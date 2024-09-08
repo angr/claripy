@@ -1084,8 +1084,8 @@ class TestSolution(unittest.TestCase):  # pylint: disable=no-member,function-red
         si = claripy.SI(bits=32, stride=0, lower_bound=3, upper_bound=3)
         si2 = claripy.SI(bits=32, stride=10, lower_bound=32, upper_bound=320)
 
-        vs = claripy.ValueSet(bits=si.size(), region="foo", value=si)
-        vs2 = claripy.ValueSet(bits=si2.size(), region="foo", value=si2)
+        vs = claripy.ValueSet(bits=si.size(), region="foo", value=claripy.backends.vsa.convert(si))
+        vs2 = claripy.ValueSet(bits=si2.size(), region="foo", value=claripy.backends.vsa.convert(si2))
         vs = vs.union(vs2)
 
         assert self.solver.solution(vs, 3)
