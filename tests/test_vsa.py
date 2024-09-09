@@ -4,6 +4,7 @@ from __future__ import annotations
 import unittest
 
 import claripy
+from claripy.ast.bv import VS
 from claripy.vsa import (
     BoolResult,
     DiscreteStridedIntervalSet,
@@ -627,12 +628,8 @@ class TestVSAOperations(unittest.TestCase):  # pylint: disable=no-member functio
 
     def test_value_set_operations(self):
         # ValueSet operations
-        def VS(name=None, bits=None, region=None, val=None):
-            region = "foobar" if region is None else region
-            return claripy.ValueSet(bits, region=region, region_base_addr=0, value=val, name=name)
-
-        vs_1 = VS(bits=32, val=0)
-        vs_1 = vs_1.intersection(VS(bits=32, val=1))
+        vs_1 = VS(bits=32, value=0)
+        vs_1 = vs_1.intersection(VS(bits=32, value=1))
         assert vsa_model(vs_1).is_empty
 
         # Test merging two addresses
@@ -645,8 +642,8 @@ class TestVSAOperations(unittest.TestCase):  # pylint: disable=no-member functio
         )
         assert len(vsa_model(vs_1)) == 32
 
-        vs_1 = VS(name="boo", bits=32, val=0).intersection(VS(name="makeitempty", bits=32, val=1))
-        vs_2 = VS(name="foo", bits=32, val=0).intersection(VS(name="makeitempty", bits=32, val=1))
+        vs_1 = VS(name="boo", bits=32, value=0).intersection(VS(name="makeitempty", bits=32, value=1))
+        vs_2 = VS(name="foo", bits=32, value=0).intersection(VS(name="makeitempty", bits=32, value=1))
         assert self.is_equal(vs_1, vs_1)
         assert self.is_equal(vs_2, vs_2)
         vsa_model(vs_1)._merge_si("global", 0, vsa_model(claripy.SI(bits=32, stride=0, lower_bound=10, upper_bound=10)))
@@ -661,8 +658,8 @@ class TestVSAOperations(unittest.TestCase):  # pylint: disable=no-member functio
 
     def test_value_set_subtraction(self):
         # Subtraction of two pointers yields a concrete value
-        vs_1 = claripy.ValueSet(name="foo", region="global", bits=32, val=0x400010)
-        vs_2 = claripy.ValueSet(name="bar", region="global", bits=32, val=0x400000)
+        vs_1 = claripy.ValueSet(name="foo", region="global", bits=32, value=0x400010)
+        vs_2 = claripy.ValueSet(name="bar", region="global", bits=32, value=0x400000)
         si = vs_1 - vs_2
         # assert isinstance(vsa_model(si), claripy.SI)
         assert type(vsa_model(si)) is StridedInterval
@@ -707,7 +704,7 @@ class TestVSAOperations(unittest.TestCase):  # pylint: disable=no-member functio
 
     def test_if_proxy_and_operations(self):
         # if_1 = And(VS_2, IfProxy(si == 0, 0, 1))
-        vs_2 = claripy.ValueSet(region="global", bits=32, val=0xFA7B00B)
+        vs_2 = claripy.ValueSet(region="global", bits=32, value=0xFA7B00B)
         si = claripy.SI(bits=32, stride=1, lower_bound=0, upper_bound=1)
         if_1 = vs_2 & claripy.If(
             si == 0,
@@ -715,13 +712,13 @@ class TestVSAOperations(unittest.TestCase):  # pylint: disable=no-member functio
             claripy.SI(bits=32, stride=0, lower_bound=0xFFFFFFFF, upper_bound=0xFFFFFFFF),
         )
         assert claripy.backends.vsa.is_true(
-            vsa_model(if_1.ite_excavated.args[1]) == vsa_model(claripy.ValueSet(region="global", bits=32, val=0))
+            vsa_model(if_1.ite_excavated.args[1]) == vsa_model(claripy.ValueSet(region="global", bits=32, value=0))
         )
         assert claripy.backends.vsa.is_true(vsa_model(if_1.ite_excavated.args[2]) == vsa_model(vs_2))
 
     def test_if_proxy_or_operations(self):
         # if_2 = And(VS_3, IfProxy(si != 0, 0, 1))
-        vs_3 = claripy.ValueSet(region="global", bits=32, val=0xDEADCA7)
+        vs_3 = claripy.ValueSet(region="global", bits=32, value=0xDEADCA7)
         si = claripy.SI(bits=32, stride=1, lower_bound=0, upper_bound=1)
         if_2 = vs_3 & claripy.If(
             si != 0,
@@ -729,7 +726,7 @@ class TestVSAOperations(unittest.TestCase):  # pylint: disable=no-member functio
             claripy.SI(bits=32, stride=0, lower_bound=0xFFFFFFFF, upper_bound=0xFFFFFFFF),
         )
         assert claripy.backends.vsa.is_true(
-            vsa_model(if_2.ite_excavated.args[1]) == vsa_model(claripy.ValueSet(region="global", bits=32, val=0))
+            vsa_model(if_2.ite_excavated.args[1]) == vsa_model(claripy.ValueSet(region="global", bits=32, value=0))
         )
         assert claripy.backends.vsa.is_true(vsa_model(if_2.ite_excavated.args[2]) == vsa_model(vs_3))
 
@@ -1063,10 +1060,6 @@ class TestSolution(unittest.TestCase):  # pylint: disable=no-member,function-red
         self.solver_type = claripy.SolverVSA
         self.solver = self.solver_type()
 
-    def VS(self, name=None, bits=None, region=None, val=None):
-        region = "foobar" if region is None else region
-        return claripy.ValueSet(bits, region=region, region_base_addr=0, value=val, name=name)
-
     def test_solution_on_strided_interval(self):
         # Testing solution method with StridedInterval (SI) objects
         si = claripy.SI(bits=32, stride=10, lower_bound=32, upper_bound=320)
@@ -1082,7 +1075,7 @@ class TestSolution(unittest.TestCase):  # pylint: disable=no-member,function-red
 
     def test_solution_on_valueset(self):
         # Testing solution method with ValueSet (VS) objects
-        vs = claripy.ValueSet(region="global", bits=32, val=0xDEADCA7)
+        vs = claripy.ValueSet(region="global", bits=32, value=0xDEADCA7)
         assert self.solver.solution(vs, 0xDEADCA7)
         assert not self.solver.solution(vs, 0xDEADBEEF)
 
@@ -1091,8 +1084,8 @@ class TestSolution(unittest.TestCase):  # pylint: disable=no-member,function-red
         si = claripy.SI(bits=32, stride=0, lower_bound=3, upper_bound=3)
         si2 = claripy.SI(bits=32, stride=10, lower_bound=32, upper_bound=320)
 
-        vs = claripy.ValueSet(bits=si.size(), region="foo", val=claripy.backends.vsa.convert(si))
-        vs2 = claripy.ValueSet(bits=si2.size(), region="foo", val=claripy.backends.vsa.convert(si2))
+        vs = claripy.ValueSet(bits=si.size(), region="foo", value=claripy.backends.vsa.convert(si))
+        vs2 = claripy.ValueSet(bits=si2.size(), region="foo", value=claripy.backends.vsa.convert(si2))
         vs = vs.union(vs2)
 
         assert self.solver.solution(vs, 3)
