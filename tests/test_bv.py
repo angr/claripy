@@ -44,6 +44,12 @@ class TestBv(unittest.TestCase):
         assert -zero == 0
         assert ~zero == 255
 
+    def test_none_value(self):
+        a = claripy.ast.bv.TSI(8)
+        b = claripy.ast.bv.BVV(1, 8)
+        a.union(b)
+        # If we get to this point, the test passed
+
     def test_get_byte(self):
         a = claripy.BVV(0xABCDEF12, 32)
         assert a.get_byte(0).args[0] == 0xAB

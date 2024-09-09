@@ -53,8 +53,10 @@ class BVV(BackendObject):
 
     def __init__(self, value, bits):
         if _d._DEBUG:
-            if bits < 0 or not isinstance(bits, numbers.Number) or not isinstance(value, numbers.Number):
+            if not isinstance(bits, numbers.Number) or bits < 0:
                 raise ClaripyOperationError("BVV needs a non-negative length and an int value")
+            if not isinstance(value, numbers.Number | None):
+                raise ClaripyOperationError("BVV needs a number or None value")
 
             if bits == 0 and value not in (0, "", None):
                 raise ClaripyOperationError("Zero-length BVVs cannot have a meaningful value.")
@@ -81,7 +83,7 @@ class BVV(BackendObject):
 
     @value.setter
     def value(self, v):
-        self._value = v & (self.mod - 1)
+        self._value = v & (self.mod - 1) if v is not None else None
 
     @property
     def signed(self):
