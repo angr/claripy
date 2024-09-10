@@ -872,6 +872,12 @@ class Base:
                 ast_queue.extend(ast.args)
                 continue
 
+    def is_leaf(self) -> bool:
+        """
+        Check if this AST is a leaf node.
+        """
+        return self.depth == 1
+
     def dbg_is_looped(self) -> bool:
         l.debug("Checking AST with hash %s for looping", hash(self))
 
