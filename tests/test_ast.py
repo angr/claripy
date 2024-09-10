@@ -35,6 +35,25 @@ class TestAST(unittest.TestCase):
         assert (x * y // z % w).shallow_repr() == "<BV8 x * y / z % w>"
         assert (x * (y // (z % w))).shallow_repr() == "<BV8 x * (y / (z % w))>"
 
+    def test_is_leaf(self):
+        x = claripy.BVS("x", 8, explicit_name=True)
+        y = claripy.BVS("y", 8, explicit_name=True)
+
+        assert x.is_leaf()
+        assert y.is_leaf()
+        assert (x + y).is_leaf() is False
+        assert (x * y).is_leaf() is False
+        assert (x - y).is_leaf() is False
+        assert (x // y).is_leaf() is False
+        assert (x % y).is_leaf() is False
+        assert (x**y).is_leaf() is False
+        assert (x & y).is_leaf() is False
+        assert (x | y).is_leaf() is False
+        assert (x ^ y).is_leaf() is False
+        assert (x << y).is_leaf() is False
+        assert (x >> y).is_leaf() is False
+        assert (x == y).is_leaf() is False
+
 
 if __name__ == "__main__":
     unittest.main()
