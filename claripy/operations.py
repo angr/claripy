@@ -52,7 +52,7 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
                     raise ClaripyOperationError(msg)
 
         # pylint:disable=too-many-nested-blocks
-        simp = _handle_annotations(simplifications.simpleton.simplify(name, fixed_args), args)
+        simp = _handle_annotations(simplifications.simplify(name, fixed_args), args)
         if simp is not None:
             return simp
 
