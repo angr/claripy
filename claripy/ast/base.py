@@ -290,7 +290,7 @@ class Base:
         length: int | None = None,
     ) -> Self:
         # Try to simplify the expression again
-        simplified = simplifications.simpleton.simplify(op, args) if simplify else None
+        simplified = simplifications.simplify(op, args) if simplify else None
         if simplified is not None:
             op = simplified.op
         if (  # fast path
