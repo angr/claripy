@@ -7,6 +7,7 @@ import struct
 from collections import deque
 from contextlib import suppress
 from enum import IntEnum
+from hashlib import blake2b
 from itertools import chain
 from typing import TYPE_CHECKING, Generic, NoReturn, TypeVar, Union, cast
 from weakref import WeakValueDictionary
@@ -29,15 +30,9 @@ try:
 except ImportError:
     import pickle
 
-try:
-    # Python's build-in MD5 is about 2x faster than hashlib.md5 on short bytestrings
-    import _md5 as md5
-except ImportError:
-    import hashlib as md5
-
 l = logging.getLogger("claripy.ast")
 
-md5_unpacker = struct.Struct("2Q")
+blake2b_unpacker = struct.Struct("Q")
 from_iterable = chain.from_iterable
 
 # pylint:disable=unused-argument,too-many-boolean-expressions
@@ -444,11 +439,8 @@ class Base:
 
         to_hash = Base._ast_serialize(op, args, annotations, length)
 
-        # Why do we use md5 when it's broken? Because speed is more important
-        # than cryptographic integrity here. Then again, look at all those
-        # allocations we're doing here... fast python is painful.
-        hd = md5.md5(to_hash).digest()
-        return md5_unpacker.unpack(hd)[0]  # 64 bits
+        hd = blake2b(to_hash, digest_size=8).digest()
+        return blake2b_unpacker.unpack(hd)[0]
 
     @staticmethod
     def _ast_serialize(
