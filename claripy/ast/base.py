@@ -3,6 +3,7 @@ from __future__ import annotations
 import itertools
 import logging
 import math
+import pickle
 import struct
 from collections import deque
 from contextlib import suppress
@@ -24,11 +25,6 @@ if TYPE_CHECKING:
 
     from claripy import Backend
     from claripy.annotation import Annotation
-
-try:
-    import _pickle as pickle
-except ImportError:
-    import pickle
 
 l = logging.getLogger("claripy.ast")
 
