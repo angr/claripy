@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import cast
+
 from claripy.ast.base import Base
 from claripy.errors import ClaripyOperationError
 
@@ -18,11 +20,11 @@ class Bits(Base):
             kwargs["length"] = self.length
         return Base.make_like(self, op, args, **kwargs)
 
-    def size(self):
+    def size(self) -> int:
         """
         :returns: The bit length of this AST
         """
-        return self.length
+        return cast(int, self.length)
 
     def _type_name(self):
         return self.__class__.__name__ + str(self.length)
