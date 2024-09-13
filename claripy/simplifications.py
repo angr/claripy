@@ -1082,28 +1082,30 @@ def zeroext_comparing_against_simplifier(op, a, b):
     ZeroExt can be eliminated.
     """
     if op in {operator.__eq__, operator.__ne__, operator.__ge__} and b.op == "BVV":
+        b_highbits = None
+        removable_high_bits = 0
         if a.op == "ZeroExt":
             # check if the high bits of b are zeros
             a_zeroext_bits = a.args[0]
             b_highbits = b[b.size() - 1 : b.size() - a_zeroext_bits]
-            if (b_highbits == 0).is_true():
-                # we can get rid of ZeroExt
-                return op(a.args[1], b[b.size() - a_zeroext_bits - 1 : 0])
-            if (b_highbits == 0).is_false():
-                # unsat
-                return claripy.false() if op is operator.__eq__ else claripy.true()
-
-        if (
+            removable_high_bits = a_zeroext_bits
+        elif (
             a.op == "Concat" and len(a.args) == 2 and a.args[0].op == "BVV" and a.args[0].args[0] == 0
         ):  # make sure high bits of a are zeros
             a_zero_bits = a.args[0].args[1]
             b_highbits = b[b.size() - 1 : b.size() - a_zero_bits]
-            if (b_highbits == 0).is_true():
-                # we can get rid of Concat
-                return op(a.args[1], b[b.size() - a_zero_bits - 1 : 0])
-            if (b_highbits == 0).is_false():
-                # unsat
-                return claripy.false() if op is operator.__eq__ else claripy.true()
+            removable_high_bits = a_zero_bits
+        else:
+            return None
+
+        if (b_highbits == 0).is_true():
+            # we can get rid of ZeroExt
+            return op(a.args[1], b[b.size() - removable_high_bits - 1 : 0])
+        if (b_highbits == 0).is_false():
+            if op is operator.__ne__:
+                return claripy.true()
+            # op is __eq__, __ge__
+            return claripy.false()
 
     return None
 
