@@ -933,7 +933,7 @@ class Base:
             "testing Expressions for truthiness does not do what you want, as these expressions can be symbolic"
         )
 
-    def structurally_match(self, o: Self) -> bool:
+    def structurally_match(self, o: Base) -> bool:
         """
         Structurally compares two A objects, and check if their corresponding leaves are definitely the same A object
         (name-wise or hash-identity wise).
@@ -959,7 +959,7 @@ class Base:
                     return False
                 continue
 
-            if arg_a.op in operations.leaf_operations:
+            if arg_a.is_leaf():
                 if arg_a is not arg_b:
                     return False
 
@@ -1002,7 +1002,7 @@ class Base:
                     repl = replacements[ast.cache_key]
 
                 elif ast.variables >= variable_set:
-                    if ast.op in operations.leaf_operations:
+                    if ast.is_leaf():
                         repl = leaf_operation(ast)
                         if repl is not ast:
                             replacements[ast.cache_key] = repl
@@ -1087,7 +1087,7 @@ class Base:
             # let's no go into this right now
             return self
 
-        if any(a.op in operations.leaf_operations for a in self.args):
+        if any(a.is_leaf() for a in self.args):
             # burrowing through these is pretty funny
             return self
 
@@ -1117,7 +1117,7 @@ class Base:
                     arg_queue.append(ast)
                     continue
 
-                if ast.op in operations.leaf_operations:
+                if ast.is_leaf():
                     arg_queue.append(ast)
                     continue
 
@@ -1274,7 +1274,7 @@ class Base:
 
 
 def simplify(e: T) -> T:
-    if isinstance(e, Base) and e.op in operations.leaf_operations:
+    if isinstance(e, Base) and e.is_leaf():
         return e
 
     s = e._first_backend("simplify")
