@@ -493,18 +493,20 @@ class BackendZ3(Backend):
                     "BVS",
                     ast_args,
                     length=bv_size,
-                    variables={symbol_str},
+                    variables=frozenset((symbol_str,)),
                     symbolic=True,
                     encoded_name=symbol_name,
                     annotations=annots,
                 )
             if symbol_ty == z3.Z3_BOOL_SORT:
-                return Bool("BoolS", (symbol_str,), variables={symbol_str}, symbolic=True)
+                return Bool("BoolS", (symbol_str,), variables=frozenset((symbol_str,)), symbolic=True)
             if symbol_ty == z3.Z3_FLOATING_POINT_SORT:
                 ebits = z3.Z3_fpa_get_ebits(ctx, z3_sort)
                 sbits = z3.Z3_fpa_get_sbits(ctx, z3_sort)
                 sort = FSort.from_params(ebits, sbits)
-                return FP("FPS", (symbol_str, sort), variables={symbol_str}, symbolic=True, length=sort.length)
+                return FP(
+                    "FPS", (symbol_str, sort), variables=frozenset((symbol_str,)), symbolic=True, length=sort.length
+                )
             if z3.Z3_is_string_sort(ctx, z3_sort):
                 raise BackendError("Z3 backend does not support string symbols")
             raise BackendError("Unknown z3 term type %d...?" % symbol_ty)

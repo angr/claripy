@@ -263,7 +263,7 @@ def BVS(
     return BV(
         "BVS",
         (n, min, max, stride, uninitialized, discrete_set, discrete_set_max_card),
-        variables={n},
+        variables=frozenset((n,)),
         length=size,
         symbolic=True,
         uninitialized=uninitialized,

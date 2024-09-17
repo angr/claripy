@@ -218,10 +218,6 @@ class Base:
             errored = set(chain.from_iterable(a._errored for a in b_args))
         arg_max_depth = max((a.depth for a in b_args), default=0)
 
-        # TODO: This shouldn't be nessessary
-        if not isinstance(variables, frozenset):
-            variables = frozenset(variables)
-
         if add_variables:
             variables = frozenset.union(variables, add_variables)
 
@@ -249,7 +245,7 @@ class Base:
             self.__a_init__(
                 op,
                 a_args,
-                variables=variables,
+                variables,
                 symbolic=symbolic,
                 length=length,
                 errored=errored,
@@ -310,10 +306,10 @@ class Base:
             result.__a_init__(
                 op,
                 args,
+                self.variables,
                 depth=self.depth,
                 uneliminatable_annotations=uneliminatable_annotations,
                 relocatable_annotations=relocatable_annotations,
-                variables=self.variables,
                 symbolic=self.symbolic,
                 annotations=annotations,
                 length=length,
@@ -353,7 +349,7 @@ class Base:
         self,
         op: str,
         args: tuple[ArgType, ...],
-        variables: Iterable[str] | None = None,
+        variables: frozenset[str],
         symbolic: bool | None = None,
         length: int | None = None,
         simplified: SimplificationLevel = SimplificationLevel.UNSIMPLIFIED,
@@ -377,7 +373,7 @@ class Base:
         self.op = op
         self.args = args if type(args) is tuple else tuple(args)
         self.length = length
-        self.variables = frozenset(variables) if type(variables) is not frozenset else variables
+        self.variables = variables
         self.symbolic = symbolic
         self.annotations: tuple[Annotation] = annotations
         self._uneliminatable_annotations = uneliminatable_annotations
@@ -565,7 +561,7 @@ class Base:
         if self.op not in {"BVS", "BoolS", "FPS"}:
             raise ClaripyOperationError("rename is only supported on leaf nodes")
         new_args = (new_name,) + self.args[1:]
-        return self.make_like(self.op, new_args, length=self.length, variables={new_name})
+        return self.make_like(self.op, new_args, length=self.length, variables=frozenset((new_name,)))
 
     #
     # Annotations
@@ -889,12 +885,8 @@ class Base:
         if len(self.args) == len(new_args) and all(a is b for a, b in zip(self.args, new_args, strict=False)):
             return self
 
-        # symbolic = any(a.symbolic for a in new_args if isinstance(a, Base))
-        # variables = frozenset.union(frozenset(), *(a.variables for a in new_args if isinstance(a, Base)))
         length = self.length if new_length is None else new_length
         return self.make_like(self.op, new_args, length=length, **kwargs)
-        # if a.op != self.op or a.symbolic != self.symbolic or a.variables != self.variables:
-        #   raise ClaripyOperationError("major bug in swap_args()")
 
     #
     # Other helper functions

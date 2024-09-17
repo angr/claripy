@@ -141,7 +141,7 @@ def StringS(name, size, uninitialized=False, explicit_name=False, **kwargs):
         length=8 * size,
         symbolic=True,
         uninitialized=uninitialized,
-        variables={n},
+        variables=frozenset((n,)),
         **kwargs,
     )
 

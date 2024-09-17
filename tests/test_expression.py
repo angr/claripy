@@ -123,8 +123,8 @@ class TestExpression(unittest.TestCase):
         self.assertNotEqual(hash(old_formula), hash(ooo_formula))
         self.assertNotEqual(hash(new_formula), hash(ooo_formula))
 
-        self.assertEqual(old_formula.variables, {"old"})
-        self.assertEqual(new_formula.variables, {"new"})
+        self.assertEqual(old_formula.variables, frozenset(("old",)))
+        self.assertEqual(new_formula.variables, frozenset(("new",)))
         self.assertEqual(ooo_formula.variables, ooo.variables)
 
         self.assertTrue(old_formula.symbolic)
