@@ -35,7 +35,7 @@ class FP(Bits):
         if rm is None:
             rm = fp.RM.default()
 
-        return fpToFP(rm, self, sort)
+        return fpToFP(self, sort, rm)
 
     def raw_to_fp(self):
         """
@@ -68,7 +68,7 @@ class FP(Bits):
             rm = fp.RM.default()
 
         op = fpToSBV if signed else fpToUBV
-        return op(rm, self, size)
+        return op(self, size, rm)
 
     @property
     def sort(self):
@@ -129,7 +129,7 @@ def _fp_length_calc(_a1, a2, _a3=None):
     return a2.length
 
 
-fpToFP = operations.op("fpToFP", object, FP, calc_length=_fp_length_calc)
+fpToFP = operations.op("fpToFP", (FP, fp.FSort, fp.RM), FP, calc_length=_fp_length_calc)
 fpToFPUnsigned = operations.op("fpToFPUnsigned", (BV, fp.FSort, fp.RM), FP, calc_length=_fp_length_calc)
 fpFP = operations.op("fpFP", (BV, BV, BV), FP, calc_length=lambda a, b, c: a.length + b.length + c.length)
 fpToIEEEBV = operations.op("fpToIEEEBV", (FP,), BV, calc_length=lambda fp: fp.length)

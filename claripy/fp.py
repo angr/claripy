@@ -342,7 +342,7 @@ def fpFP(sgn, exp, mantissa):
     return FPV(unpacked, sort)
 
 
-def fpToSBV(rm, fp, size):
+def fpToSBV(fp, size, rm):
     try:
         rounding_mode = rm.pydecimal_equivalent_rounding_mode()
         val = int(Decimal(fp.value).to_integral_value(rounding_mode))
