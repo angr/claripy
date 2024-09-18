@@ -3,13 +3,17 @@ from __future__ import annotations
 import atexit
 import logging
 from contextlib import suppress
+from typing import TYPE_CHECKING, overload
 
 from claripy import operations
 from claripy.ast.base import ASTCacheKey, Base, _make_name
 from claripy.backend_manager import backends
-from claripy.errors import BackendError, ClaripyOperationError, ClaripyTypeError
+from claripy.errors import BackendError, ClaripyTypeError
 
 from .bits import Bits
+
+if TYPE_CHECKING:
+    from .fp import FP
 
 l = logging.getLogger("claripy.ast.bool")
 
@@ -97,12 +101,17 @@ Bool.intersection = operations.op("intersection", (Bool, Bool), Bool)
 #
 
 
-def If(*args):
-    # the coercion here is strange enough that we'll just implement it manually
-    if len(args) != 3:
-        raise ClaripyOperationError("invalid number of args passed to If")
+@overload
+def If(cond: bool | Bool, true_value: bool | Bool, false_value: bool | Bool) -> Bool: ...
+@overload
+def If(cond: bool | Bool, true_value: int | BV, false_value: int | BV) -> BV: ...
+@overload
+def If(cond: bool | Bool, true_value: float | FP, false_value: float | FP) -> FP: ...
 
-    args = list(args)
+
+def If(cond, true_value, false_value):
+    # the coercion here is strange enough that we'll just implement it manually
+    args = [cond, true_value, false_value]
 
     if isinstance(args[0], bool):
         args[0] = BoolV(args[0])
@@ -274,4 +283,4 @@ def constraint_to_si(expr):
 
 
 # pylint: disable=wrong-import-position
-from .bv import BVS  # noqa: E402
+from .bv import BV, BVS  # noqa: E402
