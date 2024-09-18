@@ -102,7 +102,7 @@ class BackendConcrete(Backend):
         return not arg
 
     @staticmethod
-    def _op_fpSqrt(rm, a):  # pylint:disable=unused-argument
+    def _op_fpSqrt(a, _):
         return a.fpSqrt()
 
     def convert(self, expr):
