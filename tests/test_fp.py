@@ -5,6 +5,7 @@ import math
 import unittest
 
 import claripy
+from claripy.fp import RM
 
 
 class TestFp(unittest.TestCase):
@@ -54,7 +55,7 @@ class TestFp(unittest.TestCase):
 
     def test_fp_ops(self):
         a = claripy.FPV(1.5, claripy.FSORT_DOUBLE)
-        b = claripy.fpToUBV(claripy.fp.RM_NearestTiesEven, a, 32)
+        b = claripy.fpToUBV(a, 32, RM.RM_NearestTiesEven)
 
         s = claripy.Solver()
         assert s.eval(b, 1)[0] == 2

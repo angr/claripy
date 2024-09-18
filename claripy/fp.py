@@ -355,7 +355,7 @@ def fpToSBV(rm, fp, size):
         raise
 
 
-def fpToUBV(rm, fp, size):
+def fpToUBV(fp, size, rm):
     # todo: actually make unsigned
     try:
         rounding_mode = rm.pydecimal_equivalent_rounding_mode()

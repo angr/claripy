@@ -126,19 +126,15 @@ def FPV(value, sort):
 
 
 def _fp_length_calc(a1, a2, a3=None):
-    if isinstance(a1, fp.RM) and a3 is None:
-        raise Exception
-    if a3 is None:
-        return a2.length
-    return a3.length
+    return a2.length
 
 
 fpToFP = operations.op("fpToFP", object, FP, calc_length=_fp_length_calc)
-fpToFPUnsigned = operations.op("fpToFPUnsigned", (fp.RM, BV, fp.FSort), FP, calc_length=_fp_length_calc)
+fpToFPUnsigned = operations.op("fpToFPUnsigned", (BV, fp.FSort, fp.RM), FP, calc_length=_fp_length_calc)
 fpFP = operations.op("fpFP", (BV, BV, BV), FP, calc_length=lambda a, b, c: a.length + b.length + c.length)
 fpToIEEEBV = operations.op("fpToIEEEBV", (FP,), BV, calc_length=lambda fp: fp.length)
-fpToSBV = operations.op("fpToSBV", (fp.RM, FP, int), BV, calc_length=lambda _rm, _fp, len: len)
-fpToUBV = operations.op("fpToUBV", (fp.RM, FP, int), BV, calc_length=lambda _rm, _fp, len: len)
+fpToSBV = operations.op("fpToSBV", (FP, int, fp.RM), BV, calc_length=lambda _fp, len, _rm: len)
+fpToUBV = operations.op("fpToUBV", (FP, int, fp.RM), BV, calc_length=lambda _fp, len, _rm: len)
 
 #
 # unbound float point comparisons
@@ -162,29 +158,21 @@ fpIsInf = operations.op("fpIsInf", (FP,), Bool)
 #
 
 
-def _fp_binop_check(rm, a, b):  # pylint:disable=unused-argument
+def _fp_binop_check(a, b, _):
     return a.length == b.length, "Lengths must be equal"
 
 
-def _fp_binop_length(rm, a, b):  # pylint:disable=unused-argument
+def _fp_binop_length(a, _b, _rm):
     return a.length
 
 
 fpAbs = operations.op("fpAbs", (FP,), FP, calc_length=lambda x: x.length)
 fpNeg = operations.op("fpNeg", (FP,), FP, calc_length=lambda x: x.length)
-fpSub = operations.op("fpSub", (fp.RM, FP, FP), FP, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
-fpAdd = operations.op("fpAdd", (fp.RM, FP, FP), FP, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
-fpMul = operations.op("fpMul", (fp.RM, FP, FP), FP, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
-fpDiv = operations.op("fpDiv", (fp.RM, FP, FP), FP, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
-fpSqrt = operations.op(
-    "fpSqrt",
-    (
-        fp.RM,
-        FP,
-    ),
-    FP,
-    calc_length=lambda _, x: x.length,
-)
+fpSub = operations.op("fpSub", (FP, FP, fp.RM), FP, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
+fpAdd = operations.op("fpAdd", (FP, FP, fp.RM), FP, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
+fpMul = operations.op("fpMul", (FP, FP, fp.RM), FP, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
+fpDiv = operations.op("fpDiv", (FP, FP, fp.RM), FP, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
+fpSqrt = operations.op("fpSqrt", (FP, fp.RM), FP, calc_length=lambda x, _: x.length)
 
 #
 # bound fp operations
