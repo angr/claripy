@@ -37,7 +37,12 @@ def normalize_types(f):
 
 
 class RM(Enum):
-    # see https://en.wikipedia.org/wiki/IEEE_754#Rounding_rules
+    """Floating point rounding mode, as defined by IEEE754.
+
+    See this wikipedia entry for details:
+    https://en.wikipedia.org/wiki/IEEE_754#Rounding_rules
+    """
+
     RM_NearestTiesEven = "RM_RNE"
     RM_NearestTiesAwayFromZero = "RM_RNA"
     RM_TowardsZero = "RM_RTZ"
@@ -66,6 +71,10 @@ RM_TowardsNegativeInf = RM.RM_TowardsNegativeInf
 
 
 class FSort:
+    """Floating point sort, desribing the size of the exponent and mantissa for
+    an IEEE754 floating point number.
+    """
+
     def __init__(self, name, exp, mantissa):
         self.name = name
         self.exp = exp
@@ -106,6 +115,9 @@ FSORT_DOUBLE = FSort("DOUBLE", 11, 53)
 
 
 class FPV(BackendObject):
+    """Floating point value. A concrete floating point value with a specific
+    sort (FSORT_FLOAT or FSORT_DOUBLE)."""
+
     __slots__ = ["sort", "value"]
 
     def __init__(self, value, sort):
