@@ -125,7 +125,7 @@ def FPV(value, sort):
 #
 
 
-def _fp_length_calc(a1, a2, a3=None):
+def _fp_length_calc(_a1, a2, _a3=None):
     return a2.length
 
 
