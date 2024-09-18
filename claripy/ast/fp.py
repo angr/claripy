@@ -3,7 +3,7 @@ from __future__ import annotations
 import struct
 
 from claripy import fp, operations
-from claripy.ast.base import _make_name
+from claripy.ast.base import Base, _make_name
 from claripy.fp import FSORT_FLOAT
 
 from .bits import Bits
@@ -24,7 +24,7 @@ class FP(Bits):
 
     __slots__ = ()
 
-    def to_fp(self, sort, rm=None):
+    def to_fp(self, sort, rm=fp.RM.RM_NearestTiesEven):
         """
         Convert this float to a different sort
 
@@ -32,9 +32,6 @@ class FP(Bits):
         :param rm:      Optional: The rounding mode to use
         :return:        An FP AST
         """
-        if rm is None:
-            rm = fp.RM.default()
-
         return fpToFP(self, sort, rm)
 
     def raw_to_fp(self):
@@ -129,7 +126,7 @@ def _fp_length_calc(_a1, a2, _a3=None):
     return a2.length
 
 
-fpToFP = operations.op("fpToFP", (FP, fp.FSort, fp.RM), FP, calc_length=_fp_length_calc)
+fpToFP = operations.op("fpToFP", (Base, fp.FSort, fp.RM), FP, calc_length=_fp_length_calc)
 fpToFPUnsigned = operations.op("fpToFPUnsigned", (BV, fp.FSort, fp.RM), FP, calc_length=_fp_length_calc)
 fpFP = operations.op("fpFP", (BV, BV, BV), FP, calc_length=lambda a, b, c: a.length + b.length + c.length)
 fpToIEEEBV = operations.op("fpToIEEEBV", (FP,), BV, calc_length=lambda fp: fp.length)

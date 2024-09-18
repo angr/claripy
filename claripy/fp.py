@@ -241,47 +241,14 @@ class FPV(BackendObject):
         return f"FPV({self.value:f}, {self.sort})"
 
 
-def fpToFP(a1, a2, a3=None):
-    """
-    Returns a FP AST and has three signatures:
-
-        fpToFP(ubvv, sort)
-            Returns a FP AST whose value is the same as the unsigned BVV `a1`
-            and whose sort is `a2`.
-
-        fpToFP(rm, fpv, sort)
-            Returns a FP AST whose value is the same as the floating point `a2`
-            and whose sort is `a3`.
-
-        fpToTP(rm, sbvv, sort)
-            Returns a FP AST whose value is the same as the signed BVV `a2` and
-            whose sort is `a3`.
-    """
-    if isinstance(a1, BVV) and isinstance(a2, FSort):
-        sort = a2
-        if sort == FSORT_FLOAT:
-            pack, unpack = "I", "f"
-        elif sort == FSORT_DOUBLE:
-            pack, unpack = "Q", "d"
-        else:
-            raise ClaripyOperationError("unrecognized float sort")
-
-        try:
-            packed = struct.pack("<" + pack, a1.value)
-            (unpacked,) = struct.unpack("<" + unpack, packed)
-        except OverflowError as e:
-            # struct.pack sometimes overflows
-            raise ClaripyOperationError("OverflowError: " + str(e)) from e
-
-        return FPV(unpacked, sort)
-    if isinstance(a1, RM) and isinstance(a2, FPV) and isinstance(a3, FSort):
-        return FPV(a2.value, a3)
-    if isinstance(a1, RM) and isinstance(a2, BVV) and isinstance(a3, FSort):
-        return FPV(float(a2.signed), a3)
-    raise ClaripyOperationError("unknown types passed to fpToFP")
+def fpToFP(arg: BVV | FPV, sort: FSort, _rm: RM = RM.RM_NearestTiesEven):
+    """Returns a FP AST given a BVV or FPV."""
+    if isinstance(arg, BVV):
+        arg = FPV(float(arg.value), sort)
+    return FPV(arg.value, sort)
 
 
-def fpToFPUnsigned(_rm, thing, sort):
+def fpToFPUnsigned(thing, sort, _rm):
     """
     Returns a FP AST whose value is the same as the unsigned BVV `thing` and
     whose sort is `sort`.
