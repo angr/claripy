@@ -550,6 +550,9 @@ class BackendZ3(Backend):
             l.error(err)
             raise BackendError(err)
 
+        if ty is FP and isinstance(args[0], RM):
+            args = [*args[1:], args[0]]
+
         if op_name == "If":
             # If is polymorphic and thus must be handled specially
             ty = type(args[1])
