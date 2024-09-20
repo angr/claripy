@@ -45,7 +45,7 @@ class ASTCacheKey(Generic[T]):
         self.ast: T = a
 
     def __hash__(self):
-        return hash(self.ast)
+        return self.ast.hash()
 
     def __eq__(self, other):
         return type(self) is type(other) and self.ast._hash == other.ast._hash
