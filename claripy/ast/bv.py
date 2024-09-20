@@ -92,15 +92,7 @@ class BV(Bits):
         :param index: the byte to extract
         :return: An 8-bit BV
         """
-        pos = (self.size() + 7) // 8 - 1 - index
-        if pos < 0:
-            raise ValueError(
-                "Incorrect index %d. Your index must be between %d and %d." % (index, 0, self.size() // 8 - 1)
-            )
-        r = self[min(pos * 8 + 7, self.size() - 1) : pos * 8]
-        if r.size() % 8 != 0:  # pylint:disable=no-member
-            r = r.zero_extend(8 - r.size() % 8)  # pylint:disable=no-member
-        return r
+        return self.get_bytes(index, 1)
 
     def get_bytes(self, index, size):
         """
