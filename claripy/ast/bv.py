@@ -31,6 +31,8 @@ def cleanup():
 
 atexit.register(cleanup)
 
+# pylint: disable=too-many-positional-arguments
+
 
 class BV(Bits):
     """
