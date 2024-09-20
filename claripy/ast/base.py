@@ -41,6 +41,8 @@ T = TypeVar("T", bound="Base")
 class ASTCacheKey(Generic[T]):
     """ASTCacheKey is a wrapper around an AST that is used as a key in caches."""
 
+    __slots__ = ("ast",)
+
     def __init__(self, a: T):
         self.ast: T = a
 
