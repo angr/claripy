@@ -67,8 +67,8 @@ class TestPickle(unittest.TestCase):
         s.add(x == 3)
         s.finalize()
         ss = pickle.loads(pickle.dumps(s))
-        old_constraint_sets = [[hash(j) for j in k.constraints] for k in s._solver_list]
-        new_constraint_sets = [[hash(j) for j in k.constraints] for k in ss._solver_list]
+        old_constraint_sets = [[j.hash() for j in k.constraints] for k in s._solver_list]
+        new_constraint_sets = [[j.hash() for j in k.constraints] for k in ss._solver_list]
         assert old_constraint_sets == new_constraint_sets
         assert str(s.variables) == str(ss.variables)
 
