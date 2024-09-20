@@ -26,14 +26,14 @@ class ConstraintDeduplicatorMixin:
         # we only add to the constraint hashes because we want to
         # prevent previous (now simplified) constraints from
         # being re-added
-        self._constraint_hashes.update(map(hash, added))
+        self._constraint_hashes.update(c.hash() for c in added)
         return added
 
     def _add(self, constraints, invalidate_cache=True):
-        filtered = tuple(c for c in constraints if hash(c) not in self._constraint_hashes)
+        filtered = tuple(c for c in constraints if c.hash() not in self._constraint_hashes)
         if len(filtered) == 0:
             return filtered
 
         added = super()._add(filtered, invalidate_cache=invalidate_cache)
-        self._constraint_hashes.update(map(hash, added))
+        self._constraint_hashes.update(c.hash() for c in added)
         return added

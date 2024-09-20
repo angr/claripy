@@ -45,7 +45,7 @@ class ASTCacheKey(Generic[T]):
         self.ast: T = a
 
     def __hash__(self):
-        return hash(self.ast)
+        return self.ast.hash()
 
     def __eq__(self, other):
         return type(self) is type(other) and self.ast._hash == other.ast._hash
@@ -491,6 +491,14 @@ class Base:
     def __hash__(self) -> int:
         return self._hash
 
+    def hash(self) -> int:
+        """Python's built in hash function is not collision resistant, so we use our own.
+        When you call `hash(ast)`, the value is derived from the claripy hash, but it gets
+        passed through python's non-resistent hash function first. This skips that step,
+        allowing the claripy hash to be used directly, eg as a cache key.
+        """
+        return self._hash
+
     @property
     def cache_key(self: Self) -> ASTCacheKey[Self]:
         """
@@ -834,7 +842,7 @@ class Base:
             if isinstance(ast, Base):
                 ast_queue.append(iter(ast.args))
 
-                l.debug("Yielding AST %s with hash %s with %d children", ast, hash(ast), len(ast.args))
+                l.debug("Yielding AST %s with hash %s with %d children", ast, ast.hash(), len(ast.args))
                 yield ast
 
     def leaf_asts(self) -> Iterator[Base]:
@@ -862,14 +870,14 @@ class Base:
         """
         return self.depth == 1
 
-    def dbg_is_looped(self) -> bool:
-        l.debug("Checking AST with hash %s for looping", hash(self))
+    def dbg_is_looped(self) -> Base | bool:  # TODO: this return type is bad
+        l.debug("Checking AST with hash %s for looping", self.hash())
 
         seen = set()
         for child_ast in self.children_asts():
-            if hash(child_ast) in seen:
+            if child_ast.hash() in seen:
                 return child_ast
-            seen.add(hash(child_ast))
+            seen.add(child_ast.hash())
 
         return False
 

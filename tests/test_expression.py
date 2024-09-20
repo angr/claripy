@@ -119,9 +119,9 @@ class TestExpression(unittest.TestCase):
         new_formula = old_formula.replace(old, new)
         ooo_formula = new_formula.replace(new, ooo)
 
-        self.assertNotEqual(hash(old_formula), hash(new_formula))
-        self.assertNotEqual(hash(old_formula), hash(ooo_formula))
-        self.assertNotEqual(hash(new_formula), hash(ooo_formula))
+        self.assertNotEqual(old_formula.hash(), new_formula.hash())
+        self.assertNotEqual(old_formula.hash(), ooo_formula.hash())
+        self.assertNotEqual(new_formula.hash(), ooo_formula.hash())
 
         self.assertEqual(old_formula.variables, frozenset(("old",)))
         self.assertEqual(new_formula.variables, frozenset(("new",)))
