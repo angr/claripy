@@ -22,7 +22,7 @@ class ConstraintFilterMixin:
             ec = self._constraint_filter(constraints)
         except UnsatError:
             # filter out concrete False
-            ec = [c for c in constraints if c not in {False, false}] + [false]
+            ec = [c for c in constraints if c not in {False, false()}] + [false()]
 
         if len(constraints) == 0:
             return []
