@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import atexit
 import logging
 import numbers
 import weakref
@@ -20,16 +19,6 @@ from .bool import Bool, If
 l = logging.getLogger("claripy.ast.bv")
 
 _bvv_cache = weakref.WeakValueDictionary()
-
-
-# This is a hilarious hack to get around some sort of bug in z3's python bindings, where
-# under some circumstances stuff gets destructed out of order
-def cleanup():
-    global _bvv_cache  # pylint:disable=global-variable-not-assigned
-    del _bvv_cache
-
-
-atexit.register(cleanup)
 
 # pylint: disable=too-many-positional-arguments
 

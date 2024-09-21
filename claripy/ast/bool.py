@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import atexit
 import logging
 from contextlib import suppress
 from typing import TYPE_CHECKING, overload
@@ -18,16 +17,6 @@ if TYPE_CHECKING:
 l = logging.getLogger("claripy.ast.bool")
 
 _boolv_cache = {}
-
-
-# This is a hilarious hack to get around some sort of bug in z3's python bindings, where
-# under some circumstances stuff gets destructed out of order
-def cleanup():
-    global _boolv_cache  # pylint:disable=global-variable-not-assigned
-    del _boolv_cache
-
-
-atexit.register(cleanup)
 
 
 class Bool(Base):
