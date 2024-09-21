@@ -40,27 +40,11 @@ select = [
 ]
 ignore = [
     "E501",
-    "E731",
     "E741",
-    "FURB113",
     "RUF012",
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"**/__init__.py" = [
-    "E402",
-    "F401",
-    "F403",
-    "F405",
-    "F811",
-    "F821",
-    "I",
-]
-"claripy/ops.py" = [
-    "E402",
-    "F403",
-    "F405",
-]
 "tests/**" = [
     "B011",
     "BLE",

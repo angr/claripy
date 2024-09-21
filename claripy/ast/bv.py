@@ -8,7 +8,7 @@ from contextlib import suppress
 from typing_extensions import Self
 
 import claripy
-from claripy import operations, vsa
+from claripy import operations
 from claripy.ast.base import _make_name
 from claripy.errors import BackendError, ClaripyValueError
 from claripy.utils import deprecated
@@ -164,11 +164,11 @@ class BV(Bits):
         :return:        An FP AST whose value is the same as this BV
         """
         if rm is None:
-            rm = fp.fp.RM.default()
+            rm = claripy.fp.RM.default()
         if sort is None:
-            sort = fp.fp.FSort.from_size(self.length)
+            sort = claripy.fp.FSort.from_size(self.length)
 
-        op = fp.fpToFP if signed else fp.fpToFPUnsigned
+        op = claripy.ast.fp.fpToFP if signed else claripy.ast.fp.fpToFPUnsigned
         return op(rm, self, sort)
 
     def raw_to_fp(self):
@@ -178,8 +178,8 @@ class BV(Bits):
 
         :return:        An FP AST whose bit-pattern is the same as this BV
         """
-        sort = fp.fp.FSort.from_size(self.length)
-        return fp.fpToFP(self, sort)
+        sort = claripy.fp.FSort.from_size(self.length)
+        return claripy.ast.fp.fpToFP(self, sort)
 
     def raw_to_bv(self):
         """
@@ -312,7 +312,7 @@ def SI(
 ):
     name = "unnamed" if name is None else name
     if to_conv is not None:
-        si = vsa.CreateStridedInterval(
+        si = claripy.vsa.CreateStridedInterval(
             name=name, bits=bits, lower_bound=lower_bound, upper_bound=upper_bound, stride=stride, to_conv=to_conv
         )
         return BVS(
@@ -352,7 +352,7 @@ def ValueSet(bits, region=None, region_base_addr=None, value=None, name=None, va
     if isinstance(v, numbers.Number):
         min_v, max_v = v, v
         stride = 0
-    elif isinstance(v, vsa.StridedInterval):
+    elif isinstance(v, claripy.vsa.StridedInterval):
         min_v, max_v = v.lower_bound, v.upper_bound
         stride = v.stride
     elif isinstance(v, claripy.ast.Base):
@@ -381,7 +381,7 @@ def DSIS(
     name=None, bits=0, lower_bound=None, upper_bound=None, stride=None, explicit_name=None, to_conv=None, max_card=None
 ):
     if to_conv is not None:
-        si = vsa.CreateStridedInterval(bits=to_conv.size(), to_conv=to_conv)
+        si = claripy.vsa.CreateStridedInterval(bits=to_conv.size(), to_conv=to_conv)
         return SI(
             name=name,
             bits=si._bits,
@@ -607,5 +607,3 @@ BV.widen = operations.op(
 BV.intersection = operations.op(
     "intersection", (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc
 )
-
-from . import fp  # noqa: E402

@@ -432,7 +432,7 @@ class TestExpression(unittest.TestCase):
         assert (100 + (x_sub).replace(x, o)).args[0] == 90
 
         # make sure that all backends handle this properly
-        for b in claripy.backends._all_backends:
+        for b in claripy.backends.all_backends:
             with suppress(claripy.BackendError):
                 b.convert(x + x + x + x)
 

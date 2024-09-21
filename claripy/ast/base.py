@@ -15,8 +15,8 @@ from weakref import WeakValueDictionary
 
 from typing_extensions import Self
 
-from claripy import operations, simplifications
-from claripy.backend_manager import backends
+import claripy
+from claripy import operations
 from claripy.errors import BackendError, ClaripyOperationError, ClaripyReplacementError
 from claripy.fp import FSort
 
@@ -29,7 +29,6 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 blake2b_unpacker = struct.Struct("Q")
-from_iterable = chain.from_iterable
 
 # pylint:disable=unused-argument,too-many-boolean-expressions
 
@@ -225,7 +224,9 @@ class Base:
 
         if not symbolic and op not in operations.leaf_operations:
             with suppress(BackendError):
-                r = operations._handle_annotations(backends.concrete._abstract(backends.concrete.call(op, args)), args)
+                r = operations._handle_annotations(
+                    claripy.backends.concrete._abstract(claripy.backends.concrete.call(op, args)), args
+                )
                 if r is not None:
                     return r
 
@@ -279,7 +280,7 @@ class Base:
         length: int | None = None,
     ) -> Self:
         # Try to simplify the expression again
-        simplified = simplifications.simplify(op, args) if simplify else None
+        simplified = claripy.simplifications.simplify(op, args) if simplify else None
         if simplified is not None:
             op = simplified.op
         if (  # fast path
@@ -1100,7 +1101,7 @@ class Base:
             return self
 
         different_idx = matches.index(False)
-        inner_if = If(self.args[0], old_true.args[different_idx], old_false.args[different_idx])
+        inner_if = claripy.If(self.args[0], old_true.args[different_idx], old_false.args[different_idx])
         new_args = list(old_true.args)
         new_args[different_idx] = inner_if.ite_burrowed
         # print("replaced the",different_idx,"arg:",new_args)
@@ -1143,7 +1144,7 @@ class Base:
 
                     if op.op == "If":
                         # if we are an If, call the If handler so that we can take advantage of its simplifiers
-                        excavated = If(*args)
+                        excavated = claripy.If(*args)
 
                     elif ite_args.count(True) == 0:
                         # if there are no ifs that came to the surface, there's nothing more to do
@@ -1163,7 +1164,7 @@ class Base:
                             elif a.args[0] is cond:
                                 new_true_args.append(a.args[1])
                                 new_false_args.append(a.args[2])
-                            elif a.args[0] is Not(cond):
+                            elif a.args[0] is ~cond:
                                 new_true_args.append(a.args[2])
                                 new_false_args.append(a.args[1])
                             else:
@@ -1172,7 +1173,7 @@ class Base:
                                 break
 
                         else:
-                            excavated = If(
+                            excavated = claripy.If(
                                 cond,
                                 op.swap_args(new_true_args, simplify=True),
                                 op.swap_args(new_false_args, simplify=True),
@@ -1218,7 +1219,7 @@ class Base:
     #
 
     def _first_backend(self, what):
-        for b in backends._all_backends:
+        for b in claripy.backends.all_backends:
             if b in self._errored:
                 continue
 
@@ -1231,7 +1232,7 @@ class Base:
     @property
     def concrete_value(self):
         try:
-            raw = backends.concrete.convert(self)
+            raw = claripy.backends.concrete.convert(self)
             if isinstance(raw, bool):
                 return raw
             return raw.value
@@ -1259,7 +1260,7 @@ class Base:
             return False
         if self.variables:
             return False
-        return backends.concrete.handles(self)
+        return claripy.backends.concrete.handles(self)
 
     @property
     def uninitialized(self) -> bool:
@@ -1292,14 +1293,14 @@ def simplify(e: T) -> T:
     if e.annotations:
         ast_args = tuple(a for a in e.args if isinstance(a, Base))
         annotations = tuple(
-            set(chain(from_iterable(a._relocatable_annotations for a in ast_args), tuple(a for a in e.annotations)))
+            set(
+                chain(
+                    chain.from_iterable(a._relocatable_annotations for a in ast_args), tuple(a for a in e.annotations)
+                )
+            )
         )
         if annotations != s.annotations:
             s = s.remove_annotations(s.annotations)
             s = s.annotate(*annotations)
 
     return s
-
-
-# pylint:disable=wrong-import-position,ungrouped-imports
-from claripy.ast.bool import If, Not  # noqa: E402

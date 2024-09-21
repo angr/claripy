@@ -7,9 +7,9 @@ import operator
 from functools import reduce
 
 import claripy
+from claripy import backends
 
 from . import fp
-from .backend_manager import backends
 
 SIMPLE_OPS = ("Concat", "SignExt", "ZeroExt")
 
