@@ -23,7 +23,7 @@ from claripy.vsa import (
     ValueSet,
 )
 
-l = logging.getLogger("claripy.backends.backend_vsa")
+l = logging.getLogger(__name__)
 
 
 def arg_filter(f):

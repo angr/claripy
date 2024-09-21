@@ -31,7 +31,7 @@ from claripy.errors import (
 from claripy.fp import RM, FSort
 from claripy.operations import backend_fp_operations, backend_operations, backend_strings_operations, bound_ops
 
-l = logging.getLogger("claripy.backends.backend_z3")
+l = logging.getLogger(__name__)
 
 # pylint:disable=unidiomatic-typecheck
 

@@ -7,7 +7,7 @@ from claripy.ast.base import simplify
 from claripy.ast.bool import And, Or
 from claripy.frontend import Frontend
 
-l = logging.getLogger("claripy.frontends.constrained_frontend")
+l = logging.getLogger(__name__)
 
 
 class ConstrainedFrontend(Frontend):

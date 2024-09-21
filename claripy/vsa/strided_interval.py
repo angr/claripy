@@ -18,7 +18,7 @@ from .bool_result import FalseResult, MaybeResult, TrueResult
 from .errors import ClaripyVSAError
 from .valueset import ValueSet
 
-logger = logging.getLogger("claripy.vsa.strided_interval")
+logger = logging.getLogger(__name__)
 
 
 def reversed_processor(f):

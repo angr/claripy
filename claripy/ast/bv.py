@@ -16,7 +16,7 @@ from claripy.utils import deprecated
 from .bits import Bits
 from .bool import Bool, If
 
-l = logging.getLogger("claripy.ast.bv")
+l = logging.getLogger(__name__)
 
 _bvv_cache = weakref.WeakValueDictionary()
 

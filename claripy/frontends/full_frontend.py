@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from claripy.ast.bv import BV
     from claripy.ast.fp import FP
 
-l = logging.getLogger("claripy.frontends.full_frontend")
+l = logging.getLogger(__name__)
 
 T = TypeVar("T", bound="FullFrontend")
 

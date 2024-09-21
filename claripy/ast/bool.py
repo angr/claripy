@@ -15,7 +15,7 @@ from .bits import Bits
 if TYPE_CHECKING:
     from .fp import FP
 
-l = logging.getLogger("claripy.ast.bool")
+l = logging.getLogger(__name__)
 
 
 class Bool(Base):

@@ -16,7 +16,7 @@ from claripy.backends.backend import Backend
 from claripy.errors import BackendError, UnsatError
 from claripy.operations import backend_fp_operations, backend_operations, backend_strings_operations
 
-l = logging.getLogger("claripy.backends.backend_concrete")
+l = logging.getLogger(__name__)
 
 
 class BackendConcrete(Backend):

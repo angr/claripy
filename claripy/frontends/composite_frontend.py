@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from claripy import SolverCompositeChild
 
 
-l = logging.getLogger("claripy.frontends.composite_frontend")
+l = logging.getLogger(__name__)
 symbolic_count = itertools.count()
 
 

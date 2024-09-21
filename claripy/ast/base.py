@@ -26,7 +26,7 @@ if TYPE_CHECKING:
     from claripy import Backend
     from claripy.annotation import Annotation
 
-l = logging.getLogger("claripy.ast")
+l = logging.getLogger(__name__)
 
 blake2b_unpacker = struct.Struct("Q")
 from_iterable = chain.from_iterable
