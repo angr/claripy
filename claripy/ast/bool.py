@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from contextlib import suppress
+from functools import lru_cache
 from typing import TYPE_CHECKING, overload
 
 from claripy import operations
@@ -15,8 +16,6 @@ if TYPE_CHECKING:
     from .fp import FP
 
 l = logging.getLogger("claripy.ast.bool")
-
-_boolv_cache = {}
 
 
 class Bool(Base):
@@ -60,21 +59,18 @@ def BoolS(name, explicit_name=None) -> Bool:
     return Bool("BoolS", (n,), variables=frozenset((n,)), symbolic=True)
 
 
+@lru_cache(maxsize=2)
 def BoolV(val) -> Bool:
-    try:
-        return _boolv_cache[(val)]
-    except KeyError:
-        result = Bool("BoolV", (val,))
-        _boolv_cache[val] = result
-        return result
+    return Bool("BoolV", (val,))
 
 
-#
-# some standard ASTs
-#
+def true():
+    return BoolV(True)
 
-true = BoolV(True)
-false = BoolV(False)
+
+def false():
+    return BoolV(False)
+
 
 #
 # Bound operations
@@ -145,9 +141,9 @@ def If(cond, true_value, false_value):
 
     if args[1] is args[2]:
         return args[1]
-    if args[1] is true and args[2] is false:
+    if args[1] is true() and args[2] is false():
         return args[0]
-    if args[1] is false and args[2] is true:
+    if args[1] is false() and args[2] is true():
         return ~args[0]
 
     if issubclass(ty, Bits):
@@ -236,7 +232,7 @@ def reverse_ite_cases(ast):
     :param ast:
     :return:
     """
-    queue = [(true, ast)]
+    queue = [(true(), ast)]
     while queue:
         condition, ast = queue.pop(0)
         if ast.op == "If":

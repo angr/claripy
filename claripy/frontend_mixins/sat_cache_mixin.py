@@ -30,7 +30,7 @@ class SatCacheMixin:
 
     def _add(self, constraints, invalidate_cache=True):
         added = super()._add(constraints, invalidate_cache=invalidate_cache)
-        if len(added) > 0 and any(c is false for c in added):
+        if len(added) > 0 and any(c is false() for c in added):
             self._cached_satness = False
         elif self._cached_satness is True:
             self._cached_satness = None
@@ -38,7 +38,7 @@ class SatCacheMixin:
 
     def simplify(self):
         new_constraints = super().simplify()
-        if len(new_constraints) > 0 and any(c is false for c in new_constraints):
+        if len(new_constraints) > 0 and any(c is false() for c in new_constraints):
             self._cached_satness = False
         return new_constraints
 

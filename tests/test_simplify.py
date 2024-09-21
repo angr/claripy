@@ -13,15 +13,15 @@ class TestSimplify(unittest.TestCase):
 
         a, b, c = (claripy.BoolS(name) for name in ("a", "b", "c"))
 
-        assert_correct(claripy.And(a, claripy.Not(a)), claripy.false)
-        assert_correct(claripy.Or(a, claripy.Not(a)), claripy.true)
+        assert_correct(claripy.And(a, claripy.Not(a)), claripy.false())
+        assert_correct(claripy.Or(a, claripy.Not(a)), claripy.true())
 
         complex_true_expression = claripy.Or(
             claripy.And(a, b),
             claripy.Or(claripy.And(a, claripy.Not(b)), claripy.And(claripy.Not(a), c)),
             claripy.Or(claripy.And(a, claripy.Not(b)), claripy.And(claripy.Not(a), claripy.Not(c))),
         )
-        assert_correct(complex_true_expression, claripy.true)
+        assert_correct(complex_true_expression, claripy.true())
 
     def test_simplification(self):
         def assert_correct(a, b):

@@ -157,7 +157,7 @@ class ModelCacheMixin:
 
     def simplify(self):
         results = super().simplify()
-        if len(results) > 0 and any(c is false for c in results):
+        if len(results) > 0 and any(c is false() for c in results):
             self._models.clear()
         return results
 
@@ -195,7 +195,7 @@ class ModelCacheMixin:
         new_vars = any(a.variables - old_vars for a in added)
         if new_vars or invalidate_cache:
             # shortcut for unsat
-            if any(c is false for c in constraints):
+            if any(c is false() for c in constraints):
                 self._models.clear()
 
             still_valid = set(self._get_models(extra_constraints=added))

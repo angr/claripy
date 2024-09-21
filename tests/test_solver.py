@@ -80,7 +80,7 @@ def raw_replacement_solver(reuse_z3_solver):
     b = claripy.BoolS("b")
     assert sr._replacement(b) is b
     sr.add(claripy.Not(b))
-    assert sr._replacement(b) is claripy.false
+    assert sr._replacement(b) is claripy.false()
 
     sr = claripy.SolverReplacement(claripy.SolverVSA(), complex_auto_replace=True)
     x = claripy.BVS("x", 64)
@@ -409,7 +409,7 @@ def raw_ancestor_merge(solver, reuse_z3_solver):
     p.add(z == 1)
     q.add(z == 2)
 
-    r = p.merge([q], [claripy.true, claripy.true])[-1]
+    r = p.merge([q], [claripy.true(), claripy.true()])[-1]
     t = p.merge([q], [p.constraints[-1], q.constraints[-1]], common_ancestor=s)[-1]
 
     if not isinstance(r, claripy.frontends.CompositeFrontend):
@@ -489,7 +489,7 @@ class StandardTests(TestCase):
         s = claripy.Solver()
         s.add(x == 10)
         assert s.satisfiable()
-        s.add(claripy.false)
+        s.add(claripy.false())
         assert not s.satisfiable()
 
     def test_simplification_annotations(self):
