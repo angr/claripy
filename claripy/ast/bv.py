@@ -16,7 +16,7 @@ from claripy.utils import deprecated
 from .bits import Bits
 from .bool import Bool, If
 
-l = logging.getLogger("claripy.ast.bv")
+log = logging.getLogger(__name__)
 
 _bvv_cache = weakref.WeakValueDictionary()
 
@@ -146,7 +146,7 @@ class BV(Bits):
 
     @staticmethod
     def _from_str(like, value):  # pylint:disable=unused-argument
-        l.warning("BVV value is being coerced from a unicode string, encoding as utf-8")
+        log.warning("BVV value is being coerced from a unicode string, encoding as utf-8")
         value = value.encode("utf-8")
         return BVV(value)
 
@@ -268,7 +268,7 @@ def BVV(value, size=None, **kwargs) -> BV:
 
     if type(value) in (bytes, bytearray, memoryview, str):
         if isinstance(value, str):
-            l.warning("BVV value is a unicode string, encoding as utf-8")
+            log.warning("BVV value is a unicode string, encoding as utf-8")
             value = value.encode("utf-8")
 
         if size is None:

@@ -31,7 +31,7 @@ from claripy.errors import (
 from claripy.fp import RM, FSort
 from claripy.operations import backend_fp_operations, backend_operations, backend_strings_operations, bound_ops
 
-l = logging.getLogger("claripy.backends.backend_z3")
+log = logging.getLogger(__name__)
 
 # pylint:disable=unidiomatic-typecheck
 
@@ -126,7 +126,7 @@ def _z3_decl_name_str(ctx, decl):
 
 
 def z3_solver_sat(solver, extra_constraints, occasion):
-    l.debug("Doing a check! (%s)", occasion)
+    log.debug("Doing a check! (%s)", occasion)
 
     result = solver.check(extra_constraints)
 
@@ -290,7 +290,7 @@ class BackendZ3(Backend):
         self._sym_cache.clear()
 
     def _name(self, o):  # pylint:disable=unused-argument
-        l.warning("BackendZ3.name() called. This is weird.")
+        log.warning("BackendZ3.name() called. This is weird.")
         raise BackendError("name is not implemented yet")
 
     def _pop_from_ast_cache(self, _, tpl):
@@ -382,7 +382,7 @@ class BackendZ3(Backend):
     @condom
     def StringS(self, ast):
         # Maybe this should be an error? Warning for now to support reliant code
-        l.warning("Converting claripy StringS' to z3 looses length information.")
+        log.warning("Converting claripy StringS' to z3 looses length information.")
         return z3.String(ast.args[0], ctx=self._context)
 
     #
@@ -411,7 +411,7 @@ class BackendZ3(Backend):
             return z3.BoolRef(z3.Z3_mk_false(self._context.ref()), self._context)
         if isinstance(obj, numbers.Number | str) or (hasattr(obj, "__module__") and obj.__module__ in ("z3", "z3.z3")):
             return obj
-        l.debug("BackendZ3 encountered unexpected type %s", type(obj))
+        log.debug("BackendZ3 encountered unexpected type %s", type(obj))
         raise BackendError(f"unexpected type {type(obj)} encountered in BackendZ3")
 
     def call(self, *args, **kwargs):  # pylint;disable=arguments-renamed
@@ -513,7 +513,7 @@ class BackendZ3(Backend):
 
         if op_name == "UNINTERPRETED":
             mystery_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
-            l.error("Mystery operation %s in BackendZ3._abstract_internal. Please report this.", mystery_name)
+            log.error("Mystery operation %s in BackendZ3._abstract_internal. Please report this.", mystery_name)
         elif op_name == "Extract":
             hi = z3.Z3_get_decl_int_parameter(ctx, decl, 0)
             lo = z3.Z3_get_decl_int_parameter(ctx, decl, 1)
@@ -547,7 +547,7 @@ class BackendZ3(Backend):
                 f"Unknown Z3 error in abstraction (result_ty == '{result_ty}'). "
                 "Update your version of Z3, and, if the problem persists, open a claripy issue."
             )
-            l.error(err)
+            log.error(err)
             raise BackendError(err)
 
         if op_name == "If":
@@ -777,7 +777,7 @@ class BackendZ3(Backend):
     def _satisfiable(self, extra_constraints=(), solver=None, model_callback=None):
         self.solve_count += 1
 
-        l.debug("Doing a check! (satisfiable)")
+        log.debug("Doing a check! (satisfiable)")
         if not z3_solver_sat(solver, extra_constraints, "satisfiable"):
             return False
 
@@ -864,11 +864,11 @@ class BackendZ3(Backend):
             sat = z3_solver_sat(solver, constraints, comment)
             constraints.pop()
             if sat:
-                l.debug("... still sat")
+                log.debug("... still sat")
                 if model_callback is not None:
                     model_callback(self._generic_model(solver.model()))
             else:
-                l.debug("... now unsat")
+                log.debug("... now unsat")
             if sat == is_max:
                 lo = middle
             else:

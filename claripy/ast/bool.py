@@ -15,7 +15,7 @@ from .bits import Bits
 if TYPE_CHECKING:
     from .fp import FP
 
-l = logging.getLogger("claripy.ast.bool")
+log = logging.getLogger(__name__)
 
 
 class Bool(Base):
@@ -166,7 +166,7 @@ def is_true(e, exact=None):  # pylint:disable=unused-argument
     with suppress(BackendError):
         return backends.concrete.is_true(e)
 
-    l.debug("Unable to tell the truth-value of this expression")
+    log.debug("Unable to tell the truth-value of this expression")
     return False
 
 
@@ -174,7 +174,7 @@ def is_false(e, exact=None):  # pylint:disable=unused-argument
     with suppress(BackendError):
         return backends.concrete.is_false(e)
 
-    l.debug("Unable to tell the truth-value of this expression")
+    log.debug("Unable to tell the truth-value of this expression")
     return False
 
 

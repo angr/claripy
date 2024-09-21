@@ -18,7 +18,7 @@ from .bool_result import FalseResult, MaybeResult, TrueResult
 from .errors import ClaripyVSAError
 from .valueset import ValueSet
 
-logger = logging.getLogger("claripy.vsa.strided_interval")
+log = logging.getLogger(__name__)
 
 
 def reversed_processor(f):
@@ -1184,7 +1184,7 @@ class StridedInterval(BackendObject):
 
     @property
     def size(self):
-        logger.warning("StridedInterval.size will be deprecated soon. Please use StridedInterval.cardinality instead.")
+        log.warning("StridedInterval.size will be deprecated soon. Please use StridedInterval.cardinality instead.")
         return self.cardinality
 
     @property
@@ -1607,7 +1607,7 @@ class StridedInterval(BackendObject):
         :return: The multiplication result
         """
         if a.bits != b.bits:
-            logger.warning("Signed mul: two parameters have different bit length")
+            log.warning("Signed mul: two parameters have different bit length")
 
         bits = max(a.bits, b.bits)
         lb = a.lower_bound * b.lower_bound
@@ -1640,7 +1640,7 @@ class StridedInterval(BackendObject):
         # FIXME: add assert to be sure of it!
 
         if a.bits != b.bits:
-            logger.warning("Signed mul: two parameters have different bit length")
+            log.warning("Signed mul: two parameters have different bit length")
 
         bits = max(a.bits, b.bits)
 
@@ -1980,7 +1980,7 @@ class StridedInterval(BackendObject):
             ret = StridedInterval(bits=self.bits, stride=0, lower_bound=a * b, upper_bound=a * b)
 
             if a * b > (2**self.bits - 1):
-                logger.warning("Overflow in multiplication detected.")
+                log.warning("Overflow in multiplication detected.")
 
             return ret.normalize()
 
@@ -2345,7 +2345,7 @@ class StridedInterval(BackendObject):
         mask = (1 << tok) - 1
 
         if self.stride >= (1 << tok):
-            logger.warning("Tried to cast_low an interval to an interval shorter than its stride.")
+            log.warning("Tried to cast_low an interval to an interval shorter than its stride.")
 
         if tok == self.bits:
             return self.copy()
@@ -2403,7 +2403,7 @@ class StridedInterval(BackendObject):
         mask = (1 << tok) - 1
 
         if self.stride >= (1 << tok):
-            logger.warning("Tried to cast_low an interval to a an interval shorter than its stride.")
+            log.warning("Tried to cast_low an interval to a an interval shorter than its stride.")
 
         if tok == self.bits:
             return self.copy()
@@ -2426,11 +2426,11 @@ class StridedInterval(BackendObject):
             # Keep the signs!
             if self.lower_bound < 0:
                 # how this should happen ?
-                logger.warning("Lower bound values is less than 0")
+                log.warning("Lower bound values is less than 0")
                 l = StridedInterval._to_negative(l, tok)
             if self.upper_bound < 0:
                 # how this should happen ?
-                logger.warning("Upper bound value is less than 0")
+                log.warning("Upper bound value is less than 0")
                 u = StridedInterval._to_negative(u, tok)
             return StridedInterval(
                 bits=tok, stride=self.stride, lower_bound=l, upper_bound=u, uninitialized=self.uninitialized
@@ -2766,7 +2766,7 @@ class StridedInterval(BackendObject):
         w = s.bits
 
         if s._reversed != b._reversed:
-            logger.warning("Incoherent reversed flag between operands %s and %s", s, b)
+            log.warning("Incoherent reversed flag between operands %s and %s", s, b)
 
         uninit_flag = s.uninitialized | b.uninitialized
 
@@ -3393,7 +3393,7 @@ class StridedInterval(BackendObject):
 
         if not o.is_integer:
             # We really don't want to do that... but well, sometimes it just happens...
-            logger.warning("Reversing a real strided-interval %s is bad", self)
+            log.warning("Reversing a real strided-interval %s is bad", self)
 
         # Reversing an integer is easy
         rounded_bits = ((o.bits + 7) // 8) * 8
@@ -3473,7 +3473,7 @@ class StridedInterval(BackendObject):
         si._reversed = o._reversed
         if not o.is_integer:
             # We really don't want to do that... but well, sometimes it just happens...
-            logger.warning("Reversing a real strided-interval %s is bad", self)
+            log.warning("Reversing a real strided-interval %s is bad", self)
 
         return si
 

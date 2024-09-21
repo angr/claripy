@@ -13,7 +13,7 @@ from .backend_manager import backends
 from .errors import BackendError, ClaripyBalancerError, ClaripyBalancerUnsatError, ClaripyOperationError
 from .operations import commutative_operations, opposites
 
-l = logging.getLogger("claripy.balancer")
+l = logging.getLogger(__name__)
 
 
 class Balancer:

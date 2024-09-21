@@ -5,7 +5,7 @@ import logging
 from claripy.errors import ClaripyFrontendError
 from claripy.frontend import Frontend
 
-l = logging.getLogger("claripy.frontends.full_frontend")
+log = logging.getLogger(__name__)
 _VALIDATE_BALANCER = False
 
 

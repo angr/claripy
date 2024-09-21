@@ -6,7 +6,7 @@ from unittest import TestCase, main
 
 import claripy
 
-l = logging.getLogger("claripy.test.solver")
+l = logging.getLogger(__name__)
 
 
 def raw_hybrid_solver(reuse_z3_solver):

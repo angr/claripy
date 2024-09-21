@@ -7,7 +7,7 @@ from claripy.ast.base import simplify
 from claripy.ast.bool import And, Or
 from claripy.frontend import Frontend
 
-l = logging.getLogger("claripy.frontends.constrained_frontend")
+log = logging.getLogger(__name__)
 
 
 class ConstrainedFrontend(Frontend):
@@ -89,9 +89,9 @@ class ConstrainedFrontend(Frontend):
 
     def split(self):
         results = []
-        l.debug("Splitting!")
+        log.debug("Splitting!")
         for variables, c_list in self.independent_constraints():
-            l.debug("... got %d constraints with %d variables", len(c_list), len(variables))
+            log.debug("... got %d constraints with %d variables", len(c_list), len(variables))
 
             s = self.blank_copy()
             s.add(c_list)
@@ -170,13 +170,13 @@ class ConstrainedFrontend(Frontend):
         for i in constraints:
             splitted.extend(i.split(["And"]))
 
-        l.debug("... splitted of size %d", len(splitted))
+        log.debug("... splitted of size %d", len(splitted))
 
         concrete_constraints = []
         variable_connections = {}
         constraint_connections = {}
         for n, s in enumerate(splitted):
-            l.debug("... processing constraint with %d variables", len(s.variables))
+            log.debug("... processing constraint with %d variables", len(s.variables))
 
             connected_variables = set(s.variables)
             connected_constraints = {n}
