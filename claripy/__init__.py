@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from claripy.annotation import Annotation, RegionAnnotation, SimplificationAvoidanceAnnotation
+from claripy.ast.base import simplify
 from claripy.ast.bool import (
     And,
     BoolS,
@@ -114,6 +115,7 @@ __all__ = (
     "Annotation",
     "RegionAnnotation",
     "SimplificationAvoidanceAnnotation",
+    "simplify",
     "And",
     "BoolS",
     "BoolV",

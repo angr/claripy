@@ -3,6 +3,7 @@ from __future__ import annotations
 import itertools
 
 import claripy
+import claripy.simplifications
 
 from . import debug as _d
 from .errors import ClaripyOperationError, ClaripyTypeError

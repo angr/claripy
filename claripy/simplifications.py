@@ -7,7 +7,6 @@ import operator
 from functools import reduce
 
 import claripy
-from claripy import backends
 
 from . import fp
 
@@ -77,8 +76,8 @@ def concat_simplifier(*args):
 
             if (
                 not (previous.symbolic or current.symbolic)
-                and backends.concrete.handles(previous)
-                and backends.concrete.handles(current)
+                and claripy.backends.concrete.handles(previous)
+                and claripy.backends.concrete.handles(current)
             ):
                 concatted = claripy.Concat(previous, current)
                 # If the concrete arguments to concat have non-relocatable annotations attached,
