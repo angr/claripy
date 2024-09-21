@@ -7,7 +7,7 @@ from claripy.ast.bool import BoolV
 
 from . import ast
 
-l = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 class Frontend:

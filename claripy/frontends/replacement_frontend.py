@@ -14,7 +14,7 @@ from claripy.errors import BackendError, ClaripyFrontendError
 
 from .constrained_frontend import ConstrainedFrontend
 
-l = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 class ReplacementFrontend(ConstrainedFrontend):

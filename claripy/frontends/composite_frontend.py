@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from claripy import SolverCompositeChild
 
 
-l = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 symbolic_count = itertools.count()
 
 
@@ -139,7 +139,7 @@ class CompositeFrontend(ConstrainedFrontend):
         :return:        A composite child solver.
         """
 
-        l.debug("composite_solver._merged_solver_for() running with %d names", len(names))
+        log.debug("composite_solver._merged_solver_for() running with %d names", len(names))
 
         # compute a transitive closure for all variable names
         all_names = set(names)
@@ -159,12 +159,12 @@ class CompositeFrontend(ConstrainedFrontend):
         solvers = list(solvers)
 
         if len(solvers) == 0:
-            l.debug("... creating new solver")
+            log.debug("... creating new solver")
             return self._template_frontend.blank_copy()
         if len(solvers) == 1:
-            l.debug("... got one solver")
+            log.debug("... got one solver")
             return solvers[0]
-        l.debug(".... combining %d solvers", len(solvers))
+        log.debug(".... combining %d solvers", len(solvers))
         return solvers[0].combine(solvers[1:])
 
     def _shared_solvers(self, others):
@@ -194,8 +194,8 @@ class CompositeFrontend(ConstrainedFrontend):
         if len(ss) == 1:
             return [s]
 
-        l.debug("... split solver %r into %d parts", s, len(ss))
-        l.debug("... variable counts: %s", [len(cs.variables) for cs in ss])
+        log.debug("... split solver %r into %d parts", s, len(ss))
+        log.debug("... variable counts: %s", [len(cs.variables) for cs in ss])
 
         for ns in ss:
             self._owned_solvers.add(ns)
@@ -259,10 +259,10 @@ class CompositeFrontend(ConstrainedFrontend):
 
     def _add_dependent_constraints(self, names, constraints, invalidate_cache=True, **kwargs):
         if not invalidate_cache and len(self._solvers_for_variables(names)) > 1:
-            l.debug("Ignoring cross-solver helper constraints.")
+            log.debug("Ignoring cross-solver helper constraints.")
             return []
 
-        l.debug("Adding %d constraints to %d names", len(constraints), len(names))
+        log.debug("Adding %d constraints to %d names", len(constraints), len(names))
         s = self._claim(self._merged_solver_for(names=names))
         added = s.add(constraints, invalidate_cache=invalidate_cache, **kwargs)
         self._store_child(s, invalidate_cache=invalidate_cache)
@@ -306,7 +306,7 @@ class CompositeFrontend(ConstrainedFrontend):
         if self._unsat:
             return "UNSAT"
 
-        l.debug("%r checking satisfiability...", self)
+        log.debug("%r checking satisfiability...", self)
 
         if len(extra_constraints) != 0:
             extra_solver = self._merged_solver_for(lst=extra_constraints)
@@ -406,13 +406,13 @@ class CompositeFrontend(ConstrainedFrontend):
 
         new_constraints = []
 
-        l.debug("Simplifying %r with %d solvers", self, len(self._solver_list))
+        log.debug("Simplifying %r with %d solvers", self, len(self._solver_list))
         for s in self._solver_list:
             if isinstance(s, SimplifySkipperMixin) and s._simplified:
                 new_constraints += s.constraints
                 continue
 
-            l.debug("... simplifying child solver %r", s)
+            log.debug("... simplifying child solver %r", s)
             s.simplify()
             results = self._split_child(s)
             for ns in results:
@@ -420,7 +420,7 @@ class CompositeFrontend(ConstrainedFrontend):
                     ns._simplified = True
             new_constraints += s.constraints
 
-        l.debug("... after-split, %r has %d solvers", self, len(self._solver_list))
+        log.debug("... after-split, %r has %d solvers", self, len(self._solver_list))
 
         self.constraints = new_constraints
         return new_constraints
@@ -465,11 +465,11 @@ class CompositeFrontend(ConstrainedFrontend):
         if common_ancestor is not None:
             return self._merge_with_ancestor(common_ancestor, merge_conditions)
 
-        l.debug("Merging %s with %d other solvers.", self, len(others))
+        log.debug("Merging %s with %d other solvers.", self, len(others))
         merged = self.blank_copy()
         common_solvers = self._shared_solvers(others)
         common_ids = {id(s) for s in common_solvers}
-        l.debug("... %s common solvers", len(common_solvers))
+        log.debug("... %s common solvers", len(common_solvers))
 
         for s in common_solvers:
             self._owned_solvers.discard(s)
@@ -481,10 +481,10 @@ class CompositeFrontend(ConstrainedFrontend):
 
         noncommon_solvers = [[s for s in cs._solver_list if id(s) not in common_ids] for cs in [self, *others]]
 
-        l.debug("... merging noncommon solvers")
+        log.debug("... merging noncommon solvers")
         combined_noncommons = []
         for ns in noncommon_solvers:
-            l.debug("... %d", len(ns))
+            log.debug("... %d", len(ns))
             if len(ns) == 0:
                 s = self._template_frontend.blank_copy()
                 combined_noncommons.append(s)

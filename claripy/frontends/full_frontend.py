@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from claripy.ast.bv import BV
     from claripy.ast.fp import FP
 
-l = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 T = TypeVar("T", bound="FullFrontend")
 
@@ -214,7 +214,7 @@ class FullFrontend(ConstrainedFrontend):
         if not self.satisfiable(extra_constraints=extra_constraints):
             raise UnsatError("Unsat during _max()")
 
-        l.debug("Frontend.max() with %d extra_constraints", len(extra_constraints))
+        log.debug("Frontend.max() with %d extra_constraints", len(extra_constraints))
 
         # pylint: disable=unsubscriptable-object
         two = self.eval(e, 2, extra_constraints=extra_constraints)
@@ -257,7 +257,7 @@ class FullFrontend(ConstrainedFrontend):
         if not self.satisfiable(extra_constraints=extra_constraints):
             raise UnsatError("Unsat during _min()")
 
-        l.debug("Frontend.min() with %d extra_constraints", len(extra_constraints))
+        log.debug("Frontend.min() with %d extra_constraints", len(extra_constraints))
 
         # pylint: disable=unsubscriptable-object
         two = self.eval(e, 2, extra_constraints=extra_constraints)

@@ -5,7 +5,7 @@ import logging
 from claripy.ast.bool import Or
 from claripy.ast.bv import SGE, SLE, UGE, ULE
 
-l = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 class ConstraintExpansionMixin:

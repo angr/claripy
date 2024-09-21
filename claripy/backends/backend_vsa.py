@@ -23,7 +23,7 @@ from claripy.vsa import (
     ValueSet,
 )
 
-l = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 def arg_filter(f):
@@ -404,7 +404,7 @@ class BackendVSA(Backend):
         ret = converted_0.union(converted_1)
 
         if ret is NotImplemented:
-            l.debug("Union failed, trying the other way around.")
+            log.debug("Union failed, trying the other way around.")
             ret = converted_1.union(converted_0)
 
         return ret
@@ -431,7 +431,7 @@ class BackendVSA(Backend):
 
         ret = converted_0.widen(converted_1)
         if ret is NotImplemented:
-            l.debug("Widening failed, trying the other way around.")
+            log.debug("Widening failed, trying the other way around.")
             ret = converted_1.widen(converted_0)
 
         return ret

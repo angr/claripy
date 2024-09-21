@@ -7,7 +7,7 @@ from claripy.errors import BackendError, ClaripyFrontendError
 
 from .constrained_frontend import ConstrainedFrontend
 
-l = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 class LightFrontend(ConstrainedFrontend):
@@ -74,14 +74,14 @@ class LightFrontend(ConstrainedFrontend):
         try:
             return self._solver_backend.is_true(e)
         except BackendError:
-            l.info("Light solver can't handle this is_true().")
+            log.info("Light solver can't handle this is_true().")
             return False
 
     def is_false(self, e, extra_constraints=(), exact=None):
         try:
             return self._solver_backend.is_false(e)
         except BackendError:
-            l.info("Light solver can't handle this is_false().")
+            log.info("Light solver can't handle this is_false().")
             return False
 
     def satisfiable(self, extra_constraints=(), exact=None):

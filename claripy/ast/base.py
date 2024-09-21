@@ -26,7 +26,7 @@ if TYPE_CHECKING:
     from claripy import Backend
     from claripy.annotation import Annotation
 
-l = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 blake2b_unpacker = struct.Struct("Q")
 from_iterable = chain.from_iterable
@@ -487,7 +487,7 @@ class Base:
         if hasattr(arg, "__hash__"):
             return hash(arg).to_bytes(8, "little", signed=True)
 
-        l.debug("Don't know how to serialize %s, consider implementing __hash__", arg)
+        log.debug("Don't know how to serialize %s, consider implementing __hash__", arg)
         return pickle.dumps(arg)
 
     def __hash__(self) -> int:
@@ -844,7 +844,7 @@ class Base:
             if isinstance(ast, Base):
                 ast_queue.append(iter(ast.args))
 
-                l.debug("Yielding AST %s with hash %s with %d children", ast, ast.hash(), len(ast.args))
+                log.debug("Yielding AST %s with hash %s with %d children", ast, ast.hash(), len(ast.args))
                 yield ast
 
     def leaf_asts(self) -> Iterator[Base]:
@@ -873,7 +873,7 @@ class Base:
         return self.depth == 1
 
     def dbg_is_looped(self) -> Base | bool:  # TODO: this return type is bad
-        l.debug("Checking AST with hash %s for looping", self.hash())
+        log.debug("Checking AST with hash %s for looping", self.hash())
 
         seen = set()
         for child_ast in self.children_asts():
@@ -1281,7 +1281,7 @@ def simplify(e: T) -> T:
 
     s = e._first_backend("simplify")
     if s is None:
-        l.debug("Unable to simplify expression")
+        log.debug("Unable to simplify expression")
         return e
 
     # Copy some parameters (that should really go to the Annotation backend)
