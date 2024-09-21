@@ -5,10 +5,10 @@ import numbers
 import weakref
 from contextlib import suppress
 
+from claripy import backends
 from claripy.ast.base import Base
 from claripy.ast.bool import BoolV, false
 from claripy.ast.bv import BVV
-from claripy.backend_manager import backends
 from claripy.balancer import Balancer
 from claripy.errors import BackendError, ClaripyFrontendError
 

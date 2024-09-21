@@ -9,6 +9,7 @@ from functools import reduce
 from itertools import chain, product
 
 import claripy
+import claripy.vsa as vsa
 from claripy.ast.base import Base
 from claripy.backend_object import BackendObject
 from claripy.bv import BVV
@@ -16,7 +17,6 @@ from claripy.errors import ClaripyOperationError
 
 from .bool_result import FalseResult, MaybeResult, TrueResult
 from .errors import ClaripyVSAError
-from .valueset import ValueSet
 
 log = logging.getLogger(__name__)
 
@@ -39,10 +39,10 @@ def normalize_types(f):
         Convert any object to an object that we can process.
         """
         # Special handler for union
-        if f.__name__ == "union" and isinstance(o, DiscreteStridedIntervalSet):
+        if f.__name__ == "union" and isinstance(o, vsa.DiscreteStridedIntervalSet):
             return o.union(self)
 
-        if isinstance(o, ValueSet | DiscreteStridedIntervalSet):
+        if isinstance(o, vsa.ValueSet | vsa.DiscreteStridedIntervalSet):
             # if it's singlevalued, we can convert it to a StridedInterval
             if o.cardinality == 1:
                 o = o.stridedinterval()
@@ -2637,12 +2637,12 @@ class StridedInterval(BackendObject):
             return StridedInterval.least_upper_bound(self, b)
 
         if (
-            self.cardinality > discrete_strided_interval_set.DEFAULT_MAX_CARDINALITY_WITHOUT_COLLAPSING
-            or b.cardinality > discrete_strided_interval_set.DEFAULT_MAX_CARDINALITY_WITHOUT_COLLAPSING
+            self.cardinality > vsa.DEFAULT_MAX_CARDINALITY_WITHOUT_COLLAPSING
+            or b.cardinality > vsa.DEFAULT_MAX_CARDINALITY_WITHOUT_COLLAPSING
         ):
             return StridedInterval.least_upper_bound(self, b)
 
-        dsis = DiscreteStridedIntervalSet(bits=self._bits, si_set={self})
+        dsis = vsa.DiscreteStridedIntervalSet(bits=self._bits, si_set={self})
         return dsis.union(b)
 
     @staticmethod
@@ -3534,8 +3534,6 @@ def CreateStridedInterval(
     )
     if not discrete_set:
         return bi
-    return DiscreteStridedIntervalSet(name=name, bits=bits, si_set={bi}, max_cardinality=discrete_set_max_cardinality)
-
-
-from . import discrete_strided_interval_set  # noqa: E402
-from .discrete_strided_interval_set import DiscreteStridedIntervalSet  # noqa: E402
+    return vsa.DiscreteStridedIntervalSet(
+        name=name, bits=bits, si_set={bi}, max_cardinality=discrete_set_max_cardinality
+    )

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 
-from claripy.backend_manager import backends
+from claripy import backends
 from claripy.errors import BackendError, ClaripyFrontendError
 
 from .constrained_frontend import ConstrainedFrontend
@@ -34,7 +34,7 @@ class LightFrontend(ConstrainedFrontend):
     def __setstate__(self, s):
         solver_backend_name, base_state = s
         super().__setstate__(base_state)
-        self._solver_backend = backends._backends_by_type[solver_backend_name]
+        self._solver_backend = backends.backends_by_type[solver_backend_name]
 
     #
     # Light functionality
