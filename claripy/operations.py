@@ -27,7 +27,7 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
         matches = list(itertools.starmap(isinstance, zip(args, actual_arg_types, strict=False)))
 
         # heuristically, this works!
-        thing = args[matches.index(True, 1 if actual_arg_types[0] is fp.RM else 0)] if True in matches else None
+        thing = args[matches.index(True, 0)] if True in matches else None
 
         for arg, argty, match in zip(args, actual_arg_types, matches, strict=False):
             if not match:
