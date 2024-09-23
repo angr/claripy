@@ -5,6 +5,8 @@ from claripy.errors import ClaripyValueError, UnsatError
 
 
 class ConstraintFilterMixin:
+    """ConstraintFilterMixin is a mixin that filters True and False constraints."""
+
     def _constraint_filter(self, constraints):
         if type(constraints) not in (tuple, list):
             raise ClaripyValueError("The extra_constraints argument should be a list of constraints.")

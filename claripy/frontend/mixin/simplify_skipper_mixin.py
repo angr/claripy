@@ -2,6 +2,10 @@ from __future__ import annotations
 
 
 class SimplifySkipperMixin:
+    """SimplifySkipperMixin is a mixin that skips simplification when the
+    constraints are already simplified.
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._simplified = True

@@ -2,6 +2,10 @@ from __future__ import annotations
 
 
 class ConstraintDeduplicatorMixin:
+    """ConstraintDeduplicatorMixin is a mixin that prevents duplicate
+    constraints from being added to a solver.
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._constraint_hashes = set()

@@ -10,6 +10,13 @@ _VALIDATE_BALANCER = False
 
 
 class HybridFrontend(Frontend):
+    """HybridFrontend is a frontend that uses two backends, one exact and one
+    approximate, to solve constraints.
+
+    In practice this allows there to be a solver that can use the VSA backend or
+    the Z3 backend depending on the constraints.
+    """
+
     def __init__(self, exact_frontend, approximate_frontend, approximate_first=False, **kwargs):
         Frontend.__init__(self, **kwargs)
         self._exact_frontend = exact_frontend
@@ -62,9 +69,7 @@ class HybridFrontend(Frontend):
     # Hybrid solving
     #
 
-    def _do_call(self, f_name, *args, **kwargs):
-        exact = kwargs.pop("exact", True)
-
+    def _do_call(self, f_name, *args, exact=True, **kwargs):
         # if approximating, try the approximation backend
         if exact is False:
             try:
@@ -76,8 +81,7 @@ class HybridFrontend(Frontend):
         return True, getattr(self._exact_frontend, f_name)(*args, **kwargs)
 
     def _hybrid_call(self, f_name, *args, **kwargs):
-        _, solution = self._do_call(f_name, *args, **kwargs)
-        return solution
+        return self._do_call(f_name, *args, **kwargs)[1]
 
     def _approximate_first_call(self, f_name, e, n, *args, **kwargs):
         exact_used, solutions = self._do_call(f_name, e, n + 1, *args, exact=False, **kwargs)
@@ -103,10 +107,10 @@ class HybridFrontend(Frontend):
             return self._approximate_first_call("eval", e, n, extra_constraints=extra_constraints)
         return self._hybrid_call("eval", e, n, extra_constraints=extra_constraints, exact=exact)
 
-    def batch_eval(self, e, n, extra_constraints=(), exact=None):
+    def batch_eval(self, exprs, n, extra_constraints=(), exact=None):
         if self._approximate_first and exact is None and n > 2:
-            return self._approximate_first_call("batch_eval", e, n, extra_constraints=extra_constraints)
-        return self._hybrid_call("batch_eval", e, n, extra_constraints=extra_constraints, exact=exact)
+            return self._approximate_first_call("batch_eval", exprs, n, extra_constraints=extra_constraints)
+        return self._hybrid_call("batch_eval", exprs, n, extra_constraints=extra_constraints, exact=exact)
 
     def max(self, e, extra_constraints=(), signed=False, exact=None):
         return self._hybrid_call("max", e, extra_constraints=extra_constraints, signed=signed, exact=exact)

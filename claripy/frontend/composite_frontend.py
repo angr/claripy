@@ -22,6 +22,15 @@ symbolic_count = itertools.count()
 
 
 class CompositeFrontend(ConstrainedFrontend):
+    """Composite Solver splits constraints into independent sets, allowing
+    caching to be done on a per-set basis. Additionally, by allowing constraints
+    to be solved independently, the solver can be more efficient in some cases
+    ("divide and conquer").
+
+    For example, the constraints (a==b, b==1, c==4) would be split into two
+    sets: one containing a==b and b==1, and the other containing c==4.
+    """
+
     def __init__(self, template_frontend, track=False, **kwargs):
         super().__init__(**kwargs)
         self._solvers = {}
@@ -500,13 +509,6 @@ class CompositeFrontend(ConstrainedFrontend):
 
         merged.constraints = list(itertools.chain.from_iterable(a.constraints for a in merged._solver_list))
         return True, merged
-
-    def combine(self, others):
-        combined = self.blank_copy()
-        combined.add(self.constraints)
-        for o in others:
-            combined.add(o.constraints)
-        return combined
 
     def split(self):
         return [s.branch() for s in self._solver_list]

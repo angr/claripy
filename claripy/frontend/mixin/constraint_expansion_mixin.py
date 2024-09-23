@@ -9,6 +9,10 @@ log = logging.getLogger(__name__)
 
 
 class ConstraintExpansionMixin:
+    """ConstraintExpansionMixin is a mixin that adds evaluation results as
+    constraints for future evaluations.
+    """
+
     def eval(self, e, n, extra_constraints=(), exact=None):
         results = super().eval(e, n, extra_constraints=extra_constraints, exact=exact)
 

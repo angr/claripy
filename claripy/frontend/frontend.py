@@ -11,6 +11,10 @@ log = logging.getLogger(__name__)
 
 
 class Frontend:
+    """Frontend is the base class for all claripy Solvers, which are the
+    interfaces to the backend constraint solvers.
+    """
+
     def __init__(self):
         pass
 

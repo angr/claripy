@@ -5,6 +5,8 @@ from claripy.errors import UnsatError
 
 
 class SatCacheMixin:
+    """SatCacheMixin is a mixin that caches the satisfiability of the constraints."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._cached_satness = None

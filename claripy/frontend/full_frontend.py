@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import threading
-from typing import TYPE_CHECKING, Any, TypeVar, overload
+from typing import TYPE_CHECKING, Any, overload
 
 from claripy import backends
 from claripy.ast.bv import SGE, SLE, UGE, ULE
@@ -13,16 +13,20 @@ from .constrained_frontend import ConstrainedFrontend
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from typing_extensions import Self
+
     from claripy.ast.bool import Bool
     from claripy.ast.bv import BV
     from claripy.ast.fp import FP
 
 log = logging.getLogger(__name__)
 
-T = TypeVar("T", bound="FullFrontend")
-
 
 class FullFrontend(ConstrainedFrontend):
+    """FullFrontend is a frontend that supports all claripy operations and is
+    backed by a full solver backend.
+    """
+
     def __init__(self, solver_backend, timeout=None, max_memory=None, track=False, **kwargs):
         ConstrainedFrontend.__init__(self, **kwargs)
         self._track = track
@@ -330,7 +334,7 @@ class FullFrontend(ConstrainedFrontend):
     # Merging and splitting
     #
 
-    def merge(self: T, others, merge_conditions, common_ancestor=None) -> tuple[bool, T]:
+    def merge(self, others, merge_conditions, common_ancestor=None) -> tuple[bool, Self]:
         return (
             self._solver_backend.__class__.__name__ == "BackendZ3",
             ConstrainedFrontend.merge(self, others, merge_conditions, common_ancestor=common_ancestor)[1],

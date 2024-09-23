@@ -5,7 +5,6 @@ from .concrete_handler_mixin import ConcreteHandlerMixin
 from .constraint_deduplicator_mixin import ConstraintDeduplicatorMixin
 from .constraint_expansion_mixin import ConstraintExpansionMixin
 from .constraint_filter_mixin import ConstraintFilterMixin
-from .debug_mixin import DebugMixin
 from .eager_resolution_mixin import EagerResolutionMixin
 from .model_cache_mixin import ModelCacheMixin
 from .sat_cache_mixin import SatCacheMixin
@@ -19,7 +18,6 @@ __all__ = (
     "ConstraintDeduplicatorMixin",
     "ConstraintExpansionMixin",
     "ConstraintFilterMixin",
-    "DebugMixin",
     "EagerResolutionMixin",
     "ModelCacheMixin",
     "SatCacheMixin",

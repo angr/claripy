@@ -10,6 +10,8 @@ from claripy.errors import UnsatError
 
 
 class ModelCache:
+    """ModelCache is a wrapper around a model that provides some additional functionality."""
+
     def __init__(self, model):
         self.model = model
         self.replacements = weakref.WeakKeyDictionary()
