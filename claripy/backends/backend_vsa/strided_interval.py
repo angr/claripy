@@ -17,6 +17,7 @@ from claripy.errors import ClaripyOperationError
 
 from .bool_result import FalseResult, MaybeResult, TrueResult
 from .errors import ClaripyVSAError
+from .warren_methods import max_or, min_or
 
 log = logging.getLogger(__name__)
 
@@ -159,172 +160,9 @@ def normalize_types(f):
 
 si_id_ctr = itertools.count()
 
-# Whether DiscreteStridedIntervalSet should be used or not. Sometimes we manually set it to False to allow easy
-# implementation of test cases.
+# Whether DiscreteStridedIntervalSet should be used or not. Sometimes we manually
+# set it to False to allow easy implementation of test cases.
 allow_dsis = False
-
-
-class WarrenMethods:
-    """
-    Methods as suggested in book.
-    Hackers Delight.
-    """
-
-    @staticmethod
-    def min_or(a, b, c, d, w):
-        """
-        Lower bound of result of ORing 2-intervals.
-
-        :param a: Lower bound of first interval
-        :param b: Upper bound of first interval
-        :param c: Lower bound of second interval
-        :param d: Upper bound of second interval
-        :param w: bit width
-        :return: Lower bound of ORing 2-intervals
-        """
-        m = 1 << (w - 1)
-        while m != 0:
-            if ((~a) & c & m) != 0:
-                temp = (a | m) & -m
-                if temp <= b:
-                    a = temp
-                    break
-            elif (a & (~c) & m) != 0:
-                temp = (c | m) & -m
-                if temp <= d:
-                    c = temp
-                    break
-            m >>= 1
-        return a | c
-
-    @staticmethod
-    def max_or(a, b, c, d, w):
-        """
-        Upper bound of result of ORing 2-intervals.
-
-        :param a: Lower bound of first interval
-        :param b: Upper bound of first interval
-        :param c: Lower bound of second interval
-        :param d: Upper bound of second interval
-        :param w: bit width
-        :return: Upper bound of ORing 2-intervals
-        """
-        m = 1 << (w - 1)
-        while m != 0:
-            if (b & d & m) != 0:
-                temp = (b - m) | (m - 1)
-                if temp >= a:
-                    b = temp
-                    break
-                temp = (d - m) | (m - 1)
-                if temp >= c:
-                    d = temp
-                    break
-            m >>= 1
-        return b | d
-
-    @staticmethod
-    def min_and(a, b, c, d, w):
-        """
-        Lower bound of result of ANDing 2-intervals.
-
-        :param a: Lower bound of first interval
-        :param b: Upper bound of first interval
-        :param c: Lower bound of second interval
-        :param d: Upper bound of second interval
-        :param w: bit width
-        :return: Lower bound of ANDing 2-intervals
-        """
-        m = 1 << (w - 1)
-        while m != 0:
-            if (~a & ~c & m) != 0:
-                temp = (a | m) & -m
-                if temp <= b:
-                    a = temp
-                    break
-                temp = (c | m) & -m
-                if temp <= d:
-                    c = temp
-                    break
-            m >>= 1
-        return a & c
-
-    @staticmethod
-    def max_and(a, b, c, d, w):
-        """
-        Upper bound of result of ANDing 2-intervals.
-
-        :param a: Lower bound of first interval
-        :param b: Upper bound of first interval
-        :param c: Lower bound of second interval
-        :param d: Upper bound of second interval
-        :param w: bit width
-        :return: Upper bound of ANDing 2-intervals
-        """
-        m = 1 << (w - 1)
-        while m != 0:
-            if ((~d) & b & m) != 0:
-                temp = (b & ~m) | (m - 1)
-                if temp >= a:
-                    b = temp
-                    break
-            elif (d & (~b) & m) != 0:
-                temp = (d & ~m) | (m - 1)
-                if temp >= c:
-                    d = temp
-                    break
-            m >>= 1
-        return b & d
-
-    @staticmethod
-    def min_xor(a, b, c, d, w):
-        """
-        Lower bound of result of XORing 2-intervals.
-
-        :param a: Lower bound of first interval
-        :param b: Upper bound of first interval
-        :param c: Lower bound of second interval
-        :param d: Upper bound of second interval
-        :param w: bit width
-        :return: Lower bound of XORing 2-intervals
-        """
-        m = 1 << (w - 1)
-        while m != 0:
-            if ((~a) & c & m) != 0:
-                temp = (a | m) & -m
-                if temp <= b:
-                    a = temp
-            elif (a & (~c) & m) != 0:
-                temp = (c | m) & -m
-                if temp <= d:
-                    c = temp
-            m >>= 1
-        return a ^ c
-
-    @staticmethod
-    def max_xor(a, b, c, d, w):
-        """
-        Upper bound of result of XORing 2-intervals.
-
-        :param a: Lower bound of first interval
-        :param b: Upper bound of first interval
-        :param c: Lower bound of second interval
-        :param d: Upper bound of second interval
-        :param w: bit width
-        :return: Upper bound of XORing 2-intervals
-        """
-        m = 1 << (w - 1)
-        while m != 0:
-            if (b & d & m) != 0:
-                temp = (b - m) | (m - 1)
-                if temp >= a:
-                    b = temp
-                else:
-                    temp = (d - m) | (m - 1)
-                    if temp >= c:
-                        d = temp
-            m >>= 1
-        return b ^ d
 
 
 class StridedInterval(BackendObject):
@@ -345,6 +183,8 @@ class StridedInterval(BackendObject):
 
     Thanks all corresponding authors for their outstanding works.
     """
+
+    # pylint: disable=too-many-positional-arguments
 
     def __init__(
         self, name=None, bits=0, stride=None, lower_bound=None, upper_bound=None, uninitialized=False, bottom=False
@@ -428,7 +268,7 @@ class StridedInterval(BackendObject):
         self._normalize_top()
 
         if self._stride < 0:
-            raise Exception("Why does this happen?")
+            raise ClaripyVSAError("Why does this happen?")
 
         return self
 
@@ -500,11 +340,13 @@ class StridedInterval(BackendObject):
 
     def _ssplit(self):
         """
-        Split `self` at the south pole, which is the same as in unsigned arithmetic.
-        When returning two StridedIntervals (which means a splitting occurred), it is guaranteed that the first
-        StridedInterval is on the right side of the south pole.
+        Split `self` at the south pole, which is the same as in unsigned
+        arithmetic. When returning two StridedIntervals (which means a
+        splitting occurred), it is guaranteed that the first StridedInterval is
+        on the right side of the south pole.
 
-        :return: a list of split StridedIntervals, that contains either one or two StridedIntervals
+        :return: a list of split StridedIntervals, that contains either one or
+            two StridedIntervals
         """
 
         south_pole_right = self.max_int(self.bits)  # 111...1
@@ -630,7 +472,7 @@ class StridedInterval(BackendObject):
 
             return [(lb_1, ub_1), (lb_2, ub_2)]
 
-        raise Exception("WTF")
+        raise ClaripyVSAError("WTF")
 
     def _unsigned_bounds(self):
         """
@@ -656,7 +498,7 @@ class StridedInterval(BackendObject):
 
             return [(lb_1, ub_1), (lb_2, ub_2)]
 
-        raise Exception("WTF")
+        raise ClaripyVSAError("WTF")
 
     def _rshift_logical(self, shift_amount):
         """
@@ -1188,11 +1030,6 @@ class StridedInterval(BackendObject):
         return self._reversed
 
     @property
-    def size(self):
-        log.warning("StridedInterval.size will be deprecated soon. Please use StridedInterval.cardinality instead.")
-        return self.cardinality
-
-    @property
     def cardinality(self):
         if self.is_bottom:
             return 0
@@ -1271,9 +1108,11 @@ class StridedInterval(BackendObject):
     @reversed_processor
     def max(self):
         """
-        Treat this StridedInterval as a set of unsigned numbers, and return the greatest one
+        Treat this StridedInterval as a set of unsigned numbers, and return the
+        greatest one
 
-        :return: the greatest number in this StridedInterval when evaluated as unsigned, or None if empty
+        :return: the greatest number in this StridedInterval when evaluated as
+            unsigned, or None if empty
         """
         if not self.is_empty:
             splitted = self._ssplit()
@@ -1285,9 +1124,11 @@ class StridedInterval(BackendObject):
     @reversed_processor
     def min(self):
         """
-        Treat this StridedInterval as a set of unsigned numbers, and return the smallest one
+        Treat this StridedInterval as a set of unsigned numbers, and return the
+        smallest one
 
-        :return: the smallest number in this StridedInterval when evaluated as unsigned, or None if empty
+        :return: the smallest number in this StridedInterval when evaluated as
+            unsigned, or None if empty
         """
         if not self.is_empty:
             splitted = self._ssplit()
@@ -1324,7 +1165,8 @@ class StridedInterval(BackendObject):
     @property
     def is_bottom(self):
         """
-        Whether this StridedInterval is a BOTTOM, in other words, describes an empty set of integers.
+        Whether this StridedInterval is a BOTTOM, in other words, describes an
+        empty set of integers.
 
         :return: True/False
         """
@@ -1406,7 +1248,7 @@ class StridedInterval(BackendObject):
         # FIXME: Support other bits
         # Here we assume the maximum val is 64 bits
         # Special case to deal with the floating-point imprecision
-        if val > 0xFFFFFFFFFFFE0000 and val <= 0x10000000000000000:
+        if 0xFFFFFFFFFFFE0000 < val <= 0x10000000000000000:
             return 64
         return int(math.log2(val) + 1)
 
@@ -1521,7 +1363,8 @@ class StridedInterval(BackendObject):
     @staticmethod
     def _is_msb_zero(v, bits):
         """
-        Checks if the most significant bit is zero (i.e. is the integer positive under signed arithmetic).
+        Checks if the most significant bit is zero (i.e. is the integer positive
+        under signed arithmetic).
 
         :param v: The integer to check with
         :param bits: Bits of the integer
@@ -1532,7 +1375,8 @@ class StridedInterval(BackendObject):
     @staticmethod
     def _is_msb_one(v, bits):
         """
-        Checks if the most significant bit is one (i.e. is the integer negative under signed arithmetic).
+        Checks if the most significant bit is one (i.e. is the integer negative
+        under signed arithmetic).
 
         :param v: The integer to check with
         :param bits: Bits of the integer
@@ -1627,7 +1471,13 @@ class StridedInterval(BackendObject):
                 stride = abs(a.lower_bound * b.stride)
             else:
                 stride = math.gcd(a.stride, b.stride)
-            return StridedInterval(bits=bits, stride=stride, lower_bound=lb, upper_bound=ub, uninitialized=uninit_flag)
+            return StridedInterval(
+                bits=bits,
+                stride=stride,
+                lower_bound=lb,
+                upper_bound=ub,
+                uninitialized=uninit_flag,
+            )
         # Overflow occurred
         return StridedInterval.top(bits, uninitialized=False)
 
@@ -1723,7 +1573,7 @@ class StridedInterval(BackendObject):
                 )
             return StridedInterval.top(bits, uninitialized=uninit_flag)
 
-        raise Exception(f"We shouldn't see this case: {a} * {b}")
+        raise ClaripyVSAError(f"We shouldn't see this case: {a} * {b}")
 
     @staticmethod
     def _wrapped_unsigned_div(a, b):
@@ -1757,7 +1607,13 @@ class StridedInterval(BackendObject):
         # TODO: Can we make a more precise estimate of the stride?
         stride = 1
 
-        return StridedInterval(bits=bits, stride=stride, lower_bound=lb, upper_bound=ub, uninitialized=uninit_flag)
+        return StridedInterval(
+            bits=bits,
+            stride=stride,
+            lower_bound=lb,
+            upper_bound=ub,
+            uninitialized=uninit_flag,
+        )
 
     @staticmethod
     def _wrapped_signed_div(a, b):
@@ -1814,7 +1670,13 @@ class StridedInterval(BackendObject):
                 b.upper_bound, bits
             )
 
-        return StridedInterval(bits=bits, stride=stride, lower_bound=lb, upper_bound=ub, uninitialized=uninit_flag)
+        return StridedInterval(
+            bits=bits,
+            stride=stride,
+            lower_bound=lb,
+            upper_bound=ub,
+            uninitialized=uninit_flag,
+        )
 
     #
     # Membership testing and poset ordering
@@ -2110,14 +1972,14 @@ class StridedInterval(BackendObject):
                 mask = (1 << s_t) - 1
                 r = (u.lower_bound & mask) | (v.lower_bound & mask)
                 m = (2**w) - 1
-                low_bound = WarrenMethods.min_or(
+                low_bound = min_or(
                     u.lower_bound & (~mask & m),
                     u.upper_bound & (~mask & m),
                     v.lower_bound & (~mask & m),
                     v.upper_bound & (~mask & m),
                     w,
                 )
-                upper_bound = WarrenMethods.max_or(
+                upper_bound = max_or(
                     u.lower_bound & (~mask & m),
                     u.upper_bound & (~mask & m),
                     v.lower_bound & (~mask & m),
@@ -2144,8 +2006,7 @@ class StridedInterval(BackendObject):
 
         :param b: The other operand
         :return:
-        """
-        """
+
         The following code implements the and operations as presented in the paper
         'Signedness-Agnostic Program Analysis: Precise Integer Bounds for Low-Level Code'
         """
@@ -2318,11 +2179,11 @@ class StridedInterval(BackendObject):
 
         new_lower_bound = None
         new_upper_bound = None
-        for shift_amount in range(lower, upper + 1):
-            l = self.lower_bound << shift_amount
+        for amount in range(lower, upper + 1):
+            l = self.lower_bound << amount
             if new_lower_bound is None or l < new_lower_bound:
                 new_lower_bound = l
-            u = self.upper_bound << shift_amount
+            u = self.upper_bound << amount
             if new_upper_bound is None or u > new_upper_bound:
                 new_upper_bound = u
 
@@ -2502,18 +2363,20 @@ class StridedInterval(BackendObject):
 
         :param new_length: New length after sign-extension
         :return: A new StridedInterval
-        """
-        """
-        In a sign-agnostic implementation of strided-intervals a number can be signed or unsigned both.
-        Given a SI, we must pay attention how we extend its lower bound and upper bound.
-        Assuming that the lower bound is in the left emishpere (positive number).
-        Let's assume first that the SI is signed and its upper bound is in the right emisphere. Extending it with leading
-        1s (i.e., its MSB)  is correct given that its values would be preserved.
-        On the other hand if the number is unsigned we should not replicate its MSB, since this would increase the value
-        of the upper bound in the new interval. In this case the correct approach would be to add 0 in front of the number,
-        i.e., moving it to the left emisphere. But this approach wouldn't be correct in the first scenario (signed SI).
-        The solution in this case is extend the upper bound with 1s. This gives us an overapproximation of the original
-        SI.
+
+        In a sign-agnostic implementation of strided-intervals a number can be
+        signed or unsigned both. Given a SI, we must pay attention how we extend
+        its lower bound and upper bound. Assuming that the lower bound is in
+        the left emishpere (positive number). Let's assume first that the SI is
+        signed and its upper bound is in the right emisphere. Extending it with
+        leading 1s (i.e., its MSB) is correct given that its values would be
+        preserved. On the other hand if the number is unsigned we should not
+        replicate its MSB, since this would increase the value of the upper
+        bound in the new interval. In this case the correct approach would be to
+        add 0 in front of the number, i.e., moving it to the left emisphere.
+        But this approach wouldn't be correct in the first scenario (signed SI).
+        The solution in this case is extend the upper bound with 1s. This gives
+        us an overapproximation of the original SI.
 
         Extending this intuition, the implementation follows the below rules:
         (UB: upper bound, LB: lower bound, RE: right emisphere, LE: left emisphere)
@@ -3023,6 +2886,8 @@ class StridedInterval(BackendObject):
             elif (a_dir, b_dir) == ("<=", "<="):
                 ub = min(b, a)
                 lb = float("-inf")
+            else:
+                raise ClaripyOperationError("Invalid direction")
 
             return lb, ub
 
@@ -3038,12 +2903,10 @@ class StridedInterval(BackendObject):
         y0 = y0 * StridedInterval.sign(b)
 
         if c % d == 0:
-            """
-            Integer solutions are: (c*x0 + b*t, c*y0 - a*t)
-            we have to get the first positive solution, which means
-            that we have to solve the following disequations for t:
-            c*x0 + b*t >= 0 and c*y0 - a*t >= 0.
-            """
+            # Integer solutions are: (c*x0 + b*t, c*y0 - a*t)
+            # we have to get the first positive solution, which means
+            # that we have to solve the following disequations for t:
+            # c*x0 + b*t >= 0 and c*y0 - a*t >= 0.
             assert b != 0
             assert a != 0
 
@@ -3061,7 +2924,7 @@ class StridedInterval(BackendObject):
             # Given that we are looking for the first value
             # which solve the diophantine equation, we have to
             # select the value of t closer to 0.
-            if lb <= 0 and ub >= 0:
+            if lb <= 0 <= ub:
                 t = ub if abs(ub) < abs(lb) else lb
             elif lb == float("inf") or lb == float("-inf"):
                 t = ub
@@ -3110,6 +2973,7 @@ class StridedInterval(BackendObject):
                 return si_0.lower_bound
             return None
         if si_1.is_integer:
+            # pylint: disable=arguments-out-of-order
             return StridedInterval._minimal_common_integer_splitted(si_1, si_0)
 
         # shortcut
@@ -3121,25 +2985,21 @@ class StridedInterval(BackendObject):
             # They don't overlap
             return None
 
-        """
-        Given two strided intervals a = sa[lba, uba] and b = sb[lbb, ubb], the first integer shared
-        by them is found by finding the minimum values of ka and kb which solve the equation:
-            ka * sa + lba = kb * sb + lbb
-        In particular one can solve the above diophantine equation and find the parameterized solutions
-        of ka and kb, with respect to a parameter t.
-        The minimum natural value of the parameter t which gives two positive natural values of ka and kb
-        is used to resolve ka and kb, and finally to solve the above equation and get the minimum shared integer.
-        """
+        # Given two strided intervals a = sa[lba, uba] and b = sb[lbb, ubb], the first integer shared
+        # by them is found by finding the minimum values of ka and kb which solve the equation:
+        #     ka * sa + lba = kb * sb + lbb
+        # In particular one can solve the above diophantine equation and find the parameterized solutions
+        # of ka and kb, with respect to a parameter t.
+        # The minimum natural value of the parameter t which gives two positive natural values of ka and kb
+        # is used to resolve ka and kb, and finally to solve the above equation and get the minimum shared integer.
         x, y = StridedInterval.diop_natural_solution_linear(-(b - d), a, -c)
         if a is None or b is None:
             return None
         first_integer = x * a + b
         assert first_integer == y * c + d
         if (
-            first_integer >= si_0.lower_bound
-            and first_integer <= si_0.upper_bound
-            and first_integer >= si_1.lower_bound
-            and first_integer <= si_1.upper_bound
+            si_0.lower_bound <= first_integer <= si_0.upper_bound
+            and si_1.lower_bound <= first_integer <= si_1.upper_bound
         ):
             return first_integer
 
@@ -3379,6 +3239,8 @@ class StridedInterval(BackendObject):
         """
         This method reverses the StridedInterval object for real. Do expect loss of precision for most cases!
 
+        This reverse operation is unsound and incomplete, but allows the reverse operation to be......
+
         :return: A new reversed StridedInterval instance
         """
         o = self.copy()
@@ -3411,10 +3273,6 @@ class StridedInterval(BackendObject):
         si.uninitialized = self.uninitialized
         si._reversed = o._reversed
         return si
-
-    """
-    This reverse operation is unsound and incomplete, but allows the reverse operation to be......
-    """
 
     def _involuted_reverse(self):
         """
@@ -3480,7 +3338,7 @@ class StridedInterval(BackendObject):
         return si
 
 
-def CreateStridedInterval(
+def CreateStridedInterval(  # pylint: disable=too-many-positional-arguments
     name=None,
     bits=0,
     stride=None,

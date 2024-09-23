@@ -156,7 +156,7 @@ class BackendConcrete(Backend):
             return StringV(e.value)
         raise BackendError(f"Couldn't abstract object of type {type(e)}")
 
-    def _cardinality(self, b):
+    def _cardinality(self, a):  # pylint:disable=unused-argument
         # if we got here, it's a cardinality of 1
         return 1
 
