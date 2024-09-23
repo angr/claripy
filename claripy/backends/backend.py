@@ -815,7 +815,7 @@ class Backend:
         """
         return self._cardinality(self.convert(a))
 
-    def _cardinality(self, b):  # pylint:disable=no-self-use,unused-argument
+    def _cardinality(self, a):  # pylint:disable=no-self-use,unused-argument
         """
         This should return the maximum number of values that an expression can take on. This should be a strict
         *over* approximation.

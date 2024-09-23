@@ -52,6 +52,7 @@ class ValueSet(BackendObject):
     ValueSet is a mapping between memory regions and corresponding offsets.
     """
 
+    # pylint:disable=too-many-positional-arguments
     def __init__(self, name=None, region=None, region_base_addr=None, bits=None, val=None):
         """
         Constructor.

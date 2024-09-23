@@ -48,7 +48,14 @@ def normalize_arg_order(f):
     return normalizer
 
 
+# pylint: disable=too-many-positional-arguments
+
+
 class BackendVSA(Backend):
+    """BackendVSA is a backend that uses VSA (Value Set Analysis) to represent
+    and reason about values.
+    """
+
     def __init__(self):
         Backend.__init__(self)
         self._make_expr_ops(set(expression_set_operations), op_class=self)

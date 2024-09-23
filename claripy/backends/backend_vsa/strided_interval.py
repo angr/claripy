@@ -335,11 +335,13 @@ class StridedInterval(BackendObject):
 
     For more details, please refer to relevant papers like TIE and WYSINWYE.
 
-    This implementation is signedness-agostic, please refer to [1] *Signedness-Agnostic Program Analysis: Precise Integer
-    Bounds for Low-Level Code* by Jorge A. Navas, etc. for more details.
-    Note that this implementation only takes hint from [1]. Such a work has been improved to be more precise
-    (and still sound) when dealing with strided intervals.
-    DO NOT expect to see a 1-to-1 reproduction of [1].
+    This implementation is signedness-agostic, please refer to [1]
+    *Signedness-Agnostic Program Analysis: Precise Integer Bounds for Low-Level
+    Code* by Jorge A. Navas, etc. for more details.
+
+    Note that this implementation only takes hint from [1]. Such a work has been
+    improved to be more precise (and still sound) when dealing with strided
+    intervals. DO NOT expect to see a 1-to-1 reproduction of [1].
 
     Thanks all corresponding authors for their outstanding works.
     """
@@ -668,9 +670,10 @@ class StridedInterval(BackendObject):
         if self.is_empty:
             return self
 
-        # If straddling the south pole, we'll have to split it into two, perform logical right shift on them
-        # individually, then union the result back together for better precision. Note that it's an improvement from
-        # the original WrappedIntervals paper.
+        # If straddling the south pole, we'll have to split it into two, perform
+        # logical right shift on them individually, then union the result back
+        # together for better precision. Note that it's an improvement from the
+        # original WrappedIntervals paper.
 
         ssplit = self._ssplit()
         if len(ssplit) == 1:
@@ -698,8 +701,9 @@ class StridedInterval(BackendObject):
         if self.is_empty:
             return self
 
-        # If straddling the north pole, we'll have to split it into two, perform arithmetic right shift on them
-        # individually, then union the result back together for better precision. Note that it's an improvement from
+        # If straddling the north pole, we'll have to split it into two, perform
+        # arithmetic right shift on them individually, then union the result
+        # back together for better precision. Note that it's an improvement from
         # the original WrappedIntervals paper.
 
         nsplit = self._nsplit()
@@ -731,7 +735,8 @@ class StridedInterval(BackendObject):
 
     def identical(self, o):
         """
-        Used to make exact comparisons between two StridedIntervals. Usually it is only used in test cases.
+        Used to make exact comparisons between two StridedIntervals. Usually it
+        is only used in test cases.
 
         :param o: The other StridedInterval to compare with.
         :return: True if they are exactly same, False otherwise.
@@ -1910,16 +1915,14 @@ class StridedInterval(BackendObject):
 
         # optimization
         # case: SI<16>0xff[0x0, 0xff] + 3
-        """
-        if self.is_top and b.is_integer:
-            si = self.copy()
-            si.lower_bound = b.lower_bound
-            return si
-        elif b.is_top and self.is_integer:
-            si = b.copy()
-            si.lower_bound = self.lower_bound
-            return si
-        """
+        # if self.is_top and b.is_integer:
+        #     si = self.copy()
+        #     si.lower_bound = b.lower_bound
+        #     return si
+        # elif b.is_top and self.is_integer:
+        #     si = b.copy()
+        #     si.lower_bound = self.lower_bound
+        #     return si
         # FIXME
 
         overflow = self._wrapped_overflow_add(self, b)
@@ -2073,8 +2076,7 @@ class StridedInterval(BackendObject):
 
         :param b: The other operand
         :return: self | b
-        """
-        """
+
         This implementation combines the approaches used by 'WYSINWYX: what you see is not what you execute'
         paper and 'Signedness-Agnostic Program Analysis: Precise Integer Bounds for Low-Level Code'. The
         first paper provides an sound way to approximate the stride, whereas the second provides a way
@@ -2598,15 +2600,15 @@ class StridedInterval(BackendObject):
 
         else:
             # Both positive numbers and negative numbers
-            numbers = self._nsplit()
+            nums = self._nsplit()
             # Since there are both positive and negative numbers, there must be two bounds after nsplit
             # assert len(numbers) == 2
 
             all_resulting_intervals = []
 
-            assert len(numbers) > 0
+            assert len(nums) > 0
 
-            for n in numbers:
+            for n in nums:
                 a, b = n.lower_bound, n.upper_bound
                 mask_a = 0
                 mask_b = 0
@@ -3517,7 +3519,6 @@ def CreateStridedInterval(
             bits = to_conv.bits
             to_conv_value = to_conv.value
         else:
-            bits = bits
             to_conv_value = to_conv
 
         stride = 0

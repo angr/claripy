@@ -196,13 +196,13 @@ class BV(Bits):
         return super().identical(other, strict)
 
 
-def BVS(
+def BVS(  # pylint:disable=redefined-builtin
     name,
     size,
     min=None,
     max=None,
     stride=None,
-    uninitialized=False,  # pylint:disable=redefined-builtin
+    uninitialized=False,
     explicit_name=None,
     discrete_set=False,
     discrete_set_max_card=None,
@@ -381,7 +381,7 @@ def DSIS(
     name=None, bits=0, lower_bound=None, upper_bound=None, stride=None, explicit_name=None, to_conv=None, max_card=None
 ):
     if to_conv is not None:
-        si = claripy.vsa.CreateStridedInterval(bits=to_conv.size(), to_conv=to_conv)
+        si = claripy.backends.backend_vsa.CreateStridedInterval(bits=to_conv.size(), to_conv=to_conv)
         return SI(
             name=name,
             bits=si._bits,

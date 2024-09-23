@@ -37,6 +37,11 @@ def normalize_types(f):
 
 
 class FPV(BackendObject):
+    """A concrete floating point value. Used in the concrete backend for
+    calculations.  Any use outside of claripy should use `claripy.ast.fp.FPV`
+    instead.
+    """
+
     __slots__ = ["sort", "value"]
 
     def __init__(self, value, sort):

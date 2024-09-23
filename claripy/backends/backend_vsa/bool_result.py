@@ -1,201 +1,90 @@
 from __future__ import annotations
 
-from claripy.ast.base import Base
 from claripy.backends.backend_object import BackendObject
-from claripy.errors import BackendError, ClaripyValueError
 
 
 class BoolResult(BackendObject):
-    def __init__(self, op=None, args=None):
-        self._op = op
-        self._args = args
+    """A class representing the result of a boolean operation. Values can be
+    True, False, or Maybe.
+    """
 
-    def value(self):
-        raise NotImplementedError
+    value: tuple[bool, ...]
 
-    def __len__(self):
-        return BackendError()
+    def __init__(self, value: tuple[bool, ...]):
+        self.value = value
 
     def __eq__(self, other):
-        raise NotImplementedError
+        return isinstance(other, BoolResult) and self.value == other.value
 
     def __and__(self, other):
-        raise NotImplementedError
+        if BoolResult.is_false(self) or BoolResult.is_false(other):
+            return FalseResult()
+        if BoolResult.is_true(self):
+            return other
+        if BoolResult.is_true(other):
+            return self
+        return MaybeResult()
 
     def __invert__(self):
-        raise NotImplementedError
+        if BoolResult.is_true(self):
+            return FalseResult()
+        if BoolResult.is_false(self):
+            return TrueResult()
+        return MaybeResult()
 
     def __or__(self, other):
-        raise NotImplementedError
+        if BoolResult.is_true(self) or BoolResult.is_true(other):
+            return TrueResult()
+        if BoolResult.is_false(self):
+            return other
+        if BoolResult.is_false(other):
+            return self
+        return MaybeResult()
 
     def identical(self, other):
-        if self.value != other.value:
-            return False
-        if self._op != other._op:
-            return False
-        return self._args == other._args
+        return self.value == other.value
 
     def union(self, other):
-        raise NotImplementedError
+        return BoolResult(tuple(set(self.value) | set(other.value)))
 
-    def size(self):  # pylint:disable=no-self-use
-        return None
+    @property
+    def cardinality(self):
+        return len(self.value)
 
     @staticmethod
     def is_maybe(o):
-        if isinstance(o, Base):
-            raise ClaripyValueError("BoolResult can't handle AST objects directly")
-
-        return isinstance(o, MaybeResult)
+        return isinstance(o, BoolResult) and False in o.value and True in o.value
 
     @staticmethod
     def has_true(o):
-        if isinstance(o, Base):
-            raise ClaripyValueError("BoolResult can't handle AST objects directly")
-
         return o is True or (isinstance(o, BoolResult) and True in o.value)
 
     @staticmethod
     def has_false(o):
-        if isinstance(o, Base):
-            raise ClaripyValueError("BoolResult can't handle AST objects directly")
-
         return o is False or (isinstance(o, BoolResult) and False in o.value)
 
     @staticmethod
     def is_true(o):
-        if isinstance(o, Base):
-            raise ClaripyValueError("BoolResult can't handle AST objects directly")
-
-        return o is True or (isinstance(o, TrueResult))
+        return o is True or (isinstance(o, BoolResult) and o.value == (True,))
 
     @staticmethod
     def is_false(o):
-        if isinstance(o, Base):
-            raise ClaripyValueError("BoolResult can't handle AST objects directly")
-
-        return o is False or (isinstance(o, FalseResult))
+        return o is False or (isinstance(o, BoolResult) and o.value == (False,))
 
 
-class TrueResult(BoolResult):
-    cardinality = 1
+def TrueResult() -> BoolResult:
+    """Return a BoolResult representing the value True."""
 
-    @property
-    def value(self):
-        return (True,)
-
-    def identical(self, other):
-        return isinstance(other, TrueResult)
-
-    def __eq__(self, other):
-        if isinstance(other, FalseResult):
-            return FalseResult()
-        if isinstance(other, TrueResult):
-            return TrueResult()
-        return MaybeResult()
-
-    def __invert__(self):
-        return FalseResult()
-
-    def __or__(self, other):
-        return TrueResult()
-
-    def __and__(self, other):
-        if BoolResult.is_maybe(other):
-            return MaybeResult()
-        if BoolResult.is_false(other):
-            return FalseResult()
-        return TrueResult()
-
-    def union(self, other):
-        if other is True or isinstance(other, TrueResult):
-            return TrueResult()
-        if other is False or isinstance(other, FalseResult | MaybeResult):
-            return MaybeResult()
-        return NotImplemented
-
-    def __repr__(self):
-        return "<True>"
-
-    def __bool__(self):
-        return True
+    return BoolResult((True,))
 
 
-class FalseResult(BoolResult):
-    cardinality = 1
+def FalseResult() -> BoolResult:
+    """Return a BoolResult representing the value False."""
 
-    @property
-    def value(self):
-        return (False,)
-
-    def identical(self, other):
-        return isinstance(other, FalseResult)
-
-    def __eq__(self, other):
-        if isinstance(other, FalseResult):
-            return TrueResult()
-        if isinstance(other, TrueResult):
-            return FalseResult()
-        return MaybeResult()
-
-    def __invert__(self):
-        return TrueResult()
-
-    def __and__(self, other):
-        return FalseResult()
-
-    def __or__(self, other):
-        return other
-
-    def __repr__(self):
-        return "<False>"
-
-    def union(self, other):
-        if other is True or type(other) is TrueResult:
-            return MaybeResult()
-        if other is False or type(other) is FalseResult:
-            return FalseResult()
-        if type(other) is MaybeResult:
-            return MaybeResult()
-        return NotImplemented
-
-    def __bool__(self):
-        return False
+    return BoolResult((False,))
 
 
-class MaybeResult(BoolResult):
-    cardinality = 2
+def MaybeResult() -> BoolResult:
+    """Return a BoolResult representing the value Maybe."""
 
-    @property
-    def value(self):
-        return (True, False)
-
-    def identical(self, other):
-        return isinstance(other, MaybeResult)
-
-    def __eq__(self, other):
-        return MaybeResult()
-
-    def __invert__(self):
-        return MaybeResult()
-
-    def __and__(self, other):
-        if BoolResult.is_false(other):
-            return FalseResult()
-        return MaybeResult()
-
-    def union(self, other):
-        return MaybeResult()
-
-    def __or__(self, other):
-        if BoolResult.is_true(other):
-            return TrueResult()
-        return self
-
-    def __repr__(self):
-        if self._op is None:
-            return "<Maybe>"
-        return f"<Maybe({self._op}, {self._args})>"
-
-    def __bool__(self):
-        return False
+    return BoolResult((True, False))

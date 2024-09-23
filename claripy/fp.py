@@ -7,7 +7,11 @@ from claripy.errors import ClaripyOperationError
 
 
 class RM(Enum):
-    # see https://en.wikipedia.org/wiki/IEEE_754#Rounding_rules
+    """Rounding modes for floating point operations.
+
+    See https://en.wikipedia.org/wiki/IEEE_754#Rounding_rules for more information.
+    """
+
     RM_NearestTiesEven = "RM_RNE"
     RM_NearestTiesAwayFromZero = "RM_RNA"
     RM_TowardsZero = "RM_RTZ"
@@ -28,14 +32,9 @@ class RM(Enum):
         }[self]
 
 
-RM_NearestTiesEven = RM.RM_NearestTiesEven
-RM_NearestTiesAwayFromZero = RM.RM_NearestTiesAwayFromZero
-RM_TowardsZero = RM.RM_TowardsZero
-RM_TowardsPositiveInf = RM.RM_TowardsPositiveInf
-RM_TowardsNegativeInf = RM.RM_TowardsNegativeInf
-
-
 class FSort:
+    """A class representing a floating point sort."""
+
     def __init__(self, name, exp, mantissa):
         self.name = name
         self.exp = exp

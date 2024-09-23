@@ -4,8 +4,12 @@ from claripy.errors import ClaripyError
 
 
 class ClaripyVSAError(ClaripyError):
-    pass
+    """ClaripyVSAError is the base class for all errors raised by claripy's
+    VSA backend.
+    """
 
 
 class ClaripyVSAOperationError(ClaripyVSAError):
-    pass
+    """ClaripyVSAOperationError is raised when an operation is attempted on VSA
+    objects that is not supported.
+    """
