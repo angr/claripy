@@ -127,7 +127,7 @@ def StringS(name, uninitialized=False, explicit_name=False, **kwargs):
     n = _make_name(String.STRING_TYPE_IDENTIFIER + name, 0, False if explicit_name is None else explicit_name)
     return String(
         "StringS",
-        n,
+        (n,),
         symbolic=True,
         uninitialized=uninitialized,
         variables=frozenset((n,)),
