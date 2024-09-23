@@ -11,7 +11,7 @@ import claripy
 from claripy import operations
 from claripy.ast.base import _make_name
 from claripy.errors import BackendError, ClaripyValueError
-from claripy.utils import deprecated
+from claripy.util import deprecated
 
 from .bits import Bits
 from .bool import Bool, If
