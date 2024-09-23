@@ -5,6 +5,7 @@ import logging
 from unittest import TestCase, main
 
 import claripy
+import claripy.frontend
 
 l = logging.getLogger(__name__)
 
@@ -125,15 +126,15 @@ def raw_solver(solver_type, reuse_z3_solver):
     assert len(shards) == 2
     assert len(shards[0].variables) == 1
     assert len(shards[1].variables) == 1
-    if isinstance(s, claripy.frontend_mixins.ConstraintExpansionMixin) or (
-        isinstance(s, claripy.frontends.HybridFrontend)
-        and isinstance(s._exact_frontend, claripy.frontend_mixins.ConstraintExpansionMixin)
+    if isinstance(s, claripy.frontend.mixin.ConstraintExpansionMixin) or (
+        isinstance(s, claripy.frontend.HybridFrontend)
+        and isinstance(s._exact_frontend, claripy.frontend.mixin.ConstraintExpansionMixin)
     ):  # the hybrid frontend actually uses the exact frontend for the split
         assert {len(shards[0].constraints), len(shards[1].constraints)} == {
             2,
             1,
         }  # adds the != from the solution() check
-    if isinstance(s, claripy.frontends.ReplacementFrontend):
+    if isinstance(s, claripy.frontend.ReplacementFrontend):
         assert {len(shards[0].constraints), len(shards[1].constraints)} == {1}
 
     # test result caching
@@ -216,7 +217,7 @@ def raw_solver(solver_type, reuse_z3_solver):
 
     # test result caching
 
-    if isinstance(s, claripy.frontend_mixins.ModelCacheMixin):
+    if isinstance(s, claripy.frontend.mixin.ModelCacheMixin):
         count = claripy.backends.z3.solve_count
 
         s = solver_type()
@@ -251,7 +252,7 @@ def raw_solver_branching(solver_type, reuse_z3_solver):
     assert s.eval(x, 1)[0] > 0
 
     t = s.branch()
-    if isinstance(s, claripy.frontends.FullFrontend):
+    if isinstance(s, claripy.frontend.FullFrontend):
         assert s._tls.solver is t._tls.solver
         assert s._finalized
         assert t._finalized
@@ -339,7 +340,7 @@ def raw_composite_solver(reuse_z3_solver):
     c = claripy.And(x == 1, y == 2, z > 3)
     s.add(c)
 
-    if isinstance(s._template_frontend, claripy.frontend_mixins.ModelCacheMixin):
+    if isinstance(s._template_frontend, claripy.frontend.mixin.ModelCacheMixin):
         assert len(s._solver_list) == 3
         count = claripy.backends.z3.solve_count
         assert s.satisfiable()
@@ -412,7 +413,7 @@ def raw_ancestor_merge(solver, reuse_z3_solver):
     r = p.merge([q], [claripy.true(), claripy.true()])[-1]
     t = p.merge([q], [p.constraints[-1], q.constraints[-1]], common_ancestor=s)[-1]
 
-    if not isinstance(r, claripy.frontends.CompositeFrontend):
+    if not isinstance(r, claripy.frontend.CompositeFrontend):
         assert len(r.constraints) == 1
     assert len(t.constraints) == 3
     assert t.constraints[-1].variables == z.variables

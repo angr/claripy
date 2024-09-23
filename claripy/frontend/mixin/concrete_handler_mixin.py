@@ -2,6 +2,10 @@ from __future__ import annotations
 
 
 class ConcreteHandlerMixin:
+    """ConcreteHandlerMixin is a mixin that handles concrete expressions
+    evaluation to prevent invoking the backend solver.
+    """
+
     def eval(self, e, n, extra_constraints=(), exact=None):
         c = self._concrete_value(e)
         if c is not None:
@@ -15,9 +19,9 @@ class ConcreteHandlerMixin:
         if len(symbolic_exprs) == 0:
             return [concrete_exprs]
 
-        symbolic_results = map(
-            list, super().batch_eval(symbolic_exprs, n, extra_constraints=extra_constraints, exact=exact)
-        )
+        symbolic_results = [
+            list(r) for r in super().batch_eval(symbolic_exprs, n, extra_constraints=extra_constraints, exact=exact)
+        ]
         return [tuple((c if c is not None else r.pop(0)) for c in concrete_exprs) for r in symbolic_results]
 
     def max(self, e, extra_constraints=(), signed=False, exact=None):

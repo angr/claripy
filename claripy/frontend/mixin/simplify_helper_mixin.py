@@ -2,6 +2,8 @@ from __future__ import annotations
 
 
 class SimplifyHelperMixin:
+    """SimplifyHelperMixin is a mixin that simplifies constraints before evaluation."""
+
     def max(self, e, extra_constraints=(), signed=False, exact=None):
         self.simplify()
         return super().max(e, extra_constraints=extra_constraints, signed=signed, exact=exact)

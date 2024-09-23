@@ -18,6 +18,13 @@ log = logging.getLogger(__name__)
 
 
 class ReplacementFrontend(ConstrainedFrontend):
+    """ReplacementFrontend is a frontend that allows for the replacement
+    symbolic constraints with concrete solutions. This is useful for
+    simplifying constraints and speeding up solving time.
+    """
+
+    # pylint: disable=too-many-positional-arguments
+
     def __init__(
         self,
         actual_frontend,
@@ -108,25 +115,17 @@ class ReplacementFrontend(ConstrainedFrontend):
         self._replacement_cache = weakref.WeakKeyDictionary(self._replacements)
 
     def _replacement(self, old):
-        # depressing hack
-        try:
-            if not self._replacement_cache:
-                return old
-        except RuntimeError:
-            if not self._replacement_cache:
-                return old
-
         if not isinstance(old, Base):
             return old
 
-        try:
+        if old.cache_key in self._replacement_cache:
             return self._replacement_cache[old.cache_key]
-        except KeyError:
-            # not found in the cache
-            new = old.replace_dict(self._replacement_cache)
-            if new is not old:
-                self._replacement_cache[old.cache_key] = new
-            return new
+
+        # not found in the cache
+        new = old.replace_dict(self._replacement_cache)
+        if new is not old:
+            self._replacement_cache[old.cache_key] = new
+        return new
 
     def _add_solve_result(self, e, er, r):
         if not self._auto_replace:

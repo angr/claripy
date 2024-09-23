@@ -11,6 +11,11 @@ log = logging.getLogger(__name__)
 
 
 class LightFrontend(ConstrainedFrontend):
+    """LightFrontend is an extremely simple frontend that is used primarily for
+    the purpose of quickly evaluating expressions using the concrete and VSA
+    backends.
+    """
+
     def __init__(self, solver_backend, **kwargs):
         # since the LightFrontend mostly cannot handle extra_constriants, it horribly misuses the cache.
         # Because of this, we have to disable the caching here.
@@ -23,6 +28,7 @@ class LightFrontend(ConstrainedFrontend):
 
     def _copy(self, c):
         super()._copy(c)
+        c._solver_backend = self._solver_backend
 
     #
     # Serialization support
@@ -43,32 +49,32 @@ class LightFrontend(ConstrainedFrontend):
     def eval(self, e, n, extra_constraints=(), exact=None):
         try:
             return tuple(self._solver_backend.eval(e, n))
-        except BackendError as e:
-            raise ClaripyFrontendError("Light solver can't handle this eval().") from e
+        except BackendError as err:
+            raise ClaripyFrontendError("Light solver can't handle this eval().") from err
 
     def batch_eval(self, exprs, n, extra_constraints=(), exact=None):
         try:
             return self._solver_backend._batch_eval(exprs, n)
-        except BackendError as e:
-            raise ClaripyFrontendError("Light solver can't handle this batch_eval().") from e
+        except BackendError as err:
+            raise ClaripyFrontendError("Light solver can't handle this batch_eval().") from err
 
     def max(self, e, extra_constraints=(), signed=False, exact=None):
         try:
             return self._solver_backend.max(e, signed=signed)
-        except BackendError as e:
-            raise ClaripyFrontendError("Light solver can't handle this max().") from e
+        except BackendError as err:
+            raise ClaripyFrontendError("Light solver can't handle this max().") from err
 
     def min(self, e, extra_constraints=(), signed=False, exact=None):
         try:
             return self._solver_backend.min(e, signed=signed)
-        except BackendError as e:
-            raise ClaripyFrontendError("Light solver can't handle this min().") from e
+        except BackendError as err:
+            raise ClaripyFrontendError("Light solver can't handle this min().") from err
 
     def solution(self, e, v, extra_constraints=(), exact=None):
         try:
             return self._solver_backend.solution(e, v)
-        except BackendError as e:
-            raise ClaripyFrontendError("Light solver can't handle this solution().") from e
+        except BackendError as err:
+            raise ClaripyFrontendError("Light solver can't handle this solution().") from err
 
     def is_true(self, e, extra_constraints=(), exact=None):
         try:

@@ -5,7 +5,8 @@ import logging
 from claripy.annotation import SimplificationAvoidanceAnnotation
 from claripy.ast.base import simplify
 from claripy.ast.bool import And, Or
-from claripy.frontend import Frontend
+
+from .frontend import Frontend
 
 log = logging.getLogger(__name__)
 
@@ -82,7 +83,7 @@ class ConstrainedFrontend(Frontend):
     def combine(self, others):
         combined = self.blank_copy()
 
-        combined.add(self.constraints)  # pylint:disable=E1101
+        combined.add(self.constraints)
         for o in others:
             combined.add(o.constraints)
         return combined
