@@ -55,6 +55,8 @@ class Backend:
     _convert() to see if the backend can handle that type of object.
     """
 
+    # pylint: disable=too-many-positional-arguments
+
     __slots__ = (
         "_op_raw",
         "_op_expr",
