@@ -167,7 +167,7 @@ def StringV(value, length: int | None = None, **kwargs):
 
 StrConcat = operations.op("StrConcat", String, String, calc_length=operations.str_concat_length_calc)
 StrSubstr = operations.op("StrSubstr", (BV, BV, String), String, calc_length=operations.substr_length_calc)
-StrLen = operations.op("StrLen", (String, int), BV, calc_length=operations.strlen_bv_size_calc)
+StrLen = operations.op("StrLen", (String), BV, calc_length=lambda *_: 64)
 StrReplace = operations.op(
     "StrReplace",
     (String, String, String),
@@ -178,8 +178,8 @@ StrReplace = operations.op(
 StrContains = operations.op("StrContains", (String, String), Bool)
 StrPrefixOf = operations.op("StrPrefixOf", (String, String), Bool)
 StrSuffixOf = operations.op("StrSuffixOf", (String, String), Bool)
-StrIndexOf = operations.op("StrIndexOf", (String, String, BV, int), BV, calc_length=operations.strindexof_bv_size_calc)
-StrToInt = operations.op("StrToInt", (String, int), BV, calc_length=operations.strtoint_bv_size_calc)
+StrIndexOf = operations.op("StrIndexOf", (String, String, BV), BV, calc_length=lambda *_: 64)
+StrToInt = operations.op("StrToInt", (String), BV, calc_length=lambda *_: 64)
 IntToStr = operations.op("IntToStr", (BV,), String, calc_length=operations.int_to_str_length_calc)
 StrIsDigit = operations.op("StrIsDigit", (String,), Bool)
 

@@ -9,10 +9,10 @@ from . import debug as _d
 from .errors import ClaripyOperationError, ClaripyTypeError
 
 
-def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coerce=True):
-    if type(arg_types) in (tuple, list):  # pylint:disable=unidiomatic-typecheck
+def op(name, arg_types, return_type, extra_check=None, calc_length=None):
+    if isinstance(arg_types, tuple | list):
         expected_num_args = len(arg_types)
-    elif type(arg_types) is type:  # pylint:disable=unidiomatic-typecheck
+    elif isinstance(arg_types, type):
         expected_num_args = None
     else:
         raise ClaripyOperationError(f"op {name} got weird arg_types")
@@ -33,7 +33,7 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
 
         for arg, argty, match in zip(args, actual_arg_types, matches, strict=False):
             if not match:
-                if do_coerce and hasattr(argty, "_from_" + type(arg).__name__):
+                if hasattr(argty, "_from_" + type(arg).__name__):
                     convert = getattr(argty, "_from_" + type(arg).__name__)
                     yield convert(thing, arg)
                 else:
@@ -63,7 +63,6 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
             kwargs["length"] = calc_length(*fixed_args)
 
         kwargs["uninitialized"] = None
-        # pylint:disable=isinstance-second-argument-not-valid-type
         if any(a.uninitialized is True for a in args if isinstance(a, claripy.ast.Base)):
             kwargs["uninitialized"] = True
         if name in preprocessors:
@@ -158,7 +157,7 @@ def extract_check(high, low, bv):
     return True, ""
 
 
-def extend_check(amount, value):
+def extend_check(amount, _):
     return amount >= 0, "Extension length must be nonnegative"
 
 
@@ -210,18 +209,6 @@ def str_replace_length_calc(*args):
         return str_1.length
     # Otherwise We have the maximum length when teh replacement happens
     return str_1.length - str_2.length + str_3.length
-
-
-def strlen_bv_size_calc(s, bitlength):  # pylint: disable=unused-argument
-    return bitlength
-
-
-def strindexof_bv_size_calc(s1, s2, start_idx, bitlength):  # pylint: disable=unused-argument
-    return bitlength
-
-
-def strtoint_bv_size_calc(s, bitlength):  # pylint: disable=unused-argument
-    return bitlength
 
 
 #
