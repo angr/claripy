@@ -1231,8 +1231,8 @@ class BackendZ3(Backend):
 
     @staticmethod
     @condom
-    def _op_raw_StrLen(input_string, bitlength):
-        return z3.Int2BV(z3.Length(input_string), bitlength)
+    def _op_raw_StrLen(input_string):
+        return z3.Int2BV(z3.Length(input_string), 64)
 
     @staticmethod
     @condom
@@ -1256,13 +1256,13 @@ class BackendZ3(Backend):
 
     @staticmethod
     @condom
-    def _op_raw_StrIndexOf(string, pattern, start_idx, bitlength):
-        return z3.Int2BV(z3.IndexOf(string, pattern, z3.BV2Int(start_idx)), bitlength)
+    def _op_raw_StrIndexOf(string, pattern, start_idx):
+        return z3.Int2BV(z3.IndexOf(string, pattern, z3.BV2Int(start_idx)), 64)
 
     @staticmethod
     @condom
-    def _op_raw_StrToInt(input_string, bitlength):
-        return z3.Int2BV(z3.StrToInt(input_string), bitlength)
+    def _op_raw_StrToInt(input_string):
+        return z3.Int2BV(z3.StrToInt(input_string), 64)
 
     @staticmethod
     @condom

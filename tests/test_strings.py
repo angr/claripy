@@ -100,7 +100,7 @@ class TestStrings(unittest.TestCase):
         str_symb = claripy.StringS("symb_length", 12, explicit_name=True)
         solver = self.get_solver()
         # TODO: How do we want to deal with the size of a symbolic string?
-        solver.add(claripy.StrLen(str_symb, 32) == 14)
+        solver.add(claripy.StrLen(str_symb) == 14)
         self.assertTrue(solver.satisfiable())
 
         result = solver.eval(str_symb, 4 if KEEP_TEST_PERFORMANT else 100)
@@ -110,7 +110,7 @@ class TestStrings(unittest.TestCase):
     def test_length_simplification(self):
         str_concrete = claripy.StringV("concrete")
         solver = self.get_solver()
-        solver.add(claripy.StrLen(str_concrete, 32) == 8)
+        solver.add(claripy.StrLen(str_concrete) == 8)
         self.assertTrue(solver.satisfiable())
 
         result = solver.eval(str_concrete, 2)
@@ -131,10 +131,10 @@ class TestStrings(unittest.TestCase):
     def test_lt_etc(self):
         str_symb = claripy.StringS("Symb_2", 4)
         solver = self.get_solver()
-        c1 = claripy.StrLen(str_symb, 32) <= 4
-        c2 = claripy.StrLen(str_symb, 32) < 4
-        c3 = claripy.StrLen(str_symb, 32) >= 4
-        c4 = claripy.StrLen(str_symb, 32) > 4
+        c1 = claripy.StrLen(str_symb) <= 4
+        c2 = claripy.StrLen(str_symb) < 4
+        c3 = claripy.StrLen(str_symb) >= 4
+        c4 = claripy.StrLen(str_symb) > 4
         solver.add(c1)
         solver.add(c2)
         solver.add(c3)
@@ -245,7 +245,7 @@ class TestStrings(unittest.TestCase):
 
     def test_index_of(self):
         str_symb = claripy.StringS("symb_suffix", 4, explicit_name=True)
-        res = claripy.StrIndexOf(str_symb, claripy.StringV("an"), 0, 32)
+        res = claripy.StrIndexOf(str_symb, claripy.StringV("an"), 0)
         solver = self.get_solver()
 
         target_idx = 4 if KEEP_TEST_PERFORMANT else 100
@@ -261,7 +261,7 @@ class TestStrings(unittest.TestCase):
     def test_index_of_simplification(self):
         str_concrete = claripy.StringV("concrete")
         solver = self.get_solver()
-        res = claripy.StrIndexOf(str_concrete, claripy.StringV("rete"), 0, 32)
+        res = claripy.StrIndexOf(str_concrete, claripy.StringV("rete"), 0)
         target_idx = 4 if KEEP_TEST_PERFORMANT else 100
         solver.add(res == target_idx)
         self.assertTrue(solver.satisfiable())
@@ -277,7 +277,7 @@ class TestStrings(unittest.TestCase):
 
         solver.add(start_idx > 32)
         solver.add(start_idx < 35)
-        res = claripy.StrIndexOf(str_symb, claripy.StringV("an"), start_idx, 32)
+        res = claripy.StrIndexOf(str_symb, claripy.StringV("an"), start_idx)
 
         solver.add(res != -1)
         solver.add(res < 38)
@@ -290,7 +290,7 @@ class TestStrings(unittest.TestCase):
 
     def test_str_to_int(self):
         str_symb = claripy.StringS("symb_strtoint", 4, explicit_name=True)
-        res = claripy.StrToInt(str_symb, 32)
+        res = claripy.StrToInt(str_symb)
         solver = self.get_solver()
         target_num = 12 if KEEP_TEST_PERFORMANT else 100000
         solver.add(res == target_num)
@@ -305,7 +305,7 @@ class TestStrings(unittest.TestCase):
 
         str_concrete = claripy.StringV(str(target_num))
         solver = self.get_solver()
-        res = claripy.StrToInt(str_concrete, 32)
+        res = claripy.StrToInt(str_concrete)
 
         solver.add(res == target_num)
         self.assertTrue(solver.satisfiable())

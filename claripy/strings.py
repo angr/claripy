@@ -56,16 +56,15 @@ def StrReplace(initial_string, pattern_to_be_replaced, replacement_pattern):
     return StringV(new_value)
 
 
-def StrLen(input_string, bitlength):
+def StrLen(input_string):
     """
     Return length of the `input_string` in bytes.
 
     :param input_string:            the string we want to calculate the length
-    :param bitlength:               length of the bitvector representing the length of the string
 
     :return:                        bitvector holding the size of the string in bytes
     """
-    return BVV(len(input_string.value), bitlength)
+    return BVV(len(input_string.value), 64)
 
 
 def StrContains(input_string, substring):
@@ -105,7 +104,7 @@ def StrSuffixOf(suffix, input_string):
     return re.match(r".*" + suffix.value + "$", input_string.value) is not None
 
 
-def StrIndexOf(input_string, substring, startIndex, bitlength):
+def StrIndexOf(input_string, substring, startIndex):
     """
     Return the index of the first occurrence of `substring` at or after the `startIndex`, or -1 if
     it is not found.
@@ -113,7 +112,6 @@ def StrIndexOf(input_string, substring, startIndex, bitlength):
     :param input_string:            the string we want to check
     :param substring:               the substring we want to find the index
     :param startIndex:              the index to start searching at
-    :param bitlength:               length of the bitvector representing the index of the substring
 
     :return BV:                     index of the substring or -1 in bitvector
     """
@@ -121,25 +119,24 @@ def StrIndexOf(input_string, substring, startIndex, bitlength):
         s = input_string.value
         t = substring.value
         i = startIndex.value
-        return BVV(i + s[i:].index(t), bitlength)
+        return BVV(i + s[i:].index(t), 64)
     except ValueError:
-        return BVV(-1, bitlength)
+        return BVV(-1, 64)
 
 
-def StrToInt(input_string, bitlength):
+def StrToInt(input_string):
     """
     Return the integer representation of `input_string`.
 
     :param input_string:            the string we want to transform in an integer
-    :param bitlength:               length of the bitvector representing the index of the substring
 
     :return BV:                     bitvector of the integer resulting from the string or -1 in
                                     bitvector if the string cannot be transformed into an integer
     """
     try:
-        return BVV(int(input_string.value), bitlength)
+        return BVV(int(input_string.value), 64)
     except ValueError:
-        return BVV(-1, bitlength)
+        return BVV(-1, 64)
 
 
 def StrIsDigit(input_string):

@@ -212,18 +212,6 @@ def str_replace_length_calc(*args):
     return str_1.length - str_2.length + str_3.length
 
 
-def strlen_bv_size_calc(s, bitlength):  # pylint: disable=unused-argument
-    return bitlength
-
-
-def strindexof_bv_size_calc(s1, s2, start_idx, bitlength):  # pylint: disable=unused-argument
-    return bitlength
-
-
-def strtoint_bv_size_calc(s, bitlength):  # pylint: disable=unused-argument
-    return bitlength
-
-
 #
 # Operation lists
 #
