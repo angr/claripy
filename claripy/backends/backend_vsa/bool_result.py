@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from claripy.ast.base import Base
-from claripy.backend_object import BackendObject
+from claripy.backends.backend_object import BackendObject
 from claripy.errors import BackendError, ClaripyValueError
 
 

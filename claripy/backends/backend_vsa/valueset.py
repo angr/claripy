@@ -6,7 +6,7 @@ import itertools
 import numbers
 
 from claripy.ast.base import Base
-from claripy.backend_object import BackendObject
+from claripy.backends.backend_object import BackendObject
 from claripy.errors import ClaripyValueError
 
 from .bool_result import BoolResult, FalseResult, MaybeResult, TrueResult

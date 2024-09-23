@@ -13,15 +13,11 @@ from claripy.backends.backend import Backend
 from claripy.balancer import Balancer
 from claripy.errors import BackendError
 from claripy.operations import backend_operations_vsa_compliant, expression_set_operations
-from claripy.vsa import (
-    BoolResult,
-    CreateStridedInterval,
-    DiscreteStridedIntervalSet,
-    FalseResult,
-    StridedInterval,
-    TrueResult,
-    ValueSet,
-)
+
+from .bool_result import BoolResult, FalseResult, TrueResult
+from .discrete_strided_interval_set import DiscreteStridedIntervalSet
+from .strided_interval import CreateStridedInterval, StridedInterval
+from .valueset import ValueSet
 
 log = logging.getLogger(__name__)
 

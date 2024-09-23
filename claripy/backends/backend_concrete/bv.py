@@ -3,9 +3,9 @@ from __future__ import annotations
 import functools
 import numbers
 
-from . import debug as _d
-from .backend_object import BackendObject
-from .errors import ClaripyOperationError, ClaripyTypeError, ClaripyZeroDivisionError
+from claripy import debug as _d
+from claripy.backends.backend_object import BackendObject
+from claripy.errors import ClaripyOperationError, ClaripyTypeError, ClaripyZeroDivisionError
 
 
 def compare_bits(f):

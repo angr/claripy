@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import struct
 
-from claripy import fp, operations
+from claripy import operations
 from claripy.ast.base import _make_name
-from claripy.fp import FSORT_FLOAT
+from claripy.fp import FSORT_FLOAT, RM, FSort
 
 from .bits import Bits
 from .bool import Bool
@@ -33,7 +33,7 @@ class FP(Bits):
         :return:        An FP AST
         """
         if rm is None:
-            rm = fp.RM.default()
+            rm = RM.default()
 
         return fpToFP(rm, self, sort)
 
@@ -65,14 +65,14 @@ class FP(Bits):
         :return:        A bitvector whose value is the rounded version of this FP's value
         """
         if rm is None:
-            rm = fp.RM.default()
+            rm = RM.default()
 
         op = fpToSBV if signed else fpToUBV
         return op(rm, self, size)
 
     @property
     def sort(self):
-        return fp.FSort.from_size(self.length)
+        return FSort.from_size(self.length)
 
     @staticmethod
     def _from_float(like, value):
@@ -109,7 +109,7 @@ def FPV(value, sort):
     elif not isinstance(value, float):
         raise TypeError("Must instanciate FPV with a numerical value")
 
-    if not isinstance(sort, fp.FSort):
+    if not isinstance(sort, FSort):
         raise TypeError("Must instanciate FPV with a FSort")
 
     if sort == FSORT_FLOAT:
@@ -126,7 +126,7 @@ def FPV(value, sort):
 
 
 def _fp_length_calc(a1, a2, a3=None):
-    if isinstance(a1, fp.RM) and a3 is None:
+    if isinstance(a1, RM) and a3 is None:
         raise Exception
     if a3 is None:
         return a2.length
@@ -134,11 +134,11 @@ def _fp_length_calc(a1, a2, a3=None):
 
 
 fpToFP = operations.op("fpToFP", object, FP, calc_length=_fp_length_calc)
-fpToFPUnsigned = operations.op("fpToFPUnsigned", (fp.RM, BV, fp.FSort), FP, calc_length=_fp_length_calc)
+fpToFPUnsigned = operations.op("fpToFPUnsigned", (RM, BV, FSort), FP, calc_length=_fp_length_calc)
 fpFP = operations.op("fpFP", (BV, BV, BV), FP, calc_length=lambda a, b, c: a.length + b.length + c.length)
 fpToIEEEBV = operations.op("fpToIEEEBV", (FP,), BV, calc_length=lambda fp: fp.length)
-fpToSBV = operations.op("fpToSBV", (fp.RM, FP, int), BV, calc_length=lambda _rm, _fp, len: len)
-fpToUBV = operations.op("fpToUBV", (fp.RM, FP, int), BV, calc_length=lambda _rm, _fp, len: len)
+fpToSBV = operations.op("fpToSBV", (RM, FP, int), BV, calc_length=lambda _rm, _fp, len: len)
+fpToUBV = operations.op("fpToUBV", (RM, FP, int), BV, calc_length=lambda _rm, _fp, len: len)
 
 #
 # unbound float point comparisons
@@ -172,19 +172,11 @@ def _fp_binop_length(rm, a, b):  # pylint:disable=unused-argument
 
 fpAbs = operations.op("fpAbs", (FP,), FP, calc_length=lambda x: x.length)
 fpNeg = operations.op("fpNeg", (FP,), FP, calc_length=lambda x: x.length)
-fpSub = operations.op("fpSub", (fp.RM, FP, FP), FP, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
-fpAdd = operations.op("fpAdd", (fp.RM, FP, FP), FP, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
-fpMul = operations.op("fpMul", (fp.RM, FP, FP), FP, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
-fpDiv = operations.op("fpDiv", (fp.RM, FP, FP), FP, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
-fpSqrt = operations.op(
-    "fpSqrt",
-    (
-        fp.RM,
-        FP,
-    ),
-    FP,
-    calc_length=lambda _, x: x.length,
-)
+fpSub = operations.op("fpSub", (RM, FP, FP), FP, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
+fpAdd = operations.op("fpAdd", (RM, FP, FP), FP, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
+fpMul = operations.op("fpMul", (RM, FP, FP), FP, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
+fpDiv = operations.op("fpDiv", (RM, FP, FP), FP, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
+fpSqrt = operations.op("fpSqrt", (RM, FP), FP, calc_length=lambda _, x: x.length)
 
 #
 # bound fp operations

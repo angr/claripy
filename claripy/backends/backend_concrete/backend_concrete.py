@@ -6,13 +6,13 @@ import numbers
 import operator
 from functools import reduce
 
-from claripy import bv, fp, strings
 from claripy.ast import Base
 from claripy.ast.bool import Bool, BoolV
 from claripy.ast.bv import BV, BVV
 from claripy.ast.fp import FPV
 from claripy.ast.strings import StringV
 from claripy.backends.backend import Backend
+from claripy.backends.backend_concrete import bv, fp, strings
 from claripy.errors import BackendError, UnsatError
 from claripy.operations import backend_fp_operations, backend_operations, backend_strings_operations
 

@@ -1,6 +1,6 @@
 from typing import Any, overload
 
-from claripy.bv import BVV as ConcreteBVV
+from claripy.backends.backend_concrete.bv import BVV as ConcreteBVV
 from claripy.fp import RM, FSort
 
 from .bits import Bits

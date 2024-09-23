@@ -5,9 +5,10 @@ import unittest
 
 import claripy
 from claripy.ast.bv import VS
-from claripy.vsa import (
+from claripy.backends.backend_vsa import (
     BoolResult,
     DiscreteStridedIntervalSet,
+    MaybeResult,
     StridedInterval,
 )
 
@@ -231,7 +232,7 @@ class TestVSA(unittest.TestCase):  # pylint: disable=no-member,function-redefine
         # SI = claripy.StridedInterval
 
         # Disable the use of DiscreteStridedIntervalSet
-        claripy.vsa.strided_interval.allow_dsis = False
+        claripy.backends.backend_vsa.strided_interval.allow_dsis = False
 
         # Signedness/unsignedness conversion
         si1 = claripy.SI(bits=32, stride=1, lower_bound=0, upper_bound=0xFFFFFFFF)
@@ -240,7 +241,6 @@ class TestVSA(unittest.TestCase):  # pylint: disable=no-member,function-redefine
 
 
 class TestVSAJoin(unittest.TestCase):  # pylint: disable=no-member,function-redefined
-
     def setUp(self):
         # Set backend
         self.b = claripy.backends.vsa
@@ -289,13 +289,12 @@ class TestVSAJoin(unittest.TestCase):  # pylint: disable=no-member,function-rede
 
 
 class TestVSAOperations(unittest.TestCase):  # pylint: disable=no-member function-redefined
-
     def setUp(self):
         # Set backend
         self.b = claripy.backends.vsa
 
         # Disable the use of DiscreteStridedIntervalSet
-        claripy.vsa.strided_interval.allow_dsis = False
+        claripy.backends.backend_vsa.strided_interval.allow_dsis = False
 
         # Integers
         self.si1 = claripy.SI(bits=32, stride=0, lower_bound=10, upper_bound=10)
@@ -584,7 +583,7 @@ class TestVSAOperations(unittest.TestCase):  # pylint: disable=no-member functio
         claripy.backends.vsa.convert(si).uninitialized = True
         bvv = claripy.BVV(0x30, 32)
         comp = si < bvv
-        assert claripy.backends.vsa.convert(comp).identical(claripy.vsa.MaybeResult())
+        assert claripy.backends.vsa.convert(comp).identical(MaybeResult())
 
     def test_better_extraction(self):
         # Better extraction
@@ -737,11 +736,10 @@ class TestVSAOperations(unittest.TestCase):  # pylint: disable=no-member functio
 
 
 class TestVSAConstraintToSI(unittest.TestCase):  # pylint: disable=no-member,function-redefined
-
     def setUp(self):
         self.b = claripy.backends.vsa
         self.s = claripy.SolverVSA()  # pylint:disable=unused-variable
-        claripy.vsa.strided_interval.allow_dsis = False
+        claripy.backends.backend_vsa.strided_interval.allow_dsis = False
 
     def test_if_si_equals_1(self):
         # If(SI == 0, 1, 0) == 1
@@ -967,18 +965,17 @@ class TestVSAConstraintToSI(unittest.TestCase):  # pylint: disable=no-member,fun
 
 
 class TestVSADiscreteValueSet(unittest.TestCase):  # pylint: disable=no-member,function-redefined
-
     def setUp(self):
         # Set backend
         self.b = claripy.backends.vsa
         self.s = claripy.SolverVSA()  # pylint:disable=unused-variable
 
         # Allow the use of DiscreteStridedIntervalSet
-        claripy.vsa.strided_interval.allow_dsis = True
+        claripy.backends.backend_vsa.strided_interval.allow_dsis = True
 
     def tearDown(self):
         # Disable DiscreteStridedIntervalSet after tests
-        claripy.vsa.strided_interval.allow_dsis = False
+        claripy.backends.backend_vsa.strided_interval.allow_dsis = False
 
     def test_union_operations(self):
         # Union operations
@@ -1055,7 +1052,6 @@ class TestVSADiscreteValueSet(unittest.TestCase):  # pylint: disable=no-member,f
 
 
 class TestSolution(unittest.TestCase):  # pylint: disable=no-member,function-redefined
-
     def setUp(self):
         self.solver_type = claripy.SolverVSA
         self.solver = self.solver_type()
@@ -1096,7 +1092,6 @@ class TestSolution(unittest.TestCase):  # pylint: disable=no-member,function-red
 
 
 class TestVSAReasonableBounds(unittest.TestCase):  # pylint: disable=no-member,function-redefined
-
     def setUp(self):
         self.backend = claripy.backends.vsa
 
@@ -1114,7 +1109,6 @@ class TestVSAReasonableBounds(unittest.TestCase):  # pylint: disable=no-member,f
 
 
 class TestVSAShiftingOperations(unittest.TestCase):  # pylint: disable=no-member,function-redefined
-
     def setUp(self):
         self.identical = claripy.backends.vsa.identical
 
@@ -1150,7 +1144,6 @@ class TestVSAShiftingOperations(unittest.TestCase):  # pylint: disable=no-member
 
 
 class TestReverseOperations(unittest.TestCase):  # pylint: disable=no-member,function-redefined
-
     def setUp(self):
         self.backend = claripy.backends.vsa
 

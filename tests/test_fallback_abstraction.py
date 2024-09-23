@@ -25,8 +25,8 @@ class TestFallbackAbstraction(unittest.TestCase):
         assert e.symbolic
         assert f.symbolic
 
-        assert type(claripy.backends.concrete.convert(a)) is claripy.bv.BVV
-        assert type(claripy.backends.concrete.convert(g)) is claripy.bv.BVV
+        assert type(claripy.backends.concrete.convert(a)) is claripy.backends.backend_concrete.BVV
+        assert type(claripy.backends.concrete.convert(g)) is claripy.backends.backend_concrete.BVV
 
         self.assertRaises(claripy.errors.BackendError, claripy.backends.concrete.convert, b)
         self.assertRaises(claripy.errors.BackendError, claripy.backends.concrete.convert, c)

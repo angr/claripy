@@ -9,10 +9,10 @@ from functools import reduce
 from itertools import chain, product
 
 import claripy
-import claripy.vsa as vsa
+import claripy.backends.backend_vsa as vsa
 from claripy.ast.base import Base
-from claripy.backend_object import BackendObject
-from claripy.bv import BVV
+from claripy.backends.backend_concrete import BVV
+from claripy.backends.backend_object import BackendObject
 from claripy.errors import ClaripyOperationError
 
 from .bool_result import FalseResult, MaybeResult, TrueResult

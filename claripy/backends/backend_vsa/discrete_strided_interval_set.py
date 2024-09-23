@@ -4,7 +4,7 @@ import functools
 import itertools
 import numbers
 
-from claripy.bv import BVV
+from claripy.backends.backend_concrete.bv import BVV
 
 from .bool_result import BoolResult
 from .errors import ClaripyVSAOperationError
