@@ -23,8 +23,8 @@ from claripy.fp import FSort
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Iterator
 
-    from claripy import Backend
     from claripy.annotation import Annotation
+    from claripy.backends import Backend
 
 log = logging.getLogger(__name__)
 
@@ -519,8 +519,6 @@ class Base:
         """
         Check if two ASTs are the same.
         """
-        from claripy.vsa.strided_interval import StridedInterval  # pylint:disable=import-outside-toplevel
-
         # Several types inside of args don't support normall == comparison, so if we see those,
         # we need compare them manually.
         for a, b in zip(self.args, other_args, strict=True):
@@ -535,17 +533,6 @@ class Base:
                     continue
                 if a != b:
                     return False
-            if (
-                isinstance(a, StridedInterval)
-                and isinstance(b, StridedInterval)
-                and (
-                    a.bits != b.bits
-                    or a.lower_bound != b.lower_bound
-                    or a.upper_bound != b.upper_bound
-                    or a.stride != b.stride
-                )
-            ):
-                return False
             if lenient_names and isinstance(a, str) and isinstance(b, str):
                 continue
             if a != b:

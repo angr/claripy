@@ -196,13 +196,13 @@ class BV(Bits):
         return super().identical(other, strict)
 
 
-def BVS(
+def BVS(  # pylint:disable=redefined-builtin
     name,
     size,
     min=None,
     max=None,
     stride=None,
-    uninitialized=False,  # pylint:disable=redefined-builtin
+    uninitialized=False,
     explicit_name=None,
     discrete_set=False,
     discrete_set_max_card=None,
@@ -312,7 +312,7 @@ def SI(
 ):
     name = "unnamed" if name is None else name
     if to_conv is not None:
-        si = claripy.vsa.CreateStridedInterval(
+        si = claripy.backends.backend_vsa.CreateStridedInterval(
             name=name, bits=bits, lower_bound=lower_bound, upper_bound=upper_bound, stride=stride, to_conv=to_conv
         )
         return BVS(
@@ -352,7 +352,7 @@ def ValueSet(bits, region=None, region_base_addr=None, value=None, name=None, va
     if isinstance(v, numbers.Number):
         min_v, max_v = v, v
         stride = 0
-    elif isinstance(v, claripy.vsa.StridedInterval):
+    elif isinstance(v, claripy.backends.backend_vsa.StridedInterval):
         min_v, max_v = v.lower_bound, v.upper_bound
         stride = v.stride
     elif isinstance(v, claripy.ast.Base):
@@ -381,7 +381,7 @@ def DSIS(
     name=None, bits=0, lower_bound=None, upper_bound=None, stride=None, explicit_name=None, to_conv=None, max_card=None
 ):
     if to_conv is not None:
-        si = claripy.vsa.CreateStridedInterval(bits=to_conv.size(), to_conv=to_conv)
+        si = claripy.backends.backend_vsa.CreateStridedInterval(bits=to_conv.size(), to_conv=to_conv)
         return SI(
             name=name,
             bits=si._bits,

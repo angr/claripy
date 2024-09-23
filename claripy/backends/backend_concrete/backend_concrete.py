@@ -6,17 +6,20 @@ import numbers
 import operator
 from functools import reduce
 
-from claripy import bv, fp, strings
 from claripy.ast import Base
 from claripy.ast.bool import Bool, BoolV
 from claripy.ast.bv import BV, BVV
 from claripy.ast.fp import FPV
 from claripy.ast.strings import StringV
 from claripy.backends.backend import Backend
+from claripy.backends.backend_concrete import bv, fp, strings
 from claripy.errors import BackendError, UnsatError
 from claripy.operations import backend_fp_operations, backend_operations, backend_strings_operations
 
 log = logging.getLogger(__name__)
+
+
+# pylint: disable=too-many-positional-arguments
 
 
 class BackendConcrete(Backend):
@@ -153,7 +156,7 @@ class BackendConcrete(Backend):
             return StringV(e.value)
         raise BackendError(f"Couldn't abstract object of type {type(e)}")
 
-    def _cardinality(self, b):
+    def _cardinality(self, a):  # pylint:disable=unused-argument
         # if we got here, it's a cardinality of 1
         return 1
 

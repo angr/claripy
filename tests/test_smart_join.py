@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import unittest
 
-from claripy.vsa import StridedInterval
+from claripy.backends.backend_vsa import StridedInterval
 
 
 def check_si_fields(si, stride, lb, ub):

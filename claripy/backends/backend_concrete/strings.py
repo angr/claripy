@@ -2,11 +2,16 @@ from __future__ import annotations
 
 import re
 
-from .backend_object import BackendObject
+from claripy.backends.backend_object import BackendObject
+
 from .bv import BVV
 
 
 class StringV(BackendObject):
+    """A concrete string value. Used in the concrete backend for calculations.
+    Any use outside of claripy should use `claripy.ast.strings.StringV` instead.
+    """
+
     def __init__(self, value):
         self.value = value
 

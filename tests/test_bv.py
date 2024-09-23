@@ -4,7 +4,7 @@ from __future__ import annotations
 import unittest
 
 import claripy
-from claripy.bv import BVV, Concat, Extract, SDiv, SignExt, ZeroExt
+from claripy.backends.backend_concrete.bv import BVV, Concat, Extract, SDiv, SignExt, ZeroExt
 from claripy.errors import ClaripyTypeError, ClaripyValueError, ClaripyZeroDivisionError
 
 

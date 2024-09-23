@@ -4,8 +4,8 @@ import logging
 import operator
 
 import claripy
+import claripy.backends.backend_vsa as vsa
 
-from . import vsa
 from .ast.base import Base
 from .ast.bool import Bool
 from .ast.bv import BV, BVS, BVV

@@ -3,9 +3,9 @@ from __future__ import annotations
 import functools
 import numbers
 
-from . import debug as _d
-from .backend_object import BackendObject
-from .errors import ClaripyOperationError, ClaripyTypeError, ClaripyZeroDivisionError
+from claripy import debug as _d
+from claripy.backends.backend_object import BackendObject
+from claripy.errors import ClaripyOperationError, ClaripyTypeError, ClaripyZeroDivisionError
 
 
 def compare_bits(f):
@@ -49,6 +49,10 @@ def normalize_types(f):
 
 
 class BVV(BackendObject):
+    """A concrete bitvector value. Used in the concrete backend for calculations.
+    Any use outside of claripy should use `claripy.ast.bv.BVV` instead.
+    """
+
     __slots__ = ["bits", "_value", "mod"]
 
     def __init__(self, value, bits):

@@ -7,8 +7,7 @@ import operator
 from functools import reduce
 
 import claripy
-
-from . import fp
+from claripy.fp import FSORT_DOUBLE, FSORT_FLOAT
 
 SIMPLE_OPS = ("Concat", "SignExt", "ZeroExt")
 
@@ -899,7 +898,7 @@ def fptobv_simplifier(the_fp):
 def fptofp_simplifier(*args):
     if len(args) == 2 and args[0].op == "fpToIEEEBV":
         to_bv, sort = args
-        if (sort == fp.FSORT_FLOAT and to_bv.length == 32) or (sort == fp.FSORT_DOUBLE and to_bv.length == 64):
+        if (sort == FSORT_FLOAT and to_bv.length == 32) or (sort == FSORT_DOUBLE and to_bv.length == 64):
             return to_bv.args[0]
         return None
     return None
