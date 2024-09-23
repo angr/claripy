@@ -9,13 +9,12 @@ from claripy import backends
 from claripy.ast import Base
 from claripy.ast.bool import Or
 from claripy.errors import BackendError, UnsatError
-from claripy.frontend_mixins.model_cache_mixin import ModelCacheMixin
-from claripy.frontend_mixins.simplify_skipper_mixin import SimplifySkipperMixin
 
 from .constrained_frontend import ConstrainedFrontend
+from .mixin import ModelCacheMixin, SimplifySkipperMixin
 
 if TYPE_CHECKING:
-    from claripy import SolverCompositeChild
+    from claripy.solvers import SolverCompositeChild
 
 
 log = logging.getLogger(__name__)

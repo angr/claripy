@@ -1,19 +1,21 @@
 from __future__ import annotations
 
-from . import backends, frontend_mixins, frontends
+import claripy.backends as backends
+import claripy.frontend as frontend
+import claripy.frontend.mixin as mixin
 
 
 class Solver(
-    frontend_mixins.ConcreteHandlerMixin,
-    frontend_mixins.EagerResolutionMixin,
-    frontend_mixins.ConstraintFilterMixin,
-    frontend_mixins.ConstraintDeduplicatorMixin,
-    frontend_mixins.SimplifySkipperMixin,
-    frontend_mixins.SatCacheMixin,
-    frontend_mixins.ModelCacheMixin,
-    frontend_mixins.ConstraintExpansionMixin,
-    frontend_mixins.SimplifyHelperMixin,
-    frontends.FullFrontend,
+    mixin.ConcreteHandlerMixin,
+    mixin.EagerResolutionMixin,
+    mixin.ConstraintFilterMixin,
+    mixin.ConstraintDeduplicatorMixin,
+    mixin.SimplifySkipperMixin,
+    mixin.SatCacheMixin,
+    mixin.ModelCacheMixin,
+    mixin.ConstraintExpansionMixin,
+    mixin.SimplifyHelperMixin,
+    frontend.FullFrontend,
 ):
     """Solver is the default Claripy frontend. It uses Z3 as the backend solver by default."""
 
@@ -22,12 +24,12 @@ class Solver(
 
 
 class SolverCacheless(
-    frontend_mixins.ConcreteHandlerMixin,
-    frontend_mixins.EagerResolutionMixin,
-    frontend_mixins.ConstraintFilterMixin,
-    frontend_mixins.ConstraintDeduplicatorMixin,
-    frontend_mixins.SimplifySkipperMixin,
-    frontends.FullFrontend,
+    mixin.ConcreteHandlerMixin,
+    mixin.EagerResolutionMixin,
+    mixin.ConstraintFilterMixin,
+    mixin.ConstraintDeduplicatorMixin,
+    mixin.SimplifySkipperMixin,
+    frontend.FullFrontend,
 ):
     """SolverCacheless is a Solver without caching. It uses Z3 as the backend solver by default."""
 
@@ -36,9 +38,9 @@ class SolverCacheless(
 
 
 class SolverReplacement(
-    frontend_mixins.ConcreteHandlerMixin,
-    frontend_mixins.ConstraintDeduplicatorMixin,
-    frontends.ReplacementFrontend,
+    mixin.ConcreteHandlerMixin,
+    mixin.ConstraintDeduplicatorMixin,
+    frontend.ReplacementFrontend,
 ):
     """SolverReplacement is a frontend wrapper that replaces constraints with their solutions."""
 
@@ -48,13 +50,13 @@ class SolverReplacement(
 
 
 class SolverHybrid(
-    frontend_mixins.ConcreteHandlerMixin,
-    frontend_mixins.EagerResolutionMixin,
-    frontend_mixins.ConstraintFilterMixin,
-    frontend_mixins.ConstraintDeduplicatorMixin,
-    frontend_mixins.SimplifySkipperMixin,
-    # TODO: frontend_mixins.ConstraintExpansionMixin,
-    frontends.HybridFrontend,
+    mixin.ConcreteHandlerMixin,
+    mixin.EagerResolutionMixin,
+    mixin.ConstraintFilterMixin,
+    mixin.ConstraintDeduplicatorMixin,
+    mixin.SimplifySkipperMixin,
+    # TODO: mixin.ConstraintExpansionMixin,
+    frontend.HybridFrontend,
 ):
     """SolverHybrid is a frontend that uses an exact solver and an approximate solver."""
 
@@ -82,9 +84,9 @@ class SolverHybrid(
 
 
 class SolverVSA(
-    frontend_mixins.ConcreteHandlerMixin,
-    frontend_mixins.ConstraintFilterMixin,
-    frontends.LightFrontend,
+    mixin.ConcreteHandlerMixin,
+    mixin.ConstraintFilterMixin,
+    frontend.LightFrontend,
 ):
     """SolverVSA is a thin frontend to the VSA backend solver."""
 
@@ -93,9 +95,9 @@ class SolverVSA(
 
 
 class SolverConcrete(
-    frontend_mixins.ConcreteHandlerMixin,
-    frontend_mixins.ConstraintFilterMixin,
-    frontends.LightFrontend,
+    mixin.ConcreteHandlerMixin,
+    mixin.ConstraintFilterMixin,
+    frontend.LightFrontend,
 ):
     """SolverConcrete is a thin frontend to the Concrete backend solver."""
 
@@ -105,11 +107,11 @@ class SolverConcrete(
 
 class SolverStrings(
     # TODO: Figure ot if we need to use all these mixins
-    frontend_mixins.ConcreteHandlerMixin,
-    frontend_mixins.ConstraintFilterMixin,
-    frontend_mixins.ConstraintDeduplicatorMixin,
-    frontend_mixins.EagerResolutionMixin,
-    frontends.FullFrontend,
+    mixin.ConcreteHandlerMixin,
+    mixin.ConstraintFilterMixin,
+    mixin.ConstraintDeduplicatorMixin,
+    mixin.EagerResolutionMixin,
+    frontend.FullFrontend,
 ):
     """SolverStrings is a frontend that uses Z3 to solve string constraints."""
 
@@ -123,11 +125,11 @@ class SolverStrings(
 
 
 class SolverCompositeChild(
-    frontend_mixins.ConstraintDeduplicatorMixin,
-    frontend_mixins.SatCacheMixin,
-    frontend_mixins.SimplifySkipperMixin,
-    frontend_mixins.ModelCacheMixin,
-    frontends.FullFrontend,
+    mixin.ConstraintDeduplicatorMixin,
+    mixin.SatCacheMixin,
+    mixin.SimplifySkipperMixin,
+    mixin.ModelCacheMixin,
+    frontend.FullFrontend,
 ):
     """SolverCompositeChild is a frontend that is used as a child in a SolverComposite."""
 
@@ -139,16 +141,16 @@ class SolverCompositeChild(
 
 
 class SolverComposite(
-    frontend_mixins.ConcreteHandlerMixin,
-    frontend_mixins.EagerResolutionMixin,
-    frontend_mixins.ConstraintFilterMixin,
-    frontend_mixins.ConstraintDeduplicatorMixin,
-    frontend_mixins.SatCacheMixin,
-    frontend_mixins.SimplifySkipperMixin,
-    frontend_mixins.SimplifyHelperMixin,
-    frontend_mixins.ConstraintExpansionMixin,
-    frontend_mixins.CompositedCacheMixin,
-    frontends.CompositeFrontend,
+    mixin.ConcreteHandlerMixin,
+    mixin.EagerResolutionMixin,
+    mixin.ConstraintFilterMixin,
+    mixin.ConstraintDeduplicatorMixin,
+    mixin.SatCacheMixin,
+    mixin.SimplifySkipperMixin,
+    mixin.SimplifyHelperMixin,
+    mixin.ConstraintExpansionMixin,
+    mixin.CompositedCacheMixin,
+    frontend.CompositeFrontend,
 ):
     """SolverComposite is a frontend that composes multiple templated frontends."""
 

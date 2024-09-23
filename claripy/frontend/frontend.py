@@ -4,8 +4,8 @@ import logging
 import numbers
 
 from claripy.ast.bool import BoolV
-
-from . import ast
+from claripy.ast.bv import BV, BVV
+from claripy.ast.strings import String, StringV
 
 log = logging.getLogger(__name__)
 
@@ -54,10 +54,10 @@ class Frontend:
         """
         values = self.eval(e, n, extra_constraints=extra_constraints, exact=exact)
 
-        if isinstance(e, ast.BV):
-            return [ast.bv.BVV(v, e.size()) for v in values]
-        if isinstance(e, ast.String):
-            return [ast.strings.StringV(v, length=e.string_length) for v in values]
+        if isinstance(e, BV):
+            return [BVV(v, e.size()) for v in values]
+        if isinstance(e, String):
+            return [StringV(v, length=e.string_length) for v in values]
 
         # TODO: Implement support for other types
         raise NotImplementedError

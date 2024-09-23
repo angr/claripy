@@ -1,4 +1,3 @@
-# mixins for frontends
 from __future__ import annotations
 
 from .composited_cache_mixin import CompositedCacheMixin

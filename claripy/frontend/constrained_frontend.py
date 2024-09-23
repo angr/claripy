@@ -5,7 +5,8 @@ import logging
 from claripy.annotation import SimplificationAvoidanceAnnotation
 from claripy.ast.base import simplify
 from claripy.ast.bool import And, Or
-from claripy.frontend import Frontend
+
+from .frontend import Frontend
 
 log = logging.getLogger(__name__)
 
