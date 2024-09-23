@@ -61,8 +61,7 @@ class Frontend:
         if isinstance(e, BV):
             return [BVV(v, e.size()) for v in values]
         if isinstance(e, String):
-            return [StringV(v, length=e.string_length) for v in values]
-
+            return [StringV(v) for v in values]
         # TODO: Implement support for other types
         raise NotImplementedError
 

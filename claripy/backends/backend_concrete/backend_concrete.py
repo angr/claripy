@@ -61,7 +61,7 @@ class BackendConcrete(Backend):
         return bv.BVV(value, size)
 
     @staticmethod
-    def StringV(value, size):  # pylint: disable=unused-argument
+    def StringV(value):
         return strings.StringV(value)
 
     @staticmethod

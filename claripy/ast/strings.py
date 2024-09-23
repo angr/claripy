@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 from claripy import operations
-from claripy.ast.base import _make_name
 
-from .bits import Bits
+from .base import Base, _make_name
 from .bool import Bool
 from .bv import BV, BVS, BVV
 
 
-class String(Bits):
+class String(Base):
     """
     Base class that represent the AST of a String object and implements all the operation useful to create and modify the AST.
 
@@ -16,7 +15,7 @@ class String(Bits):
     operations to construct more complicated expressions.
     """
 
-    __slots__ = ("string_length",)
+    __slots__ = ()
 
     # Identifier used by composite solver in order to identify if a certain constraints contains
     # variables of type string... In this case cvc4 would handle the solving part.
@@ -24,14 +23,6 @@ class String(Bits):
     # TODO: Find a smarter way to do this!
     STRING_TYPE_IDENTIFIER = "STRING_"
     GENERATED_BVS_IDENTIFIER = "BVS_"
-    MAX_LENGTH = 10000
-
-    def __init__(self, *args, length: int, **kwargs):
-        """
-        :param length: The string bit length
-        """
-        super().__init__(*args, length=length, **kwargs)
-        self.string_length: int = self.length // 8
 
     def __getitem__(self, rng):
         """
@@ -122,23 +113,21 @@ class String(Bits):
         return self.raw_to_bv().raw_to_fp()
 
 
-def StringS(name, size, uninitialized=False, explicit_name=False, **kwargs):
+def StringS(name, uninitialized=False, explicit_name=False, **kwargs):
     """
     Create a new symbolic string (analogous to z3.String())
 
     :param name:                 The name of the symbolic string (i. e. the name of the variable)
-    :param size:                 The size in bytes of the string (i. e. the length of the string)
     :param uninitialized:        Whether this value should be counted as an "uninitialized" value in the course of an
                                  analysis.
     :param bool explicit_name:   If False, an identifier is appended to the name to ensure uniqueness.
 
     :returns:                    The String object representing the symbolic string
     """
-    n = _make_name(String.STRING_TYPE_IDENTIFIER + name, size, False if explicit_name is None else explicit_name)
+    n = _make_name(String.STRING_TYPE_IDENTIFIER + name, 0, False if explicit_name is None else explicit_name)
     return String(
         "StringS",
         n,
-        length=8 * size,
         symbolic=True,
         uninitialized=uninitialized,
         variables=frozenset((n,)),
@@ -146,41 +135,28 @@ def StringS(name, size, uninitialized=False, explicit_name=False, **kwargs):
     )
 
 
-def StringV(value, length: int | None = None, **kwargs):
+def StringV(value, **kwargs):
     """
     Create a new Concrete string (analogous to z3.StringVal())
 
     :param value:  The constant value of the concrete string
-    :param length: The byte length of the string
 
     :returns:      The String object representing the concrete string
     """
 
-    if length is None:
-        length = len(value)
-
-    if length < len(value):
-        raise ValueError("Can't make a concrete string value longer than the specified length!")
-
-    return String("StringV", (value, length), length=8 * length, **kwargs)
+    return String("StringV", (value,), **kwargs)
 
 
-StrConcat = operations.op("StrConcat", String, String, calc_length=operations.str_concat_length_calc)
-StrSubstr = operations.op("StrSubstr", (BV, BV, String), String, calc_length=operations.substr_length_calc)
+StrConcat = operations.op("StrConcat", String, String)
+StrSubstr = operations.op("StrSubstr", (BV, BV, String), String)
 StrLen = operations.op("StrLen", (String), BV, calc_length=lambda *_: 64)
-StrReplace = operations.op(
-    "StrReplace",
-    (String, String, String),
-    String,
-    extra_check=operations.str_replace_check,
-    calc_length=operations.str_replace_length_calc,
-)
+StrReplace = operations.op("StrReplace", (String, String, String), String)
 StrContains = operations.op("StrContains", (String, String), Bool)
 StrPrefixOf = operations.op("StrPrefixOf", (String, String), Bool)
 StrSuffixOf = operations.op("StrSuffixOf", (String, String), Bool)
 StrIndexOf = operations.op("StrIndexOf", (String, String, BV), BV, calc_length=lambda *_: 64)
 StrToInt = operations.op("StrToInt", (String), BV, calc_length=lambda *_: 64)
-IntToStr = operations.op("IntToStr", (BV,), String, calc_length=operations.int_to_str_length_calc)
+IntToStr = operations.op("IntToStr", (BV,), String)
 StrIsDigit = operations.op("StrIsDigit", (String,), Bool)
 
 # Equality / inequality check

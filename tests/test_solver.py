@@ -455,7 +455,7 @@ class StandardTests(TestCase):
         x = claripy.BVS("x", 32)
         y = claripy.BVS("y", 32)
         z = claripy.BVS("z", 32)
-        str_1 = claripy.StringS("sym_str_1", 1024)
+        str_1 = claripy.StringS("sym_str_1")
         c = claripy.And(x == 1, y == 2, z == 3, str_1 == claripy.StringV("cavallo"))
         s.add(c)
         assert len(s._solver_list) == 4

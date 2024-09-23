@@ -377,12 +377,10 @@ class BackendZ3(Backend):
 
     @condom
     def StringV(self, ast):
-        return z3.StringVal(ast.args[0].ljust(ast.args[1], "\0"), ctx=self._context)
+        return z3.StringVal(ast.args[0], ctx=self._context)
 
     @condom
     def StringS(self, ast):
-        # Maybe this should be an error? Warning for now to support reliant code
-        log.warning("Converting claripy StringS' to z3 looses length information.")
         return z3.String(ast.args[0], ctx=self._context)
 
     #
