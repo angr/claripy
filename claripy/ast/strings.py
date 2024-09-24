@@ -9,43 +9,15 @@ from .bv import BV
 
 class String(Base):
     """
-    Base class that represent the AST of a String object and implements all the operation useful to create and modify the AST.
+    Base class that represent the AST of a String object and implements all the
+    operation useful to create and modify the AST.
 
-    Do not instantiate this class directly, instead use StringS or StringV to construct a symbol or value, and then use
-    operations to construct more complicated expressions.
+    Do not instantiate this class directly, instead use StringS or StringV to
+    construct a symbol or value, and then use operations to construct more
+    complicated expressions.
     """
 
     __slots__ = ()
-
-    def __getitem__(self, rng):
-        """
-        This is a big endian indexer that takes its arguments as bits but returns bytes.
-        Returns the range of bits in self defined by: [rng.start, rng.end], indexed from the end
-        The bit range may not internally divide any bytes; i.e. low and (high+1) must both be divisible by 8
-        Examples:
-            self[7:0]  -- returns the last byte of self
-            self[15:0] -- returns the last two bytes of self
-            self[8:0]  -- Error! [8:0] is 9 bits, it asks for individual bits of the second to last byte!
-            self[8:1]  -- Error! [8:1] asks for 1 bit from the second to last byte and 7 from the last byte!
-        """
-        if type(rng) is slice:
-            bits_low = rng.start if rng.start is not None else 0
-            bits_high = rng.stop if rng.stop is not None else 8 * (self.string_length - 1)
-            if bits_high % 8 != 0 or (bits_low + 1) % 8 != 0:
-                raise ValueError("Bit indicies must not internally divide bytes!")
-            # high / low form a reverse-indexed byte index
-            high = bits_high // 8
-            low = bits_low // 8
-            if high < 0:
-                high = self.string_length + high
-            if low < 0:
-                low = self.string_length + low
-            # StrSubstr takes a front-indexed byte index as a starting point, and a length
-            start_idx = self.string_length - 1 - low
-            if high > low:
-                return StrSubstr(start_idx, 0, self)
-            return StrSubstr(start_idx, 1 + low - high, self)
-        raise ValueError("Only slices allowed for string extraction")
 
     @staticmethod
     def _from_str(like, value):  # pylint: disable=unused-argument
