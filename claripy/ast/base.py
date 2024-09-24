@@ -16,7 +16,7 @@ from weakref import WeakValueDictionary
 from typing_extensions import Self
 
 import claripy
-from claripy import operations
+from claripy.ast import operations
 from claripy.errors import BackendError, ClaripyOperationError, ClaripyReplacementError
 from claripy.fp import FSort
 

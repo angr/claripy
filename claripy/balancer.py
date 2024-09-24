@@ -9,10 +9,22 @@ import claripy.backends.backend_vsa as vsa
 from .ast.base import Base
 from .ast.bool import Bool
 from .ast.bv import BV, BVS, BVV
+from .ast.operations import opposites
 from .errors import BackendError, ClaripyBalancerError, ClaripyBalancerUnsatError, ClaripyOperationError
-from .operations import commutative_operations, opposites
 
 l = logging.getLogger(__name__)
+
+
+commutative_operations = {
+    "__and__",
+    "__or__",
+    "__xor__",
+    "__add__",
+    "__mul__",
+    "And",
+    "Or",
+    "Xor",
+}
 
 
 class Balancer:

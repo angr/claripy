@@ -13,8 +13,8 @@ from claripy.ast.fp import FPV
 from claripy.ast.strings import StringV
 from claripy.backends.backend import Backend
 from claripy.backends.backend_concrete import bv, fp, strings
+from claripy.backends.operations import backend_fp_operations, backend_operations, backend_strings_operations
 from claripy.errors import BackendError, UnsatError
-from claripy.operations import backend_fp_operations, backend_operations, backend_strings_operations
 
 log = logging.getLogger(__name__)
 

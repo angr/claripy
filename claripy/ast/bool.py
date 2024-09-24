@@ -6,7 +6,7 @@ from functools import lru_cache
 from typing import TYPE_CHECKING, overload
 
 import claripy
-from claripy import operations
+from claripy.ast import operations
 from claripy.ast.base import ASTCacheKey, Base, _make_name
 from claripy.errors import BackendError, ClaripyTypeError
 
