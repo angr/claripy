@@ -7,9 +7,10 @@ from claripy.errors import ClaripyOperationError
 
 
 class RM(Enum):
-    """Rounding modes for floating point operations.
+    """Floating point rounding mode, as defined by IEEE754.
 
-    See https://en.wikipedia.org/wiki/IEEE_754#Rounding_rules for more information.
+    See this wikipedia entry for details:
+    https://en.wikipedia.org/wiki/IEEE_754#Rounding_rules
     """
 
     RM_NearestTiesEven = "RM_RNE"
@@ -33,7 +34,9 @@ class RM(Enum):
 
 
 class FSort:
-    """A class representing a floating point sort."""
+    """Floating point sort, desribing the size of the exponent and mantissa for
+    an IEEE754 floating point number.
+    """
 
     def __init__(self, name, exp, mantissa):
         self.name = name

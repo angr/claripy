@@ -548,6 +548,9 @@ class BackendZ3(Backend):
             log.error(err)
             raise BackendError(err)
 
+        if ty is FP and isinstance(args[0], RM):
+            args = [*args[1:], args[0]]
+
         if op_name == "If":
             # If is polymorphic and thus must be handled specially
             ty = type(args[1])
@@ -1019,23 +1022,23 @@ class BackendZ3(Backend):
         return z3.FPRef(z3.Z3_mk_fpa_neg(self._context.ref(), a.as_ast()), self._context)
 
     @condom
-    def _op_raw_fpAdd(self, rm, a, b):
+    def _op_raw_fpAdd(self, a, b, rm):
         return z3.FPRef(z3.Z3_mk_fpa_add(self._context.ref(), rm.as_ast(), a.as_ast(), b.as_ast()), self._context)
 
     @condom
-    def _op_raw_fpSub(self, rm, a, b):
+    def _op_raw_fpSub(self, a, b, rm):
         return z3.FPRef(z3.Z3_mk_fpa_sub(self._context.ref(), rm.as_ast(), a.as_ast(), b.as_ast()), self._context)
 
     @condom
-    def _op_raw_fpMul(self, rm, a, b):
+    def _op_raw_fpMul(self, a, b, rm):
         return z3.FPRef(z3.Z3_mk_fpa_mul(self._context.ref(), rm.as_ast(), a.as_ast(), b.as_ast()), self._context)
 
     @condom
-    def _op_raw_fpDiv(self, rm, a, b):
+    def _op_raw_fpDiv(self, a, b, rm):
         return z3.FPRef(z3.Z3_mk_fpa_div(self._context.ref(), rm.as_ast(), a.as_ast(), b.as_ast()), self._context)
 
     @condom
-    def _op_raw_fpSqrt(self, rm, a):
+    def _op_raw_fpSqrt(self, a, rm):
         return z3.FPRef(z3.Z3_mk_fpa_sqrt(self._context.ref(), rm.as_ast(), a.as_ast()), self._context)
 
     @condom
@@ -1071,11 +1074,11 @@ class BackendZ3(Backend):
         return z3.FPRef(z3.Z3_mk_fpa_fp(self._context.ref(), sgn.ast, exp.ast, sig.ast), self._context)
 
     @condom
-    def _op_raw_fpToSBV(self, rm, fp, bv_len):
+    def _op_raw_fpToSBV(self, fp, bv_len, rm):
         return z3.BitVecRef(z3.Z3_mk_fpa_to_sbv(self._context.ref(), rm.ast, fp.ast, bv_len), self._context)
 
     @condom
-    def _op_raw_fpToUBV(self, rm, fp, bv_len):
+    def _op_raw_fpToUBV(self, fp, bv_len, rm):
         return z3.BitVecRef(z3.Z3_mk_fpa_to_ubv(self._context.ref(), rm.ast, fp.ast, bv_len), self._context)
 
     @condom
