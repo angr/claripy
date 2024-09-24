@@ -134,7 +134,7 @@ class BV(Bits):
 
     @staticmethod
     def _from_int(like, value):
-        return BVV(value, like.length)
+        return BVV(value, like.length or 64)
 
     @staticmethod
     def _from_Bool(like, value):
