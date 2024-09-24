@@ -4,7 +4,7 @@ from claripy import operations
 
 from .base import Base, _make_name
 from .bool import Bool
-from .bv import BV, BVS, BVV
+from .bv import BV
 
 
 class String(Base):
@@ -16,13 +16,6 @@ class String(Base):
     """
 
     __slots__ = ()
-
-    # Identifier used by composite solver in order to identify if a certain constraints contains
-    # variables of type string... In this case cvc4 would handle the solving part.
-    #
-    # TODO: Find a smarter way to do this!
-    STRING_TYPE_IDENTIFIER = "STRING_"
-    GENERATED_BVS_IDENTIFIER = "BVS_"
 
     def __getitem__(self, rng):
         """
@@ -55,19 +48,6 @@ class String(Base):
         raise ValueError("Only slices allowed for string extraction")
 
     @staticmethod
-    # TODO: Figure out what to convert here
-    #
-    # The use case that i found useful here is during the concretization
-    # of a symbolic address in memory.
-    # When angr has to do this it creates a claripy.If constraints in this form
-    # If(condition, <value_read_if_condition_true>, <value_read_if_condition_false>).
-    # In some case <value_read_if_condition_false> can be MEM_UNINITIALIZED expressed as BVV
-    #
-    # What should we return in this case?
-    def _from_BV(like, value):  # pylint: disable=unused-argument
-        return value
-
-    @staticmethod
     def _from_str(like, value):  # pylint: disable=unused-argument
         return StringV(value)
 
@@ -98,20 +78,6 @@ class String(Base):
         """
         return StrIndexOf(self, pattern, start_idx, bitlength)
 
-    def raw_to_bv(self):
-        """
-        A counterpart to FP.raw_to_bv - does nothing and returns itself.
-        """
-        if self.symbolic:
-            return BVS(
-                next(iter(self.variables)).replace(self.STRING_TYPE_IDENTIFIER, self.GENERATED_BVS_IDENTIFIER),
-                self.length,
-            )
-        return BVV(ord(self.args[0]), self.length)
-
-    def raw_to_fp(self):
-        return self.raw_to_bv().raw_to_fp()
-
 
 def StringS(name, uninitialized=False, explicit_name=False, **kwargs):
     """
@@ -124,7 +90,7 @@ def StringS(name, uninitialized=False, explicit_name=False, **kwargs):
 
     :returns:                    The String object representing the symbolic string
     """
-    n = _make_name(String.STRING_TYPE_IDENTIFIER + name, 0, False if explicit_name is None else explicit_name)
+    n = _make_name(name, 0, False if explicit_name is None else explicit_name)
     return String(
         "StringS",
         (n,),
