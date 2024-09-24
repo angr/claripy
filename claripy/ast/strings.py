@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from claripy import operations
+from claripy.ast import operations
 
 from .base import Base, _make_name
 from .bool import Bool

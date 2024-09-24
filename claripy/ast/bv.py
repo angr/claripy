@@ -8,7 +8,7 @@ from contextlib import suppress
 from typing_extensions import Self
 
 import claripy
-from claripy import operations
+from claripy.ast import operations
 from claripy.ast.base import _make_name
 from claripy.errors import BackendError, ClaripyValueError
 from claripy.util import deprecated

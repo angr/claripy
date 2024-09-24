@@ -21,6 +21,7 @@ from claripy.ast.bv import BV, BVV
 from claripy.ast.fp import FP, FPV
 from claripy.ast.strings import StringV
 from claripy.backends.backend import Backend
+from claripy.backends.operations import backend_fp_operations, backend_operations, backend_strings_operations, bound_ops
 from claripy.errors import (
     BackendError,
     ClaripyError,
@@ -29,7 +30,6 @@ from claripy.errors import (
     ClaripyZ3Error,
 )
 from claripy.fp import RM, FSort
-from claripy.operations import backend_fp_operations, backend_operations, backend_strings_operations, bound_ops
 
 log = logging.getLogger(__name__)
 

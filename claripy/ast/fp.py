@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import struct
 
-from claripy import operations
+from claripy.ast import operations
 from claripy.ast.base import _make_name
 from claripy.fp import FSORT_FLOAT, RM, FSort
 

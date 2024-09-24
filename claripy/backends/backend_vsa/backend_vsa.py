@@ -10,9 +10,9 @@ from claripy.annotation import RegionAnnotation
 from claripy.ast.base import Base
 from claripy.ast.bv import ESI, SI, TSI
 from claripy.backends.backend import Backend
+from claripy.backends.operations import backend_operations_vsa_compliant, expression_set_operations
 from claripy.balancer import Balancer
 from claripy.errors import BackendError
-from claripy.operations import backend_operations_vsa_compliant, expression_set_operations
 
 from .bool_result import BoolResult, FalseResult, TrueResult
 from .discrete_strided_interval_set import DiscreteStridedIntervalSet

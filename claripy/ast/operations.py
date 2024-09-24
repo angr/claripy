@@ -4,9 +4,8 @@ import itertools
 
 import claripy
 import claripy.simplifications
-
-from . import debug as _d
-from .errors import ClaripyOperationError, ClaripyTypeError
+from claripy import debug as _d
+from claripy.errors import ClaripyOperationError, ClaripyTypeError
 
 
 def op(name, arg_types, return_type, extra_check=None, calc_length=None):
@@ -177,172 +176,6 @@ def ext_length_calc(ext, orig):
 # Operation lists
 #
 
-expression_arithmetic_operations = {
-    # arithmetic
-    "__add__",
-    "__radd__",
-    "__truediv__",
-    "__rtruediv__",
-    "__floordiv__",
-    "__rfloordiv__",
-    "__mul__",
-    "__rmul__",
-    "__sub__",
-    "__rsub__",
-    "__pow__",
-    "__rpow__",
-    "__mod__",
-    "__rmod__",
-    "SDiv",
-    "SMod",
-    "__neg__",
-    "__abs__",
-}
-
-bin_ops = {
-    "__add__",
-    "__radd__",
-    "__mul__",
-    "__rmul__",
-    "__or__",
-    "__ror__",
-    "__and__",
-    "__rand__",
-    "__xor__",
-    "__rxor__",
-}
-
-expression_comparator_operations = {
-    # comparisons
-    "__eq__",
-    "__ne__",
-    "__ge__",
-    "__le__",
-    "__gt__",
-    "__lt__",
-}
-
-# expression_comparator_operations = {
-#     'Eq',
-#     'Ne',
-#     'Ge', 'Le',
-#     'Gt', 'Lt',
-# }
-
-expression_bitwise_operations = {
-    # bitwise
-    "__invert__",
-    "__or__",
-    "__ror__",
-    "__and__",
-    "__rand__",
-    "__xor__",
-    "__rxor__",
-    "__lshift__",
-    "__rlshift__",
-    "__rshift__",
-    "__rrshift__",
-}
-
-expression_set_operations = {
-    # Set operations
-    "union",
-    "intersection",
-    "widen",
-}
-
-expression_operations = (
-    expression_arithmetic_operations
-    | expression_comparator_operations
-    | expression_bitwise_operations
-    | expression_set_operations
-)
-
-backend_comparator_operations = {
-    "SGE",
-    "SLE",
-    "SGT",
-    "SLT",
-    "UGE",
-    "ULE",
-    "UGT",
-    "ULT",
-}
-
-backend_bitwise_operations = {
-    "RotateLeft",
-    "RotateRight",
-    "LShR",
-    "Reverse",
-}
-
-backend_boolean_operations = {"And", "Or", "Not"}
-
-backend_bitmod_operations = {"Concat", "Extract", "SignExt", "ZeroExt"}
-
-backend_creation_operations = {"BoolV", "BVV", "FPV", "StringV"}
-
-backend_symbol_creation_operations = {"BoolS", "BVS", "FPS", "StringS"}
-
-backend_other_operations = {"If"}
-
-backend_arithmetic_operations = {"SDiv", "SMod"}
-
-backend_operations = (
-    backend_comparator_operations
-    | backend_bitwise_operations
-    | backend_boolean_operations
-    | backend_bitmod_operations
-    | backend_creation_operations
-    | backend_other_operations
-    | backend_arithmetic_operations
-)
-backend_operations_vsa_compliant = (
-    backend_bitwise_operations | backend_comparator_operations | backend_boolean_operations | backend_bitmod_operations
-)
-backend_operations_all = backend_operations | backend_operations_vsa_compliant
-
-backend_fp_cmp_operations = {
-    "fpLT",
-    "fpLEQ",
-    "fpGT",
-    "fpGEQ",
-    "fpEQ",
-}
-
-backend_fp_operations = {
-    "FPS",
-    "fpToFP",
-    "fpToFPUnsigned",
-    "fpToIEEEBV",
-    "fpFP",
-    "fpToSBV",
-    "fpToUBV",
-    "fpNeg",
-    "fpSub",
-    "fpAdd",
-    "fpMul",
-    "fpDiv",
-    "fpAbs",
-    "fpIsNaN",
-    "fpIsInf",
-    "fpSqrt",
-} | backend_fp_cmp_operations
-
-backend_strings_operations = {
-    "StrSubstr",
-    "StrReplace",
-    "StrConcat",
-    "StrLen",
-    "StrContains",
-    "StrPrefixOf",
-    "StrSuffixOf",
-    "StrIndexOf",
-    "StrToInt",
-    "StrIsDigit",
-    "IntToStr",
-}
-
 opposites = {
     "__add__": "__radd__",
     "__radd__": "__add__",
@@ -402,45 +235,14 @@ reversed_ops = {
     "__rxor__": "__xor__",
 }
 
-inverse_operations = {
-    "__eq__": "__ne__",
-    "__ne__": "__eq__",
-    "__gt__": "__le__",
-    "__lt__": "__ge__",
-    "__ge__": "__lt__",
-    "__le__": "__gt__",
-    "ULT": "UGE",
-    "UGE": "ULT",
-    "UGT": "ULE",
-    "ULE": "UGT",
-    "SLT": "SGE",
-    "SGE": "SLT",
-    "SLE": "SGT",
-    "SGT": "SLE",
-}
+value_creation_operations = {"BoolV", "BVV", "FPV", "StringV"}
+symbol_creation_operations = {"BoolS", "BVS", "FPS", "StringS"}
 
-leaf_operations = backend_symbol_creation_operations | backend_creation_operations
-leaf_operations_concrete = backend_creation_operations
-leaf_operations_symbolic = backend_symbol_creation_operations
+leaf_operations = symbol_creation_operations | value_creation_operations
+leaf_operations_concrete = value_creation_operations
+leaf_operations_symbolic = symbol_creation_operations
 leaf_operations_symbolic_with_union = leaf_operations_symbolic | {"union"}
 
-#
-# Reversibility
-#
-
-not_invertible = {"union"}
-reverse_distributable = {
-    "widen",
-    "union",
-    "intersection",
-    "__invert__",
-    "__or__",
-    "__ror__",
-    "__and__",
-    "__rand__",
-    "__xor__",
-    "__rxor__",
-}
 
 infix = {
     "__add__": "+",
@@ -528,21 +330,4 @@ op_precedence = {  # based on https://en.cppreference.com/w/c/language/operator_
     # precedence: 12
     "Or": 12,
     # 'Concat': '..',
-}
-
-commutative_operations = {
-    "__and__",
-    "__or__",
-    "__xor__",
-    "__add__",
-    "__mul__",
-    "And",
-    "Or",
-    "Xor",
-}
-
-bound_ops = {
-    "Not": "__invert__",
-    "And": "__and__",
-    "Or": "__or__",
 }
