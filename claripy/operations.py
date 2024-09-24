@@ -65,8 +65,6 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None):
         kwargs["uninitialized"] = None
         if any(a.uninitialized is True for a in args if isinstance(a, claripy.ast.Base)):
             kwargs["uninitialized"] = True
-        if name in preprocessors:
-            args, kwargs = preprocessors[name](*args, **kwargs)
 
         return return_type(name, fixed_args, **kwargs)
 
@@ -108,30 +106,6 @@ def reversed_op(op_func):
 
     return _reversed_op
 
-
-#
-# Extra processors
-#
-
-union_counter = itertools.count()
-
-
-def preprocess_union(*args, **kwargs):
-    #
-    # When we union two values, we implicitly create a new symbolic, multi-valued
-    # variable, because a union is essentially an ITE with an unconstrained
-    # "choice" variable.
-    #
-
-    new_name = "union_%d" % next(union_counter)
-    kwargs["add_variables"] = frozenset((new_name,))
-    return args, kwargs
-
-
-preprocessors = {
-    "union": preprocess_union,
-    # 'intersection': preprocess_intersect
-}
 
 #
 # Length checkers
