@@ -4,16 +4,15 @@ import logging
 import operator
 
 import claripy
+import claripy.backends.backend_vsa as vsa
 
-from . import vsa
 from .ast.base import Base
 from .ast.bool import Bool
 from .ast.bv import BV, BVS, BVV
-from .backend_manager import backends
 from .errors import BackendError, ClaripyBalancerError, ClaripyBalancerUnsatError, ClaripyOperationError
 from .operations import commutative_operations, opposites
 
-l = logging.getLogger("claripy.balancer")
+l = logging.getLogger(__name__)
 
 
 class Balancer:
@@ -99,7 +98,7 @@ class Balancer:
     #
 
     def _same_bound_bv(self, a):
-        si = backends.vsa.convert(a)
+        si = claripy.backends.vsa.convert(a)
         mx = self._max(a)
         mn = self._min(a)
         return BVS("bounds", len(a), min=mn, max=mx, stride=si._stride)
@@ -110,7 +109,7 @@ class Balancer:
 
     @staticmethod
     def _min(a, signed=False):
-        converted = backends.vsa.convert(a)
+        converted = claripy.backends.vsa.convert(a)
         if isinstance(converted, vsa.ValueSet):
             if len(converted.regions) == 1:
                 converted = next(iter(converted.regions.values()))
@@ -125,7 +124,7 @@ class Balancer:
 
     @staticmethod
     def _max(a, signed=False):
-        converted = backends.vsa.convert(a)
+        converted = claripy.backends.vsa.convert(a)
         if isinstance(converted, vsa.ValueSet):
             if len(converted.regions) == 1:
                 converted = next(iter(converted.regions.values()))
@@ -155,7 +154,7 @@ class Balancer:
             outer_aligned.op, (self._align_ast(outer_aligned.args[0]),) + outer_aligned.args[1:]
         )
 
-        if not backends.vsa.identical(inner_aligned, truism):
+        if not claripy.backends.vsa.identical(inner_aligned, truism):
             l.critical(
                 "ERROR: the balancer is messing up an AST. This must be looked into. "
                 "Please submit the binary and script to the angr project, if possible. "
@@ -447,7 +446,7 @@ class Balancer:
         other_side = truism.args[1][len(truism.args[1]) - 1 : len(truism.args[1]) - num_zeroes]
 
         # TODO: what if this is a set value, but *not* the same as other_side
-        if backends.vsa.identical(left_side, other_side):
+        if claripy.backends.vsa.identical(left_side, other_side):
             # We can safely eliminate this layer of ZeroExt
             new_args = (truism.args[0].args[1], truism.args[1][len(truism.args[1]) - num_zeroes - 1 : 0])
             return truism.make_like(truism.op, new_args)
@@ -572,10 +571,10 @@ class Balancer:
             # the condition was probably a Not (TODO)
             return truism
 
-        can_true = backends.vsa.has_true(true_condition)
-        can_false = backends.vsa.has_true(false_condition)
-        must_true = backends.vsa.is_true(true_condition)
-        must_false = backends.vsa.is_true(false_condition)
+        can_true = claripy.backends.vsa.has_true(true_condition)
+        can_false = claripy.backends.vsa.has_true(false_condition)
+        must_true = claripy.backends.vsa.is_true(true_condition)
+        must_false = claripy.backends.vsa.is_true(false_condition)
 
         if can_true and can_false:
             # always satisfiable
@@ -698,8 +697,8 @@ class Balancer:
 
 
 def is_true(a):
-    return backends.vsa.is_true(a)
+    return claripy.backends.vsa.is_true(a)
 
 
 def is_false(a):
-    return backends.vsa.is_false(a)
+    return claripy.backends.vsa.is_false(a)

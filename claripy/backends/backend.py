@@ -55,6 +55,8 @@ class Backend:
     _convert() to see if the backend can handle that type of object.
     """
 
+    # pylint: disable=too-many-positional-arguments
+
     __slots__ = (
         "_op_raw",
         "_op_expr",
@@ -74,10 +76,6 @@ class Backend:
         self._tls = threading.local()
         self._true_cache = weakref.WeakKeyDictionary()
         self._false_cache = weakref.WeakKeyDictionary()
-
-    @property
-    def is_smt_backend(self):
-        return False
 
     @property
     def _object_cache(self):
@@ -815,7 +813,7 @@ class Backend:
         """
         return self._cardinality(self.convert(a))
 
-    def _cardinality(self, b):  # pylint:disable=no-self-use,unused-argument
+    def _cardinality(self, a):  # pylint:disable=no-self-use,unused-argument
         """
         This should return the maximum number of values that an expression can take on. This should be a strict
         *over* approximation.

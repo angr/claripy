@@ -7,9 +7,7 @@ import operator
 from functools import reduce
 
 import claripy
-
-from . import fp
-from .backend_manager import backends
+from claripy.fp import FSORT_DOUBLE, FSORT_FLOAT
 
 SIMPLE_OPS = ("Concat", "SignExt", "ZeroExt")
 
@@ -77,8 +75,8 @@ def concat_simplifier(*args):
 
             if (
                 not (previous.symbolic or current.symbolic)
-                and backends.concrete.handles(previous)
-                and backends.concrete.handles(current)
+                and claripy.backends.concrete.handles(previous)
+                and claripy.backends.concrete.handles(current)
             ):
                 concatted = claripy.Concat(previous, current)
                 # If the concrete arguments to concat have non-relocatable annotations attached,
@@ -174,15 +172,15 @@ def lshift_simplifier(val, shift):
 
 def eq_simplifier(a, b):
     if a is b:
-        return claripy.true
+        return claripy.true()
 
-    if isinstance(a, claripy.ast.Bool) and b is claripy.true:
+    if isinstance(a, claripy.ast.Bool) and b is claripy.true():
         return a
-    if isinstance(b, claripy.ast.Bool) and a is claripy.true:
+    if isinstance(b, claripy.ast.Bool) and a is claripy.true():
         return b
-    if isinstance(a, claripy.ast.Bool) and b is claripy.false:
+    if isinstance(a, claripy.ast.Bool) and b is claripy.false():
         return claripy.Not(a)
-    if isinstance(b, claripy.ast.Bool) and a is claripy.false:
+    if isinstance(b, claripy.ast.Bool) and a is claripy.false():
         return claripy.Not(b)
 
     if a.op == "Reverse" and b.op == "Reverse":
@@ -211,10 +209,6 @@ def eq_simplifier(a, b):
         if a.args[2] is b and claripy.is_true(a.args[1] != b):
             # (If(c, x, y) == y, x != y) -> !c
             return claripy.Not(a.args[0])
-        # elif a._claripy.is_true(a.args[1] == b) and a._claripy.is_true(a.args[2] == b):
-        # 	  return a._claripy.true
-        # elif a._claripy.is_true(a.args[1] != b) and a._claripy.is_true(a.args[2] != b):
-        # 	  return a._claripy.false
 
     if b.op == "If":
         if b.args[1] is a and claripy.is_true(b.args[2] != b):
@@ -223,10 +217,6 @@ def eq_simplifier(a, b):
         if b.args[2] is a and claripy.is_true(b.args[1] != a):
             # (y == If(c, x, y)) -> !c
             return claripy.Not(b.args[0])
-        # elif b._claripy.is_true(b.args[1] == a) and b._claripy.is_true(b.args[2] == a):
-        # 	  return b._claripy.true
-        # elif b._claripy.is_true(b.args[1] != a) and b._claripy.is_true(b.args[2] != a):
-        # 	  return b._claripy.false
 
     # Masking and comparing against a constant
     simp = and_mask_comparing_against_constant_simplifier(operator.__eq__, a, b)
@@ -254,14 +244,14 @@ def eq_simplifier(a, b):
                 break
 
             if claripy.is_false(a_bit == b_bit):
-                return claripy.false
+                return claripy.false()
         return None
     return None
 
 
 def ne_simplifier(a, b):
     if a is b:
-        return claripy.false
+        return claripy.false()
 
     if a.op == "Reverse" and b.op == "Reverse":
         return a.args[0] != b.args[0]
@@ -273,10 +263,6 @@ def ne_simplifier(a, b):
         if a.args[1] is b and claripy.is_true(a.args[2] != b):
             # (If(c, x, y) == y, x != y) -> !c
             return claripy.Not(a.args[0])
-        # elif a._claripy.is_true(a.args[1] == b) and a._claripy.is_true(a.args[2] == b):
-        # 	  return a._claripy.false
-        # elif a._claripy.is_true(a.args[1] != b) and a._claripy.is_true(a.args[2] != b):
-        # 	  return a._claripy.true
 
     if b.op == "If":
         if b.args[2] is a and claripy.is_true(b.args[1] != a):
@@ -285,10 +271,6 @@ def ne_simplifier(a, b):
         if b.args[1] is a and claripy.is_true(b.args[2] != a):
             # (y == If(c, x, y)) -> !c
             return claripy.Not(b.args[0])
-        # elif b._claripy.is_true(b.args[1] != a) and b._claripy.is_true(b.args[2] != a):
-        # 	  return b._claripy.true
-        # elif b._claripy.is_true(b.args[1] == a) and b._claripy.is_true(b.args[2] == a):
-        # 	  return b._claripy.false
 
     # 1 ^ expr != 0     ->   expr == 0
     if a.op == "__xor__" and b.op == "BVV" and b.args[0] == 0 and len(a.args) == 2:
@@ -323,7 +305,7 @@ def ne_simplifier(a, b):
                 break
 
             if claripy.is_true(a_bit != b_bit):
-                return claripy.true
+                return claripy.true()
         return None
     return None
 
@@ -385,14 +367,14 @@ def boolean_and_simplifier(*args):
     for a in args:
         if a.op == "BoolV":
             if a.is_false():
-                return claripy.false
+                return claripy.false()
         else:
             new_args[ctr] = a
             ctr += 1
     new_args = new_args[:ctr]
 
     if not new_args:
-        return claripy.true
+        return claripy.true()
 
     if len(new_args) < len(args):
         return claripy.And(*new_args)
@@ -459,11 +441,11 @@ def boolean_and_simplifier(*args):
     if not eq_list:
         return flattened
     if any(any(ne is eq for eq in eq_list) for ne in ne_list):
-        return claripy.false
+        return claripy.false()
     if all(v.op == "BVV" for v in eq_list) and all(v.op == "BVV" for v in ne_list):
         mustbe = eq_list[0]
         if any(eq.args[0] != mustbe.args[0] for eq in eq_list):
-            return claripy.false
+            return claripy.false()
         return target_var == eq_list[0]
     return flattened
 
@@ -475,12 +457,12 @@ def boolean_or_simplifier(*args):
     new_args = []
     for a in args:
         if a.is_true():
-            return claripy.true
+            return claripy.true()
         if not a.is_false():
             new_args.append(a)
 
     if not new_args:
-        return claripy.false
+        return claripy.false()
     if len(new_args) < len(args):
         return claripy.Or(*new_args)
 
@@ -916,7 +898,7 @@ def fptobv_simplifier(the_fp):
 def fptofp_simplifier(*args):
     if len(args) == 2 and args[0].op == "fpToIEEEBV":
         to_bv, sort = args
-        if (sort == fp.FSORT_FLOAT and to_bv.length == 32) or (sort == fp.FSORT_DOUBLE and to_bv.length == 64):
+        if (sort == FSORT_FLOAT and to_bv.length == 32) or (sort == FSORT_DOUBLE and to_bv.length == 64):
             return to_bv.args[0]
         return None
     return None
@@ -1039,7 +1021,7 @@ def and_mask_comparing_against_constant_simplifier(op, a, b):
                         return None
                     return op(a_arg0[b_highbit_idx:0] & a_arg1.args[0], b_lower)
                 if b_higher_bits_are_0 is False:
-                    return claripy.false if op is operator.__eq__ else claripy.true
+                    return claripy.false() if op is operator.__eq__ else claripy.true()
 
     return None
 
@@ -1109,7 +1091,7 @@ def zeroext_comparing_against_simplifier(op, a, b):
                 return op(a.args[1], b[b.size() - a_zeroext_bits - 1 : 0])
             if (b_highbits == 0).is_false():
                 # unsat
-                return claripy.false if op is operator.__eq__ else claripy.true
+                return claripy.false() if op is operator.__eq__ else claripy.true()
 
         if (
             a.op == "Concat" and len(a.args) == 2 and a.args[0].op == "BVV" and a.args[0].args[0] == 0
@@ -1121,7 +1103,7 @@ def zeroext_comparing_against_simplifier(op, a, b):
                 return op(a.args[1], b[b.size() - a_zero_bits - 1 : 0])
             if (b_highbits == 0).is_false():
                 # unsat
-                return claripy.false if op is operator.__eq__ else claripy.true
+                return claripy.false() if op is operator.__eq__ else claripy.true()
 
     return None
 

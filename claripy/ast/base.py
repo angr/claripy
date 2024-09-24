@@ -15,21 +15,20 @@ from weakref import WeakValueDictionary
 
 from typing_extensions import Self
 
-from claripy import operations, simplifications
-from claripy.backend_manager import backends
+import claripy
+from claripy import operations
 from claripy.errors import BackendError, ClaripyOperationError, ClaripyReplacementError
 from claripy.fp import FSort
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Iterator
 
-    from claripy import Backend
     from claripy.annotation import Annotation
+    from claripy.backends import Backend
 
-l = logging.getLogger("claripy.ast")
+log = logging.getLogger(__name__)
 
 blake2b_unpacker = struct.Struct("Q")
-from_iterable = chain.from_iterable
 
 # pylint:disable=unused-argument,too-many-boolean-expressions
 
@@ -225,7 +224,9 @@ class Base:
 
         if not symbolic and op not in operations.leaf_operations:
             with suppress(BackendError):
-                r = operations._handle_annotations(backends.concrete._abstract(backends.concrete.call(op, args)), args)
+                r = operations._handle_annotations(
+                    claripy.backends.concrete._abstract(claripy.backends.concrete.call(op, args)), args
+                )
                 if r is not None:
                     return r
 
@@ -279,7 +280,7 @@ class Base:
         length: int | None = None,
     ) -> Self:
         # Try to simplify the expression again
-        simplified = simplifications.simplify(op, args) if simplify else None
+        simplified = claripy.simplifications.simplify(op, args) if simplify else None
         if simplified is not None:
             op = simplified.op
         if (  # fast path
@@ -487,7 +488,7 @@ class Base:
         if hasattr(arg, "__hash__"):
             return hash(arg).to_bytes(8, "little", signed=True)
 
-        l.debug("Don't know how to serialize %s, consider implementing __hash__", arg)
+        log.debug("Don't know how to serialize %s, consider implementing __hash__", arg)
         return pickle.dumps(arg)
 
     def __hash__(self) -> int:
@@ -518,8 +519,6 @@ class Base:
         """
         Check if two ASTs are the same.
         """
-        from claripy.vsa.strided_interval import StridedInterval  # pylint:disable=import-outside-toplevel
-
         # Several types inside of args don't support normall == comparison, so if we see those,
         # we need compare them manually.
         for a, b in zip(self.args, other_args, strict=True):
@@ -534,17 +533,6 @@ class Base:
                     continue
                 if a != b:
                     return False
-            if (
-                isinstance(a, StridedInterval)
-                and isinstance(b, StridedInterval)
-                and (
-                    a.bits != b.bits
-                    or a.lower_bound != b.lower_bound
-                    or a.upper_bound != b.upper_bound
-                    or a.stride != b.stride
-                )
-            ):
-                return False
             if lenient_names and isinstance(a, str) and isinstance(b, str):
                 continue
             if a != b:
@@ -844,7 +832,7 @@ class Base:
             if isinstance(ast, Base):
                 ast_queue.append(iter(ast.args))
 
-                l.debug("Yielding AST %s with hash %s with %d children", ast, ast.hash(), len(ast.args))
+                log.debug("Yielding AST %s with hash %s with %d children", ast, ast.hash(), len(ast.args))
                 yield ast
 
     def leaf_asts(self) -> Iterator[Base]:
@@ -873,7 +861,7 @@ class Base:
         return self.depth == 1
 
     def dbg_is_looped(self) -> Base | bool:  # TODO: this return type is bad
-        l.debug("Checking AST with hash %s for looping", self.hash())
+        log.debug("Checking AST with hash %s for looping", self.hash())
 
         seen = set()
         for child_ast in self.children_asts():
@@ -1100,7 +1088,7 @@ class Base:
             return self
 
         different_idx = matches.index(False)
-        inner_if = If(self.args[0], old_true.args[different_idx], old_false.args[different_idx])
+        inner_if = claripy.If(self.args[0], old_true.args[different_idx], old_false.args[different_idx])
         new_args = list(old_true.args)
         new_args[different_idx] = inner_if.ite_burrowed
         # print("replaced the",different_idx,"arg:",new_args)
@@ -1143,7 +1131,7 @@ class Base:
 
                     if op.op == "If":
                         # if we are an If, call the If handler so that we can take advantage of its simplifiers
-                        excavated = If(*args)
+                        excavated = claripy.If(*args)
 
                     elif ite_args.count(True) == 0:
                         # if there are no ifs that came to the surface, there's nothing more to do
@@ -1163,7 +1151,7 @@ class Base:
                             elif a.args[0] is cond:
                                 new_true_args.append(a.args[1])
                                 new_false_args.append(a.args[2])
-                            elif a.args[0] is Not(cond):
+                            elif a.args[0] is ~cond:
                                 new_true_args.append(a.args[2])
                                 new_false_args.append(a.args[1])
                             else:
@@ -1172,7 +1160,7 @@ class Base:
                                 break
 
                         else:
-                            excavated = If(
+                            excavated = claripy.If(
                                 cond,
                                 op.swap_args(new_true_args, simplify=True),
                                 op.swap_args(new_false_args, simplify=True),
@@ -1218,7 +1206,7 @@ class Base:
     #
 
     def _first_backend(self, what):
-        for b in backends._all_backends:
+        for b in claripy.backends.all_backends:
             if b in self._errored:
                 continue
 
@@ -1231,7 +1219,7 @@ class Base:
     @property
     def concrete_value(self):
         try:
-            raw = backends.concrete.convert(self)
+            raw = claripy.backends.concrete.convert(self)
             if isinstance(raw, bool):
                 return raw
             return raw.value
@@ -1259,7 +1247,7 @@ class Base:
             return False
         if self.variables:
             return False
-        return backends.concrete.handles(self)
+        return claripy.backends.concrete.handles(self)
 
     @property
     def uninitialized(self) -> bool:
@@ -1281,7 +1269,7 @@ def simplify(e: T) -> T:
 
     s = e._first_backend("simplify")
     if s is None:
-        l.debug("Unable to simplify expression")
+        log.debug("Unable to simplify expression")
         return e
 
     # Copy some parameters (that should really go to the Annotation backend)
@@ -1292,14 +1280,14 @@ def simplify(e: T) -> T:
     if e.annotations:
         ast_args = tuple(a for a in e.args if isinstance(a, Base))
         annotations = tuple(
-            set(chain(from_iterable(a._relocatable_annotations for a in ast_args), tuple(a for a in e.annotations)))
+            set(
+                chain(
+                    chain.from_iterable(a._relocatable_annotations for a in ast_args), tuple(a for a in e.annotations)
+                )
+            )
         )
         if annotations != s.annotations:
             s = s.remove_annotations(s.annotations)
             s = s.annotate(*annotations)
 
     return s
-
-
-# pylint:disable=wrong-import-position,ungrouped-imports
-from claripy.ast.bool import If, Not  # noqa: E402

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import atexit
 import logging
 import numbers
 import weakref
@@ -9,27 +8,17 @@ from contextlib import suppress
 from typing_extensions import Self
 
 import claripy
-from claripy import operations, vsa
+from claripy import operations
 from claripy.ast.base import _make_name
 from claripy.errors import BackendError, ClaripyValueError
-from claripy.utils import deprecated
+from claripy.util import deprecated
 
 from .bits import Bits
 from .bool import Bool, If
 
-l = logging.getLogger("claripy.ast.bv")
+log = logging.getLogger(__name__)
 
 _bvv_cache = weakref.WeakValueDictionary()
-
-
-# This is a hilarious hack to get around some sort of bug in z3's python bindings, where
-# under some circumstances stuff gets destructed out of order
-def cleanup():
-    global _bvv_cache  # pylint:disable=global-variable-not-assigned
-    del _bvv_cache
-
-
-atexit.register(cleanup)
 
 # pylint: disable=too-many-positional-arguments
 
@@ -145,7 +134,7 @@ class BV(Bits):
 
     @staticmethod
     def _from_int(like, value):
-        return BVV(value, like.length)
+        return BVV(value, like.length or 64)
 
     @staticmethod
     def _from_Bool(like, value):
@@ -157,7 +146,7 @@ class BV(Bits):
 
     @staticmethod
     def _from_str(like, value):  # pylint:disable=unused-argument
-        l.warning("BVV value is being coerced from a unicode string, encoding as utf-8")
+        log.warning("BVV value is being coerced from a unicode string, encoding as utf-8")
         value = value.encode("utf-8")
         return BVV(value)
 
@@ -175,11 +164,11 @@ class BV(Bits):
         :return:        An FP AST whose value is the same as this BV
         """
         if rm is None:
-            rm = fp.fp.RM.default()
+            rm = claripy.fp.RM.default()
         if sort is None:
-            sort = fp.fp.FSort.from_size(self.length)
+            sort = claripy.fp.FSort.from_size(self.length)
 
-        op = fp.fpToFP if signed else fp.fpToFPUnsigned
+        op = claripy.ast.fp.fpToFP if signed else claripy.ast.fp.fpToFPUnsigned
         return op(rm, self, sort)
 
     def raw_to_fp(self):
@@ -189,8 +178,8 @@ class BV(Bits):
 
         :return:        An FP AST whose bit-pattern is the same as this BV
         """
-        sort = fp.fp.FSort.from_size(self.length)
-        return fp.fpToFP(self, sort)
+        sort = claripy.fp.FSort.from_size(self.length)
+        return claripy.ast.fp.fpToFP(self, sort)
 
     def raw_to_bv(self):
         """
@@ -207,13 +196,13 @@ class BV(Bits):
         return super().identical(other, strict)
 
 
-def BVS(
+def BVS(  # pylint:disable=redefined-builtin
     name,
     size,
     min=None,
     max=None,
     stride=None,
-    uninitialized=False,  # pylint:disable=redefined-builtin
+    uninitialized=False,
     explicit_name=None,
     discrete_set=False,
     discrete_set_max_card=None,
@@ -279,7 +268,7 @@ def BVV(value, size=None, **kwargs) -> BV:
 
     if type(value) in (bytes, bytearray, memoryview, str):
         if isinstance(value, str):
-            l.warning("BVV value is a unicode string, encoding as utf-8")
+            log.warning("BVV value is a unicode string, encoding as utf-8")
             value = value.encode("utf-8")
 
         if size is None:
@@ -323,7 +312,7 @@ def SI(
 ):
     name = "unnamed" if name is None else name
     if to_conv is not None:
-        si = vsa.CreateStridedInterval(
+        si = claripy.backends.backend_vsa.CreateStridedInterval(
             name=name, bits=bits, lower_bound=lower_bound, upper_bound=upper_bound, stride=stride, to_conv=to_conv
         )
         return BVS(
@@ -363,7 +352,7 @@ def ValueSet(bits, region=None, region_base_addr=None, value=None, name=None, va
     if isinstance(v, numbers.Number):
         min_v, max_v = v, v
         stride = 0
-    elif isinstance(v, vsa.StridedInterval):
+    elif isinstance(v, claripy.backends.backend_vsa.StridedInterval):
         min_v, max_v = v.lower_bound, v.upper_bound
         stride = v.stride
     elif isinstance(v, claripy.ast.Base):
@@ -392,7 +381,7 @@ def DSIS(
     name=None, bits=0, lower_bound=None, upper_bound=None, stride=None, explicit_name=None, to_conv=None, max_card=None
 ):
     if to_conv is not None:
-        si = vsa.CreateStridedInterval(bits=to_conv.size(), to_conv=to_conv)
+        si = claripy.backends.backend_vsa.CreateStridedInterval(bits=to_conv.size(), to_conv=to_conv)
         return SI(
             name=name,
             bits=si._bits,
@@ -618,5 +607,3 @@ BV.widen = operations.op(
 BV.intersection = operations.op(
     "intersection", (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc
 )
-
-from . import fp  # noqa: E402

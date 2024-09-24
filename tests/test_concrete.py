@@ -11,7 +11,7 @@ class TestConcreteBackend(unittest.TestCase):
         a = claripy.BVV(10, 32)
         b = claripy.BoolV(True)
 
-        assert isinstance(claripy.backends.concrete.convert(a), claripy.bv.BVV)
+        assert isinstance(claripy.backends.concrete.convert(a), claripy.backends.backend_concrete.BVV)
         assert isinstance(claripy.backends.concrete.convert(b), bool)
 
         a = claripy.BVV(1337, 32)

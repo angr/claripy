@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 import unittest
-from contextlib import suppress
 
 import claripy
+import claripy.backends
 
 
 class TestExpression(unittest.TestCase):
@@ -431,10 +431,9 @@ class TestExpression(unittest.TestCase):
         assert (x_and).replace(x, o).args[0] == 0
         assert (100 + (x_sub).replace(x, o)).args[0] == 90
 
-        # make sure that all backends handle this properly
-        for b in claripy.backends._all_backends:
-            with suppress(claripy.BackendError):
-                b.convert(x + x + x + x)
+        # make sure that z3 and vsa backends handle this properly
+        claripy.backends.z3.convert(x + x + x + x)
+        claripy.backends.vsa.convert(x + x + x + x)
 
     def test_signed_concrete(self):
         bc = claripy.backends.concrete

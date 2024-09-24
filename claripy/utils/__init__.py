@@ -1,1 +1,0 @@
-from .deprecated import deprecated
