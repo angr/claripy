@@ -308,18 +308,15 @@ class BackendVSA(Backend):
         return a.SGE(b)
 
     @staticmethod
-    def BVS(ast):
+    def BVS(ast: Base):
         size = ast.size()
-        name, mn, mx, stride, uninitialized, discrete_set, max_card = ast.args
+        name, mn, mx, stride = ast.args
         return CreateStridedInterval(
             name=name,
             bits=size,
             lower_bound=mn,
             upper_bound=mx,
             stride=stride,
-            uninitialized=uninitialized,
-            discrete_set=discrete_set,
-            discrete_set_max_cardinality=max_card,
         )
 
     def If(self, cond, t, f):

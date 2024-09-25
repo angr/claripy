@@ -202,10 +202,7 @@ def BVS(  # pylint:disable=redefined-builtin
     min=None,
     max=None,
     stride=None,
-    uninitialized=False,
     explicit_name=None,
-    discrete_set=False,
-    discrete_set_max_card=None,
     **kwargs,
 ) -> BV:
     """
@@ -219,12 +216,7 @@ def BVS(  # pylint:disable=redefined-builtin
     :param min:             The minimum value of the symbol, used only for value-set analysis
     :param max:             The maximum value of the symbol, used only for value-set analysis
     :param stride:          The stride of the symbol, used only for value-set analysis
-    :param uninitialized:   Whether this value should be counted as an "uninitialized" value in the course of an
-                            analysis.
     :param bool explicit_name:   If False, an identifier is appended to the name to ensure uniqueness.
-    :param bool discrete_set: If True, a DiscreteStridedIntervalSet will be used instead of a normal StridedInterval.
-    :param int discrete_set_max_card: The maximum cardinality of the discrete set. It is ignored if discrete_set is set
-                                      to False or None.
 
     :returns:               a BV object representing this symbol.
     """
@@ -240,16 +232,12 @@ def BVS(  # pylint:disable=redefined-builtin
     n = _make_name(name, size, False if explicit_name is None else explicit_name)
     encoded_name = n.encode()
 
-    if not discrete_set:
-        discrete_set_max_card = None
-
     return BV(
         "BVS",
-        (n, min, max, stride, uninitialized, discrete_set, discrete_set_max_card),
+        (n, min, max, stride),
         variables=frozenset((n,)),
         length=size,
         symbolic=True,
-        uninitialized=uninitialized,
         encoded_name=encoded_name,
         **kwargs,
     )
@@ -307,8 +295,6 @@ def SI(
     stride=None,
     to_conv=None,
     explicit_name=None,
-    discrete_set=False,
-    discrete_set_max_card=None,
 ):
     name = "unnamed" if name is None else name
     if to_conv is not None:
@@ -325,8 +311,6 @@ def SI(
         max=upper_bound,
         stride=stride,
         explicit_name=explicit_name,
-        discrete_set=discrete_set,
-        discrete_set_max_card=discrete_set_max_card,
     )
 
 

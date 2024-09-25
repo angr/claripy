@@ -178,7 +178,7 @@ class Base:
         symbolic: bool | None = None,
         variables: frozenset[str] | None = None,
         errored: set[Backend] | None = None,
-        uninitialized: bool | None = None,
+        uninitialized: bool = False,
         annotations: tuple[Annotation, ...] = (),
         skip_child_annotations: bool = False,
         length: int | None = None,
@@ -275,7 +275,7 @@ class Base:
         annotations: tuple[Annotation, ...] | None = None,
         variables: frozenset[str] | None = None,
         symbolic: bool | None = None,
-        uninitialized: bool | None = None,
+        uninitialized: bool = False,
         skip_child_annotations: bool = False,
         length: int | None = None,
     ) -> Self:
@@ -288,7 +288,7 @@ class Base:
             and annotations
             and variables is None
             and symbolic is None
-            and uninitialized is None
+            and uninitialized is False
             and skip_child_annotations
             and length is not None
         ):
@@ -357,7 +357,7 @@ class Base:
         length: int | None = None,
         simplified: SimplificationLevel = SimplificationLevel.UNSIMPLIFIED,
         errored: set[Backend] | None = None,
-        uninitialized: bool | None = None,
+        uninitialized: bool = False,
         annotations: tuple[Annotation, ...] | None = None,
         encoded_name: bytes | None = None,
         depth: int | None = None,
@@ -775,8 +775,6 @@ class Base:
                 if args[3] is not None:
                     fmt = "%#x" if isinstance(args[3], int) else "%s"
                     extras.append("stride=%s" % (fmt % args[3]))
-                if args[4] is True:
-                    extras.append("UNINITIALIZED")
                 return "{}{}".format(args[0], "{{{}}}".format(", ".join(extras)) if extras else "")
 
             if op == "BoolV":
