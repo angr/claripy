@@ -131,7 +131,6 @@ __all__ = (
     "true",
     "BVS",
     "BVV",
-    "DSIS",
     "ESI",
     "SGE",
     "SGT",
