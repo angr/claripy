@@ -21,7 +21,6 @@ from claripy.ast.bool import (
 from claripy.ast.bv import (
     BVS,
     BVV,
-    DSIS,
     ESI,
     SGE,
     SGT,
@@ -132,7 +131,6 @@ __all__ = (
     "true",
     "BVS",
     "BVV",
-    "DSIS",
     "ESI",
     "SGE",
     "SGT",

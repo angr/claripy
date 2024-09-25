@@ -377,33 +377,6 @@ def ValueSet(bits, region=None, region_base_addr=None, value=None, name=None, va
 VS = ValueSet
 
 
-def DSIS(
-    name=None, bits=0, lower_bound=None, upper_bound=None, stride=None, explicit_name=None, to_conv=None, max_card=None
-):
-    if to_conv is not None:
-        si = claripy.backends.backend_vsa.CreateStridedInterval(bits=to_conv.size(), to_conv=to_conv)
-        return SI(
-            name=name,
-            bits=si._bits,
-            lower_bound=si._lower_bound,
-            upper_bound=si._upper_bound,
-            stride=si._stride,
-            explicit_name=explicit_name,
-            discrete_set=True,
-            discrete_set_max_card=max_card,
-        )
-    return SI(
-        name=name,
-        bits=bits,
-        lower_bound=lower_bound,
-        upper_bound=upper_bound,
-        stride=stride,
-        explicit_name=explicit_name,
-        discrete_set=True,
-        discrete_set_max_card=max_card,
-    )
-
-
 #
 # Unbound operations
 #
