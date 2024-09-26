@@ -199,9 +199,6 @@ class BV(Bits):
 def BVS(  # pylint:disable=redefined-builtin
     name,
     size,
-    min=None,
-    max=None,
-    stride=None,
     explicit_name=None,
     **kwargs,
 ) -> BV:
@@ -213,16 +210,10 @@ def BVS(  # pylint:disable=redefined-builtin
 
     :param name:            The name of the symbol.
     :param size:            The size (in bits) of the bit-vector.
-    :param min:             The minimum value of the symbol, used only for value-set analysis
-    :param max:             The maximum value of the symbol, used only for value-set analysis
-    :param stride:          The stride of the symbol, used only for value-set analysis
     :param bool explicit_name:   If False, an identifier is appended to the name to ensure uniqueness.
 
     :returns:               a BV object representing this symbol.
     """
-
-    if stride == 0 and max != min:
-        raise ClaripyValueError("BVSes of stride 0 should have max == min")
 
     if isinstance(name, bytes):
         name = name.decode()
@@ -234,7 +225,7 @@ def BVS(  # pylint:disable=redefined-builtin
 
     return BV(
         "BVS",
-        (n, min, max, stride),
+        (n,),
         variables=frozenset((n,)),
         length=size,
         symbolic=True,
@@ -301,16 +292,11 @@ def SI(
         si = claripy.backends.backend_vsa.CreateStridedInterval(
             name=name, bits=bits, lower_bound=lower_bound, upper_bound=upper_bound, stride=stride, to_conv=to_conv
         )
-        return BVS(
-            name, si._bits, min=si._lower_bound, max=si._upper_bound, stride=si._stride, explicit_name=explicit_name
+        return BVS(name, si._bits, explicit_name=explicit_name).annotate(
+            claripy.annotation.StridedIntervalAnnotation(si._stride, si._lower_bound, si._upper_bound)
         )
-    return BVS(
-        name,
-        bits,
-        min=lower_bound,
-        max=upper_bound,
-        stride=stride,
-        explicit_name=explicit_name,
+    return BVS(name, bits, explicit_name=explicit_name).annotate(
+        claripy.annotation.StridedIntervalAnnotation(stride, lower_bound, upper_bound)
     )
 
 
@@ -341,10 +327,11 @@ def ValueSet(bits, region=None, region_base_addr=None, value=None, name=None, va
         stride = v.stride
     elif isinstance(v, claripy.ast.Base):
         sv = claripy.simplify(v)
-        if sv.op == "BVS":
-            min_v = sv.args[1]
-            max_v = sv.args[2]
-            stride = sv.args[3]
+        si_anno = sv.get_annotation(claripy.annotation.StridedIntervalAnnotation)
+        if si_anno is not None:
+            min_v = si_anno.lower_bound
+            max_v = si_anno.upper_bound
+            stride = si_anno.stride
         else:
             raise ClaripyValueError(f"ValueSet() does not take `value` ast with op {sv.op}")
     else:
@@ -352,7 +339,9 @@ def ValueSet(bits, region=None, region_base_addr=None, value=None, name=None, va
 
     if name is None:
         name = "ValueSet"
-    bvs = BVS(name, bits, min=region_base_addr + min_v, max=region_base_addr + max_v, stride=stride)
+    bvs = BVS(name, bits).annotate(
+        claripy.annotation.StridedIntervalAnnotation(stride, region_base_addr + min_v, region_base_addr + max_v)
+    )
 
     # Annotate the bvs and return the new AST
     return bvs.annotate(claripy.annotation.RegionAnnotation(region, region_base_addr, value))

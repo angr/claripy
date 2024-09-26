@@ -4,6 +4,7 @@ from __future__ import annotations
 import unittest
 
 import claripy
+import claripy.annotation
 
 
 class TestSimplify(unittest.TestCase):
@@ -56,7 +57,7 @@ class TestSimplify(unittest.TestCase):
         assert_correct(x % y, claripy.backends.z3.simplify(x % y))
 
     def test_rotate_shift_mask_simplification(self):
-        a = claripy.BVS("N", 32, max=0xC, min=0x1)
+        a = claripy.BVS("N", 32).annotate(claripy.annotation.StridedIntervalAnnotation(1, 0x1, 0xC))
         extend_ = claripy.BVS("extend", 32, uninitialized=True)
         a_ext = extend_.concat(a)
         expr = ((a_ext << 3) | (claripy.LShR(a_ext, 61))) & 0x7FFFFFFF8

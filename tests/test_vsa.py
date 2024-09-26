@@ -82,7 +82,7 @@ class TestVSA(unittest.TestCase):  # pylint: disable=no-member,function-redefine
         assert claripy.backends.vsa.convert(ra_concat_rb)._reversed is False
 
     def test_simple_cardinality(self):
-        x = claripy.BVS("x", 32, 0xA, 0x14, 0xA)
+        x = claripy.BVS("x", 32).annotate(claripy.annotation.StridedIntervalAnnotation(0xA, 0xA, 0x14))
         assert x.cardinality == 2
 
     def test_south_pole_splitting(self):

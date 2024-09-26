@@ -6,9 +6,9 @@ import numbers
 import operator
 from functools import reduce
 
-from claripy.annotation import RegionAnnotation
+from claripy.annotation import RegionAnnotation, StridedIntervalAnnotation
 from claripy.ast.base import Base
-from claripy.ast.bv import ESI, SI, TSI
+from claripy.ast.bv import BV, ESI, SI, TSI
 from claripy.backends.backend import Backend
 from claripy.balancer import Balancer
 from claripy.errors import BackendError
@@ -302,15 +302,16 @@ class BackendVSA(Backend):
         return a.SGE(b)
 
     @staticmethod
-    def BVS(ast: Base):
-        size = ast.size()
-        name, mn, mx, stride = ast.args
+    def BVS(ast: BV):
+        si_annotation = ast.get_annotation(StridedIntervalAnnotation)
+        if not si_annotation:
+            return CreateStridedInterval(name=ast.args[0], bits=ast.size())
         return CreateStridedInterval(
-            name=name,
-            bits=size,
-            lower_bound=mn,
-            upper_bound=mx,
-            stride=stride,
+            name=ast.args[0],
+            bits=ast.size(),
+            lower_bound=si_annotation.lower_bound,
+            upper_bound=si_annotation.upper_bound,
+            stride=si_annotation.stride,
         )
 
     def If(self, cond, t, f):

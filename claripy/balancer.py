@@ -52,7 +52,7 @@ class Balancer:
             min_int = 0
             mn = self._lower_bounds.get(k, min_int)
             mx = self._upper_bounds.get(k, max_int)
-            bound_si = BVS("bound", len(k.ast), min=mn, max=mx)
+            bound_si = BVS("bound", len(k.ast)).annotate(claripy.annotation.StridedIntervalAnnotation(1, mn, mx))
             l.debug("Yielding bound %s for %s.", bound_si, k.ast)
             if k.ast.op == "Reverse":
                 yield (k.ast.args[0], k.ast.intersection(bound_si).reversed)

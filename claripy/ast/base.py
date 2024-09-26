@@ -35,6 +35,7 @@ blake2b_unpacker = struct.Struct("Q")
 ArgType = Union["Base", bool, int, float, str, FSort, tuple["ArgType"], None]
 
 T = TypeVar("T", bound="Base")
+A = TypeVar("A", bound="Annotation")
 
 
 class ASTCacheKey(Generic[T]):
@@ -578,7 +579,7 @@ class Base:
         """
         return any(isinstance(a, annotation_type) for a in self.annotations)
 
-    def get_annotations_by_type(self, annotation_type: type[Annotation]) -> tuple[Annotation, ...]:
+    def get_annotations_by_type(self, annotation_type: type[A]) -> tuple[A, ...]:
         """
         Get all annotations of a given type.
 
@@ -586,6 +587,18 @@ class Base:
         :return:                    A tuple of annotations of the given type.
         """
         return tuple(a for a in self.annotations if isinstance(a, annotation_type))
+
+    def get_annotation(self, annotation_type: type[A]) -> A | None:
+        """
+        Get the first annotation of a given type.
+
+        :param annotation_type:     The type of the annotation.
+        :return:                    The annotation of the given type, or None if not found.
+        """
+        for a in self.annotations:
+            if isinstance(a, annotation_type):
+                return a
+        return None
 
     def append_annotation(self, a: Annotation) -> Self:
         """
@@ -766,17 +779,7 @@ class Base:
     ):
         if details < ReprLevel.FULL_REPR:
             if op == "BVS":
-                extras = []
-                if args[1] is not None:
-                    fmt = "%#x" if isinstance(args[1], int) else "%s"
-                    extras.append("min=%s" % (fmt % args[1]))
-                if args[2] is not None:
-                    fmt = "%#x" if isinstance(args[2], int) else "%s"
-                    extras.append("max=%s" % (fmt % args[2]))
-                if args[3] is not None:
-                    fmt = "%#x" if isinstance(args[3], int) else "%s"
-                    extras.append("stride=%s" % (fmt % args[3]))
-                return "{}{}".format(args[0], "{{{}}}".format(", ".join(extras)) if extras else "")
+                return f"{args[0]}"
 
             if op == "BoolV":
                 return str(args[0])
