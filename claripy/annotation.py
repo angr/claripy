@@ -64,6 +64,8 @@ class Annotation:
 
 
 class SimplificationAvoidanceAnnotation(Annotation):
+    """SimplificationAvoidanceAnnotation is an annotation that prevents simplification of an AST."""
+
     @property
     def eliminatable(self):
         return False
@@ -74,6 +76,8 @@ class SimplificationAvoidanceAnnotation(Annotation):
 
 
 class StridedIntervalAnnotation(SimplificationAvoidanceAnnotation):
+    """StridedIntervalAnnotation allows annotating a BVS to represent a strided interval."""
+
     stride: int
     lower_bound: int
     upper_bound: int
