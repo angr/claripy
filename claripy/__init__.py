@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from claripy import ast
 from claripy.annotation import Annotation, RegionAnnotation, SimplificationAvoidanceAnnotation
 from claripy.ast.base import simplify
 from claripy.ast.bool import (
@@ -129,6 +130,7 @@ __all__ = (
     "ite_dict",
     "reverse_ite_cases",
     "true",
+    "ast",
     "BVS",
     "BVV",
     "ESI",

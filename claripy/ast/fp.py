@@ -24,7 +24,7 @@ class FP(Bits):
 
     __slots__ = ()
 
-    def to_fp(self, sort, rm=None):
+    def to_fp(self, sort, rm=None) -> FP:
         """
         Convert this float to a different sort
 
@@ -37,13 +37,13 @@ class FP(Bits):
 
         return fpToFP(rm, self, sort)
 
-    def raw_to_fp(self):
+    def raw_to_fp(self) -> FP:
         """
         A counterpart to BV.raw_to_fp - does nothing and returns itself.
         """
         return self
 
-    def raw_to_bv(self):
+    def raw_to_bv(self) -> BV:
         """
         Interpret the bit-pattern of this IEEE754 floating point number as a bitvector.
         The inverse of this function is to_bv.
@@ -52,10 +52,10 @@ class FP(Bits):
         """
         return fpToIEEEBV(self)
 
-    def to_bv(self):
+    def to_bv(self) -> BV:
         return self.raw_to_bv()
 
-    def val_to_bv(self, size, signed=True, rm=None):
+    def val_to_bv(self, size, signed=True, rm=None) -> BV:
         """
         Convert this floating point value to an integer.
 
@@ -71,18 +71,18 @@ class FP(Bits):
         return op(rm, self, size)
 
     @property
-    def sort(self):
+    def sort(self) -> FSort:
         return FSort.from_size(self.length)
 
     @staticmethod
-    def _from_float(like, value):
+    def _from_float(like, value) -> FP:
         return FPV(float(value), like.sort)
 
     _from_int = _from_float
     _from_str = _from_float
 
 
-def FPS(name, sort, explicit_name=None):
+def FPS(name, sort, explicit_name=None) -> FP:
     """
     Creates a floating-point symbol.
 
@@ -96,7 +96,7 @@ def FPS(name, sort, explicit_name=None):
     return FP("FPS", (n, sort), variables=frozenset((n,)), symbolic=True, length=sort.length)
 
 
-def FPV(value, sort):
+def FPV(value, sort) -> FP:
     """
     Creates a concrete floating-point value.
 
