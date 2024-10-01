@@ -877,40 +877,20 @@ class BackendZ3(Backend):
     def _max(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None):
         return self._extrema(True, expr, extra_constraints, signed, solver, model_callback)
 
-    def _simplify(self, e):  # pylint:disable=W0613,R0201
-        raise Exception("This shouldn't be called. Bug Yan.")
-
     @condom
-    def simplify(self, expr):  # pylint:disable=arguments-renamed
-        if expr._simplified:
-            return expr
-
-        # l.debug("SIMPLIFYING EXPRESSION")
-
+    def simplify(self, expr):
         expr_raw = self.convert(expr)
 
-        # l.debug("... before:\n%s", z3_expr_to_smt2(expr_raw))
-
-        # s = expr_raw
         if isinstance(expr_raw, z3.BoolRef):
             boolref_tactics = self._boolref_tactics
-            s = boolref_tactics(expr_raw).as_expr()
-            # n = s.decl().name()
-            # if n == 'true':
-            #    s = True
-            # elif n == 'false':
-            #    s = False
-        elif isinstance(expr_raw, z3.BitVecRef):
-            s = z3.simplify(expr_raw)
+            simplified = boolref_tactics(expr_raw).as_expr()
         else:
-            s = expr_raw
+            simplified = z3.simplify(expr_raw)
 
-        # l.debug("... after:\n%s", z3_expr_to_smt2(s))
+        result = self._abstract(simplified)
+        result._simplified = SimplificationLevel.FULL_SIMPLIFY
 
-        o = self._abstract(s)
-        o._simplified = SimplificationLevel.FULL_SIMPLIFY
-
-        return o
+        return result
 
     def _is_false(self, e, extra_constraints=(), solver=None, model_callback=None):
         return z3.simplify(e).eq(z3.BoolVal(False, ctx=self._context))

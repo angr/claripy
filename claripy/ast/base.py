@@ -132,6 +132,7 @@ class Base:
     depth: int
     _hash: int
     _simplified: SimplificationLevel
+    _relocatable_annotations: frozenset[Annotation]
     _uneliminatable_annotations: frozenset[Annotation]
 
     # Backend information
@@ -1262,7 +1263,7 @@ class Base:
 
 
 def simplify(e: T) -> T:
-    if isinstance(e, Base) and e.is_leaf():
+    if e.is_leaf() or e._simplified == SimplificationLevel.FULL_SIMPLIFY:
         return e
 
     s = e._first_backend("simplify")
@@ -1272,7 +1273,6 @@ def simplify(e: T) -> T:
 
     # Copy some parameters (that should really go to the Annotation backend)
     s._uninitialized = e.uninitialized
-    s._simplified = SimplificationLevel.FULL_SIMPLIFY
 
     # dealing with annotations
     if e.annotations:

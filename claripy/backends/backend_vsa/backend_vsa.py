@@ -137,12 +137,6 @@ class BackendVSA(Backend):
             )
         raise BackendError(f"Don't know how to abstract {type(e)}")
 
-    def _simplify(self, e):
-        """This _simplify impementation works because the simplification is done
-        during the conversion from AST to VSA backend objects.
-        """
-        return e
-
     def _eval(self, expr, n, extra_constraints=(), solver=None, model_callback=None):
         if isinstance(expr, StridedInterval | ValueSet):
             return expr.eval(n)

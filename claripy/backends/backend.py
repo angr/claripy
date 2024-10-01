@@ -296,13 +296,10 @@ class Backend:
     # These functions simplify expressions.
     #
 
-    def simplify(self, e):
-        o = self._abstract(self._simplify(self.convert(e)))
-        o._simplified = SimplificationLevel.FULL_SIMPLIFY
-        return o
-
-    def _simplify(self, e):  # pylint:disable=R0201,unused-argument
-        raise BackendError(f"backend {self.__class__.__name__} can't simplify")
+    def simplify(self, expr):
+        result = self._abstract(self.convert(expr))
+        result._simplified = SimplificationLevel.FULL_SIMPLIFY
+        return result
 
     #
     # Some other helpers
