@@ -304,10 +304,7 @@ class BackendZ3(Backend):
     @condom
     def BVS(self, ast):
         name = ast._encoded_name
-        if hasattr(ast, "annotations"):
-            self.extra_bvs_data[name] = (ast.args, ast.annotations)
-        else:
-            self.extra_bvs_data[name] = (ast.args, None)
+        self.extra_bvs_data[name] = (ast.args, ast.annotations)
         size = ast.size()
         # TODO: Here we can use low level APIs because the check performed by the high level API always results in
         #       the else branch of the check. This evidence although comes from the execution of the angr and claripy
@@ -316,12 +313,6 @@ class BackendZ3(Backend):
         return z3.BitVecRef(
             z3.Z3_mk_const(self._context.ref(), z3.to_symbol(name, self._context), bv.ast), self._context
         )
-        # if mn is not None:
-        #    expr = z3.If(z3.ULT(expr, mn), mn, expr, ctx=self._context)
-        # if mx is not None:
-        #    expr = z3.If(z3.UGT(expr, mx), mx, expr, ctx=self._context)
-        # if stride is not None:
-        #    expr = (expr // stride) * stride
 
     @condom
     def BVV(self, ast):
