@@ -142,9 +142,6 @@ class BackendConcrete(Backend):
             return r
         raise BackendError(f"can't handle AST of type {type(r)}")
 
-    def _simplify(self, e):
-        return e
-
     def _abstract(self, e):  # pylint:disable=no-self-use
         if isinstance(e, bv.BVV):
             return BVV(e.value, e.size())
