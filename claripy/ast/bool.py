@@ -163,7 +163,7 @@ Bool.__ror__ = Or
 
 
 def is_true(e):
-    if claripy.simplify(e) is true():
+    if e is True or (isinstance(e, Base) and claripy.simplify(e) is true()):
         return True
 
     log.debug("Unable to tell the truth-value of this expression")
@@ -171,7 +171,7 @@ def is_true(e):
 
 
 def is_false(e):
-    if claripy.simplify(e) is false():
+    if e is False or (isinstance(e, Base) and claripy.simplify(e) is false()):
         return True
 
     log.debug("Unable to tell the truth-value of this expression")
