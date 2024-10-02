@@ -180,7 +180,7 @@ class TestExpression(unittest.TestCase):
 
     def test_cardinality(self):
         x = claripy.BVS("x", 32)
-        y = claripy.BVS("y", 32, min=100, max=120)
+        y = claripy.BVS("y", 32).annotate(claripy.annotation.StridedIntervalAnnotation(1, 100, 120))
         n = claripy.BVV(10, 32)
         m = claripy.BVV(20, 32)
 

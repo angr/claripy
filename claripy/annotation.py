@@ -1,7 +1,11 @@
 from __future__ import annotations
 
-import claripy
+from typing import TYPE_CHECKING
+
 from claripy.errors import ClaripyOperationError
+
+if TYPE_CHECKING:
+    import claripy
 
 
 class Annotation:
@@ -64,6 +68,8 @@ class Annotation:
 
 
 class SimplificationAvoidanceAnnotation(Annotation):
+    """SimplificationAvoidanceAnnotation is an annotation that prevents simplification of an AST."""
+
     @property
     def eliminatable(self):
         return False
@@ -71,6 +77,33 @@ class SimplificationAvoidanceAnnotation(Annotation):
     @property
     def relocatable(self):
         return False
+
+
+class StridedIntervalAnnotation(SimplificationAvoidanceAnnotation):
+    """StridedIntervalAnnotation allows annotating a BVS to represent a strided interval."""
+
+    stride: int
+    lower_bound: int
+    upper_bound: int
+
+    def __init__(self, stride: int, lower_bound: int, upper_bound: int):
+        self.stride = stride
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
+
+    def __hash__(self):
+        return hash((self.stride, self.lower_bound, self.upper_bound))
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, StridedIntervalAnnotation)
+            and self.stride == other.stride
+            and self.lower_bound == other.lower_bound
+            and self.upper_bound == other
+        )
+
+    def __repr__(self):
+        return f"<StridedIntervalAnnotation {self.stride}:{self.lower_bound} - {self.upper_bound}>"
 
 
 class RegionAnnotation(SimplificationAvoidanceAnnotation):
@@ -83,12 +116,6 @@ class RegionAnnotation(SimplificationAvoidanceAnnotation):
         self.region_id = region_id
         self.region_base_addr = region_base_addr
         self.offset = offset
-
-        # Do necessary conversion here
-        if isinstance(self.region_base_addr, claripy.ast.Base):
-            self.region_base_addr = claripy.backends.vsa.convert(self.region_base_addr)
-        if isinstance(self.offset, claripy.ast.Base):
-            self.offset = claripy.backends.vsa.convert(self.offset)
 
     #
     # Overriding base methods

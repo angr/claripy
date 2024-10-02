@@ -15,8 +15,8 @@ def raw_hybrid_solver(reuse_z3_solver):
 
     s = claripy.SolverHybrid()
 
-    x = claripy.BVS("x", 32, min=0, max=10, stride=2)
-    y = claripy.BVS("y", 32, min=20, max=30, stride=5)
+    x = claripy.BVS("x", 32).annotate(claripy.annotation.StridedIntervalAnnotation(2, 0, 10))
+    y = claripy.BVS("y", 32).annotate(claripy.annotation.StridedIntervalAnnotation(5, 20, 30))
 
     # TODO: for now, the stride isn't respected in symbolic mode, but we'll fix that next.
     # until we do, let's add constraints
