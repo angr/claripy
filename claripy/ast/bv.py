@@ -225,7 +225,7 @@ def BVS(  # pylint:disable=redefined-builtin
 
     return BV(
         "BVS",
-        (n,),
+        (n, size),
         variables=frozenset((n,)),
         length=size,
         symbolic=True,
