@@ -307,10 +307,10 @@ class FullFrontend(ConstrainedFrontend):
             raise ClaripyFrontendError("Backend error during solution") from exc
 
     def is_true(self, e: Bool, extra_constraints: tuple[Bool, ...] = (), exact: bool | None = None) -> bool:
-        return e.is_true()
+        return self._solver_backend.is_true(e, extra_constraints=extra_constraints, solver=self._get_solver())
 
     def is_false(self, e: Bool, extra_constraints: tuple[Bool, ...] = (), exact: bool | None = None) -> bool:
-        return e.is_false()
+        return self._solver_backend.is_false(e, extra_constraints=extra_constraints, solver=self._get_solver())
 
     def unsat_core(self, extra_constraints: tuple[Bool, ...] = ()) -> Iterable[Bool]:
         if self.satisfiable(extra_constraints=extra_constraints):
