@@ -213,6 +213,13 @@ class TestSimplify(unittest.TestCase):
         expr = claripy.Extract(31, 8, claripy.Concat(claripy.BVV(0, 24), dd)) == claripy.BVV(0xFFFF, 24)
         assert expr is not (dd == claripy.BVV(0xFFFF, 23))
 
+    def test_zeroext_comparing_against_constant_simplifier(self):
+        expr = claripy.UGE(claripy.BVS("a", 16).zero_extend(16), claripy.BVV(0x10000, 32))
+        assert expr.is_false()
+
+        expr = claripy.UGE(claripy.Concat(claripy.BVV(0, 16), claripy.BVS("a", 16)), claripy.BVV(0x10000, 32))
+        assert expr.is_false()
+
     def test_one_xor_exp_eq_zero(self):
         var1 = claripy.FPV(150, claripy.fp.FSORT_DOUBLE)
         var2 = claripy.FPS("test", claripy.fp.FSORT_DOUBLE)
