@@ -1242,14 +1242,7 @@ class Base:
 
     @property
     def concrete(self) -> bool:
-        # fast path
-        if self.op in {"BVV", "BoolV", "FPV"}:
-            return True
-        if self.op in {"BVS", "BoolS", "FPS"}:
-            return False
-        if self.variables:
-            return False
-        return claripy.backends.concrete.handles(self)
+        return not self.symbolic
 
     @property
     def uninitialized(self) -> bool:
