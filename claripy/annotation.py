@@ -1,7 +1,11 @@
 from __future__ import annotations
 
-import claripy
+from typing import TYPE_CHECKING
+
 from claripy.errors import ClaripyOperationError
+
+if TYPE_CHECKING:
+    import claripy
 
 
 class Annotation:
@@ -112,12 +116,6 @@ class RegionAnnotation(SimplificationAvoidanceAnnotation):
         self.region_id = region_id
         self.region_base_addr = region_base_addr
         self.offset = offset
-
-        # Do necessary conversion here
-        if isinstance(self.region_base_addr, claripy.ast.Base):
-            self.region_base_addr = claripy.backends.vsa.convert(self.region_base_addr)
-        if isinstance(self.offset, claripy.ast.Base):
-            self.offset = claripy.backends.vsa.convert(self.offset)
 
     #
     # Overriding base methods

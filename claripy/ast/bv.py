@@ -317,6 +317,8 @@ def ValueSet(bits, region=None, region_base_addr=None, value=None, name=None, va
         region_base_addr = 0
 
     v = region_base_addr + value
+    if isinstance(v, claripy.ast.Base):
+        v = claripy.simplify(v)
 
     # Backward compatibility
     if isinstance(v, numbers.Number):
@@ -326,14 +328,17 @@ def ValueSet(bits, region=None, region_base_addr=None, value=None, name=None, va
         min_v, max_v = v.lower_bound, v.upper_bound
         stride = v.stride
     elif isinstance(v, claripy.ast.Base):
-        sv = claripy.simplify(v)
-        si_anno = sv.get_annotation(claripy.annotation.StridedIntervalAnnotation)
+        si_anno = v.get_annotation(claripy.annotation.StridedIntervalAnnotation)
         if si_anno is not None:
             min_v = si_anno.lower_bound
             max_v = si_anno.upper_bound
             stride = si_anno.stride
+        elif v.op == "BVV":
+            min_v = v.args[0]
+            max_v = v.args[0]
+            stride = 0
         else:
-            raise ClaripyValueError(f"ValueSet() does not take `value` ast with op {sv.op}")
+            raise ClaripyValueError(f"ValueSet() does not take `value` ast with op {v.op}")
     else:
         raise ClaripyValueError(f"ValueSet() does not take `value` of type {type(value)}")
 

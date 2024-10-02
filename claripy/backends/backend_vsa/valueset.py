@@ -209,19 +209,6 @@ class ValueSet(BackendObject):
     def stridedinterval(self):
         return self._si
 
-    def apply_annotation(self, annotation):
-        """
-        Apply a new annotation onto self, and return a new ValueSet object.
-
-        :param RegionAnnotation annotation: The annotation to apply.
-        :return: A new ValueSet object
-        :rtype: ValueSet
-        """
-
-        vs = self.copy()
-        vs._merge_si(annotation.region_id, annotation.region_base_addr, annotation.offset)
-        return vs
-
     def __repr__(self):
         s = ""
         for region, si in self._regions.items():

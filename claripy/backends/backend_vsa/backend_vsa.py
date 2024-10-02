@@ -8,8 +8,9 @@ from functools import reduce
 
 from claripy.annotation import RegionAnnotation, StridedIntervalAnnotation
 from claripy.ast.base import Base
-from claripy.ast.bv import BV, ESI, SI, TSI
+from claripy.ast.bv import BV, BVV, ESI, SI, TSI, VS
 from claripy.backends.backend import Backend
+from claripy.backends.backend_vsa.errors import ClaripyVSAError
 from claripy.balancer import Balancer
 from claripy.errors import BackendError
 from claripy.operations import backend_operations_vsa_compliant, expression_set_operations
@@ -128,6 +129,8 @@ class BackendVSA(Backend):
                 return TSI(e.bits, explicit_name=e.name)
             if e.is_bottom:
                 return ESI(e.bits)
+            if e.stride in {0, 1} and e.lower_bound == e.upper_bound:
+                return BVV(e.lower_bound, e.bits)
             return SI(
                 name=e.name,
                 bits=e.bits,
@@ -135,6 +138,19 @@ class BackendVSA(Backend):
                 upper_bound=e.upper_bound,
                 stride=e.stride,
             )
+        if isinstance(e, ValueSet):
+            if len(e.regions) == 0:
+                return VS(bits=e.bits, name=e.name)
+            if len(e.regions) == 1:
+                region = next(iter(e.regions))
+                return VS(
+                    bits=e.bits,
+                    region=region,
+                    region_base_addr=e._region_base_addrs[region].eval(1)[0] if e._region_base_addrs else 0,
+                    value=e.regions[region].eval(1)[0],
+                    name=e.name,
+                )
+            raise ClaripyVSAError("Cannot abstract ValueSet with multiple regions")
         raise BackendError(f"Don't know how to abstract {type(e)}")
 
     def _eval(self, expr, n, extra_constraints=(), solver=None, model_callback=None):
@@ -230,18 +246,43 @@ class BackendVSA(Backend):
         :rtype: BackendObject
         """
 
-        # Currently we only support RegionAnnotation
+        if isinstance(o, StridedInterval):
+            if isinstance(a, StridedIntervalAnnotation):
+                return CreateStridedInterval(
+                    bits=o.bits,
+                    stride=a.stride,
+                    lower_bound=a.lower_bound,
+                    upper_bound=a.upper_bound,
+                    name=o.name,
+                )
 
-        if not isinstance(a, RegionAnnotation):
-            return o
+            if isinstance(a, RegionAnnotation):
+                offset = self.convert(a.offset)
+                if isinstance(offset, numbers.Number):
+                    offset = StridedInterval(bits=o.bits, stride=0, lower_bound=offset, upper_bound=offset)
+                vs = ValueSet.empty(o.bits)
+                if isinstance(offset, StridedInterval):
+                    vs._merge_si(a.region_id, a.region_base_addr, offset)
+                elif isinstance(offset, ValueSet):
+                    for si in offset.regions.values():
+                        vs._merge_si(a.region_id, a.region_base_addr, si)
+                else:
+                    raise ClaripyVSAError(f"Unsupported offset type {type(offset)}")
+                return vs
 
-        if not isinstance(o, ValueSet):
-            # Convert it to a ValueSet first
-            # Note that the original value is not kept at all. If you want to convert a StridedInterval to a ValueSet,
-            # you gotta do the conversion by calling AST.annotate() from outside.
-            o = ValueSet.empty(o.bits)
+        if isinstance(o, ValueSet) and isinstance(a, StridedIntervalAnnotation):
+            si = CreateStridedInterval(
+                bits=o.bits,
+                stride=a.stride,
+                lower_bound=a.lower_bound,
+                upper_bound=a.upper_bound,
+                name=o.name,
+            )
+            vs = o.copy()
+            vs._merge_si(a.region_id, a.region_base_addr, si)
+            return vs
 
-        return o.apply_annotation(a)
+        raise ValueError(f"Unsupported annotation type {type(a)} for object {type(o)}")
 
     @staticmethod
     def BVV(ast):
@@ -303,16 +344,7 @@ class BackendVSA(Backend):
 
     @staticmethod
     def BVS(ast: BV):
-        si_annotation = ast.get_annotation(StridedIntervalAnnotation)
-        if not si_annotation:
-            return CreateStridedInterval(name=ast.args[0], bits=ast.size())
-        return CreateStridedInterval(
-            name=ast.args[0],
-            bits=ast.size(),
-            lower_bound=si_annotation.lower_bound,
-            upper_bound=si_annotation.upper_bound,
-            stride=si_annotation.stride,
-        )
+        return CreateStridedInterval(name=ast.args[0], bits=ast.size())
 
     def If(self, cond, t, f):
         if not self.has_true(cond):
