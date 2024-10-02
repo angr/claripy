@@ -32,23 +32,19 @@ class String(Base):
         """
         return StrReplace(self, str_to_replace, replacement)
 
-    def toInt(self, bitlength):
+    def toInt(self):
         """
         Convert the string to a bitvector holding the integer
         representation of the string
-
-        :param bitlength: size of the biitvector holding the result
         """
-        return StrToInt(self, bitlength)
+        return StrToInt(self)
 
-    def indexOf(self, pattern, start_idx, bitlength):
+    def indexOf(self, pattern, start_idx):
         """
         Return the start index of the pattern inside the input string in a
         Bitvector representation, otherwise it returns -1 (always using a BitVector)
-
-        :param bitlength: size of the biitvector holding the result
         """
-        return StrIndexOf(self, pattern, start_idx, bitlength)
+        return StrIndexOf(self, pattern, start_idx)
 
 
 def StringS(name, uninitialized=False, explicit_name=False, **kwargs):
