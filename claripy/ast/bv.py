@@ -315,9 +315,6 @@ def ValueSet(bits, region=None, region_base_addr=None, value=None, name=None, va
     if isinstance(v, numbers.Number):
         min_v, max_v = v, v
         stride = 0
-    elif isinstance(v, claripy.backends.backend_vsa.StridedInterval):
-        min_v, max_v = v.lower_bound, v.upper_bound
-        stride = v.stride
     elif isinstance(v, claripy.ast.Base):
         si_anno = v.get_annotation(claripy.annotation.StridedIntervalAnnotation)
         if si_anno is not None:
