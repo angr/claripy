@@ -3,14 +3,11 @@ from __future__ import annotations
 import logging
 import numbers
 import weakref
-from contextlib import suppress
-
-from typing_extensions import Self
 
 import claripy
 from claripy import operations
 from claripy.ast.base import _make_name
-from claripy.errors import BackendError, ClaripyValueError
+from claripy.errors import ClaripyValueError
 from claripy.util import deprecated
 
 from .bits import Bits
@@ -189,11 +186,6 @@ class BV(Bits):
 
     def to_bv(self):
         return self.raw_to_bv()
-
-    def identical(self, other: Self, strict=False) -> bool:
-        with suppress(BackendError):
-            return claripy.backends.vsa.convert(self).identical(claripy.backends.vsa.convert(other))
-        return super().identical(other, strict)
 
 
 def BVS(  # pylint:disable=redefined-builtin
