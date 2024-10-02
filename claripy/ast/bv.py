@@ -279,22 +279,13 @@ def BVV(value, size=None, **kwargs) -> BV:
 
 
 def SI(
-    name=None,
+    name="unnamed",
     bits=0,
     lower_bound=None,
     upper_bound=None,
     stride=None,
-    to_conv=None,
     explicit_name=None,
 ):
-    name = "unnamed" if name is None else name
-    if to_conv is not None:
-        si = claripy.backends.backend_vsa.CreateStridedInterval(
-            name=name, bits=bits, lower_bound=lower_bound, upper_bound=upper_bound, stride=stride, to_conv=to_conv
-        )
-        return BVS(name, si._bits, explicit_name=explicit_name).annotate(
-            claripy.annotation.StridedIntervalAnnotation(si._stride, si._lower_bound, si._upper_bound)
-        )
     return BVS(name, bits, explicit_name=explicit_name).annotate(
         claripy.annotation.StridedIntervalAnnotation(stride, lower_bound, upper_bound)
     )
