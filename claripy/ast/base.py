@@ -30,7 +30,7 @@ log = logging.getLogger(__name__)
 
 blake2b_unpacker = struct.Struct("Q")
 
-# pylint:disable=unused-argument,too-many-boolean-expressions
+# pylint:disable=unused-argument,too-many-boolean-expressions,too-many-positional-arguments
 
 ArgType = Union["Base", bool, int, float, str, FSort, tuple["ArgType"], None]
 
@@ -140,7 +140,7 @@ class Base:
     _errored: set[Backend]
 
     # Caching
-    _ast_cache_key: ASTCacheKey[Self]
+    _cache_key: ASTCacheKey[Self]
     _cached_encoded_name: bytes | None
 
     # Extra information
@@ -351,7 +351,7 @@ class Base:
 
     # pylint:disable=attribute-defined-outside-init
     def __a_init__(
-        self,
+        self: Self,
         op: str,
         args: tuple[ArgType, ...],
         variables: frozenset[str],
