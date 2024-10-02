@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 import logging
-from contextlib import suppress
 from functools import lru_cache
 from typing import TYPE_CHECKING, overload
 
 import claripy
 from claripy import operations
 from claripy.ast.base import ASTCacheKey, Base, _make_name
-from claripy.errors import BackendError, ClaripyTypeError
+from claripy.errors import ClaripyTypeError
 
 from .bits import Bits
 
@@ -163,17 +162,17 @@ Bool.__or__ = Or
 Bool.__ror__ = Or
 
 
-def is_true(e, exact=None):  # pylint:disable=unused-argument
-    with suppress(BackendError):
-        return claripy.backends.concrete.is_true(e)
+def is_true(e):
+    if claripy.simplify(e) is True:
+        return True
 
     log.debug("Unable to tell the truth-value of this expression")
     return False
 
 
-def is_false(e, exact=None):  # pylint:disable=unused-argument
-    with suppress(BackendError):
-        return claripy.backends.concrete.is_false(e)
+def is_false(e):
+    if claripy.simplify(e) is False:
+        return True
 
     log.debug("Unable to tell the truth-value of this expression")
     return False
