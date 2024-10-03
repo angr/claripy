@@ -5,7 +5,7 @@ import numbers
 import weakref
 from contextlib import suppress
 
-from claripy import backends
+from claripy import backends, cardinality
 from claripy.ast.base import Base
 from claripy.ast.bool import BoolV, false
 from claripy.ast.bv import BVV
@@ -282,11 +282,11 @@ class ReplacementFrontend(ConstrainedFrontend):
                     if not satisfiable:
                         self.add_replacement(rc, false())
                     for old, new in replacements:
-                        if old.cardinality == 1:
+                        if cardinality(old) == 1:
                             continue
 
                         rold = self._replacement(old)
-                        if rold.cardinality == 1:
+                        if cardinality(rold) == 1:
                             continue
 
                         self.add_replacement(old, rold.intersection(new))

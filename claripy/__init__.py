@@ -1,7 +1,16 @@
 from __future__ import annotations
 
 from claripy import algorithm, ast
-from claripy.algorithm import is_false, is_true, simplify
+from claripy.algorithm import (
+    cardinality,
+    constraint_to_si,
+    is_false,
+    is_true,
+    multivalued,
+    simplify,
+    singlevalued,
+    stride,
+)
 from claripy.annotation import Annotation, RegionAnnotation, SimplificationAvoidanceAnnotation
 from claripy.ast.bool import (
     And,
@@ -10,7 +19,6 @@ from claripy.ast.bool import (
     If,
     Not,
     Or,
-    constraint_to_si,
     false,
     ite_cases,
     ite_dict,
@@ -210,4 +218,8 @@ __all__ = (
     "SolverReplacement",
     "SolverStrings",
     "SolverVSA",
+    "cardinality",
+    "multivalued",
+    "singlevalued",
+    "stride",
 )

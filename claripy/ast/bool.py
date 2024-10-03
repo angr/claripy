@@ -4,7 +4,6 @@ import logging
 from functools import lru_cache
 from typing import TYPE_CHECKING, overload
 
-import claripy
 from claripy import operations
 from claripy.algorithm.bool_check import is_false, is_true
 from claripy.ast.base import ASTCacheKey, Base, _make_name
@@ -227,28 +226,3 @@ def reverse_ite_cases(ast):
             queue.append((And(condition, Not(ast.args[0])), ast.args[2]))
         else:
             yield condition, ast
-
-
-def constraint_to_si(expr):
-    """
-    Convert a constraint to SI if possible.
-
-    :param expr:
-    :return:
-    """
-
-    satisfiable = True
-    replace_list = []
-
-    satisfiable, replace_list = claripy.backends.vsa.constraint_to_si(expr)
-
-    # Make sure the replace_list are all ast.bvs
-    for i in range(len(replace_list)):  # pylint:disable=consider-using-enumerate
-        ori, new = replace_list[i]
-        if not isinstance(new, Base):
-            new = claripy.BVS(
-                new.name, new._bits, min=new._lower_bound, max=new._upper_bound, stride=new._stride, explicit_name=True
-            )
-            replace_list[i] = (ori, new)
-
-    return satisfiable, replace_list

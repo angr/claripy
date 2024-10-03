@@ -5,6 +5,7 @@ import unittest
 
 import claripy
 import claripy.backends
+from claripy import cardinality, multivalued, singlevalued
 
 
 class TestExpression(unittest.TestCase):
@@ -184,30 +185,30 @@ class TestExpression(unittest.TestCase):
         n = claripy.BVV(10, 32)
         m = claripy.BVV(20, 32)
 
-        self.assertEqual(y.cardinality, 21)
-        self.assertEqual(x.cardinality, 2**32)
-        self.assertEqual(n.cardinality, 1)
-        self.assertEqual(m.cardinality, 1)
-        self.assertEqual(n.union(m).cardinality, 2)
-        self.assertEqual(n.union(y).cardinality, 111)
-        self.assertEqual(y.intersection(x).cardinality, 21)
-        self.assertEqual(n.intersection(m).cardinality, 0)
-        self.assertEqual(y.intersection(m).cardinality, 0)
+        self.assertEqual(cardinality(y), 21)
+        self.assertEqual(cardinality(x), 2**32)
+        self.assertEqual(cardinality(n), 1)
+        self.assertEqual(cardinality(m), 1)
+        self.assertEqual(cardinality(n.union(m)), 2)
+        self.assertEqual(cardinality(n.union(y)), 111)
+        self.assertEqual(cardinality(y.intersection(x)), 21)
+        self.assertEqual(cardinality(n.intersection(m)), 0)
+        self.assertEqual(cardinality(y.intersection(m)), 0)
 
-        self.assertTrue(n.singlevalued)
-        self.assertFalse(n.multivalued)
+        self.assertTrue(singlevalued(n))
+        self.assertFalse(multivalued(n))
 
-        self.assertTrue(y.multivalued)
-        self.assertFalse(y.singlevalued)
+        self.assertTrue(multivalued(y))
+        self.assertFalse(singlevalued(y))
 
-        self.assertFalse(x.singlevalued)
-        self.assertTrue(x.multivalued)
+        self.assertFalse(singlevalued(x))
+        self.assertTrue(multivalued(x))
 
-        self.assertFalse(y.union(m).singlevalued)
-        self.assertTrue(y.union(m).multivalued)
+        self.assertFalse(singlevalued(y.union(m)))
+        self.assertTrue(multivalued(y.union(m)))
 
-        self.assertFalse(y.intersection(m).singlevalued)
-        self.assertFalse(y.intersection(m).multivalued)
+        self.assertFalse(singlevalued(y.intersection(m)))
+        self.assertFalse(multivalued(y.intersection(m)))
 
     def test_if_stuff(self):
         x = claripy.BVS("x", 32)

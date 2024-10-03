@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import logging
+from contextlib import suppress
 from itertools import chain
 from typing import TypeVar
 
+import claripy
 from claripy.ast.base import Base, SimplificationLevel
+from claripy.errors import BackendError
 
 log = logging.getLogger(__name__)
 
@@ -19,8 +22,11 @@ def simplify(expr: T) -> T:
     if expr.is_leaf() or expr._simplified == SimplificationLevel.FULL_SIMPLIFY:
         return expr
 
-    simplified = expr._first_backend("simplify")
-    if simplified is None:
+    for backend in claripy.backends.all_backends:
+        with suppress(BackendError):
+            simplified = backend.simplify(expr)
+            break
+    else:
         log.debug("Unable to simplify expression")
         return expr
 
