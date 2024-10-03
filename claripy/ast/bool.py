@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from functools import lru_cache
-from typing import TYPE_CHECKING, overload
+from typing import TYPE_CHECKING, TypeVar, overload
 
 import claripy
 from claripy import operations
@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from .bv import BV
     from .fp import FP
 
+T = TypeVar("T", bound=Base)
 log = logging.getLogger(__name__)
 
 
@@ -95,6 +96,8 @@ def If(cond: bool | Bool, true_value: bool | Bool, false_value: bool | Bool) -> 
 def If(cond: bool | Bool, true_value: int | BV, false_value: int | BV) -> BV: ...
 @overload
 def If(cond: bool | Bool, true_value: float | FP, false_value: float | FP) -> FP: ...
+@overload
+def If(cond: bool | Bool, true_value: T, false_value: T) -> T: ...
 
 
 def If(cond, true_value, false_value):

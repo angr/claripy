@@ -30,7 +30,7 @@ class Balancer:
         self._lower_bounds = {}
         self._upper_bounds = {}
 
-        self._queue_truism(c.ite_excavated)
+        self._queue_truism(claripy.excavate_ite(c))
 
         self.sat = True
         try:

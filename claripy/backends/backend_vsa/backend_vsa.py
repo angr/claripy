@@ -6,6 +6,7 @@ import numbers
 import operator
 from functools import reduce
 
+import claripy
 from claripy.annotation import RegionAnnotation, StridedIntervalAnnotation
 from claripy.ast.base import Base
 from claripy.ast.bv import BV, BVV, ESI, SI, TSI, VS
@@ -106,7 +107,7 @@ class BackendVSA(Backend):
         return reduce(operator.__mod__, args)
 
     def convert(self, expr):
-        return Backend.convert(self, expr.ite_excavated if isinstance(expr, Base) else expr)
+        return Backend.convert(self, claripy.excavate_ite(expr) if isinstance(expr, Base) else expr)
 
     def _convert(self, r):
         if isinstance(r, numbers.Number):
