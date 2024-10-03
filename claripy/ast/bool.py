@@ -20,6 +20,8 @@ log = logging.getLogger(__name__)
 
 
 class Bool(Base):
+    """Bool is the AST class for a boolean value."""
+
     __slots__ = ()
 
     @staticmethod
