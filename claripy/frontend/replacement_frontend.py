@@ -9,7 +9,6 @@ from claripy import backends
 from claripy.ast.base import Base
 from claripy.ast.bool import BoolV, false
 from claripy.ast.bv import BVV
-from claripy.balancer import Balancer
 from claripy.errors import BackendError, ClaripyFrontendError
 
 from .constrained_frontend import ConstrainedFrontend
@@ -47,8 +46,6 @@ class ReplacementFrontend(ConstrainedFrontend):
         self._replacements = {} if replacements is None else replacements
         self._replacement_cache = weakref.WeakKeyDictionary() if replacement_cache is None else replacement_cache
 
-        self._validation_frontend = None
-
     def _blank_copy(self, c):
         super()._blank_copy(c)
         c._actual_frontend = self._actual_frontend.blank_copy()
@@ -60,16 +57,9 @@ class ReplacementFrontend(ConstrainedFrontend):
         c._replacements = {}
         c._replacement_cache = weakref.WeakKeyDictionary()
 
-        if self._validation_frontend is not None:
-            c._validation_frontend = self._validation_frontend.blank_copy()
-        else:
-            c._validation_frontend = None
-
     def _copy(self, c):
         super()._copy(c)
         self._actual_frontend._copy(c._actual_frontend)
-        if self._validation_frontend is not None:
-            self._validation_frontend._copy(c._validation_frontend)
 
         c._replacements = dict(self._replacements)
         c._replacement_cache = weakref.WeakKeyDictionary(self._replacement_cache)
@@ -153,7 +143,6 @@ class ReplacementFrontend(ConstrainedFrontend):
             self._replace_constraints,
             self._replacements,
             self._actual_frontend,
-            self._validation_frontend,
             super().__getstate__(),
         )
 
@@ -166,7 +155,6 @@ class ReplacementFrontend(ConstrainedFrontend):
             self._replace_constraints,
             self._replacements,
             self._actual_frontend,
-            self._validation_frontend,
             base_state,
         ) = s
 
@@ -276,9 +264,7 @@ class ReplacementFrontend(ConstrainedFrontend):
                         old, new = rc.args if rc.args[0].symbolic else rc.args[::-1]
                         self.add_replacement(old, new, replace=False, promote=True, invalidate_cache=True)
                 else:
-                    satisfiable, replacements = Balancer(
-                        backends.vsa, rc, validation_frontend=self._validation_frontend
-                    ).compat_ret
+                    satisfiable, replacements = backends.vsa.constraint_to_si(rc)
                     if not satisfiable:
                         self.add_replacement(rc, false())
                     for old, new in replacements:

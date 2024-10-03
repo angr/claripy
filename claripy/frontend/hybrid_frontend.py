@@ -6,7 +6,6 @@ from claripy.errors import ClaripyFrontendError
 from claripy.frontend import Frontend
 
 log = logging.getLogger(__name__)
-_VALIDATE_BALANCER = False
 
 
 class HybridFrontend(Frontend):
@@ -23,24 +22,15 @@ class HybridFrontend(Frontend):
         self._approximate_frontend = approximate_frontend
         self._approximate_first = approximate_first
 
-        if _VALIDATE_BALANCER:
-            approximate_frontend._validation_frontend = self._exact_frontend
-
     def _blank_copy(self, c):
         c._exact_frontend = self._exact_frontend.blank_copy()
         c._approximate_frontend = self._approximate_frontend.blank_copy()
         c._approximate_first = self._approximate_first
 
-        if _VALIDATE_BALANCER:
-            c._approximate_frontend._validation_frontend = self._exact_frontend
-
     def _copy(self, c):
         self._exact_frontend._copy(c._exact_frontend)
         self._approximate_frontend._copy(c._approximate_frontend)
         self._approximate_first = c._approximate_first
-
-        if _VALIDATE_BALANCER:
-            c._approximate_frontend._validation_frontend = self._exact_frontend
 
     #
     # Some passthroughs
