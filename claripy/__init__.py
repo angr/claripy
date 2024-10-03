@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from claripy import algorithm, ast
-from claripy.algorithm import simplify
+from claripy.algorithm import is_false, is_true, simplify
 from claripy.annotation import Annotation, RegionAnnotation, SimplificationAvoidanceAnnotation
 from claripy.ast.bool import (
     And,
@@ -12,8 +12,6 @@ from claripy.ast.bool import (
     Or,
     constraint_to_si,
     false,
-    is_false,
-    is_true,
     ite_cases,
     ite_dict,
     reverse_ite_cases,

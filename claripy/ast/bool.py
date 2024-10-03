@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import logging
-from contextlib import suppress
 from functools import lru_cache
 from typing import TYPE_CHECKING, overload
 
 import claripy
 from claripy import operations
+from claripy.algorithm.bool_check import is_false, is_true
 from claripy.ast.base import ASTCacheKey, Base, _make_name
-from claripy.errors import BackendError, ClaripyTypeError
+from claripy.errors import ClaripyTypeError
 
 from .bits import Bits
 
@@ -20,6 +20,8 @@ log = logging.getLogger(__name__)
 
 
 class Bool(Base):
+    """Bool is the AST class for a boolean value."""
+
     __slots__ = ()
 
     @staticmethod
@@ -161,22 +163,6 @@ Bool.__and__ = And
 Bool.__rand__ = And
 Bool.__or__ = Or
 Bool.__ror__ = Or
-
-
-def is_true(e, exact=None):  # pylint:disable=unused-argument
-    with suppress(BackendError):
-        return claripy.backends.concrete.is_true(e)
-
-    log.debug("Unable to tell the truth-value of this expression")
-    return False
-
-
-def is_false(e, exact=None):  # pylint:disable=unused-argument
-    with suppress(BackendError):
-        return claripy.backends.concrete.is_false(e)
-
-    log.debug("Unable to tell the truth-value of this expression")
-    return False
 
 
 # For large tables, ite_dict that uses a binary search tree instead of a "linear" search tree.
