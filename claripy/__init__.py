@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from claripy import ast
+from claripy import algorithm, ast
+from claripy.algorithm import simplify
 from claripy.annotation import Annotation, RegionAnnotation, SimplificationAvoidanceAnnotation
-from claripy.ast.base import simplify
 from claripy.ast.bool import (
     And,
     BoolS,
@@ -112,6 +112,7 @@ from claripy.solvers import (
 __version__ = "9.2.121.dev0"
 
 __all__ = (
+    "algorithm",
     "Annotation",
     "RegionAnnotation",
     "SimplificationAvoidanceAnnotation",

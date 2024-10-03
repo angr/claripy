@@ -1256,32 +1256,3 @@ class Base:
         # TODO: It should definitely be moved to the proposed Annotation backend.
 
         return self._uninitialized
-
-
-def simplify(e: T) -> T:
-    if e.is_leaf() or e._simplified == SimplificationLevel.FULL_SIMPLIFY:
-        return e
-
-    s = e._first_backend("simplify")
-    if s is None:
-        log.debug("Unable to simplify expression")
-        return e
-
-    # Copy some parameters (that should really go to the Annotation backend)
-    s._uninitialized = e.uninitialized
-
-    # dealing with annotations
-    if e.annotations:
-        ast_args = tuple(a for a in e.args if isinstance(a, Base))
-        annotations = tuple(
-            set(
-                chain(
-                    chain.from_iterable(a._relocatable_annotations for a in ast_args), tuple(a for a in e.annotations)
-                )
-            )
-        )
-        if annotations != s.annotations:
-            s = s.remove_annotations(s.annotations)
-            s = s.annotate(*annotations)
-
-    return s

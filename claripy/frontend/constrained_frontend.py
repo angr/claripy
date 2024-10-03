@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import logging
 
+from claripy.algorithm import simplify
 from claripy.annotation import SimplificationAvoidanceAnnotation
-from claripy.ast.base import simplify
 from claripy.ast.bool import And, Or
 
 from .frontend import Frontend
