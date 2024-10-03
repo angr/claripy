@@ -1207,17 +1207,6 @@ class Base:
     # these are convenience operations
     #
 
-    def _first_backend(self, what):
-        for b in claripy.backends.all_backends:
-            if b in self._errored:
-                continue
-
-            try:
-                return getattr(b, what)(self)
-            except BackendError:
-                pass
-        return None
-
     @property
     def concrete_value(self):
         try:
@@ -1227,18 +1216,6 @@ class Base:
             return raw.value
         except BackendError:
             return self
-
-    @property
-    def singlevalued(self) -> bool:
-        return self._first_backend("singlevalued")
-
-    @property
-    def multivalued(self) -> bool:
-        return self._first_backend("multivalued")
-
-    @property
-    def cardinality(self) -> int:
-        return self._first_backend("cardinality")
 
     @property
     def concrete(self) -> bool:

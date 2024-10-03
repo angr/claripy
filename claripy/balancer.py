@@ -5,6 +5,7 @@ import operator
 
 import claripy
 import claripy.backends.backend_vsa as vsa
+from claripy.algorithm.vsa_helper import cardinality
 
 from .ast.base import Base
 from .ast.bool import Bool
@@ -105,7 +106,7 @@ class Balancer:
 
     @staticmethod
     def _cardinality(a):
-        return a.cardinality if isinstance(a, Base) else 0
+        return cardinality(a) if isinstance(a, Base) else 0
 
     @staticmethod
     def _min(a, signed=False):
@@ -176,7 +177,7 @@ class Balancer:
         try:
             if isinstance(a, BV):
                 return self._align_bv(a)
-            if isinstance(a, Bool) and len(a.args) == 2 and a.args[1].cardinality > a.args[0].cardinality:
+            if isinstance(a, Bool) and len(a.args) == 2 and cardinality(a.args[1]) > cardinality(a.args[0]):
                 return self._reverse_comparison(a)
             return a
         except ClaripyBalancerError:
@@ -275,7 +276,7 @@ class Balancer:
         if len(t.args) < 2:
             l.debug("can't do anything with an unop bool")
             return None
-        if t.args[0].cardinality > 1 and t.args[1].cardinality > 1:
+        if claripy.cardinality(t.args[0]) > 1 and claripy.cardinality(t.args[1]) > 1:
             l.debug("can't do anything because we have multiple multivalued guys")
             return False
         if t.op == "If":
@@ -289,7 +290,7 @@ class Balancer:
         Swap the operands of the truism if the unknown variable is on the right side and the concrete value is on the
         left side.
         """
-        if t.args[0].cardinality == 1 and t.args[1].cardinality > 1:
+        if claripy.cardinality(t.args[0]) == 1 and claripy.cardinality(t.args[1]) > 1:
             return Balancer._reverse_comparison(t)
         return t
 
@@ -383,7 +384,7 @@ class Balancer:
 
         try:
             inner_aligned = self._align_truism(truism)
-            if inner_aligned.args[1].cardinality > 1:
+            if cardinality(inner_aligned.args[1]) > 1:
                 l.debug("can't do anything because we have multiple multivalued guys")
                 return truism
 
@@ -653,7 +654,7 @@ class Balancer:
 
     def _handle___eq__(self, truism):
         lhs, rhs = truism.args
-        if rhs.cardinality != 1:
+        if cardinality(rhs) != 1:
             common = self._same_bound_bv(lhs.intersection(rhs))
             mn, mx = self._range(common)
             self._add_upper_bound(lhs, mx)
@@ -667,7 +668,7 @@ class Balancer:
 
     def _handle___ne__(self, truism):
         lhs, rhs = truism.args
-        if rhs.cardinality == 1:
+        if cardinality(rhs) == 1:
             val = self._helper.eval(rhs, 1)[0]
             max_int = vsa.StridedInterval.max_int(len(rhs))
 

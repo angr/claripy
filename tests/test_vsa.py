@@ -83,7 +83,7 @@ class TestVSA(unittest.TestCase):  # pylint: disable=no-member,function-redefine
 
     def test_simple_cardinality(self):
         x = claripy.BVS("x", 32).annotate(claripy.annotation.StridedIntervalAnnotation(0xA, 0xA, 0x14))
-        assert x.cardinality == 2
+        assert claripy.cardinality(x) == 2
 
     def test_south_pole_splitting(self):
         # south-pole splitting
