@@ -211,7 +211,6 @@ class TestExpression(unittest.TestCase):
 
     def test_if_stuff(self):
         x = claripy.BVS("x", 32)
-        # y = claripy.BVS('y', 32)
 
         c = claripy.If(x > 10, (claripy.If(x > 10, x * 3, x * 2)), x * 4) + 2
         cc = claripy.If(x > 10, x * 3, x * 4) + 2
@@ -219,17 +218,17 @@ class TestExpression(unittest.TestCase):
         cccc = x * claripy.If(x > 10, claripy.BVV(3, 32), claripy.BVV(4, 32)) + 2
 
         self.assertIs(c, cc)
-        self.assertIs(c.ite_excavated, ccc)
-        self.assertIs(ccc.ite_burrowed, cccc)
+        self.assertIs(claripy.excavate_ite(c), ccc)
+        self.assertIs(claripy.burrow_ite(ccc), cccc)
 
         i = c + c
         ii = claripy.If(x > 10, (x * 3 + 2) + (x * 3 + 2), (x * 4 + 2) + (x * 4 + 2))
-        self.assertIs(i.ite_excavated, ii)
+        self.assertIs(claripy.excavate_ite(i), ii)
 
         cn = claripy.If(x <= 10, claripy.BVV(0x10, 32), 0x20)
         iii = c + cn
         iiii = claripy.If(x > 10, (x * 3 + 2) + 0x20, (x * 4 + 2) + 0x10)
-        self.assertIs(iii.ite_excavated, iiii)
+        self.assertIs(claripy.excavate_ite(iii), iiii)
 
     def test_ite_Solver(self):
         self.raw_ite(claripy.Solver)

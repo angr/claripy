@@ -711,9 +711,10 @@ class TestVSAOperations(unittest.TestCase):  # pylint: disable=no-member functio
             claripy.SI(bits=32, stride=0, lower_bound=0xFFFFFFFF, upper_bound=0xFFFFFFFF),
         )
         assert claripy.backends.vsa.is_true(
-            vsa_model(if_1.ite_excavated.args[1]) == vsa_model(claripy.ValueSet(region="global", bits=32, value=0))
+            vsa_model(claripy.excavate_ite(if_1).args[1])
+            == vsa_model(claripy.ValueSet(region="global", bits=32, value=0))
         )
-        assert claripy.backends.vsa.is_true(vsa_model(if_1.ite_excavated.args[2]) == vsa_model(vs_2))
+        assert claripy.backends.vsa.is_true(vsa_model(claripy.excavate_ite(if_1).args[2]) == vsa_model(vs_2))
 
     def test_if_proxy_or_operations(self):
         # if_2 = And(VS_3, IfProxy(si != 0, 0, 1))
@@ -725,14 +726,15 @@ class TestVSAOperations(unittest.TestCase):  # pylint: disable=no-member functio
             claripy.SI(bits=32, stride=0, lower_bound=0xFFFFFFFF, upper_bound=0xFFFFFFFF),
         )
         assert claripy.backends.vsa.is_true(
-            vsa_model(if_2.ite_excavated.args[1]) == vsa_model(claripy.ValueSet(region="global", bits=32, value=0))
+            vsa_model(claripy.excavate_ite(if_2).args[1])
+            == vsa_model(claripy.ValueSet(region="global", bits=32, value=0))
         )
-        assert claripy.backends.vsa.is_true(vsa_model(if_2.ite_excavated.args[2]) == vsa_model(vs_3))
+        assert claripy.backends.vsa.is_true(vsa_model(claripy.excavate_ite(if_2).args[2]) == vsa_model(vs_3))
 
     # Something crazy is gonna happen...
     # if_3 = if_1 + if_2
-    # assert claripy.backends.vsa.is_true(vsa_model(if_3.ite_excavated.args[1]) == vsa_model(vs_3)))
-    # assert claripy.backends.vsa.is_true(vsa_model(if_3.ite_excavated.args[1]) == vsa_model(vs_2)))
+    # assert claripy.backends.vsa.is_true(vsa_model(claripy.excavate_ite(if_3).args[1]) == vsa_model(vs_3)))
+    # assert claripy.backends.vsa.is_true(vsa_model(claripy.excavate_ite(if_3).args[1]) == vsa_model(vs_2)))
 
 
 class TestVSAConstraintToSI(unittest.TestCase):  # pylint: disable=no-member,function-redefined

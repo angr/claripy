@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from claripy import algorithm, ast
-from claripy.algorithm import is_false, is_true, simplify
+from claripy.algorithm import burrow_ite, excavate_ite, is_false, is_true, simplify
 from claripy.annotation import Annotation, RegionAnnotation, SimplificationAvoidanceAnnotation
 from claripy.ast.bool import (
     And,
@@ -210,4 +210,6 @@ __all__ = (
     "SolverReplacement",
     "SolverStrings",
     "SolverVSA",
+    "burrow_ite",
+    "excavate_ite",
 )
