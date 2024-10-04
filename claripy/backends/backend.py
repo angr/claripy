@@ -7,7 +7,7 @@ import operator
 import threading
 from contextlib import suppress
 
-from claripy.ast.base import Base, SimplificationLevel
+from claripy.ast.base import Base
 from claripy.errors import BackendError, BackendUnsupportedError, ClaripyRecursionError
 
 log = logging.getLogger(__name__)
@@ -296,9 +296,7 @@ class Backend:
     #
 
     def simplify(self, expr):
-        result = self._abstract(self.convert(expr))
-        result._simplified = SimplificationLevel.FULL_SIMPLIFY
-        return result
+        return self._abstract(self.convert(expr))
 
     #
     # Some other helpers

@@ -15,7 +15,6 @@ from functools import reduce
 import z3
 from cachetools import LRUCache
 
-from claripy.ast.base import SimplificationLevel
 from claripy.ast.bool import Bool, BoolV
 from claripy.ast.bv import BV, BVV
 from claripy.ast.fp import FP, FPV
@@ -887,10 +886,7 @@ class BackendZ3(Backend):
         else:
             simplified = z3.simplify(expr_raw)
 
-        result = self._abstract(simplified)
-        result._simplified = SimplificationLevel.FULL_SIMPLIFY
-
-        return result
+        return self._abstract(simplified)
 
     def _is_false(self, e, extra_constraints=(), solver=None, model_callback=None):
         return z3.simplify(e).eq(z3.BoolVal(False, ctx=self._context))
