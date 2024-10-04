@@ -2,13 +2,16 @@ from __future__ import annotations
 
 import logging
 from itertools import chain
-from typing import TypeVar
+from typing import TypeVar, cast
+from weakref import WeakValueDictionary
 
-from claripy.ast.base import Base, SimplificationLevel
+from claripy.ast.base import Base
 
 log = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=Base)
+
+simplification_cache: WeakValueDictionary[int, Base] = WeakValueDictionary()
 
 
 def simplify(expr: T) -> T:
@@ -16,12 +19,16 @@ def simplify(expr: T) -> T:
     Simplify an expression.
     """
 
-    if expr.is_leaf() or expr._simplified == SimplificationLevel.FULL_SIMPLIFY:
+    if expr.is_leaf():
         return expr
+
+    if expr.hash() in simplification_cache and simplification_cache[expr.hash()] is not None:
+        return cast(T, simplification_cache[expr.hash()])
 
     simplified = expr._first_backend("simplify")
     if simplified is None:
         log.debug("Unable to simplify expression")
+        simplification_cache[expr.hash()] = expr
         return expr
 
     # Copy some parameters (that should really go to the Annotation backend)
@@ -42,4 +49,5 @@ def simplify(expr: T) -> T:
             simplified = simplified.remove_annotations(simplified.annotations)
             simplified = simplified.annotate(*annotations)
 
+    simplification_cache[expr.hash()] = simplified
     return simplified

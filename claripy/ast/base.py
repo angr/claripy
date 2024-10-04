@@ -38,16 +38,6 @@ T = TypeVar("T", bound="Base")
 A = TypeVar("A", bound="Annotation")
 
 
-class SimplificationLevel(IntEnum):
-    """
-    Simplification levels for ASTs.
-    """
-
-    UNSIMPLIFIED = 0
-    LITE_SIMPLIFY = 1
-    FULL_SIMPLIFY = 2
-
-
 class ReprLevel(IntEnum):
     """
     Representation levels for ASTs.
@@ -114,7 +104,6 @@ class Base:
     # Derived information
     depth: int
     _hash: int
-    _simplified: SimplificationLevel
     _relocatable_annotations: frozenset[Annotation]
     _uneliminatable_annotations: frozenset[Annotation]
 
@@ -136,7 +125,6 @@ class Base:
         "annotations",
         "depth",
         "_hash",
-        "_simplified",
         "_uneliminatable_annotations",
         "_relocatable_annotations",
         "_errored",
@@ -333,7 +321,6 @@ class Base:
         variables: frozenset[str],
         symbolic: bool | None = None,
         length: int | None = None,
-        simplified: SimplificationLevel = SimplificationLevel.UNSIMPLIFIED,
         errored: set[Backend] | None = None,
         uninitialized: bool = False,
         annotations: tuple[Annotation, ...] | None = None,
@@ -365,8 +352,6 @@ class Base:
         self._cached_encoded_name = encoded_name
 
         self._errored = errored if errored is not None else set()
-
-        self._simplified = simplified
 
         self._uninitialized = uninitialized
 
