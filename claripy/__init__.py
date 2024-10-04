@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from claripy import algorithm, ast, backends
-from claripy.algorithm import burrow_ite, excavate_ite, is_false, is_true, simplify
+from claripy.algorithm import burrow_ite, excavate_ite, is_false, is_true, replace, replace_dict, simplify
 from claripy.annotation import Annotation, RegionAnnotation, SimplificationAvoidanceAnnotation
 from claripy.ast.bool import (
     And,
@@ -213,4 +213,6 @@ __all__ = (
     "burrow_ite",
     "excavate_ite",
     "backends",
+    "replace",
+    "replace_dict",
 )

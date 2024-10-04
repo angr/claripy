@@ -4,6 +4,7 @@ import logging
 import numbers
 from contextlib import suppress
 
+import claripy
 from claripy import backends
 from claripy.ast.base import Base
 from claripy.ast.bool import BoolV, false
@@ -111,7 +112,7 @@ class ReplacementFrontend(ConstrainedFrontend):
             return self._replacement_cache[old.hash()]
 
         # not found in the cache
-        new = old.replace_dict(self._replacement_cache)
+        new = claripy.replace_dict(old, self._replacement_cache)
         if new is not old:
             self._replacement_cache[old.hash()] = new
         return new

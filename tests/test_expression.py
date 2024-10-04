@@ -116,8 +116,8 @@ class TestExpression(unittest.TestCase):
         ooo = claripy.BVV(0, 32)
 
         old_formula = claripy.If((old + 1) % 256 == 0, old + 10, old + 20)
-        new_formula = old_formula.replace(old, new)
-        ooo_formula = new_formula.replace(new, ooo)
+        new_formula = claripy.replace(old_formula, old, new)
+        ooo_formula = claripy.replace(new_formula, new, ooo)
 
         self.assertNotEqual(old_formula.hash(), new_formula.hash())
         self.assertNotEqual(old_formula.hash(), ooo_formula.hash())
@@ -139,7 +139,7 @@ class TestExpression(unittest.TestCase):
         new = claripy.BVS("new", 32, explicit_name=True)
         c = (old + 10) - (old + 20)
         d = (old + 1) - (old + 2)
-        cr = c.replace_dict({(old + 10).hash(): (old + 1), (old + 20).hash(): (old + 2)})
+        cr = claripy.replace_dict(c, {(old + 10).hash(): (old + 1), (old + 20).hash(): (old + 2)})
         self.assertIs(cr, d)
 
         # test AST collapse
@@ -423,12 +423,12 @@ class TestExpression(unittest.TestCase):
         assert len(x_xor.args) == 4
         assert len(x_and.args) == 4
 
-        assert (x_add).replace(x, o).args[0] == 8
-        assert (x_mul).replace(x, o).args[0] == 16
-        assert (x_or).replace(x, o).args[0] == 7
-        assert (x_xor).replace(x, o).args[0] == 0
-        assert (x_and).replace(x, o).args[0] == 0
-        assert (100 + (x_sub).replace(x, o)).args[0] == 90
+        assert claripy.replace(x_add, x, o).args[0] == 8
+        assert claripy.replace(x_mul, x, o).args[0] == 16
+        assert claripy.replace(x_or, x, o).args[0] == 7
+        assert claripy.replace(x_xor, x, o).args[0] == 0
+        assert claripy.replace(x_and, x, o).args[0] == 0
+        assert (100 + claripy.replace(x_sub, x, o)).args[0] == 90
 
         # make sure that z3 and vsa backends handle this properly
         claripy.backends.z3.convert(x + x + x + x)
@@ -560,7 +560,7 @@ class TestExpression(unittest.TestCase):
     def test_bool_replace_in_ite(self):
         b = claripy.BoolS("b")
         expr = claripy.If(b, claripy.BVV(2, 32), claripy.BVV(3, 32))
-        new_expr = expr.replace(b, claripy.BoolV(True))
+        new_expr = claripy.replace(expr, b, claripy.BoolV(True))
 
         # Replace calls make_like which will simplify the expression. As a
         # result, the new expression will be a BVV.

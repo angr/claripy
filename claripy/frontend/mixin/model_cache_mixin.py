@@ -81,9 +81,11 @@ class ModelCache:
         """
 
         if allow_unconstrained:
-            new_ast = ast.replace_dict(self.replacements, leaf_operation=self._leaf_op)
+            new_ast = claripy.replace_dict(ast, self.replacements, leaf_operation=self._leaf_op)
         else:
-            new_ast = ast.replace_dict(self.constraint_only_replacements, leaf_operation=self._leaf_op_existonly)
+            new_ast = claripy.replace_dict(
+                ast, self.constraint_only_replacements, leaf_operation=self._leaf_op_existonly
+            )
         return backends.concrete.eval(new_ast, 1)[0]
 
     def eval_constraints(self, constraints):
