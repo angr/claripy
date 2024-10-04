@@ -974,10 +974,12 @@ class TestVSADiscreteValueSet(unittest.TestCase):  # pylint: disable=no-member,f
 
         # Allow the use of DiscreteStridedIntervalSet
         claripy.backends.backend_vsa.strided_interval.allow_dsis = True
+        claripy.backends.vsa.downsize()
 
     def tearDown(self):
         # Disable DiscreteStridedIntervalSet after tests
         claripy.backends.backend_vsa.strided_interval.allow_dsis = False
+        claripy.backends.vsa.downsize()
 
     def test_union_operations(self):
         # Union operations
