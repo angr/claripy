@@ -14,8 +14,8 @@ class ModelCache:
 
     def __init__(self, model):
         self.model = model
-        self.replacements = weakref.WeakKeyDictionary()
-        self.constraint_only_replacements = weakref.WeakKeyDictionary()
+        self.replacements = {}
+        self.constraint_only_replacements = {}
 
     def __hash__(self):
         if not hasattr(self, "_hash"):
@@ -30,8 +30,8 @@ class ModelCache:
 
     def __setstate__(self, s):
         self.model = s[0]
-        self.replacements = weakref.WeakKeyDictionary()
-        self.constraint_only_replacements = weakref.WeakKeyDictionary()
+        self.replacements = {}
+        self.constraint_only_replacements = {}
 
     #
     # Splitting support
@@ -117,41 +117,41 @@ class ModelCacheMixin:
         super().__init__(*args, **kwargs)
         self._models = set()
         self._exhausted = False
-        self._eval_exhausted = weakref.WeakSet()
-        self._max_exhausted = weakref.WeakSet()
-        self._min_exhausted = weakref.WeakSet()
-        self._max_signed_exhausted = weakref.WeakSet()
-        self._min_signed_exhausted = weakref.WeakSet()
+        self._eval_exhausted = weakref.WeakValueDictionary()
+        self._max_exhausted = weakref.WeakValueDictionary()
+        self._min_exhausted = weakref.WeakValueDictionary()
+        self._max_signed_exhausted = weakref.WeakValueDictionary()
+        self._min_signed_exhausted = weakref.WeakValueDictionary()
 
     def _blank_copy(self, c):
         super()._blank_copy(c)
         c._models = set()
         c._exhausted = False
-        c._eval_exhausted = weakref.WeakSet()
-        c._max_exhausted = weakref.WeakSet()
-        c._min_exhausted = weakref.WeakSet()
-        c._max_signed_exhausted = weakref.WeakSet()
-        c._min_signed_exhausted = weakref.WeakSet()
+        c._eval_exhausted = weakref.WeakValueDictionary()
+        c._max_exhausted = weakref.WeakValueDictionary()
+        c._min_exhausted = weakref.WeakValueDictionary()
+        c._max_signed_exhausted = weakref.WeakValueDictionary()
+        c._min_signed_exhausted = weakref.WeakValueDictionary()
 
     def _copy(self, c):
         super()._copy(c)
         c._models = set(self._models)
         c._exhausted = self._exhausted
-        c._eval_exhausted = weakref.WeakSet(self._eval_exhausted)
-        c._max_exhausted = weakref.WeakSet(self._max_exhausted)
-        c._min_exhausted = weakref.WeakSet(self._min_exhausted)
-        c._max_signed_exhausted = weakref.WeakSet(self._max_signed_exhausted)
-        c._min_signed_exhausted = weakref.WeakSet(self._min_signed_exhausted)
+        c._eval_exhausted = weakref.WeakValueDictionary(self._eval_exhausted)
+        c._max_exhausted = weakref.WeakValueDictionary(self._max_exhausted)
+        c._min_exhausted = weakref.WeakValueDictionary(self._min_exhausted)
+        c._max_signed_exhausted = weakref.WeakValueDictionary(self._max_signed_exhausted)
+        c._min_signed_exhausted = weakref.WeakValueDictionary(self._min_signed_exhausted)
 
     def __setstate__(self, base_state):
         super().__setstate__(base_state)
         self._models = set()
         self._exhausted = False
-        self._eval_exhausted = weakref.WeakSet()
-        self._max_exhausted = weakref.WeakSet()
-        self._min_exhausted = weakref.WeakSet()
-        self._max_signed_exhausted = weakref.WeakSet()
-        self._min_signed_exhausted = weakref.WeakSet()
+        self._eval_exhausted = weakref.WeakValueDictionary()
+        self._max_exhausted = weakref.WeakValueDictionary()
+        self._min_exhausted = weakref.WeakValueDictionary()
+        self._max_signed_exhausted = weakref.WeakValueDictionary()
+        self._min_signed_exhausted = weakref.WeakValueDictionary()
 
     #
     # Model cleaning
@@ -176,11 +176,11 @@ class ModelCacheMixin:
             return
 
         self._models.add(ModelCache({next(iter(c.args[0].variables)): backends.concrete.eval(c.args[1], 1)[0]}))
-        self._eval_exhausted.add(c.args[0].cache_key)
-        self._max_exhausted.add(c.args[0].cache_key)
-        self._min_exhausted.add(c.args[0].cache_key)
-        self._max_signed_exhausted.add(c.args[0].cache_key)
-        self._min_signed_exhausted.add(c.args[0].cache_key)
+        self._eval_exhausted[c.args[0].hash()] = c.args[0]
+        self._max_exhausted[c.args[0].hash()] = c.args[0]
+        self._min_exhausted[c.args[0].hash()] = c.args[0]
+        self._max_signed_exhausted[c.args[0].hash()] = c.args[0]
+        self._min_signed_exhausted[c.args[0].hash()] = c.args[0]
 
     def _add(self, constraints, invalidate_cache=True):
         if len(constraints) == 0:
@@ -305,7 +305,7 @@ class ModelCacheMixin:
     def batch_eval(self, asts, n, extra_constraints=(), exact=None):
         results = self._get_batch_solutions(asts, n=n, extra_constraints=extra_constraints)
 
-        if len(results) == n or (len(asts) == 1 and asts[0].cache_key in self._eval_exhausted):
+        if len(results) == n or (len(asts) == 1 and asts[0].hash() in self._eval_exhausted):
             return results
 
         remaining = n - len(results)
@@ -330,7 +330,7 @@ class ModelCacheMixin:
                 # only mark an AST as eval-exhausted if e.variables is a subset of variables that the current solver
                 # knows about (from its constraints)
                 if self.variables.issuperset(e.variables):
-                    self._eval_exhausted.add(e.cache_key)
+                    self._eval_exhausted[e.hash()] = e
 
         return results
 
@@ -341,7 +341,7 @@ class ModelCacheMixin:
 
     def min(self, e, extra_constraints=(), signed=False, exact=None):
         cached = []
-        if e.cache_key in self._eval_exhausted or e.cache_key in self._min_exhausted:
+        if e.hash() in self._eval_exhausted or e.hash() in self._min_exhausted:
             # we set allow_unconstrained to False because we expect all returned values for e are returned by Z3,
             # instead of some arbitrarily assigned concrete values.
             cached = self._get_solutions(e, extra_constraints=extra_constraints, allow_unconstrained=False)
@@ -355,12 +355,12 @@ class ModelCacheMixin:
 
         m = super().min(e, extra_constraints=extra_constraints, signed=signed, exact=exact)
         if len(extra_constraints) == 0:
-            (self._min_signed_exhausted if signed else self._min_exhausted).add(e.cache_key)
+            (self._min_signed_exhausted if signed else self._min_exhausted)[e.hash()] = e
         return m
 
     def max(self, e, extra_constraints=(), signed=False, exact=None):
         cached = []
-        if e.cache_key in self._eval_exhausted or e.cache_key in self._max_exhausted:
+        if e.hash() in self._eval_exhausted or e.hash() in self._max_exhausted:
             cached = self._get_solutions(e, extra_constraints=extra_constraints, allow_unconstrained=False)
 
         if len(cached) > 0:
@@ -372,7 +372,7 @@ class ModelCacheMixin:
 
         m = super().max(e, extra_constraints=extra_constraints, signed=signed, exact=exact)
         if len(extra_constraints) == 0:
-            (self._max_signed_exhausted if signed else self._max_exhausted).add(e.cache_key)
+            (self._max_signed_exhausted if signed else self._max_exhausted)[e.hash()] = e
         return m
 
     def solution(self, e, v, extra_constraints=(), exact=None):

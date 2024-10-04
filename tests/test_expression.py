@@ -139,7 +139,7 @@ class TestExpression(unittest.TestCase):
         new = claripy.BVS("new", 32, explicit_name=True)
         c = (old + 10) - (old + 20)
         d = (old + 1) - (old + 2)
-        cr = c.replace_dict({(old + 10).cache_key: (old + 1), (old + 20).cache_key: (old + 2)})
+        cr = c.replace_dict({(old + 10).hash(): (old + 1), (old + 20).hash(): (old + 2)})
         self.assertIs(cr, d)
 
         # test AST collapse

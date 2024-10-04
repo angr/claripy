@@ -5,7 +5,6 @@ import logging
 import numbers
 import operator
 import threading
-import weakref
 from contextlib import suppress
 
 from claripy.ast.base import Base, SimplificationLevel
@@ -74,15 +73,15 @@ class Backend:
         self._solver_required = solver_required is not None
 
         self._tls = threading.local()
-        self._true_cache = weakref.WeakKeyDictionary()
-        self._false_cache = weakref.WeakKeyDictionary()
+        self._true_cache = {}
+        self._false_cache = {}
 
     @property
     def _object_cache(self):
         try:
             return self._tls.object_cache
         except AttributeError:
-            self._tls.object_cache = weakref.WeakKeyDictionary()
+            self._tls.object_cache = {}
             return self._tls.object_cache
 
     def _make_raw_ops(self, op_list, op_dict=None, op_module=None):
@@ -182,7 +181,7 @@ class Backend:
                         )
 
                     if self._cache_objects:
-                        cached_obj = self._object_cache.get(ast._cache_key, None)
+                        cached_obj = self._object_cache.get(ast.hash(), None)
                         if cached_obj is not None:
                             arg_queue.append(cached_obj)
                             continue
@@ -216,7 +215,7 @@ class Backend:
                             r = self.apply_annotation(r, a)
 
                         if self._cache_objects:
-                            self._object_cache[ast._cache_key] = r
+                            self._object_cache[ast.hash()] = r
 
                         arg_queue.append(r)
 
@@ -324,15 +323,15 @@ class Backend:
             )
 
         try:
-            return self._true_cache[e.cache_key]
+            return self._true_cache[e.hash()]
         except KeyError:
             t = self._is_true(
                 self.convert(e), extra_constraints=extra_constraints, solver=solver, model_callback=model_callback
             )
             if len(extra_constraints) == 0:  # Only update cache when we have no extra constraints
-                self._true_cache[e.cache_key] = t
+                self._true_cache[e.hash()] = t
                 if t is True:
-                    self._false_cache[e.cache_key] = False
+                    self._false_cache[e.hash()] = False
             return t
 
     def is_false(self, e, extra_constraints=(), solver=None, model_callback=None):  # pylint:disable=unused-argument
@@ -353,15 +352,15 @@ class Backend:
             )
 
         try:
-            return self._false_cache[e.cache_key]
+            return self._false_cache[e.hash()]
         except KeyError:
             f = self._is_false(
                 self.convert(e), extra_constraints=extra_constraints, solver=solver, model_callback=model_callback
             )
             if len(extra_constraints) == 0:  # Only update cache when we have no extra constraints
-                self._false_cache[e.cache_key] = f
+                self._false_cache[e.hash()] = f
                 if f is True:
-                    self._true_cache[e.cache_key] = False
+                    self._true_cache[e.hash()] = False
             return f
 
     def _is_false(

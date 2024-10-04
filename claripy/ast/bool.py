@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, TypeVar, overload
 import claripy
 from claripy import operations
 from claripy.algorithm.bool_check import is_false, is_true
-from claripy.ast.base import ASTCacheKey, Base, _make_name
+from claripy.ast.base import Base, _make_name
 from claripy.errors import ClaripyTypeError
 
 from .bits import Bits
@@ -179,8 +179,6 @@ def ite_dict(i, d, default):
     :param default: A default value that the expression should take on if `i` matches none of the keys of `d`
     :return: An expression encoding the result of the above
     """
-    i = i.ast if type(i) is ASTCacheKey else i
-
     # for small dicts fall back to the linear implementation
     if len(d) < 4:
         return ite_cases([(i == c, v) for c, v in d.items()], default)

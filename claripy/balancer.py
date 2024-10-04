@@ -27,6 +27,7 @@ class Balancer:
         self._truisms = []
         self._processed_truisms = set()
         self._identified_assumptions = set()
+        self._ast_hash_map = {}
         self._lower_bounds = {}
         self._upper_bounds = {}
 
@@ -48,21 +49,22 @@ class Balancer:
     def _replacements_iter(self):
         all_keys = set(self._lower_bounds.keys()) | set(self._upper_bounds.keys())
         for k in all_keys:
-            max_int = (1 << len(k.ast)) - 1
+            ast = self._ast_hash_map[k]
+            max_int = (1 << len(ast)) - 1
             min_int = 0
             mn = self._lower_bounds.get(k, min_int)
             mx = self._upper_bounds.get(k, max_int)
-            bound_si = BVS("bound", len(k.ast)).annotate(claripy.annotation.StridedIntervalAnnotation(1, mn, mx))
-            l.debug("Yielding bound %s for %s.", bound_si, k.ast)
-            if k.ast.op == "Reverse":
-                yield (k.ast.args[0], k.ast.intersection(bound_si).reversed)
+            bound_si = BVS("bound", len(ast)).annotate(claripy.annotation.StridedIntervalAnnotation(1, mn, mx))
+            l.debug("Yielding bound %s for %s.", bound_si, ast)
+            if ast.op == "Reverse":
+                yield (ast.args[0], ast.intersection(bound_si).reversed)
             else:
-                yield (k.ast, k.ast.intersection(bound_si))
+                yield (ast, ast.intersection(bound_si))
 
     def _add_lower_bound(self, o, b):
         l.debug("Adding lower bound %s for %s.", b, o)
-        if o.cache_key in self._lower_bounds:
-            old_b = self._lower_bounds[o.cache_key]
+        if o.hash() in self._lower_bounds:
+            old_b = self._lower_bounds[o.hash()]
             l.debug("... old bound: %s", old_b)
             b = max(b, old_b)
             l.debug("... new bound: %s", b)
@@ -72,12 +74,13 @@ class Balancer:
             bmin = self._helper.min(b)
             assert emin >= bmin
 
-        self._lower_bounds[o.cache_key] = b
+        self._lower_bounds[o.hash()] = b
+        self._ast_hash_map[o.hash()] = o
 
     def _add_upper_bound(self, o, b):
         l.debug("Adding upper bound %s for %s.", b, o)
-        if o.cache_key in self._upper_bounds:
-            old_b = self._upper_bounds[o.cache_key]
+        if o.hash() in self._upper_bounds:
+            old_b = self._upper_bounds[o.hash()]
             l.debug("... old bound: %s", old_b)
             b = min(b, old_b)
             l.debug("... new bound: %s", b)
@@ -87,7 +90,8 @@ class Balancer:
             bmax = self._helper.max(b)
             assert emax <= bmax
 
-        self._upper_bounds[o.cache_key] = b
+        self._upper_bounds[o.hash()] = b
+        self._ast_hash_map[o.hash()] = o
 
     @property
     def replacements(self):
