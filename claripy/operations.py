@@ -54,9 +54,12 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None):
                     raise ClaripyOperationError(msg)
 
         # pylint:disable=too-many-nested-blocks
-        simp = _handle_annotations(claripy.simplifications.simplify(name, fixed_args), args)
+        simp, annotated = claripy.simplifications.simplify(name, fixed_args)
         if simp is not None:
-            return simp
+            if not annotated:
+                simp = _handle_annotations(simp, fixed_args)
+            if simp is not None:
+                return simp
 
         kwargs = {}
         if calc_length is not None:
@@ -73,9 +76,6 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None):
 
 
 def _handle_annotations(simp, args):
-    if simp is None:
-        return None
-
     # pylint:disable=isinstance-second-argument-not-valid-type
     ast_args = tuple(a for a in args if isinstance(a, claripy.ast.Base))
     preserved_relocatable = frozenset(simp._relocatable_annotations)
