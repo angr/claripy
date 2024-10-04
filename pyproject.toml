@@ -2,6 +2,41 @@
 requires = ["setuptools>=46.4.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "claripy"
+description = "An abstraction layer for constraint solvers"
+license = { text = "BSD-2-Clause" }
+classifiers = [
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+urls = { Homepage = "https://github.com/angr/claripy" }
+requires-python = ">=3.10"
+dependencies = ["cachetools", "typing-extensions", "z3-solver==4.13.0.0"]
+dynamic = ["version"]
+
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+[project.optional-dependencies]
+docs = ["furo", "myst-parser", "sphinx", "sphinx-autodoc-typehints"]
+testing = ["pytest"]
+
+[tool.setuptools]
+license-files = ["LICENSE"]
+include-package-data = false
+
+[tool.setuptools.package-data]
+claripy = ["py.typed"]
+
+[tool.setuptools.dynamic]
+version = { attr = "claripy.__version__" }
+
 [tool.black]
 line-length = 120
 target-version = ['py310']
@@ -38,22 +73,11 @@ select = [
     "UP",
     "YTT",
 ]
-ignore = [
-    "E501",
-    "E741",
-    "RUF012",
-]
+ignore = ["E501", "E741", "RUF012"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = [
-    "B011",
-    "BLE",
-    "F841",
-    "INP001",
-]
-"docs/conf.py" = [
-    "INP001",
-]
+"tests/**" = ["B011", "BLE", "F841", "INP001"]
+"docs/conf.py" = ["INP001"]
 
 [tool.ruff.lint.isort]
 required-imports = ["from __future__ import annotations"]
