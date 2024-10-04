@@ -83,7 +83,7 @@ def replace_dict(
     return rep_queue.pop()
 
 
-def _check_replaceability(expr: Base, old: T, new: T) -> None:
+def _check_replaceability(old: T, new: T) -> None:
     if not isinstance(old, Base) or not isinstance(new, Base):
         raise ClaripyReplacementError("replacements must be AST nodes")
     if type(old) is not type(new):
@@ -94,6 +94,6 @@ def replace(expr: Base, old: T, new: T) -> Base:
     """
     Returns this AST but with the AST 'old' replaced with AST 'new' in its subexpressions.
     """
-    _check_replaceability(expr, old, new)
+    _check_replaceability(old, new)
     replacements: dict[int, Base] = {old.hash(): new}
     return replace_dict(expr, replacements, variable_set=old.variables)
