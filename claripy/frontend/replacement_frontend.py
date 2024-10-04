@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import numbers
-import weakref
 from contextlib import suppress
 
 from claripy import backends
@@ -43,8 +42,8 @@ class ReplacementFrontend(ConstrainedFrontend):
         self._complex_auto_replace = False if complex_auto_replace is None else complex_auto_replace
         self._replace_constraints = False if replace_constraints is None else replace_constraints
         self._unsafe_replacement = False if unsafe_replacement is None else unsafe_replacement
-        self._replacements = {} if replacements is None else replacements
-        self._replacement_cache = weakref.WeakKeyDictionary() if replacement_cache is None else replacement_cache
+        self._replacements = replacements or {}
+        self._replacement_cache = replacement_cache or {}
 
     def _blank_copy(self, c):
         super()._blank_copy(c)
@@ -55,14 +54,14 @@ class ReplacementFrontend(ConstrainedFrontend):
         c._replace_constraints = self._replace_constraints
         c._unsafe_replacement = self._unsafe_replacement
         c._replacements = {}
-        c._replacement_cache = weakref.WeakKeyDictionary()
+        c._replacement_cache = {}
 
     def _copy(self, c):
         super()._copy(c)
         self._actual_frontend._copy(c._actual_frontend)
 
         c._replacements = dict(self._replacements)
-        c._replacement_cache = weakref.WeakKeyDictionary(self._replacement_cache)
+        c._replacement_cache = dict(self._replacement_cache)
 
     #
     # Replacements
@@ -75,10 +74,10 @@ class ReplacementFrontend(ConstrainedFrontend):
         if old is new:
             return
 
-        if not replace and old.cache_key in self._replacements:
+        if not replace and old.hash() in self._replacements:
             return
 
-        if not promote and old.cache_key in self._replacement_cache:
+        if not promote and old.hash() in self._replacement_cache:
             return
 
         if not isinstance(new, Base):
@@ -91,30 +90,30 @@ class ReplacementFrontend(ConstrainedFrontend):
 
         if invalidate_cache:
             self._replacements = dict(self._replacements)
-            self._replacement_cache = weakref.WeakKeyDictionary(self._replacements)
+            self._replacement_cache = dict(self._replacements)
 
-        self._replacements[old.cache_key] = new
-        self._replacement_cache[old.cache_key] = new
+        self._replacements[old.hash()] = new
+        self._replacement_cache[old.hash()] = new
 
     def remove_replacements(self, old_entries):
         self._replacements = {k: v for k, v in self._replacements.items() if k not in old_entries}
-        self._replacement_cache = weakref.WeakKeyDictionary(self._replacements)
+        self._replacement_cache = dict(self._replacements)
 
     def clear_replacements(self):
         self._replacements = {}
-        self._replacement_cache = weakref.WeakKeyDictionary(self._replacements)
+        self._replacement_cache = dict(self._replacements)
 
     def _replacement(self, old):
         if not isinstance(old, Base):
             return old
 
-        if old.cache_key in self._replacement_cache:
-            return self._replacement_cache[old.cache_key]
+        if old.hash() in self._replacement_cache:
+            return self._replacement_cache[old.hash()]
 
         # not found in the cache
         new = old.replace_dict(self._replacement_cache)
         if new is not old:
-            self._replacement_cache[old.cache_key] = new
+            self._replacement_cache[old.hash()] = new
         return new
 
     def _add_solve_result(self, e, er, r):
@@ -159,7 +158,7 @@ class ReplacementFrontend(ConstrainedFrontend):
         ) = s
 
         super().__setstate__(base_state)
-        self._replacement_cache = weakref.WeakKeyDictionary(self._replacements)
+        self._replacement_cache = dict(self._replacements)
 
     #
     # Replacement solving

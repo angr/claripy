@@ -113,10 +113,10 @@ class BackendConcrete(Backend):
         Override Backend.convert() to add fast paths for BVVs and BoolVs.
         """
         if type(expr) is BV and expr.op == "BVV":
-            cached_obj = self._object_cache.get(expr._cache_key, None)
+            cached_obj = self._object_cache.get(expr.hash(), None)
             if cached_obj is None:
                 cached_obj = self.BVV(*expr.args)
-                self._object_cache[expr._cache_key] = cached_obj
+                self._object_cache[expr.hash()] = cached_obj
             return cached_obj
         if type(expr) is Bool and expr.op == "BoolV":
             return expr.args[0]

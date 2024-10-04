@@ -34,7 +34,7 @@ def _deduplicate_filter(args):
     seen = set()
     new_args = []
     for arg in args:
-        key = arg.cache_key
+        key = arg.hash()
         if key in seen:
             continue
         seen.add(key)
@@ -631,14 +631,14 @@ def bitwise_xor_simplifier(a, b, *args):
     def _flattening_filter(args):
         # since a ^ a == 0, we can safely remove those from args
         # this procedure is done carefully in order to keep the ordering of arguments
-        ctr = collections.Counter(arg.cache_key for arg in args)
+        ctr = collections.Counter(arg.hash() for arg in args)
         res = []
         seen = set()
         for arg in args:
-            if ctr[arg.cache_key] % 2 == 0:
+            if ctr[arg.hash()] % 2 == 0:
                 continue
             l1 = len(seen)
-            seen.add(arg.cache_key)
+            seen.add(arg.hash())
             l2 = len(seen)
             if l1 != l2:
                 res.append(arg)

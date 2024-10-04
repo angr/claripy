@@ -10,7 +10,7 @@ from contextlib import suppress
 from enum import IntEnum
 from hashlib import blake2b
 from itertools import chain
-from typing import TYPE_CHECKING, Generic, NoReturn, TypeVar, Union, cast
+from typing import TYPE_CHECKING, NoReturn, TypeVar, Union, cast
 from weakref import WeakValueDictionary
 
 from typing_extensions import Self
@@ -36,24 +36,6 @@ ArgType = Union["Base", bool, int, float, str, FSort, tuple["ArgType"], None]
 
 T = TypeVar("T", bound="Base")
 A = TypeVar("A", bound="Annotation")
-
-
-class ASTCacheKey(Generic[T]):
-    """ASTCacheKey is a wrapper around an AST that is used as a key in caches."""
-
-    __slots__ = ("ast", "__weakref__")
-
-    def __init__(self, a: T):
-        self.ast: T = a
-
-    def __hash__(self):
-        return self.ast.hash()
-
-    def __eq__(self, other):
-        return type(self) is type(other) and self.ast._hash == other.ast._hash
-
-    def __repr__(self):
-        return f"<Key {self.ast._type_name()} {self.ast.__repr__(inner=True)}>"
 
 
 class SimplificationLevel(IntEnum):
@@ -140,7 +122,6 @@ class Base:
     _errored: set[Backend]
 
     # Caching
-    _cache_key: ASTCacheKey[Self]
     _cached_encoded_name: bytes | None
 
     # Extra information
@@ -159,7 +140,6 @@ class Base:
         "_uneliminatable_annotations",
         "_relocatable_annotations",
         "_errored",
-        "_cache_key",
         "_cached_encoded_name",
         "_uninitialized",
         "__weakref__",
@@ -387,7 +367,6 @@ class Base:
         self._errored = errored if errored is not None else set()
 
         self._simplified = simplified
-        self._cache_key = ASTCacheKey(self)
 
         self._uninitialized = uninitialized
 
@@ -497,13 +476,6 @@ class Base:
         allowing the claripy hash to be used directly, eg as a cache key.
         """
         return self._hash
-
-    @property
-    def cache_key(self: Self) -> ASTCacheKey[Self]:
-        """
-        A key that refers to this AST - this value is appropriate for usage as a key in dictionaries.
-        """
-        return self._cache_key
 
     @property
     def _encoded_name(self) -> bytes:
@@ -840,8 +812,8 @@ class Base:
         ast_queue = deque([self])
         while ast_queue:
             ast = ast_queue.pop()
-            if isinstance(ast, Base) and id(ast.cache_key) not in seen:
-                seen.add(id(ast.cache_key))
+            if isinstance(ast, Base) and ast.hash() not in seen:
+                seen.add(ast.hash())
 
                 if ast.depth == 1:
                     yield ast
@@ -984,14 +956,14 @@ class Base:
                     rep_queue.append(repl)
                     continue
 
-                if ast.cache_key in replacements:
-                    repl = replacements[ast.cache_key]
+                if ast.hash() in replacements:
+                    repl = replacements[ast.hash()]
 
                 elif ast.variables >= variable_set:
                     if ast.is_leaf():
                         repl = leaf_operation(ast)
                         if repl is not ast:
-                            replacements[ast.cache_key] = repl
+                            replacements[ast.hash()] = repl
 
                     elif ast.depth > 1:
                         arg_queue.append(iter(ast.args))
@@ -1013,7 +985,7 @@ class Base:
                     # Check if replacement occurred.
                     if any((a is not b for a, b in zip(ast.args, args, strict=False))):
                         repl = ast.make_like(ast.op, tuple(args))
-                        replacements[ast.cache_key] = repl
+                        replacements[ast.hash()] = repl
 
                     rep_queue.append(repl)
 
@@ -1028,7 +1000,7 @@ class Base:
         Returns this AST but with the AST 'old' replaced with AST 'new' in its subexpressions.
         """
         self._check_replaceability(old, new)
-        replacements = {old.cache_key: new}
+        replacements = {old.hash(): new}
         return self.replace_dict(replacements, variable_set=old.variables)
 
     @staticmethod
@@ -1043,9 +1015,9 @@ class Base:
         var_map = {} if var_map is None else var_map
 
         for v in self.leaf_asts():
-            if v.cache_key not in var_map and v.op in {"BVS", "BoolS", "FPS"}:
+            if v.hash() not in var_map and v.op in {"BVS", "BoolS", "FPS"}:
                 new_name = "canonical_%d" % next(counter)
-                var_map[v.cache_key] = v._rename(new_name)
+                var_map[v.hash()] = v._rename(new_name)
 
         return var_map, counter, self.replace_dict(var_map)
 

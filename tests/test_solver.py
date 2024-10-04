@@ -69,12 +69,12 @@ def raw_replacement_solver(reuse_z3_solver):
 
     y = claripy.BVS("y", 32)
     sr.add([y + 1 == 200])
-    assert (y + 1).cache_key in sr._replacements
+    assert (y + 1).hash() in sr._replacements
     assert sr._replacement(y + 1) is claripy.BVV(200, 32)
 
     srb = sr.branch()
     assert len(srb.constraints) == len(sr.constraints)  # pylint:disable=no-member
-    assert (y + 1).cache_key in sr._replacements
+    assert (y + 1).hash() in sr._replacements
     assert sr._replacement(y + 1) is claripy.BVV(200, 32)
 
     sr = claripy.SolverReplacement()
