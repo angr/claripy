@@ -1,0 +1,13 @@
+name: angr Ecosystem Test
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  ecosystem:
+    uses: angr/ci-settings/.github/workflows/angr-ci.yml@master
+
