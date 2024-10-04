@@ -58,7 +58,7 @@ class TestSimplify(unittest.TestCase):
 
     def test_rotate_shift_mask_simplification(self):
         a = claripy.BVS("N", 32).annotate(claripy.annotation.StridedIntervalAnnotation(1, 0x1, 0xC))
-        extend_ = claripy.BVS("extend", 32, uninitialized=True)
+        extend_ = claripy.BVS("extend", 32)
         a_ext = extend_.concat(a)
         expr = ((a_ext << 3) | (claripy.LShR(a_ext, 61))) & 0x7FFFFFFF8
         model_vsa = claripy.backends.vsa.convert(expr)
