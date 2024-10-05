@@ -289,7 +289,7 @@ class TestStrings(unittest.TestCase):
             self.assertTrue(32 < s.index("an") < 38)
 
     def test_str_to_int(self):
-        str_symb = claripy.StringS("symb_strtoint", 4, explicit_name=True)
+        str_symb = claripy.StringS("symb_strtoint", explicit_name=True)
         res = claripy.StrToInt(str_symb)
         solver = self.get_solver()
         target_num = 12 if KEEP_TEST_PERFORMANT else 100000

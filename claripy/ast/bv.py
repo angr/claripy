@@ -291,9 +291,9 @@ def SI(
     )
 
 
-def TSI(bits, name=None, uninitialized=False, explicit_name=None):
+def TSI(bits, name=None, explicit_name=None):
     name = "unnamed" if name is None else name
-    return BVS(name, bits, uninitialized=uninitialized, explicit_name=explicit_name)
+    return BVS(name, bits, explicit_name=explicit_name)
 
 
 def ESI(bits, **kwargs):

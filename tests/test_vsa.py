@@ -580,7 +580,6 @@ class TestVSAOperations(unittest.TestCase):  # pylint: disable=no-member functio
     def test_comparison_si_bvv(self):
         # Comparison between claripy.SI and BVV
         si = claripy.SI(bits=32, stride=1, lower_bound=-0x7F, upper_bound=0x7F)
-        claripy.backends.vsa.convert(si).uninitialized = True
         bvv = claripy.BVV(0x30, 32)
         comp = si < bvv
         assert claripy.backends.vsa.convert(comp).identical(MaybeResult())
