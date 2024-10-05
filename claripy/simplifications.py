@@ -5,9 +5,13 @@ import collections
 import itertools
 import operator
 from functools import reduce
+from typing import TYPE_CHECKING
 
 import claripy
 from claripy.fp import FSORT_DOUBLE, FSORT_FLOAT
+
+if TYPE_CHECKING:
+    from claripy.ast.base import Base
 
 SIMPLE_OPS = ("Concat", "SignExt", "ZeroExt")
 
@@ -829,7 +833,7 @@ def extract_simplifier(high, low, val):
 
             # avoid extracting if we need the full value
             if new_high == result.length - 1 and low_loc == 0:
-                return result
+                return result, True
 
             # else extract the part we need
             return result[new_high:low_loc]
@@ -1110,13 +1114,10 @@ def zeroext_comparing_against_simplifier(op, a, b):
     return None
 
 
-_simple_bool_simplifiers = {
+_all_simplifiers = {
     "And": boolean_and_simplifier,
     "Or": boolean_or_simplifier,
     "Not": boolean_not_simplifier,
-}
-
-_all_simplifiers = _simple_bool_simplifiers | {
     "Reverse": bv_reverse_simplifier,
     "Extract": extract_simplifier,
     "Concat": concat_simplifier,
@@ -1141,16 +1142,21 @@ _all_simplifiers = _simple_bool_simplifiers | {
     "__invert__": invert_simplifier,
 }
 
-# the actual functions
+# the actual function
 
 
-def simplify_bool_condition(op, args):
-    if op not in _simple_bool_simplifiers:
-        return None
-    return _simple_bool_simplifiers[op](*args)
+def simplify(op, args) -> tuple[Base | None, bool]:
+    """Simplifies the given operation with the given arguments. Returns the
+    simplified result if possible, along with a boolean representing whether
+    annotations were handled by the simplifier.
+    """
 
-
-def simplify(op, args):
     if op not in _all_simplifiers:
-        return None
-    return _all_simplifiers[op](*args)
+        return None, False
+
+    simplified = _all_simplifiers[op](*args)
+
+    if isinstance(simplified, tuple):
+        return simplified[0], simplified[1]
+
+    return simplified, False

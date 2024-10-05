@@ -246,7 +246,7 @@ class Base:
         length: int | None = None,
     ) -> Self:
         # Try to simplify the expression again
-        simplified = claripy.simplifications.simplify(op, args) if simplify else None
+        simplified, annotated = claripy.simplifications.simplify(op, args) if simplify else (None, False)
         if simplified is not None:
             op = simplified.op
         if (  # fast path
@@ -294,7 +294,10 @@ class Base:
         # special case: if self is one of the args, we do not copy annotations over from self since child
         # annotations will be re-processed during AST creation.
         if annotations is None:
-            annotations = self.annotations if not args or not any(self is arg for arg in args) else ()
+            if not annotated:
+                annotations = self.annotations if not args or not any(self is arg for arg in args) else ()
+            else:
+                annotations = simplified.annotations
         if variables is None and op in all_operations:
             variables = self.variables
         if uninitialized is None:
