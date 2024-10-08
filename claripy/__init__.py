@@ -107,7 +107,7 @@ from claripy.solvers import (
     SolverVSA,
 )
 
-__version__ = "9.2.122.dev0"
+__version__ = "9.2.122"
 
 __all__ = (
     "algorithm",
