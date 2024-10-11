@@ -197,8 +197,8 @@ def FullSet(bits: int) -> BVSet:
     return SI(bits, 0, 2**bits - 1, 1)
 
 
-def ValueSet(bvset: BVSet, region_id: str = "global", base_addr: int = 0) -> BVSet:
-    return bvset.annotate(RegionAnnotation(region_id, base_addr, 0))
+def ValueSet(bvset: BVSet, region_id: str = "global", base_addr: int = 0, offset: int = 0) -> BVSet:
+    return bvset.annotate(RegionAnnotation(region_id, base_addr, offset))
 
 
 # Set operations
