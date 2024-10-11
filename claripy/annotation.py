@@ -79,33 +79,6 @@ class SimplificationAvoidanceAnnotation(Annotation):
         return False
 
 
-class StridedIntervalAnnotation(SimplificationAvoidanceAnnotation):
-    """StridedIntervalAnnotation allows annotating a BVS to represent a strided interval."""
-
-    stride: int
-    lower_bound: int
-    upper_bound: int
-
-    def __init__(self, stride: int, lower_bound: int, upper_bound: int):
-        self.stride = stride
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-
-    def __hash__(self):
-        return hash((self.stride, self.lower_bound, self.upper_bound))
-
-    def __eq__(self, other):
-        return (
-            isinstance(other, StridedIntervalAnnotation)
-            and self.stride == other.stride
-            and self.lower_bound == other.lower_bound
-            and self.upper_bound == other
-        )
-
-    def __repr__(self):
-        return f"<StridedIntervalAnnotation {self.stride}:{self.lower_bound} - {self.upper_bound}>"
-
-
 class RegionAnnotation(SimplificationAvoidanceAnnotation):
     """
     Use RegionAnnotation to annotate ASTs. Normally, an AST annotated by
