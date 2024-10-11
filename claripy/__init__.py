@@ -73,6 +73,7 @@ from claripy.ast.bvset import (
     Set,
     Singleton,
     Union,
+    ValueSet,
     Widen,
 )
 from claripy.ast.fp import (
@@ -274,4 +275,5 @@ __all__ = (
     "BVSetSignExt",
     "BVSetIf",
     "BVSetReverse",
+    "ValueSet",
 )

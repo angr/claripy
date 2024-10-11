@@ -1,14 +1,20 @@
 from __future__ import annotations
 
-from claripy import operations
+from claripy.annotation import RegionAnnotation
 from claripy.ast.base import Base
+from claripy.operations import length_same_check, op
+from claripy.vsa_simplifications import simplify_bvset
 
 
 class Set(Base):
-    pass
+    """Base class for set types. Do not use directly."""
 
 
 class BoolSet(Set):
+    """Set of boolean values. args[0] is if the set contains True, args[1] is if
+    the set contains False. Since this type is fairly simple, it is implemented
+    directly, all ops are immediate."""
+
     @staticmethod
     def true() -> BoolSet:
         return BoolSet("BoolSet", True, False)
@@ -46,6 +52,10 @@ class BoolSet(Set):
 
 
 class BVSet(Set):
+    """Set of bitvector values. For the BVSet op, args[0] is a set of strided
+    intervals. Each strided interval is a tuple of (lower bound, upper bound,
+    stride)."""
+
     def union(self, other: BVSet) -> BVSet:
         return Union(self, other)
 
@@ -127,75 +137,113 @@ class BVSet(Set):
     def __ne__(self, other: BVSet) -> BoolSet:
         return BVSetUGT(self, other) | BVSetULT(self, other)
 
+    @property
+    def singlevalued(self) -> bool:
+        return self.cardinality == 1
+
+    @property
+    def multivalued(self) -> bool:
+        return self.cardinality > 1
+
+    @property
+    def cardinality(self) -> int:
+        if self.op == "BVSet":
+            if self.args[0] == frozenset():
+                return 0
+            if len(self.args[0]) == 1:
+                si = next(iter(self.args[0]))
+                return (si[1] - si[0] + 1) // si[2]
+            # TODO: Handle case where there are multiple SI. We can't just sum
+            # the individual cardinalities because they might overlap.
+            raise NotImplementedError("TODO")
+        return simplify_bvset(self).cardinality
+
 
 # Primitive operations
 
 
 def SI(bits: int, lb: int, ub: int, stride: int) -> BVSet:
+    """Creates a BVSet representing a single interval."""
+
     return BVSet(
         "BVSet",
-        bits,
-        frozenset(
-            (lb, ub, stride),
+        (
+            frozenset(
+                (lb, ub, stride),
+            ),
         ),
+        length=bits,
     )
 
 
-def Singleton(bits: int, value: int) -> BVSet:
+def Singleton(value: int, bits: int) -> BVSet:
+    """Creates a BVSet representing a single value."""
+
+    if isinstance(value, bytes | bytearray | memoryview):
+        value = int.from_bytes(value, "big")
+
     return SI(bits, value, value, 1)
 
 
 def EmptySet(bits: int) -> BVSet:
-    return BVSet("BVSet", bits, frozenset())
+    """Creates an empty BVSet."""
+
+    return BVSet("BVSet", frozenset(), length=bits)
 
 
 def FullSet(bits: int) -> BVSet:
+    """Creates a BVSet representing the full set of values."""
+
     return SI(bits, 0, 2**bits - 1, 1)
+
+
+def ValueSet(bvset: BVSet, region_id: str = "global", base_addr: int = 0) -> BVSet:
+    return bvset.annotate(RegionAnnotation(region_id, base_addr, 0))
 
 
 # Set operations
 
-Union = operations.op("BVSetUnion", (BVSet, BVSet), BVSet)
-Intersection = operations.op("BVSetIntersection", (BVSet, BVSet), BVSet)
-Widen = operations.op("BVSetWiden", (BVSet, BVSet), BVSet)
+Union = op("BVSetUnion", (BVSet, BVSet), BVSet, extra_check=length_same_check)
+Intersection = op("BVSetIntersection", (BVSet, BVSet), BVSet, extra_check=length_same_check)
+Widen = op("BVSetWiden", (BVSet, BVSet), BVSet, extra_check=length_same_check)
 
 # Arithmetic operations
-BVSetAdd = operations.op("BVSetAdd", (BVSet, BVSet), BVSet)
-BVSetSub = operations.op("BVSetSub", (BVSet, BVSet), BVSet)
-BVSetMul = operations.op("BVSetMul", (BVSet, BVSet), BVSet)
-BVSetMod = operations.op("BVSetMod", (BVSet, BVSet), BVSet)
+BVSetAdd = op("BVSetAdd", (BVSet, BVSet), BVSet, extra_check=length_same_check)
+BVSetSub = op("BVSetSub", (BVSet, BVSet), BVSet, extra_check=length_same_check)
+BVSetMul = op("BVSetMul", (BVSet, BVSet), BVSet, extra_check=length_same_check)
+BVSetMod = op("BVSetMod", (BVSet, BVSet), BVSet, extra_check=length_same_check)
 
 # Bitwise operations
 
-BVSetAnd = operations.op("BVSetAnd", (BVSet, BVSet), BVSet)
-BVSetOr = operations.op("BVSetOr", (BVSet, BVSet), BVSet)
-BVSetXor = operations.op("BVSetXor", (BVSet, BVSet), BVSet)
-BVSetRotateLeft = operations.op("BVSetRotateLeft", (BVSet, int), BVSet)
-BVSetRotateRight = operations.op("BVSetRotateRight", (BVSet, int), BVSet)
-BVSetLShR = operations.op("BVSetLShR", (BVSet, int), BVSet)
+BVSetAnd = op("BVSetAnd", (BVSet, BVSet), BVSet, extra_check=length_same_check)
+BVSetOr = op("BVSetOr", (BVSet, BVSet), BVSet, extra_check=length_same_check)
+BVSetXor = op("BVSetXor", (BVSet, BVSet), BVSet, extra_check=length_same_check)
+BVSetRotateLeft = op("BVSetRotateLeft", (BVSet, int), BVSet)
+BVSetRotateRight = op("BVSetRotateRight", (BVSet, int), BVSet)
+BVSetLShR = op("BVSetLShR", (BVSet, int), BVSet)
 
 # Comparison operations
 
-BVSetUGT = operations.op("BVSetUGT", (BVSet, BVSet), BoolSet)
-BVSetUGE = operations.op("BVSetUGE", (BVSet, BVSet), BoolSet)
-BVSetULT = operations.op("BVSetULT", (BVSet, BVSet), BoolSet)
-BVSetULE = operations.op("BVSetULE", (BVSet, BVSet), BoolSet)
-BVSetSGT = operations.op("BVSetSGT", (BVSet, BVSet), BoolSet)
-BVSetSGE = operations.op("BVSetSGE", (BVSet, BVSet), BoolSet)
-BVSetSLT = operations.op("BVSetSLT", (BVSet, BVSet), BoolSet)
-BVSetSLE = operations.op("BVSetSLE", (BVSet, BVSet), BoolSet)
+BVSetUGT = op("BVSetUGT", (BVSet, BVSet), BoolSet, extra_check=length_same_check)
+BVSetUGE = op("BVSetUGE", (BVSet, BVSet), BoolSet, extra_check=length_same_check)
+BVSetULT = op("BVSetULT", (BVSet, BVSet), BoolSet, extra_check=length_same_check)
+BVSetULE = op("BVSetULE", (BVSet, BVSet), BoolSet, extra_check=length_same_check)
+BVSetSGT = op("BVSetSGT", (BVSet, BVSet), BoolSet, extra_check=length_same_check)
+BVSetSGE = op("BVSetSGE", (BVSet, BVSet), BoolSet, extra_check=length_same_check)
+BVSetSLT = op("BVSetSLT", (BVSet, BVSet), BoolSet, extra_check=length_same_check)
+BVSetSLE = op("BVSetSLE", (BVSet, BVSet), BoolSet, extra_check=length_same_check)
 
 # Concat and Extract
 
-BVSetConcat = operations.op("BVSetConcat", (BVSet, BVSet), BVSet)
-BVSetExtract = operations.op("BVSetExtract", (int, int, BVSet), BVSet)
-BVSetZeroExt = operations.op("BVSetZeroExt", (BVSet, int), BVSet)
-BVSetSignExt = operations.op("BVSetSignExt", (BVSet, int), BVSet)
+BVSetConcat = op("BVSetConcat", (BVSet, BVSet), BVSet, extra_check=length_same_check)
+BVSetExtract = op("BVSetExtract", (int, int, BVSet), BVSet)
+BVSetZeroExt = op("BVSetZeroExt", (BVSet, int), BVSet)
+BVSetSignExt = op("BVSetSignExt", (BVSet, int), BVSet)
 
 # If-Then-Else
 
-BVSetIf = operations.op("BVSetIf", (BoolSet, BVSet, BVSet), BVSet)
+BVSetIf = op("BVSetIf", (BoolSet, BVSet, BVSet), BVSet, extra_check=lambda _, t, e: length_same_check(t, e))
 
 # Reverse
 
-BVSetReverse = operations.op("BVSetReverse", (BVSet,), BVSet)
+BVSetReverse = op("BVSetReverse", (BVSet,), BVSet)
