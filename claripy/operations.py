@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import itertools
+from typing import TYPE_CHECKING, TypeVar
 
 import claripy
 import claripy.simplifications
@@ -8,8 +9,15 @@ import claripy.simplifications
 from . import debug as _d
 from .errors import ClaripyOperationError, ClaripyTypeError
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
-def op(name, arg_types, return_type, extra_check=None, calc_length=None):
+    from claripy.ast.base import Base
+
+T = TypeVar("T", bound="Base")
+
+
+def op(name, arg_types, return_type: type[T], extra_check=None, calc_length=None) -> Callable[..., T]:
     if isinstance(arg_types, tuple | list):
         expected_num_args = len(arg_types)
     elif isinstance(arg_types, type):
