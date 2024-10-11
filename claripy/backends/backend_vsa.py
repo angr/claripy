@@ -43,6 +43,3 @@ class BackendVSA(Backend):
 
     def solution(self, expr, v, extra_constraints=(), solver=None, model_callback=None):
         return expr.solution(v)
-
-    def cardinality(self, a):
-        return super().cardinality(a)
