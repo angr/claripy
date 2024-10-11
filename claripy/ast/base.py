@@ -952,18 +952,6 @@ class Base:
             return self
 
     @property
-    def singlevalued(self) -> bool:
-        return self._first_backend("singlevalued")
-
-    @property
-    def multivalued(self) -> bool:
-        return self._first_backend("multivalued")
-
-    @property
-    def cardinality(self) -> int:
-        return self._first_backend("cardinality")
-
-    @property
     def concrete(self) -> bool:
         return not self.symbolic
 
