@@ -1,146 +1,153 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import claripy
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
-def vsa_union_simplifier(a, b):
+    from claripy.ast.bvset import BVSet
+
+
+def vsa_union_simplifier(a, b) -> BVSet:
     if a.op == "BVSet" and b.op == "BVSet":
         # TODO: collapsing logic
         return claripy.ast.bvset.BVSet("BVSet", a.bits, a.args[2] | b.args[2])
     return None
 
 
-def vsa_intersection_simplifier(a, b):
+def vsa_intersection_simplifier(a, b) -> BVSet:
     # TODO
     return None
 
 
-def vsa_widen_simplifier(a, b):
+def vsa_widen_simplifier(a, b) -> BVSet:
     # TODO
     return None
 
 
-def vsa_add_simplifier(a, b):
+def vsa_add_simplifier(a, b) -> BVSet:
     # TODO
     return None
 
 
-def vsa_sub_simplifier(a, b):
+def vsa_sub_simplifier(a, b) -> BVSet:
     # TODO
     return None
 
 
-def vsa_mul_simplifier(a, b):
+def vsa_mul_simplifier(a, b) -> BVSet:
     # TODO
     return None
 
 
-def vsa_mod_simplifier(a, b):
+def vsa_mod_simplifier(a, b) -> BVSet:
     # TODO
     return None
 
 
-def vsa_and_simplifier(a, b):
+def vsa_and_simplifier(a, b) -> BVSet:
     # TODO
     return None
 
 
-def vsa_or_simplifier(a, b):
+def vsa_or_simplifier(a, b) -> BVSet:
     # TODO
     return None
 
 
-def vsa_xor_simplifier(a, b):
+def vsa_xor_simplifier(a, b) -> BVSet:
     # TODO
     return None
 
 
-def vsa_rotateleft_simplifier(a, b):
+def vsa_rotateleft_simplifier(a, b) -> BVSet:
     # TODO
     return None
 
 
-def vsa_rotateright_simplifier(a, b):
+def vsa_rotateright_simplifier(a, b) -> BVSet:
     # TODO
     return None
 
 
-def vsa_lshiftr_simplifier(a, b):
+def vsa_lshiftr_simplifier(a, b) -> BVSet:
     # TODO
     return None
 
 
-def vsa_ugt_simplifier(a, b):
+def vsa_ugt_simplifier(a, b) -> BVSet:
     # TODO
     return None
 
 
-def vsa_uge_simplifier(a, b):
+def vsa_uge_simplifier(a, b) -> BVSet:
     # TODO
     return None
 
 
-def vsa_ult_simplifier(a, b):
+def vsa_ult_simplifier(a, b) -> BVSet:
     # TODO
     return None
 
 
-def vsa_ule_simplifier(a, b):
+def vsa_ule_simplifier(a, b) -> BVSet:
     # TODO
     return None
 
 
-def vsa_sgt_simplifier(a, b):
+def vsa_sgt_simplifier(a, b) -> BVSet:
     # TODO
     return None
 
 
-def vsa_sge_simplifier(a, b):
+def vsa_sge_simplifier(a, b) -> BVSet:
     # TODO
     return None
 
 
-def vsa_slt_simplifier(a, b):
+def vsa_slt_simplifier(a, b) -> BVSet:
     # TODO
     return None
 
 
-def vsa_sle_simplifier(a, b):
+def vsa_sle_simplifier(a, b) -> BVSet:
     # TODO
     return None
 
 
-def vsa_concat_simplifier(a, b):
+def vsa_concat_simplifier(a, b) -> BVSet:
     # TODO
     return None
 
 
-def vsa_extract_simplifier(high, low, base):
+def vsa_extract_simplifier(high, low, base) -> BVSet:
     # TODO
     return None
 
 
-def vsa_zeroext_simplifier(base, amount):
+def vsa_zeroext_simplifier(base, amount) -> BVSet:
     # TODO
     return None
 
 
-def vsa_signext_simplifier(base, amount):
+def vsa_signext_simplifier(base, amount) -> BVSet:
     # TODO
     return None
 
 
-def vsa_if_simplifier(cond, then, els):
+def vsa_if_simplifier(cond, then, els) -> BVSet:
     # TODO
     return None
 
 
-def vsa_reverse_simplifier(a):
+def vsa_reverse_simplifier(a) -> BVSet:
     # TODO
     return None
 
 
-vsa_simplifications = {
+vsa_simplifications: dict[str, Callable[..., BVSet]] = {
     "BVSetUnion": vsa_union_simplifier,
     "BVSetIntersection": vsa_intersection_simplifier,
     "BVSetWiden": vsa_widen_simplifier,
@@ -169,3 +176,16 @@ vsa_simplifications = {
     "If": vsa_if_simplifier,
     "Reverse": vsa_reverse_simplifier,
 }
+
+
+def simplify_bvset(bvset: BVSet) -> BVSet:
+    """
+    Simplifies the given BVSet. This function does not care about annotations,
+    so if annotations are present, they will be lost. To preserve annotations,
+    use the simplify() function in simplifications.py instead.
+    """
+
+    if bvset.op not in vsa_simplifications:
+        return bvset
+
+    return vsa_simplifications[bvset.op](*bvset.args)
