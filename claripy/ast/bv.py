@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import numbers
 import weakref
 from contextlib import suppress
 
@@ -278,71 +277,6 @@ def BVV(value, size=None, **kwargs) -> BV:
     return result
 
 
-def SI(
-    name="unnamed",
-    bits=0,
-    lower_bound=None,
-    upper_bound=None,
-    stride=None,
-    explicit_name=None,
-):
-    return BVS(name, bits, explicit_name=explicit_name).annotate(
-        claripy.annotation.StridedIntervalAnnotation(stride, lower_bound, upper_bound)
-    )
-
-
-def TSI(bits, name=None, uninitialized=False, explicit_name=None):
-    name = "unnamed" if name is None else name
-    return BVS(name, bits, uninitialized=uninitialized, explicit_name=explicit_name)
-
-
-def ESI(bits, **kwargs):
-    return BVV(None, bits, **kwargs)
-
-
-def ValueSet(bits, region=None, region_base_addr=None, value=None, name=None, val=None):
-    # Backward compatibility
-    if value is None and val is not None:
-        value = val
-    if region_base_addr is None:
-        region_base_addr = 0
-
-    v = region_base_addr + value
-    if isinstance(v, claripy.ast.Base):
-        v = claripy.simplify(v)
-
-    # Backward compatibility
-    if isinstance(v, numbers.Number):
-        min_v, max_v = v, v
-        stride = 0
-    elif isinstance(v, claripy.ast.Base):
-        si_anno = v.get_annotation(claripy.annotation.StridedIntervalAnnotation)
-        if si_anno is not None:
-            min_v = si_anno.lower_bound
-            max_v = si_anno.upper_bound
-            stride = si_anno.stride
-        elif v.op == "BVV":
-            min_v = v.args[0]
-            max_v = v.args[0]
-            stride = 0
-        else:
-            raise ClaripyValueError(f"ValueSet() does not take `value` ast with op {v.op}")
-    else:
-        raise ClaripyValueError(f"ValueSet() does not take `value` of type {type(value)}")
-
-    if name is None:
-        name = "ValueSet"
-    bvs = BVS(name, bits).annotate(
-        claripy.annotation.StridedIntervalAnnotation(stride, region_base_addr + min_v, region_base_addr + max_v)
-    )
-
-    # Annotate the bvs and return the new AST
-    return bvs.annotate(claripy.annotation.RegionAnnotation(region, region_base_addr, value))
-
-
-VS = ValueSet
-
-
 #
 # Unbound operations
 #
@@ -413,28 +347,6 @@ RotateRight = operations.op(
     calc_length=operations.basic_length_calc,
 )
 Reverse = operations.op("Reverse", (BV,), BV, calc_length=operations.basic_length_calc)
-
-union = operations.op(
-    "union",
-    (BV, BV),
-    BV,
-    extra_check=operations.length_same_check,
-    calc_length=operations.basic_length_calc,
-)
-widen = operations.op(
-    "widen",
-    (BV, BV),
-    BV,
-    extra_check=operations.length_same_check,
-    calc_length=operations.basic_length_calc,
-)
-intersection = operations.op(
-    "intersection",
-    (BV, BV),
-    BV,
-    extra_check=operations.length_same_check,
-    calc_length=operations.basic_length_calc,
-)
 
 #
 # Bound operations
@@ -536,13 +448,3 @@ BV.Extract = staticmethod(
 )
 BV.Concat = staticmethod(operations.op("Concat", BV, BV, calc_length=operations.concat_length_calc))
 BV.reversed = property(operations.op("Reverse", (BV,), BV, calc_length=operations.basic_length_calc))
-
-BV.union = operations.op(
-    "union", (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc
-)
-BV.widen = operations.op(
-    "widen", (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc
-)
-BV.intersection = operations.op(
-    "intersection", (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc
-)

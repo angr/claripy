@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 
 import claripy
 from claripy.fp import FSORT_DOUBLE, FSORT_FLOAT
+from claripy.vsa_simplifications import vsa_simplifications
 
 if TYPE_CHECKING:
     from claripy.ast.base import Base
@@ -1140,7 +1141,7 @@ _all_simplifiers = {
     "fpToFP": fptofp_simplifier,
     "StrReverse": str_reverse_simplifier,
     "__invert__": invert_simplifier,
-}
+} | vsa_simplifications
 
 # the actual function
 
