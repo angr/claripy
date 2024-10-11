@@ -135,7 +135,7 @@ def vsa_if_simplifier(cond, then, els):
     return None
 
 
-def vsa_reverse_simplifier(a, b):
+def vsa_reverse_simplifier(a):
     # TODO
     return None
 
