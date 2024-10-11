@@ -188,4 +188,7 @@ def simplify_bvset(bvset: BVSet) -> BVSet:
     if bvset.op not in vsa_simplifications:
         return bvset
 
-    return vsa_simplifications[bvset.op](*bvset.args)
+    simplified = vsa_simplifications[bvset.op](*bvset.args)
+    if simplified is not None:
+        return simplified
+    return bvset
