@@ -5,12 +5,11 @@ import operator
 
 import claripy
 import claripy.backends.backend_vsa as vsa
-
-from .ast.base import Base
-from .ast.bool import Bool
-from .ast.bv import BV, BVS, BVV
-from .errors import BackendError, ClaripyBalancerError, ClaripyBalancerUnsatError, ClaripyOperationError
-from .operations import commutative_operations, opposites
+from claripy.ast.base import Base
+from claripy.ast.bool import Bool
+from claripy.ast.bv import BV, BVS, BVV
+from claripy.errors import BackendError, ClaripyBalancerError, ClaripyBalancerUnsatError, ClaripyOperationError
+from claripy.operations import commutative_operations, opposites
 
 l = logging.getLogger(__name__)
 
@@ -21,8 +20,7 @@ class Balancer:
     unknown terms on one side of an inequality.
     """
 
-    def __init__(self, helper, c, validation_frontend=None):
-        self._helper = helper
+    def __init__(self, c, validation_frontend=None):
         self._validation_frontend = validation_frontend
         self._truisms = []
         self._processed_truisms = set()
@@ -71,7 +69,7 @@ class Balancer:
 
         if self._validation_frontend is not None:
             emin = self._validation_frontend.min(o)
-            bmin = self._helper.min(b)
+            bmin = claripy.backends.vsa.min(b)
             assert emin >= bmin
 
         self._lower_bounds[o.hash()] = b
@@ -87,7 +85,7 @@ class Balancer:
 
         if self._validation_frontend is not None:
             emax = self._validation_frontend.max(o)
-            bmax = self._helper.max(b)
+            bmax = claripy.backends.vsa.max(b)
             assert emax <= bmax
 
         self._upper_bounds[o.hash()] = b
@@ -237,7 +235,7 @@ class Balancer:
                 continue
 
             unpacked_truisms = self._unpack_truisms(truism)
-            if is_false(truism):
+            if claripy.backends.vsa.is_false(truism):
                 raise ClaripyBalancerUnsatError
 
             self._processed_truisms.add(truism)
@@ -262,12 +260,12 @@ class Balancer:
             self._handle(balanced_truism)
 
     def _queue_truism(self, t, check_true=False):
-        if (not check_true) or (check_true and not is_true(t)):
+        if (not check_true) or (check_true and not claripy.backends.vsa.is_true(t)):
             self._truisms.append(t)
 
     def _queue_truisms(self, ts, check_true=False):
         if check_true:
-            self._truisms.extend(t for t in ts if not is_true(t))
+            self._truisms.extend(t for t in ts if not claripy.backends.vsa.is_true(t))
         else:
             self._truisms.extend(ts)
 
@@ -345,7 +343,7 @@ class Balancer:
         return set()
 
     def _unpack_truisms_Or(self, c):
-        vals = [is_false(v) for v in c.args]
+        vals = [claripy.backends.vsa.is_false(v) for v in c.args]
         if all(vals):
             raise ClaripyBalancerUnsatError
         if vals.count(False) == 1:
@@ -436,7 +434,7 @@ class Balancer:
         num_zeroes, inner = truism.args[0].args
         other_side = truism.args[1][len(truism.args[1]) - 1 : len(truism.args[1]) - num_zeroes]
 
-        if is_true(other_side == 0):
+        if claripy.backends.vsa.is_true(other_side == 0):
             # We can safely eliminate this layer of ZeroExt
             new_args = (inner, truism.args[1][len(truism.args[1]) - num_zeroes - 1 : 0])
             return truism.make_like(truism.op, new_args)
@@ -464,14 +462,14 @@ class Balancer:
 
         if high < inner_size - 1:
             left_msb = inner[inner_size - 1 : high + 1]
-            left_msb_zero = is_true(left_msb == 0)
+            left_msb_zero = claripy.backends.vsa.is_true(left_msb == 0)
         else:
             left_msb = None
             left_msb_zero = None
 
         if low > 0:
             left_lsb = inner[high - 1 : 0]
-            left_lsb_zero = is_true(left_lsb == 0)
+            left_lsb_zero = claripy.backends.vsa.is_true(left_lsb == 0)
         else:
             left_lsb = None
             left_lsb_zero = None
@@ -533,7 +531,7 @@ class Balancer:
         left_msb = truism.args[0].args[0]
         right_msb = truism.args[1][size - 1 : size - len(left_msb)]
 
-        if is_true(left_msb == 0) and is_true(right_msb == 0):
+        if claripy.backends.vsa.is_true(left_msb == 0) and claripy.backends.vsa.is_true(right_msb == 0):
             # we can cut these guys off!
             remaining_left = claripy.Concat(*truism.args[0].args[1:])
             remaining_right = truism.args[1][size - len(left_msb) - 1 : 0]
@@ -547,13 +545,13 @@ class Balancer:
         shift_amount_expr = lhs.args[1]
         expr = lhs.args[0]
 
-        shift_amount_values = self._helper.eval(shift_amount_expr, 2)
+        shift_amount_values = claripy.backends.vsa.eval(shift_amount_expr, 2)
         if len(shift_amount_values) != 1:
             return truism
         shift_amount = shift_amount_values[0]
 
         rhs_lower = claripy.Extract(shift_amount - 1, 0, rhs)
-        rhs_lower_values = self._helper.eval(rhs_lower, 2)
+        rhs_lower_values = claripy.backends.vsa.eval(rhs_lower, 2)
         if len(rhs_lower_values) == 1 and rhs_lower_values[0] == 0:
             # we can remove the __lshift__
 
@@ -603,7 +601,7 @@ class Balancer:
     def _handle(self, truism):
         l.debug("Handling %s", truism)
 
-        if is_false(truism):
+        if claripy.backends.vsa.is_false(truism):
             raise ClaripyBalancerUnsatError
         if self._cardinality(truism.args[0]) == 1:
             # we are down to single-cardinality arguments, so our work is not
@@ -672,7 +670,7 @@ class Balancer:
     def _handle___ne__(self, truism):
         lhs, rhs = truism.args
         if rhs.cardinality == 1:
-            val = self._helper.eval(rhs, 1)[0]
+            val = claripy.backends.vsa.eval(rhs, 1)[0]
             max_int = vsa.StridedInterval.max_int(len(rhs))
 
             if val == 0:
@@ -681,9 +679,9 @@ class Balancer:
                 self._add_upper_bound(lhs, max_int - 1)
 
     def _handle_If(self, truism):
-        if is_false(truism.args[2]):
+        if claripy.backends.vsa.is_false(truism.args[2]):
             self._queue_truism(truism.args[0])
-        elif is_false(truism.args[1]):
+        elif claripy.backends.vsa.is_false(truism.args[1]):
             self._queue_truism(self._invert_comparison(truism.args[0]))
 
     _handle___lt__ = _handle_comparison
@@ -698,11 +696,3 @@ class Balancer:
     _handle_SLE = _handle_comparison
     _handle_SGT = _handle_comparison
     _handle_SGE = _handle_comparison
-
-
-def is_true(a):
-    return claripy.backends.vsa.is_true(a)
-
-
-def is_false(a):
-    return claripy.backends.vsa.is_false(a)
