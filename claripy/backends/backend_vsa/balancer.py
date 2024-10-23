@@ -20,8 +20,7 @@ class Balancer:
     unknown terms on one side of an inequality.
     """
 
-    def __init__(self, c, validation_frontend=None):
-        self._validation_frontend = validation_frontend
+    def __init__(self, c):
         self._truisms = []
         self._processed_truisms = set()
         self._identified_assumptions = set()
@@ -67,11 +66,6 @@ class Balancer:
             b = max(b, old_b)
             l.debug("... new bound: %s", b)
 
-        if self._validation_frontend is not None:
-            emin = self._validation_frontend.min(o)
-            bmin = claripy.backends.vsa.min(b)
-            assert emin >= bmin
-
         self._lower_bounds[o.hash()] = b
         self._ast_hash_map[o.hash()] = o
 
@@ -82,11 +76,6 @@ class Balancer:
             l.debug("... old bound: %s", old_b)
             b = min(b, old_b)
             l.debug("... new bound: %s", b)
-
-        if self._validation_frontend is not None:
-            emax = self._validation_frontend.max(o)
-            bmax = claripy.backends.vsa.max(b)
-            assert emax <= bmax
 
         self._upper_bounds[o.hash()] = b
         self._ast_hash_map[o.hash()] = o
