@@ -11,8 +11,8 @@ from claripy.annotation import RegionAnnotation, StridedIntervalAnnotation
 from claripy.ast.base import Base
 from claripy.ast.bv import BV, BVV, ESI, SI, TSI, VS
 from claripy.backends.backend import Backend
+from claripy.backends.backend_vsa.balancer import Balancer
 from claripy.backends.backend_vsa.errors import ClaripyVSAError
-from claripy.balancer import Balancer
 from claripy.errors import BackendError
 from claripy.operations import backend_operations_vsa_compliant, expression_set_operations
 
@@ -468,5 +468,6 @@ class BackendVSA(Backend):
     def CreateTopStridedInterval(bits, name=None, uninitialized=False):
         return StridedInterval.top(bits, name, uninitialized=uninitialized)
 
-    def constraint_to_si(self, expr):
-        return Balancer(self, expr).compat_ret
+    @staticmethod
+    def constraint_to_si(expr):
+        return Balancer(expr).compat_ret

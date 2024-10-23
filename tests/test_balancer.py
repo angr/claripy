@@ -4,6 +4,7 @@ from __future__ import annotations
 import unittest
 
 import claripy
+from claripy.backends.backend_vsa import Balancer
 
 
 class TestBalancer(unittest.TestCase):
@@ -49,26 +50,26 @@ class TestBalancer(unittest.TestCase):
         guy_inc = guy_wide + claripy.BVV(1, 32)
         guy_zx = claripy.ZeroExt(32, guy_inc)
 
-        s, r = claripy.balancer.Balancer(claripy.backends.vsa, guy_inc <= claripy.BVV(39, 32)).compat_ret
+        s, r = Balancer(guy_inc <= claripy.BVV(39, 32)).compat_ret
         assert s
         assert r[0][0] is guy_wide
         assert claripy.backends.vsa.min(r[0][1]) == 0
         assert set(claripy.backends.vsa.eval(r[0][1], 1000)) == {4294967295, *list(range(39))}
 
-        s, r = claripy.balancer.Balancer(claripy.backends.vsa, guy_zx <= claripy.BVV(39, 64)).compat_ret
+        s, r = Balancer(guy_zx <= claripy.BVV(39, 64)).compat_ret
         assert r[0][0] is guy_wide
         assert claripy.backends.vsa.min(r[0][1]) == 0
         assert set(claripy.backends.vsa.eval(r[0][1], 1000)) == {4294967295, *list(range(39))}
 
     def test_simple(self):
         x = claripy.BVS("x", 32)
-        s, r = claripy.balancer.Balancer(claripy.backends.vsa, x <= claripy.BVV(39, 32)).compat_ret
+        s, r = Balancer(x <= claripy.BVV(39, 32)).compat_ret
         assert s
         assert r[0][0] is x
         assert claripy.backends.vsa.min(r[0][1]) == 0
         assert claripy.backends.vsa.max(r[0][1]) == 39
 
-        s, r = claripy.balancer.Balancer(claripy.backends.vsa, x + 1 <= claripy.BVV(39, 32)).compat_ret
+        s, r = Balancer(x + 1 <= claripy.BVV(39, 32)).compat_ret
         assert s
         assert r[0][0] is x
         all_vals = claripy.backends.vsa.convert(r[0][1]).eval(1000)
@@ -80,13 +81,13 @@ class TestBalancer(unittest.TestCase):
 
     def test_widened(self):
         w = claripy.widen(claripy.BVV(1, 32), claripy.BVV(0, 32))
-        s, r = claripy.balancer.Balancer(claripy.backends.vsa, w <= claripy.BVV(39, 32)).compat_ret
+        s, r = Balancer(w <= claripy.BVV(39, 32)).compat_ret
         assert s
         assert r[0][0] is w
         assert claripy.backends.vsa.min(r[0][1]) == 0
         assert claripy.backends.vsa.max(r[0][1]) == 1  # used to be 39, but that was a bug in the VSA widening
 
-        s, r = claripy.balancer.Balancer(claripy.backends.vsa, w + 1 <= claripy.BVV(39, 32)).compat_ret
+        s, r = Balancer(w + 1 <= claripy.BVV(39, 32)).compat_ret
         assert s
         assert r[0][0] is w
         assert claripy.backends.vsa.min(r[0][1]) == 0
@@ -97,7 +98,7 @@ class TestBalancer(unittest.TestCase):
         x = claripy.BVS("x", 32)
 
         # x + 10 <= 20
-        s, r = claripy.balancer.Balancer(claripy.backends.vsa, x + 10 <= claripy.BVV(20, 32)).compat_ret
+        s, r = Balancer(x + 10 <= claripy.BVV(20, 32)).compat_ret
         # mn,mx = claripy.backends.vsa.min(r[0][1]), claripy.backends.vsa.max(r[0][1])
         assert s
         assert r[0][0] is x
@@ -126,7 +127,7 @@ class TestBalancer(unittest.TestCase):
         }
 
         # x - 10 <= 20
-        s, r = claripy.balancer.Balancer(claripy.backends.vsa, x - 10 <= claripy.BVV(20, 32)).compat_ret
+        s, r = Balancer(x - 10 <= claripy.BVV(20, 32)).compat_ret
         assert s
         assert r[0][0] is x
         assert set(claripy.backends.vsa.eval(r[0][1], 1000)) == set(range(10, 31))
@@ -134,7 +135,7 @@ class TestBalancer(unittest.TestCase):
     def test_extract_zeroext(self):
         x = claripy.BVS("x", 8)
         expr = claripy.Extract(31, 0, claripy.ZeroExt(56, x)) <= claripy.BVV(0xE, 32)
-        s, r = claripy.balancer.Balancer(claripy.backends.vsa, expr).compat_ret
+        s, r = Balancer(expr).compat_ret
 
         assert s is True
         assert len(r) == 1
@@ -152,7 +153,7 @@ class TestBalancer(unittest.TestCase):
         x = claripy.BVS("x", 16)
         expr = (claripy.ZeroExt(48, claripy.Reverse(x)) << 0x30) <= 0x40000000000000
 
-        s, r = claripy.balancer.Balancer(claripy.backends.vsa, expr).compat_ret
+        s, r = Balancer(expr).compat_ret
 
         assert s
         assert r[0][0] is x
@@ -198,7 +199,7 @@ class TestBalancer(unittest.TestCase):
         expr = claripy.ZeroExt(
             31, claripy.If(claripy.BVV(0x8, 32) < claripy.BVV(0xFFFFFFFE, 32) + x, claripy.BVV(1, 1), claripy.BVV(0, 1))
         ) == claripy.BVV(0, 32)
-        s, r = claripy.balancer.Balancer(claripy.backends.vsa, expr).compat_ret
+        s, r = Balancer(expr).compat_ret
 
         assert s is True
         assert len(r) == 1
@@ -209,7 +210,7 @@ class TestBalancer(unittest.TestCase):
         expr = claripy.ZeroExt(
             31, claripy.If(claripy.BVV(0xC, 32) < x, claripy.BVV(1, 1), claripy.BVV(0, 1))
         ) == claripy.BVV(0, 32)
-        s, r = claripy.balancer.Balancer(claripy.backends.vsa, expr).compat_ret
+        s, r = Balancer(expr).compat_ret
 
         assert s is True
         assert len(r) == 1
