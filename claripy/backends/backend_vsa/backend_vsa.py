@@ -470,6 +470,3 @@ class BackendVSA(Backend):
 
     def constraint_to_si(self, expr):
         return Balancer(self, expr).compat_ret
-
-
-BackendVSA.CreateStridedInterval = staticmethod(CreateStridedInterval)
