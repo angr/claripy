@@ -539,7 +539,8 @@ class Balancer:
         # TODO: handle non-zero single-valued cases
         return truism
 
-    def _balance___lshift__(self, truism):
+    @staticmethod
+    def _balance___lshift__(truism):
         lhs = truism.args[0]
         rhs = truism.args[1]
         shift_amount_expr = lhs.args[1]

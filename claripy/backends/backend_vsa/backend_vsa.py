@@ -468,5 +468,6 @@ class BackendVSA(Backend):
     def CreateTopStridedInterval(bits, name=None, uninitialized=False):
         return StridedInterval.top(bits, name, uninitialized=uninitialized)
 
-    def constraint_to_si(self, expr):
+    @staticmethod
+    def constraint_to_si(expr):
         return Balancer(expr).compat_ret
