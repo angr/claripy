@@ -6,9 +6,7 @@ from contextlib import suppress
 
 import claripy
 from claripy import backends
-from claripy.ast.base import Base
-from claripy.ast.bool import BoolV, false
-from claripy.ast.bv import BVV
+from claripy.ast import Base
 from claripy.errors import BackendError, ClaripyFrontendError
 
 from .constrained_frontend import ConstrainedFrontend
@@ -83,9 +81,9 @@ class ReplacementFrontend(ConstrainedFrontend):
 
         if not isinstance(new, Base):
             if isinstance(new, bool):
-                new = BoolV(new)
+                new = claripy.BoolV(new)
             elif isinstance(new, numbers.Number):
-                new = BVV(new, old.length)
+                new = claripy.BVV(new, old.length)
             else:
                 return
 
@@ -259,14 +257,14 @@ class ReplacementFrontend(ConstrainedFrontend):
 
                 if not self._complex_auto_replace:
                     if rc.op == "Not":
-                        self.add_replacement(c.args[0], false(), replace=False, promote=True, invalidate_cache=True)
+                        self.add_replacement(c.args[0], claripy.false(), replace=False, promote=True, invalidate_cache=True)
                     elif rc.op == "__eq__" and rc.args[0].symbolic ^ rc.args[1].symbolic:
                         old, new = rc.args if rc.args[0].symbolic else rc.args[::-1]
                         self.add_replacement(old, new, replace=False, promote=True, invalidate_cache=True)
                 else:
                     satisfiable, replacements = backends.vsa.constraint_to_si(rc)
                     if not satisfiable:
-                        self.add_replacement(rc, false())
+                        self.add_replacement(rc, claripy.false())
                     for old, new in replacements:
                         if old.cardinality == 1:
                             continue

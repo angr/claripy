@@ -6,11 +6,8 @@ import numbers
 import operator
 from functools import reduce
 
-from claripy.ast import Base
-from claripy.ast.bool import Bool, BoolV
-from claripy.ast.bv import BV, BVV
-from claripy.ast.fp import FPV
-from claripy.ast.strings import StringV
+import claripy
+from claripy.ast import BV, Base, Bool
 from claripy.backends.backend import Backend
 from claripy.backends.backend_concrete import bv, fp, strings
 from claripy.errors import BackendError, UnsatError
@@ -144,13 +141,13 @@ class BackendConcrete(Backend):
 
     def _abstract(self, e):  # pylint:disable=no-self-use
         if isinstance(e, bv.BVV):
-            return BVV(e.value, e.size())
+            return claripy.BVV(e.value, e.size())
         if isinstance(e, bool):
-            return BoolV(e)
+            return claripy.BoolV(e)
         if isinstance(e, fp.FPV):
-            return FPV(e.value, e.sort)
+            return claripy.FPV(e.value, e.sort)
         if isinstance(e, strings.StringV):
-            return StringV(e.value)
+            return claripy.StringV(e.value)
         raise BackendError(f"Couldn't abstract object of type {type(e)}")
 
     def _cardinality(self, a):  # pylint:disable=unused-argument

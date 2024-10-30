@@ -4,7 +4,7 @@ from __future__ import annotations
 import unittest
 
 import claripy
-from claripy.ast.bv import VS
+from claripy import VS
 from claripy.backends.backend_vsa import (
     BoolResult,
     DiscreteStridedIntervalSet,

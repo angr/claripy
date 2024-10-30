@@ -15,10 +15,8 @@ from functools import reduce
 import z3
 from cachetools import LRUCache
 
-from claripy.ast.bool import Bool, BoolV
-from claripy.ast.bv import BV, BVV
-from claripy.ast.fp import FP, FPV
-from claripy.ast.strings import StringV
+import claripy
+from claripy.ast import BV, FP, Bool
 from claripy.backends.backend import Backend
 from claripy.errors import (
     BackendError,
@@ -446,25 +444,25 @@ class BackendZ3(Backend):
         append_children = True
 
         if op_name == "True":
-            return BoolV(True)
+            return claripy.true()
         if op_name == "False":
-            return BoolV(False)
+            return claripy.false()
         if op_name.startswith("RM_"):
             return RM(op_name)
         if op_name == "INTERNAL":
-            return StringV(z3.SeqRef(ast).as_string())
+            return claripy.StringV(z3.SeqRef(ast).as_string())
         if op_name == "BitVecVal":
             bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
             if z3.Z3_get_numeral_uint64(ctx, ast, self._c_uint64_p):
-                return BVV(self._c_uint64_p.contents.value, bv_size)
+                return claripy.BVV(self._c_uint64_p.contents.value, bv_size)
             bv_num = int(z3.Z3_get_numeral_string(ctx, ast))
-            return BVV(bv_num, bv_size)
+            return claripy.BVV(bv_num, bv_size)
         if op_name in ("FPVal", "MinusZero", "MinusInf", "PlusZero", "PlusInf", "NaN"):
             ebits = z3.Z3_fpa_get_ebits(ctx, z3_sort)
             sbits = z3.Z3_fpa_get_sbits(ctx, z3_sort)
             sort = FSort.from_params(ebits, sbits)
             val = self._abstract_fp_val(ctx, ast, op_name)
-            return FPV(val, sort)
+            return claripy.FPV(val, sort)
 
         if op_name == "UNINTERPRETED" and num_args == 0:  # symbolic value
             symbol_name = _z3_decl_name_str(ctx, decl)

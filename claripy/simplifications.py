@@ -11,7 +11,7 @@ import claripy
 from claripy.fp import FSORT_DOUBLE, FSORT_FLOAT
 
 if TYPE_CHECKING:
-    from claripy.ast.base import Base
+    from claripy.ast import Base
 
 SIMPLE_OPS = ("Concat", "SignExt", "ZeroExt")
 

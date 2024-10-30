@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, TypeVar
 
-from claripy.ast.base import Base
+from claripy.ast import Base
 from claripy.errors import ClaripyReplacementError
 
 if TYPE_CHECKING:

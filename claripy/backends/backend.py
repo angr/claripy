@@ -7,7 +7,7 @@ import operator
 import threading
 from contextlib import suppress
 
-from claripy.ast.base import Base
+from claripy.ast import Base
 from claripy.errors import BackendError, BackendUnsupportedError, ClaripyRecursionError
 
 log = logging.getLogger(__name__)

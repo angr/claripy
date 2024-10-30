@@ -5,7 +5,7 @@ import functools
 import itertools
 import numbers
 
-from claripy.ast.base import Base
+from claripy.ast import Base
 from claripy.backends.backend_object import BackendObject
 from claripy.errors import ClaripyValueError
 
