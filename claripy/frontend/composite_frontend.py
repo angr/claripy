@@ -5,9 +5,8 @@ import logging
 import weakref
 from typing import TYPE_CHECKING
 
-from claripy import backends
+from claripy import Or, backends
 from claripy.ast import Base
-from claripy.ast.bool import Or
 from claripy.errors import BackendError, UnsatError
 
 from .constrained_frontend import ConstrainedFrontend

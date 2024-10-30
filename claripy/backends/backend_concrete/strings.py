@@ -9,7 +9,7 @@ from .bv import BVV
 
 class StringV(BackendObject):
     """A concrete string value. Used in the concrete backend for calculations.
-    Any use outside of claripy should use `claripy.ast.strings.StringV` instead.
+    Any use outside of claripy should use `claripy.StringV` instead.
     """
 
     def __init__(self, value):

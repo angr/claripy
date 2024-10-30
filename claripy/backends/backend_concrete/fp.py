@@ -38,7 +38,7 @@ def normalize_types(f):
 
 class FPV(BackendObject):
     """A concrete floating point value. Used in the concrete backend for
-    calculations.  Any use outside of claripy should use `claripy.ast.fp.FPV`
+    calculations.  Any use outside of claripy should use `claripy.FPV`
     instead.
     """
 

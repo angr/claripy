@@ -5,9 +5,7 @@ import operator
 
 import claripy
 import claripy.backends.backend_vsa as vsa
-from claripy.ast.base import Base
-from claripy.ast.bool import Bool
-from claripy.ast.bv import BV, BVS, BVV
+from claripy.ast import BV, Base, Bool
 from claripy.errors import BackendError, ClaripyBalancerError, ClaripyBalancerUnsatError, ClaripyOperationError
 from claripy.operations import commutative_operations, opposites
 
@@ -47,7 +45,7 @@ class Balancer:
             min_int = 0
             mn = self._lower_bounds.get(k, min_int)
             mx = self._upper_bounds.get(k, max_int)
-            bound_si = BVS("bound", len(ast)).annotate(claripy.annotation.StridedIntervalAnnotation(1, mn, mx))
+            bound_si = claripy.BVS("bound", len(ast)).annotate(claripy.annotation.StridedIntervalAnnotation(1, mn, mx))
             l.debug("Yielding bound %s for %s.", bound_si, ast)
             if ast.op == "Reverse":
                 yield (ast.args[0], ast.intersection(bound_si).reversed)
@@ -83,7 +81,7 @@ class Balancer:
         si = claripy.backends.vsa.convert(a)
         mx = Balancer._max(a)
         mn = Balancer._min(a)
-        return BVS("bounds", len(a), min=mn, max=mx, stride=si._stride)
+        return claripy.BVS("bounds", len(a), min=mn, max=mx, stride=si._stride)
 
     @staticmethod
     def _cardinality(a):
@@ -456,15 +454,15 @@ class Balancer:
 
         if left_msb_zero and left_lsb_zero:
             new_left = inner
-            new_right = claripy.Concat(BVV(0, len(left_msb)), truism.args[1], BVV(0, len(left_lsb)))
+            new_right = claripy.Concat(claripy.BVV(0, len(left_msb)), truism.args[1], claripy.BVV(0, len(left_lsb)))
             return truism.make_like(truism.op, (new_left, new_right))
         if left_msb_zero:
             new_left = inner
-            new_right = claripy.Concat(BVV(0, len(left_msb)), truism.args[1])
+            new_right = claripy.Concat(claripy.BVV(0, len(left_msb)), truism.args[1])
             return truism.make_like(truism.op, (new_left, new_right))
         if left_lsb_zero:
             new_left = inner
-            new_right = claripy.Concat(truism.args[1], BVV(0, len(left_lsb)))
+            new_right = claripy.Concat(truism.args[1], claripy.BVV(0, len(left_lsb)))
             return truism.make_like(truism.op, (new_left, new_right))
 
         if low == 0 and truism.args[1].op == "BVV" and truism.op not in {"SGE", "SLE", "SGT", "SLT"}:

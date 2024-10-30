@@ -10,7 +10,7 @@ from itertools import chain, product
 
 import claripy
 import claripy.backends.backend_vsa as vsa
-from claripy.ast.base import Base
+from claripy.ast import Base
 from claripy.backends.backend_concrete import BVV
 from claripy.backends.backend_object import BackendObject
 from claripy.errors import ClaripyOperationError

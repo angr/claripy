@@ -4,7 +4,7 @@ from typing import TypeVar, cast
 from weakref import WeakValueDictionary
 
 import claripy
-from claripy.ast.base import Base
+from claripy.ast import Base
 
 T = TypeVar("T", bound=Base)
 

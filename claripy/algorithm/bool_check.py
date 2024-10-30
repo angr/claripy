@@ -8,7 +8,7 @@ import claripy
 from claripy.errors import BackendError
 
 if TYPE_CHECKING:
-    from claripy.ast.bool import Bool
+    from claripy.ast import Bool
 
 log = logging.getLogger(__name__)
 

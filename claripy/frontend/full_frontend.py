@@ -4,8 +4,8 @@ import logging
 import threading
 from typing import TYPE_CHECKING, Any, overload
 
+import claripy
 from claripy import backends
-from claripy.ast.bv import SGE, SLE, UGE, ULE
 from claripy.errors import BackendError, ClaripyFrontendError, UnsatError
 
 from .constrained_frontend import ConstrainedFrontend
@@ -15,9 +15,7 @@ if TYPE_CHECKING:
 
     from typing_extensions import Self
 
-    from claripy.ast.bool import Bool
-    from claripy.ast.bv import BV
-    from claripy.ast.fp import FP
+    from claripy.ast import BV, FP, Bool
 
 log = logging.getLogger(__name__)
 
@@ -228,9 +226,9 @@ class FullFrontend(ConstrainedFrontend):
             return two[0]
 
         if signed:
-            c = (*tuple(extra_constraints), SGE(e, two[0]), SGE(e, two[1]))
+            c = (*tuple(extra_constraints), claripy.SGE(e, two[0]), claripy.SGE(e, two[1]))
         else:
-            c = (*tuple(extra_constraints), UGE(e, two[0]), UGE(e, two[1]))
+            c = (*tuple(extra_constraints), claripy.UGE(e, two[0]), claripy.UGE(e, two[1]))
         try:
             return self._solver_backend.max(
                 e,
@@ -271,9 +269,9 @@ class FullFrontend(ConstrainedFrontend):
             return two[0]
 
         if signed:
-            c = (*tuple(extra_constraints), SLE(e, two[0]), SLE(e, two[1]))
+            c = (*tuple(extra_constraints), claripy.SLE(e, two[0]), claripy.SLE(e, two[1]))
         else:
-            c = (*tuple(extra_constraints), ULE(e, two[0]), ULE(e, two[1]))
+            c = (*tuple(extra_constraints), claripy.ULE(e, two[0]), claripy.ULE(e, two[1]))
         try:
             return self._solver_backend.min(
                 e,

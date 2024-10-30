@@ -50,7 +50,7 @@ def normalize_types(f):
 
 class BVV(BackendObject):
     """A concrete bitvector value. Used in the concrete backend for calculations.
-    Any use outside of claripy should use `claripy.ast.bv.BVV` instead.
+    Any use outside of claripy should use `claripy.BVV` instead.
     """
 
     __slots__ = ["bits", "_value", "mod"]

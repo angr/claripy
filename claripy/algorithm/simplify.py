@@ -5,7 +5,7 @@ from itertools import chain
 from typing import TypeVar, cast
 from weakref import WeakValueDictionary
 
-from claripy.ast.base import Base
+from claripy.ast import Base
 
 log = logging.getLogger(__name__)
 

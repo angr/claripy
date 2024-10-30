@@ -12,7 +12,7 @@ from .errors import ClaripyOperationError, ClaripyTypeError
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from claripy.ast.base import Base
+    from claripy.ast import Base
 
 T = TypeVar("T", bound="Base")
 
