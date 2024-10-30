@@ -257,7 +257,9 @@ class ReplacementFrontend(ConstrainedFrontend):
 
                 if not self._complex_auto_replace:
                     if rc.op == "Not":
-                        self.add_replacement(c.args[0], claripy.false(), replace=False, promote=True, invalidate_cache=True)
+                        self.add_replacement(
+                            c.args[0], claripy.false(), replace=False, promote=True, invalidate_cache=True
+                        )
                     elif rc.op == "__eq__" and rc.args[0].symbolic ^ rc.args[1].symbolic:
                         old, new = rc.args if rc.args[0].symbolic else rc.args[::-1]
                         self.add_replacement(old, new, replace=False, promote=True, invalidate_cache=True)
