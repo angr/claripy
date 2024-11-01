@@ -53,11 +53,10 @@ class ReprLevel(IntEnum):
 #
 
 var_counter = itertools.count()
-_unique_names = True
 
 
 def _make_name(name: str, size: int, explicit_name: bool = False, prefix: str = "") -> str:
-    if _unique_names and not explicit_name:
+    if not explicit_name:
         return "%s%s_%d_%d" % (prefix, name, next(var_counter), size)
     return name
 
