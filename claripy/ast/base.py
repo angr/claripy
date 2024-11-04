@@ -845,15 +845,6 @@ class Base:
     # Other helper functions
     #
 
-    def split(self, split_on: Iterable[str]) -> list[ArgType]:
-        """
-        Splits the AST if its operation is `split_on` (i.e., return all the arguments). Otherwise, return a list with
-        just the AST.
-        """
-        if self.op in split_on:
-            return list(self.args)
-        return [self]
-
     # we don't support iterating over Base objects
     def __iter__(self) -> NoReturn:
         """

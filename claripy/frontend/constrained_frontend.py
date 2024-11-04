@@ -122,8 +122,10 @@ class ConstrainedFrontend(Frontend):
         if len(to_simplify) == 0:
             return self.constraints
 
-        simplified = simplify(And(*to_simplify)).split(["And"])  # pylint:disable=no-member
-        self.constraints = no_simplify + simplified
+        simplified = simplify(And(*to_simplify))
+        simplified_split = list(simplified.args) if simplified.op == "And" else [simplified]
+
+        self.constraints = no_simplify + simplified_split
         return self.constraints
 
     #
@@ -169,7 +171,7 @@ class ConstrainedFrontend(Frontend):
 
         splitted = []
         for i in constraints:
-            splitted.extend(i.split(["And"]))
+            splitted.extend(list(i.args) if i.op == "And" else [i])
 
         log.debug("... splitted of size %d", len(splitted))
 
