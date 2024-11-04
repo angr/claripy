@@ -11,6 +11,7 @@ import threading
 import weakref
 from decimal import Decimal
 from functools import reduce
+from typing import TYPE_CHECKING
 
 import z3
 from cachetools import LRUCache
@@ -27,6 +28,10 @@ from claripy.errors import (
 )
 from claripy.fp import RM, FSort
 from claripy.operations import backend_fp_operations, backend_operations, backend_strings_operations, bound_ops
+
+if TYPE_CHECKING:
+    from claripy.annotation import Annotation
+
 
 log = logging.getLogger(__name__)
 
@@ -211,13 +216,10 @@ class BackendZ3(Backend):
     # "proposed annotation backend" or wherever will prevent it from being part of the object
     # identity. also whenever the VSA attributes get the fuck out of BVS as well
     @property
-    def extra_bvs_data(self):
-        try:
-            return self._tls.extra_bvs_data
-        except AttributeError:
-            # a pointer to get values out of Z3
-            self._tls.extra_bvs_data = {}
-            return self._tls.extra_bvs_data
+    def bvs_annotations(self) -> dict[bytes, tuple[Annotation, ...]]:
+        if not hasattr(self._tls, "bvs_annotations"):
+            self._tls.bvs_annotations = {}
+        return self._tls.bvs_annotations
 
     @property
     def _c_uint64_p(self):
@@ -301,7 +303,7 @@ class BackendZ3(Backend):
     @condom
     def BVS(self, ast):
         name = ast._encoded_name
-        self.extra_bvs_data[name] = (ast.args, ast.annotations)
+        self.bvs_annotations[name] = ast.annotations
         size = ast.size()
         # TODO: Here we can use low level APIs because the check performed by the high level API always results in
         #       the else branch of the check. This evidence although comes from the execution of the angr and claripy
@@ -471,13 +473,11 @@ class BackendZ3(Backend):
 
             if symbol_ty == z3.Z3_BV_SORT:
                 bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
-                (ast_args, annots) = self.extra_bvs_data.get(symbol_name, (None, None))
-                if ast_args is None:
-                    ast_args = (symbol_str, None, None, None, False, False, None)
+                annots = self.bvs_annotations.get(symbol_name, ())
 
                 return BV(
                     "BVS",
-                    ast_args,
+                    (symbol_str, bv_size),
                     length=bv_size,
                     variables=frozenset((symbol_str,)),
                     symbolic=True,
