@@ -5,6 +5,7 @@ from itertools import chain
 from typing import TypeVar, cast
 from weakref import WeakValueDictionary
 
+import claripy
 from claripy.ast import Base
 
 log = logging.getLogger(__name__)
@@ -25,7 +26,7 @@ def simplify(expr: T) -> T:
     if expr.hash() in simplification_cache and simplification_cache[expr.hash()] is not None:
         return cast(T, simplification_cache[expr.hash()])
 
-    simplified = expr._first_backend("simplify")
+    simplified = claripy.backends.any.simplify(expr)
     if simplified is None:
         log.debug("Unable to simplify expression")
         simplification_cache[expr.hash()] = expr
