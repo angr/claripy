@@ -7,6 +7,7 @@ from weakref import WeakValueDictionary
 
 import claripy
 from claripy.ast import Base
+from claripy.errors import BackendError
 
 log = logging.getLogger(__name__)
 
@@ -26,7 +27,10 @@ def simplify(expr: T) -> T:
     if expr.hash() in simplification_cache and simplification_cache[expr.hash()] is not None:
         return cast(T, simplification_cache[expr.hash()])
 
-    simplified = claripy.backends.any_backend.simplify(expr)
+    try:
+        simplified = claripy.backends.any_backend.simplify(expr)
+    except BackendError:
+        simplified = None
     if simplified is None:
         log.debug("Unable to simplify expression")
         simplification_cache[expr.hash()] = expr
