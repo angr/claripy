@@ -19,7 +19,8 @@ class BackendAny(Backend):
 
     __slots__ = ()
 
-    def _first_backend(self, obj, what):
+    @staticmethod
+    def _first_backend(obj, what):
         for b in claripy.backends.all_backends:
             if b in obj._errored:
                 continue
@@ -28,7 +29,7 @@ class BackendAny(Backend):
                 return getattr(b, what)(obj)
             except BackendError:
                 pass
-        raise BackendError("All backends failed to %s", what)
+        raise BackendError(f"All backends failed to {what}")
 
     def convert(self, expr):
         return self._first_backend(expr, "convert")
