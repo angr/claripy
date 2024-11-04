@@ -26,7 +26,7 @@ def simplify(expr: T) -> T:
     if expr.hash() in simplification_cache and simplification_cache[expr.hash()] is not None:
         return cast(T, simplification_cache[expr.hash()])
 
-    simplified = claripy.backends.any.simplify(expr)
+    simplified = claripy.backends.any_backend.simplify(expr)
     if simplified is None:
         log.debug("Unable to simplify expression")
         simplification_cache[expr.hash()] = expr

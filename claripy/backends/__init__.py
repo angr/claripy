@@ -9,7 +9,7 @@ from .backend_z3 import BackendZ3
 concrete = BackendConcrete()
 z3 = BackendZ3()
 vsa = BackendVSA()
-any = BackendAny()
+any_backend = BackendAny()
 
 all_backends = [concrete, z3, vsa]
 backends_by_type = {b.__class__.__name__: b for b in all_backends}
@@ -24,5 +24,5 @@ __all__ = (
     "concrete",
     "z3",
     "vsa",
-    "any",
+    "any_backend",
 )

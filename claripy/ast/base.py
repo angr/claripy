@@ -941,15 +941,15 @@ class Base:
 
     @property
     def singlevalued(self) -> bool:
-        return claripy.backends.any.singlevalued(self)
+        return claripy.backends.any_backend.singlevalued(self)
 
     @property
     def multivalued(self) -> bool:
-        return claripy.backends.any.multivalued(self)
+        return claripy.backends.any_backend.multivalued(self)
 
     @property
     def cardinality(self) -> int:
-        return claripy.backends.any.cardinality(self)
+        return claripy.backends.any_backend.cardinality(self)
 
     @property
     def concrete(self) -> bool:
