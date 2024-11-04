@@ -474,25 +474,14 @@ class BackendZ3(Backend):
             if symbol_ty == z3.Z3_BV_SORT:
                 bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
                 annots = self.bvs_annotations.get(symbol_name, ())
-
-                return BV(
-                    "BVS",
-                    (symbol_str, bv_size),
-                    length=bv_size,
-                    variables=frozenset((symbol_str,)),
-                    symbolic=True,
-                    encoded_name=symbol_name,
-                    annotations=annots,
-                )
+                return claripy.BVS(symbol_str, bv_size, explicit_name=True, annotations=annots)
             if symbol_ty == z3.Z3_BOOL_SORT:
-                return Bool("BoolS", (symbol_str,), variables=frozenset((symbol_str,)), symbolic=True)
+                return claripy.BoolS(symbol_str, explicit_name=True)
             if symbol_ty == z3.Z3_FLOATING_POINT_SORT:
                 ebits = z3.Z3_fpa_get_ebits(ctx, z3_sort)
                 sbits = z3.Z3_fpa_get_sbits(ctx, z3_sort)
                 sort = FSort.from_params(ebits, sbits)
-                return FP(
-                    "FPS", (symbol_str, sort), variables=frozenset((symbol_str,)), symbolic=True, length=sort.length
-                )
+                return claripy.FPS(symbol_str, sort, explicit_name=True)
             if z3.Z3_is_string_sort(ctx, z3_sort):
                 raise BackendError("Z3 backend does not support string symbols")
             raise BackendError("Unknown z3 term type %d...?" % symbol_ty)
