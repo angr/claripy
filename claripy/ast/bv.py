@@ -190,10 +190,10 @@ class BV(Bits):
     def to_bv(self):
         return self.raw_to_bv()
 
-    def identical(self, other: Self, strict=False) -> bool:
+    def identical(self, other: Self) -> bool:
         with suppress(BackendError):
             return claripy.backends.vsa.convert(self).identical(claripy.backends.vsa.convert(other))
-        return super().identical(other, strict)
+        return super().identical(other)
 
 
 def BVS(  # pylint:disable=redefined-builtin
