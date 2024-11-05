@@ -343,10 +343,10 @@ def bv_reverse_simplifier(body):
                     return first_ast
                 return first_ast[upper_bound:0]
         if all(a.length == 8 for a in body.args):
-            return body.make_like(body.op, body.args[::-1], simplify=True)
+            return claripy.Concat(*body.args[::-1])
 
     if body.op == "Concat" and all(a.op == "Reverse" for a in body.args) and all(a.length % 8 == 0 for a in body.args):
-        return body.make_like(body.op, [a.args[0] for a in reversed(body.args)], simplify=True)
+        return claripy.Concat(*[a.args[0] for a in reversed(body.args)])
 
     if body.op == "Extract" and body.args[2].op == "Reverse":
         # Reverse(Extract(hi, lo, Reverse(x))) ==> Extract(bits-lo-1, bits-hi-1, x)
@@ -357,7 +357,7 @@ def bv_reverse_simplifier(body):
             x = body.args[2].args[0]
             new_hi = x.size() - lo - 1
             new_lo = x.size() - hi - 1
-            return body.make_like(body.op, (new_hi, new_lo, x), simplify=True)
+            return claripy.Extract(new_hi, new_lo, x)
         return None
     return None
 
@@ -770,7 +770,7 @@ def zeroext_simplifier(n, e):
 
     if e.op == "ZeroExt":
         # ZeroExt(A, ZeroExt(B, x)) ==> ZeroExt(A + B, x)
-        return e.make_like(e.op, (n + e.args[0], e.args[1]), length=n + e.size(), simplify=True)
+        claripy.ZeroExt(n + e.args[0], e.args[1])
     return None
 
 
@@ -855,11 +855,7 @@ def extract_simplifier(high, low, val):
         return (val.args[2])[new_high:new_low]
 
     if val.op == "Reverse" and val.args[0].op == "Concat" and all(a.length % 8 == 0 for a in val.args[0].args):
-        val = val.make_like(
-            "Concat",
-            tuple(reversed([a.reversed for a in val.args[0].args])),
-            simplify=True,
-        )[high:low]
+        val = claripy.Concat(*reversed([a.reversed for a in val.args[0].args]))[high:low]
         if not val.symbolic:
             return val
 
