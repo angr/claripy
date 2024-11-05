@@ -827,21 +827,6 @@ class Base:
         return False
 
     #
-    # Various AST modifications (replacements)
-    #
-
-    def swap_args(self, new_args: tuple[ArgType, ...], new_length: int | None = None, **kwargs) -> Self:
-        """
-        This returns the same AST, with the arguments swapped out for new_args.
-        """
-
-        if len(self.args) == len(new_args) and all(a is b for a, b in zip(self.args, new_args, strict=False)):
-            return self
-
-        length = self.length if new_length is None else new_length
-        return self.make_like(self.op, new_args, length=length, **kwargs)
-
-    #
     # Other helper functions
     #
 
