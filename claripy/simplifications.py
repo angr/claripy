@@ -541,7 +541,7 @@ def bitwise_sub_simplifier(a, b):
             # (x + y) - z ==> x + (y - z)
             if len(a.args) == 2:
                 return a.args[0] + (a.args[-1] - b)
-            return a.swap_args(a.args[:-1] + (a.args[-1] - b,))
+            return a.make_like(a.op, (*a.args[:-1], a.args[-1] - b))
     elif a is b or (a == b).is_true():
         return claripy.BVV(0, a.size())
     return None

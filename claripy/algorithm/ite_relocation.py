@@ -19,7 +19,7 @@ excavated_cache: WeakValueDictionary[int, Base] = WeakValueDictionary()
 
 def _burrow_ite(expr: T) -> T:
     if expr.op != "If":
-        return expr.swap_args([(burrow_ite(a) if isinstance(a, Base) else a) for a in expr.args])
+        return expr.make_like(expr.op, [(burrow_ite(a) if isinstance(a, Base) else a) for a in expr.args])
 
     if not all(isinstance(a, Base) for a in expr.args):
         return expr
@@ -92,7 +92,7 @@ def _excavate_ite(expr: T) -> T:
 
                 elif ite_args.count(True) == 0:
                     # if there are no ifs that came to the surface, there's nothing more to do
-                    excavated = op.swap_args(args, simplify=True)
+                    excavated = op.make_like(op.op, args, simplify=True)
 
                 else:
                     # this gets called when we're *not* in an If, but there are Ifs in the args.
@@ -113,14 +113,14 @@ def _excavate_ite(expr: T) -> T:
                             new_false_args.append(a.args[1])
                         else:
                             # weird conditions -- giving up!
-                            excavated = op.swap_args(args, simplify=True)
+                            excavated = op.make_like(op.op, args, simplify=True)
                             break
 
                     else:
                         excavated = claripy.If(
                             cond,
-                            op.swap_args(new_true_args, simplify=True),
-                            op.swap_args(new_false_args, simplify=True),
+                            op.make_like(op.op, new_true_args, simplify=True),
+                            op.make_like(op.op, new_false_args, simplify=True),
                         )
 
                 # continue
