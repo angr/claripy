@@ -470,41 +470,12 @@ class Base:
             self._cached_encoded_name = self.args[0].encode()
         return self._cached_encoded_name
 
-    def _check_args_same(self, other_args: tuple[ArgType, ...], lenient_names=False) -> bool:
-        """
-        Check if two ASTs are the same.
-        """
-        # Several types inside of args don't support normall == comparison, so if we see those,
-        # we need compare them manually.
-        for a, b in zip(self.args, other_args, strict=True):
-            if isinstance(a, Base) and isinstance(b, Base):
-                if a._hash != b._hash:
-                    return False
-                continue
-            if isinstance(a, float) and isinstance(b, float):
-                if math.isnan(a) and math.isnan(b):
-                    continue
-                if math.isinf(a) and math.isinf(b):
-                    continue
-                if a != b:
-                    return False
-            if lenient_names and isinstance(a, str) and isinstance(b, str):
-                continue
-            if a != b:
-                return False
-
-        return True
-
-    def identical(self, other: Self, strict=False) -> bool:
+    def identical(self, other: Self) -> bool:
         """
         Check if two ASTs are identical. If `strict` is False, the comparison
         will be lenient on the names of the ASTs.
         """
-        return self._hash == other._hash or (
-            self.op == other.op
-            and self._check_args_same(other.args, lenient_names=not strict)
-            and self.annotations == other.annotations
-        )
+        return self.canonicalize() is other.canonicalize()
 
     #
     # Annotations
