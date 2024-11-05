@@ -366,11 +366,6 @@ class TestExpression(unittest.TestCase):
             "<BV32 LShR(LShR(LShR(LShR(LShR(<...>, <...>), 0xa), 0xa), 0xa), 0xa)>",
         )
 
-    def test_rename(self):
-        x1 = claripy.BVS("x", 32)
-        x2 = x1._rename("y")
-        assert x2.variables == frozenset(("y",))
-
     def test_canonical(self):
         x1 = claripy.BVS("x", 32)
         b1 = claripy.BoolS("b")

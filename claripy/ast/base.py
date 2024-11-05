@@ -507,16 +507,6 @@ class Base:
         )
 
     #
-    # Collapsing and simplification
-    #
-
-    def _rename(self, new_name: str) -> Self:
-        if self.op not in {"BVS", "BoolS", "FPS"}:
-            raise ClaripyOperationError("rename is only supported on leaf nodes")
-        new_args = (new_name,) + self.args[1:]
-        return self.make_like(self.op, new_args, length=self.length, variables=frozenset((new_name,)))
-
-    #
     # Annotations
     #
 
@@ -895,9 +885,17 @@ class Base:
         var_map = {} if var_map is None else var_map
 
         for v in self.leaf_asts():
-            if v.hash() not in var_map and v.op in {"BVS", "BoolS", "FPS"}:
+            if v.hash() not in var_map and v.is_leaf():
                 new_name = "canonical_%d" % next(counter)
-                var_map[v.hash()] = v._rename(new_name)
+                match v.op:
+                    case "BVS":
+                        var_map[v.hash()] = claripy.BVS(new_name, v.length, explicit_name=True)
+                    case "BoolS":
+                        var_map[v.hash()] = claripy.BoolS(new_name, explicit_name=True)
+                    case "FPS":
+                        var_map[v.hash()] = claripy.FPS(new_name, v.args[1], explicit_name=True)
+                    case "StringS":
+                        var_map[v.hash()] = claripy.StringS(new_name, explicit_name=True)
 
         return var_map, counter, claripy.replace_dict(self, var_map)
 
