@@ -7,7 +7,7 @@ import operator
 from functools import reduce
 
 import claripy
-from claripy.ast import BV, Base, Bool
+from claripy.ast import BV, Bool
 from claripy.backends.backend import Backend
 from claripy.backends.backend_concrete import bv, fp, strings
 from claripy.errors import BackendError, UnsatError
@@ -195,21 +195,17 @@ class BackendConcrete(Backend):
 
     # Override Backend.is_true() for a better performance
     def is_true(self, e, extra_constraints=(), solver=None, model_callback=None):
-        if e in {True, 1, 1.0}:
-            return True
-        if e in {False, 0, 0.0}:
-            return False
-        if type(e) is Base and e.op == "BoolV" and len(e.args) == 1 and e.args[0] is True:
+        if isinstance(e, numbers.Number):
+            return bool(e)
+        if e is claripy.true():
             return True
         return super().is_true(e, extra_constraints=extra_constraints, solver=solver, model_callback=model_callback)
 
     # Override Backend.is_false() for a better performance
     def is_false(self, e, extra_constraints=(), solver=None, model_callback=None):
-        if e in {False, 0, 0.0}:
-            return True
-        if e in {True, 1, 1.0}:
-            return False
-        if type(e) is Base and e.op == "BoolV" and len(e.args) == 1 and e.args[0] is False:
+        if isinstance(e, numbers.Number):
+            return not bool(e)
+        if e is claripy.false():
             return True
         return super().is_false(e, extra_constraints=extra_constraints, solver=solver, model_callback=model_callback)
 
