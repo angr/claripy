@@ -403,11 +403,11 @@ def fpIsNaN(x):
     """
     Checks whether the argument is a floating point NaN.
     """
-    return math.isnan(x)
+    return math.isnan(x.value)
 
 
 def fpIsInf(x):
     """
     Checks whether the argument is a floating point infinity.
     """
-    return math.isinf(x)
+    return math.isinf(x.value)

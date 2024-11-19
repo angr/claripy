@@ -67,6 +67,12 @@ class TestFp(unittest.TestCase):
         assert edd != edd2
         assert edd2 == 0x4237B4C7C0000000
 
+    def test_concrete_isnan(self):
+        assert claripy.FPV(0, claripy.FSORT_FLOAT).isNaN() is claripy.false()
+
+    def test_concrete_isinf(self):
+        assert claripy.FPV(0, claripy.FSORT_FLOAT).isInf() is claripy.false()
+
 
 if __name__ == "__main__":
     unittest.main()
