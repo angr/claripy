@@ -47,13 +47,11 @@ class String(Base):
         return StrIndexOf(self, pattern, start_idx)
 
 
-def StringS(name, uninitialized=False, explicit_name=False, **kwargs):
+def StringS(name, explicit_name=False, **kwargs):
     """
     Create a new symbolic string (analogous to z3.String())
 
     :param name:                 The name of the symbolic string (i. e. the name of the variable)
-    :param uninitialized:        Whether this value should be counted as an "uninitialized" value in the course of an
-                                 analysis.
     :param bool explicit_name:   If False, an identifier is appended to the name to ensure uniqueness.
 
     :returns:                    The String object representing the symbolic string
@@ -63,7 +61,6 @@ def StringS(name, uninitialized=False, explicit_name=False, **kwargs):
         "StringS",
         (n,),
         symbolic=True,
-        uninitialized=uninitialized,
         variables=frozenset((n,)),
         **kwargs,
     )
