@@ -60,7 +60,7 @@ class BV(Bits):
         """
         s = len(self)
         if s % bits != 0:
-            raise ValueError("expression length (%d) should be a multiple of 'bits' (%d)" % (len(self), bits))
+            raise ValueError(f"expression length ({len(self)}) should be a multiple of 'bits' ({bits})")
         if s == bits:
             return [self]
         return list(reversed([self[(n + 1) * bits - 1 : n * bits] for n in range(s // bits)]))
@@ -95,9 +95,7 @@ class BV(Bits):
         """
         pos = (self.size() + 7) // 8 - 1 - index
         if pos < 0:
-            raise ValueError(
-                "Incorrect index %d. Your index must be between %d and %d." % (index, 0, self.size() // 8 - 1)
-            )
+            raise ValueError(f"Incorrect index {index}. Your index must be between 0 and {self.size() // 8 - 1}.")
         if size == 0:
             return BVV(0, 0)
         r = self[min(pos * 8 + 7, self.size() - 1) : (pos - size + 1) * 8]
@@ -219,6 +217,8 @@ def BVS(  # pylint:disable=redefined-builtin
         name = name.decode()
     if not isinstance(name, str):
         raise TypeError(f"Name value for BVS must be a str, got {type(name)!r}")
+    if size is None or not isinstance(size, int):
+        raise TypeError("Size value for BVS must be an integer")
 
     n = _make_name(name, size, False if explicit_name is None else explicit_name)
     encoded_name = n.encode()

@@ -1,13 +1,10 @@
 # pylint: disable=missing-class-docstring,no-self-use
 from __future__ import annotations
 
-import logging
 from unittest import TestCase, main
 
 import claripy
 import claripy.frontend
-
-l = logging.getLogger(__name__)
 
 
 def raw_hybrid_solver(reuse_z3_solver):
@@ -101,8 +98,6 @@ def raw_solver(solver_type, reuse_z3_solver):
     y = claripy.BVS("y", 32)
     z = claripy.BVS("z", 32)
 
-    l.debug("adding constraints")
-
     s.add(x == 10)
     s.add(y == 15)
 
@@ -113,7 +108,6 @@ def raw_solver(solver_type, reuse_z3_solver):
     assert results[0][1] == 16
     assert results[0][2] == 3
 
-    l.debug("checking")
     assert s.satisfiable()
     assert not s.satisfiable(extra_constraints=[x == 5])
     assert s.eval(x + 5, 1)[0] == 15

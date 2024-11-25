@@ -192,7 +192,7 @@ class StridedInterval(BackendObject):
         self._name = name
 
         if self._name is None:
-            self._name = "SI_%d" % next(si_id_ctr)
+            self._name = f"SI_{next(si_id_ctr)}"
 
         self._bits = bits
         self._stride = stride if stride is not None else 1
@@ -519,12 +519,12 @@ class StridedInterval(BackendObject):
 
         ssplit = self._ssplit()
         if len(ssplit) == 1:
-            l = self.lower_bound >> shift_amount
-            u = self.upper_bound >> shift_amount
+            lower = self.lower_bound >> shift_amount
+            upper = self.upper_bound >> shift_amount
             stride = max(self.stride >> shift_amount, 1)
 
             return StridedInterval(
-                bits=self.bits, lower_bound=l, upper_bound=u, stride=stride, uninitialized=self.uninitialized
+                bits=self.bits, lower_bound=lower, upper_bound=upper, stride=stride, uninitialized=self.uninitialized
             )
         a = ssplit[0]._rshift_logical(shift_amount)
         b = ssplit[1]._rshift_logical(shift_amount)
@@ -553,18 +553,18 @@ class StridedInterval(BackendObject):
             # preserve the highest bit :-)
             highest_bit_set = self.lower_bound > StridedInterval.signed_max_int(nsplit[0].bits)
 
-            l = self.lower_bound >> shift_amount
-            u = self.upper_bound >> shift_amount
+            lower = self.lower_bound >> shift_amount
+            upper = self.upper_bound >> shift_amount
             stride = max(self.stride >> shift_amount, 1)
             mask = (2**shift_amount - 1) << (self.bits - shift_amount)
 
             if highest_bit_set:
-                l = l | mask
-                u = u | mask
-            if l == u:
+                lower = lower | mask
+                upper = upper | mask
+            if lower == upper:
                 stride = 0
             return StridedInterval(
-                bits=self.bits, lower_bound=l, upper_bound=u, stride=stride, uninitialized=self.uninitialized
+                bits=self.bits, lower_bound=lower, upper_bound=upper, stride=stride, uninitialized=self.uninitialized
             )
         a = nsplit[0]._rshift_arithmetic(shift_amount)
         b = nsplit[1]._rshift_arithmetic(shift_amount)
@@ -986,17 +986,11 @@ class StridedInterval(BackendObject):
 
     def __repr__(self):
         if self.is_empty:
-            s = "<%d>[EmptySI]" % (self._bits)
+            s = f"<{self._bits}>[EmptySI]"
         else:
             lower_bound = self._lower_bound if isinstance(self._lower_bound, str) else f"{self._lower_bound:#x}"
             upper_bound = self._upper_bound if isinstance(self._upper_bound, str) else f"{self._upper_bound:#x}"
-            s = "<%d>0x%x[%s, %s]%s" % (
-                self._bits,
-                self._stride,
-                lower_bound,
-                upper_bound,
-                "R" if self._reversed else "",
-            )
+            s = f"<{self._bits}>0x{self._stride:x}[{lower_bound}, {upper_bound}]{('R' if self._reversed else '')}"
 
         if self.uninitialized:
             s += "(uninit)"
@@ -1738,8 +1732,7 @@ class StridedInterval(BackendObject):
             b._surrounds_member(a.lower_bound)
             and b._surrounds_member(a.upper_bound)
             and (
-                b.lower_bound == a.lower_bound
-                and b.upper_bound == a.upper_bound
+                (b.lower_bound == a.lower_bound and b.upper_bound == a.upper_bound)
                 or not a._surrounds_member(b.lower_bound)
                 or not a._surrounds_member(b.upper_bound)
             )
@@ -2180,12 +2173,12 @@ class StridedInterval(BackendObject):
         new_lower_bound = None
         new_upper_bound = None
         for amount in range(lower, upper + 1):
-            l = self.lower_bound << amount
-            if new_lower_bound is None or l < new_lower_bound:
-                new_lower_bound = l
-            u = self.upper_bound << amount
-            if new_upper_bound is None or u > new_upper_bound:
-                new_upper_bound = u
+            lower_shifted = self.lower_bound << amount
+            if new_lower_bound is None or lower_shifted < new_lower_bound:
+                new_lower_bound = lower_shifted
+            upper_shifted = self.upper_bound << amount
+            if new_upper_bound is None or upper_shifted > new_upper_bound:
+                new_upper_bound = upper_shifted
 
         # NOTE: If this is an arithmetic operation, we should take care
         # of sign-changes.
@@ -2226,10 +2219,10 @@ class StridedInterval(BackendObject):
         # the range between lower bound and upper bound can be represented
         # in the new SI
         if 0 <= (self.upper_bound - self.lower_bound) <= mask:
-            l = self.lower_bound & mask
-            u = self.upper_bound & mask
+            lower = self.lower_bound & mask
+            upper = self.upper_bound & mask
             return StridedInterval(
-                bits=tok, stride=self.stride, lower_bound=l, upper_bound=u, uninitialized=self.uninitialized
+                bits=tok, stride=self.stride, lower_bound=lower, upper_bound=upper, uninitialized=self.uninitialized
             )
 
         if (self.upper_bound & mask == self.lower_bound & mask) and ((self.upper_bound - self.lower_bound) & mask == 0):
@@ -2284,19 +2277,19 @@ class StridedInterval(BackendObject):
         # the range between lower bound and upper bound can be represented
         # in the new SI
         if self.upper_bound - self.lower_bound <= mask:
-            l = self.lower_bound & mask
-            u = self.upper_bound & mask
+            lower = self.lower_bound & mask
+            upper = self.upper_bound & mask
             # Keep the signs!
             if self.lower_bound < 0:
                 # how this should happen ?
                 log.warning("Lower bound values is less than 0")
-                l = StridedInterval._to_negative(l, tok)
+                lower = StridedInterval._to_negative(lower, tok)
             if self.upper_bound < 0:
                 # how this should happen ?
                 log.warning("Upper bound value is less than 0")
-                u = StridedInterval._to_negative(u, tok)
+                upper = StridedInterval._to_negative(upper, tok)
             return StridedInterval(
-                bits=tok, stride=self.stride, lower_bound=l, upper_bound=u, uninitialized=self.uninitialized
+                bits=tok, stride=self.stride, lower_bound=lower, upper_bound=upper, uninitialized=self.uninitialized
             )
 
         if (self.upper_bound & mask == self.lower_bound & mask) and ((self.upper_bound - self.lower_bound) & mask == 0):
@@ -2645,10 +2638,12 @@ class StridedInterval(BackendObject):
             return s
 
         if s.is_integer and b.is_integer:
-            u = max(s.upper_bound, b.upper_bound) if smart_join else b.upper_bound
-            l = min(s.lower_bound, b.lower_bound) if smart_join else s.lower_bound
-            stride = abs(u - l)
-            return StridedInterval(bits=w, stride=stride, lower_bound=l, upper_bound=u, uninitialized=uninit_flag)
+            upper = max(s.upper_bound, b.upper_bound) if smart_join else b.upper_bound
+            lower = min(s.lower_bound, b.lower_bound) if smart_join else s.lower_bound
+            stride = abs(upper - lower)
+            return StridedInterval(
+                bits=w, stride=stride, lower_bound=lower, upper_bound=upper, uninitialized=uninit_flag
+            )
 
         #
         # Other cases
@@ -3198,23 +3193,23 @@ class StridedInterval(BackendObject):
 
         else:
             new_stride = StridedInterval.gcd(self.stride, b.stride)
-            l = (
+            lower = (
                 StridedInterval.lower(self.bits, self.lower_bound, new_stride)
                 if b.lower_bound < self.lower_bound
                 else self.lower_bound
             )
-            u = (
+            upper = (
                 StridedInterval.upper(self.bits, self.upper_bound, new_stride)
                 if b.upper_bound > self.upper_bound
                 else self.upper_bound
             )
             if new_stride == 0:
                 if self.is_integer and b.is_integer:
-                    ret = StridedInterval(bits=self.bits, stride=1, lower_bound=l, upper_bound=u)
+                    ret = StridedInterval(bits=self.bits, stride=1, lower_bound=lower, upper_bound=upper)
                 else:
                     raise ClaripyOperationError("SI: operands are not reduced.")
             else:
-                ret = StridedInterval(bits=self.bits, stride=new_stride, lower_bound=l, upper_bound=u)
+                ret = StridedInterval(bits=self.bits, stride=new_stride, lower_bound=lower, upper_bound=upper)
 
         ret.normalize()
         return ret

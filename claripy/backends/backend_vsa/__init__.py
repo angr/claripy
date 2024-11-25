@@ -8,15 +8,15 @@ from .strided_interval import CreateStridedInterval, StridedInterval
 from .valueset import ValueSet
 
 __all__ = (
+    "DEFAULT_MAX_CARDINALITY_WITHOUT_COLLAPSING",
     "BackendVSA",
     "Balancer",
     "BoolResult",
+    "CreateStridedInterval",
+    "DiscreteStridedIntervalSet",
     "FalseResult",
     "MaybeResult",
-    "TrueResult",
-    "DEFAULT_MAX_CARDINALITY_WITHOUT_COLLAPSING",
-    "DiscreteStridedIntervalSet",
-    "CreateStridedInterval",
     "StridedInterval",
+    "TrueResult",
     "ValueSet",
 )

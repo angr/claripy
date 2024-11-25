@@ -7,4 +7,4 @@ from .bv import BV
 from .fp import FP
 from .strings import String
 
-__all__ = ("Bits", "BV", "FP", "Bool", "true", "false", "Base", "String")
+__all__ = ("BV", "FP", "Base", "Bits", "Bool", "String", "false", "true")

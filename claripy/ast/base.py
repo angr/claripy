@@ -57,7 +57,7 @@ var_counter = itertools.count()
 
 def _make_name(name: str, size: int, explicit_name: bool = False, prefix: str = "") -> str:
     if not explicit_name:
-        return "%s%s_%d_%d" % (prefix, name, next(var_counter), size)
+        return f"{prefix}{name}_{next(var_counter)}_{size}"
     return name
 
 
@@ -116,20 +116,20 @@ class Base:
     _uninitialized: bool
 
     __slots__ = [
-        "op",
-        "args",
-        "length",
-        "variables",
-        "symbolic",
-        "annotations",
-        "depth",
-        "_hash",
-        "_uneliminatable_annotations",
-        "_relocatable_annotations",
-        "_errored",
-        "_cached_encoded_name",
-        "_uninitialized",
         "__weakref__",
+        "_cached_encoded_name",
+        "_errored",
+        "_hash",
+        "_relocatable_annotations",
+        "_uneliminatable_annotations",
+        "_uninitialized",
+        "annotations",
+        "args",
+        "depth",
+        "length",
+        "op",
+        "symbolic",
+        "variables",
     ]
 
     _hash_cache: WeakValueDictionary[int, Base] = WeakValueDictionary()
@@ -675,7 +675,7 @@ class Base:
         ]
 
         prec_diff = parent_prec - op_prec
-        inner_infix_use_par = prec_diff < 0 or prec_diff == 0 and not left
+        inner_infix_use_par = prec_diff < 0 or (prec_diff == 0 and not left)
         inner_repr = self._op_repr(op, args, inner, length, details, inner_infix_use_par)
 
         if not inner:
@@ -705,7 +705,7 @@ class Base:
                     value = format(args[0], "")
                 else:
                     value = format(args[0], "#x")
-                return value + "#%d" % length if length is not None else value
+                return f"{value}#{length}" if length is not None else value
 
         if details < ReprLevel.MID_REPR:
             if op == "If":
@@ -857,7 +857,7 @@ class Base:
 
         for v in self.leaf_asts():
             if v.hash() not in var_map and v.is_leaf():
-                new_name = "canonical_%d" % next(counter)
+                new_name = f"canonical_{next(counter)}"
                 match v.op:
                     case "BVS":
                         var_map[v.hash()] = claripy.BVS(new_name, v.length, explicit_name=True)

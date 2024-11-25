@@ -84,7 +84,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
 
     def __init__(self, name=None, bits=0, si_set=None, max_cardinality=None):
         if name is None:
-            name = "DSIS_%d" % next(dsis_id_ctr)
+            name = f"DSIS_{next(dsis_id_ctr)}"
 
         # Initialize the set for strided intervals
         if si_set is not None and len(si_set):
@@ -113,7 +113,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
         if self.number_of_values > 5:
             representatives += ", ..."
 
-        return "%s<%d>(%d){%s}" % (self._name, self._bits, self.number_of_values, representatives)
+        return f"{self._name}<{self._bits}>({self.number_of_values}){{{representatives}}}"
 
     @property
     def cardinality(self):

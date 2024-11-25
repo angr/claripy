@@ -16,13 +16,13 @@ backends_by_type = {b.__class__.__name__: b for b in all_backends}
 
 __all__ = (
     "Backend",
-    "BackendZ3",
     "BackendConcrete",
     "BackendVSA",
+    "BackendZ3",
     "all_backends",
+    "any_backend",
     "backends_by_type",
     "concrete",
-    "z3",
     "vsa",
-    "any_backend",
+    "z3",
 )
