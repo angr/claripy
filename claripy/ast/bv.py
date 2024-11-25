@@ -217,6 +217,8 @@ def BVS(  # pylint:disable=redefined-builtin
         name = name.decode()
     if not isinstance(name, str):
         raise TypeError(f"Name value for BVS must be a str, got {type(name)!r}")
+    if size is None or not isinstance(size, int):
+        raise TypeError("Size value for BVS must be an integer")
 
     n = _make_name(name, size, False if explicit_name is None else explicit_name)
     encoded_name = n.encode()

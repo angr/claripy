@@ -2173,12 +2173,12 @@ class StridedInterval(BackendObject):
         new_lower_bound = None
         new_upper_bound = None
         for amount in range(lower, upper + 1):
-            lower = self.lower_bound << amount
-            if new_lower_bound is None or lower < new_lower_bound:
-                new_lower_bound = lower
-            upper = self.upper_bound << amount
-            if new_upper_bound is None or upper > new_upper_bound:
-                new_upper_bound = upper
+            lower_shifted = self.lower_bound << amount
+            if new_lower_bound is None or lower_shifted < new_lower_bound:
+                new_lower_bound = lower_shifted
+            upper_shifted = self.upper_bound << amount
+            if new_upper_bound is None or upper_shifted > new_upper_bound:
+                new_upper_bound = upper_shifted
 
         # NOTE: If this is an arithmetic operation, we should take care
         # of sign-changes.
