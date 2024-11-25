@@ -433,7 +433,7 @@ class BackendZ3(Backend):
         z3_sort = z3.Z3_get_sort(ctx, ast)
 
         if decl_num not in z3_op_nums:
-            raise ClaripyError("unknown decl kind %d" % decl_num)
+            raise ClaripyError(f"unknown decl kind {decl_num}")
         if op_map.get(z3_op_nums[decl_num], None) is None:
             raise ClaripyError(f"unknown decl op {z3_op_nums[decl_num]}")
         op_name = op_map[z3_op_nums[decl_num]]
@@ -484,7 +484,7 @@ class BackendZ3(Backend):
                 return claripy.FPS(symbol_str, sort, explicit_name=True)
             if z3.Z3_is_string_sort(ctx, z3_sort):
                 raise BackendError("Z3 backend does not support string symbols")
-            raise BackendError("Unknown z3 term type %d...?" % symbol_ty)
+            raise BackendError(f"Unknown z3 term type {symbol_ty}...?")
 
         if op_name == "UNINTERPRETED":
             mystery_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
@@ -552,7 +552,7 @@ class BackendZ3(Backend):
         decl_num = z3.Z3_get_decl_kind(ctx, decl)
 
         if decl_num not in z3_op_nums:
-            raise ClaripyError("unknown decl kind %d" % decl_num)
+            raise ClaripyError(f"unknown decl kind {decl_num}")
         if op_map.get(z3_op_nums[decl_num], None) is None:
             raise ClaripyError(f"unknown decl op {z3_op_nums[decl_num]}")
         op_name = op_map[z3_op_nums[decl_num]]

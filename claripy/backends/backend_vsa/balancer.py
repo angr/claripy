@@ -9,7 +9,7 @@ from claripy.ast import BV, Base, Bool
 from claripy.errors import BackendError, ClaripyBalancerError, ClaripyBalancerUnsatError, ClaripyOperationError
 from claripy.operations import commutative_operations, opposites
 
-l = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 class Balancer:
@@ -31,7 +31,7 @@ class Balancer:
             self.bounds = {}
             self.sat = False
         except BackendError:
-            l.debug("Backend error in balancer.", exc_info=True)
+            log.debug("Backend error in balancer.", exc_info=True)
 
     @property
     def compat_ret(self):
@@ -46,7 +46,7 @@ class Balancer:
             mn = self._lower_bounds.get(k, min_int)
             mx = self._upper_bounds.get(k, max_int)
             bound_si = claripy.BVS("bound", len(ast)).annotate(claripy.annotation.StridedIntervalAnnotation(1, mn, mx))
-            l.debug("Yielding bound %s for %s.", bound_si, ast)
+            log.debug("Yielding bound %s for %s.", bound_si, ast)
             if ast.op == "Reverse":
                 yield (ast.args[0], ast.intersection(bound_si).reversed)
             else:
@@ -133,7 +133,7 @@ class Balancer:
         )
 
         if not claripy.backends.vsa.identical(inner_aligned, truism):
-            l.critical(
+            log.critical(
                 "ERROR: the balancer is messing up an AST. This must be looked into. "
                 "Please submit the binary and script to the angr project, if possible. "
                 "Outer op is %s and inner op is %s.",
@@ -232,13 +232,13 @@ class Balancer:
 
             assumptions = Balancer._get_assumptions(truism)
             if truism not in identified_assumptions and len(assumptions):
-                l.debug("Queued assumptions %s for truism %s.", assumptions, truism)
+                log.debug("Queued assumptions %s for truism %s.", assumptions, truism)
                 self._truisms.extend(assumptions)
                 identified_assumptions.update(assumptions)
 
-            l.debug("Processing truism %s", truism)
+            log.debug("Processing truism %s", truism)
             balanced_truism = self._balance(truism)
-            l.debug("... handling")
+            log.debug("... handling")
             self._handle(balanced_truism)
 
     @staticmethod
@@ -247,13 +247,13 @@ class Balancer:
         Checks whether we can handle this truism. The truism should already be aligned.
         """
         if len(t.args) < 2:
-            l.debug("can't do anything with an unop bool")
+            log.debug("can't do anything with an unop bool")
             return None
         if t.args[0].cardinality > 1 and t.args[1].cardinality > 1:
-            l.debug("can't do anything because we have multiple multivalued guys")
+            log.debug("can't do anything because we have multiple multivalued guys")
             return False
         if t.op == "If":
-            l.debug("can't handle If")
+            log.debug("can't handle If")
             return False
         return True
 
@@ -334,7 +334,7 @@ class Balancer:
     #
 
     def _balance(self, truism):
-        l.debug("Balancing %s", truism)
+        log.debug("Balancing %s", truism)
 
         # can't balance single-arg bools (Not) for now
         if len(truism.args) == 1:
@@ -346,7 +346,7 @@ class Balancer:
         try:
             inner_aligned = Balancer._align_truism(truism)
             if inner_aligned.args[1].cardinality > 1:
-                l.debug("can't do anything because we have multiple multivalued guys")
+                log.debug("can't do anything because we have multiple multivalued guys")
                 return truism
 
             match inner_aligned.args[0].op:
@@ -371,14 +371,14 @@ class Balancer:
                 case "If":
                     balanced = self._balance_if(inner_aligned)
                 case _:
-                    l.debug("Balance handler %s not implemented.", truism.args[0].op)
+                    log.debug("Balance handler %s not implemented.", truism.args[0].op)
                     return truism
 
             if balanced is inner_aligned:
                 return balanced
             return self._balance(balanced)
         except ClaripyBalancerError:
-            l.warning("Balance handler for operation %s raised exception.", truism.args[0].op)
+            log.warning("Balance handler for operation %s raised exception.", truism.args[0].op)
             return truism
 
     @staticmethod
@@ -574,7 +574,7 @@ class Balancer:
     #
 
     def _handle(self, truism):
-        l.debug("Handling %s", truism)
+        log.debug("Handling %s", truism)
 
         if claripy.backends.vsa.is_false(truism):
             raise ClaripyBalancerUnsatError
@@ -606,9 +606,9 @@ class Balancer:
             ):
                 self._handle_comparison(truism)
             case _:
-                l.debug("No handler for operation %s", truism.op)
+                log.debug("No handler for operation %s", truism.op)
 
-    comparison_info = {
+    comparison_info = {  # noqa: RUF012
         "ULT": (True, False, True),
         "ULE": (True, True, True),
         "UGT": (False, False, True),

@@ -5,4 +5,4 @@ from .bv import BVV
 from .fp import FPV
 from .strings import StringV
 
-__all__ = ("BackendConcrete", "BVV", "FPV", "StringV")
+__all__ = ("BVV", "FPV", "BackendConcrete", "StringV")

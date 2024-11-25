@@ -9,8 +9,8 @@ from claripy.frontend.light_frontend import LightFrontend
 from claripy.frontend.replacement_frontend import ReplacementFrontend
 
 __all__ = (
-    "Frontend",
     "CompositeFrontend",
+    "Frontend",
     "FullFrontend",
     "HybridFrontend",
     "LightFrontend",

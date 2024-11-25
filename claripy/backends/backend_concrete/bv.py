@@ -15,7 +15,7 @@ def compare_bits(f):
             raise ClaripyTypeError("The operation is not allowed on zero-length bitvectors.")
 
         if self.bits != o.bits:
-            raise ClaripyTypeError("bitvectors are differently-sized (%d and %d)" % (self.bits, o.bits))
+            raise ClaripyTypeError(f"bitvectors are differently-sized ({self.bits} and {o.bits})")
         return f(self, o)
 
     return compare_guard
@@ -25,7 +25,7 @@ def compare_bits_0_length(f):
     @functools.wraps(f)
     def compare_guard(self, o):
         if self.bits != o.bits:
-            raise ClaripyTypeError("bitvectors are differently-sized (%d and %d)" % (self.bits, o.bits))
+            raise ClaripyTypeError(f"bitvectors are differently-sized ({self.bits} and {o.bits})")
         return f(self, o)
 
     return compare_guard
@@ -53,7 +53,7 @@ class BVV(BackendObject):
     Any use outside of claripy should use `claripy.BVV` instead.
     """
 
-    __slots__ = ["bits", "_value", "mod"]
+    __slots__ = ["_value", "bits", "mod"]
 
     def __init__(self, value, bits):
         if _d._DEBUG:
@@ -276,7 +276,7 @@ class BVV(BackendObject):
         return self.bits
 
     def __repr__(self):
-        return "BVV(0x%x, %d)" % (self.value, self.bits)
+        return f"BVV(0x{self.value:x}, {self.bits})"
 
 
 #

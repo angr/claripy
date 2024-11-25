@@ -37,7 +37,7 @@ def normalize_arg_order(f):
     @functools.wraps(f)
     def normalizer(*args):
         if len(args) != 2:
-            raise BackendError("Unsupported arguments number %d" % len(args))
+            raise BackendError(f"Unsupported arguments number {len(args)}")
 
         if not isinstance(args[0], StridedInterval | DiscreteStridedIntervalSet | ValueSet):
             if not isinstance(args[1], StridedInterval | DiscreteStridedIntervalSet | ValueSet):
@@ -423,7 +423,7 @@ class BackendVSA(Backend):
 
     def union(self, ast):
         if len(ast.args) != 2:
-            raise BackendError("Incorrect number of arguments (%d) passed to BackendVSA.union()." % len(ast.args))
+            raise BackendError(f"Incorrect number of arguments ({len(ast.args)}) passed to BackendVSA.union().")
 
         converted_0 = self.convert(ast.args[0])
         converted_1 = self.convert(ast.args[1])
@@ -438,9 +438,7 @@ class BackendVSA(Backend):
 
     def intersection(self, ast):
         if len(ast.args) != 2:
-            raise BackendError(
-                "Incorrect number of arguments (%d) passed to BackendVSA.intersection()." % len(ast.args)
-            )
+            raise BackendError(f"Incorrect number of arguments ({len(ast.args)}) passed to BackendVSA.intersection().")
 
         ret = None
 
@@ -451,7 +449,7 @@ class BackendVSA(Backend):
 
     def widen(self, ast):
         if len(ast.args) != 2:
-            raise BackendError("Incorrect number of arguments (%d) passed to BackendVSA.widen()." % len(ast.args))
+            raise BackendError(f"Incorrect number of arguments ({len(ast.args)}) passed to BackendVSA.widen().")
 
         converted_0 = self.convert(ast.args[0])
         converted_1 = self.convert(ast.args[1])
