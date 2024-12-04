@@ -1,8 +1,8 @@
 # pylint: disable=missing-class-docstring,no-self-use
 from __future__ import annotations
 
-import unittest
 import sys
+import unittest
 
 import claripy
 
