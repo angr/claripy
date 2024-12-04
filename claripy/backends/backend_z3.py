@@ -130,13 +130,9 @@ def Z3_to_int_str(val):
 
     if isinstance(val, float):
         return str(int(val))
-    elif isinstance(val, bool):
-        if val:
-            return "1"
-        else:
-            return "0"
-    else:
-        return int_to_str_unlimited(val)
+    if isinstance(val, bool):
+        return "1" if val else "0"
+    return int_to_str_unlimited(val)
 
 
 if hasattr(sys, "get_int_max_str_digits"):
