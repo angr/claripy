@@ -38,6 +38,7 @@ log = logging.getLogger(__name__)
 # pylint:disable=unidiomatic-typecheck
 
 ALL_Z3_CONTEXTS = weakref.WeakSet()
+INT_STRING_CHUNK_SIZE: int | None = None  # will be updated later if we are on CPython 3.11+
 
 
 def handle_sigint(signals, frametype):
@@ -105,11 +106,13 @@ def int_to_str_unlimited(v: int) -> str:
     :return: The string.
     """
 
+    if INT_STRING_CHUNK_SIZE is None:
+        return str(v)
+
     if v == 0:
         return "0"
 
-    CHUNK_SIZE = 640
-    MOD = 10**CHUNK_SIZE
+    MOD = 10**INT_STRING_CHUNK_SIZE
     v_str = ""
     if v < 0:
         is_negative = True
@@ -120,7 +123,7 @@ def int_to_str_unlimited(v: int) -> str:
         v_chunk = str(v % MOD)
         v //= MOD
         if v > 0:
-            v_chunk = v_chunk.zfill(CHUNK_SIZE)
+            v_chunk = v_chunk.zfill(INT_STRING_CHUNK_SIZE)
         v_str = v_chunk + v_str
     return v_str if not is_negative else "-" + v_str
 
@@ -139,6 +142,8 @@ if hasattr(sys, "get_int_max_str_digits"):
     # CPython 3.11+
     # monkey-patch Z3 so that it can accept long integers
     z3.z3._to_int_str = Z3_to_int_str
+    # update INT_STRING_CHUNK_SIZE
+    INT_STRING_CHUNK_SIZE = sys.get_int_max_str_digits()
 
 
 def str_to_int_unlimited(s: str) -> int:
@@ -148,10 +153,12 @@ def str_to_int_unlimited(s: str) -> int:
     :param s: The string to convert.
     :return: The integer.
     """
+    if INT_STRING_CHUNK_SIZE is None:
+        return int(s)
+
     if not s:
         return int(s)  # an exception will be raised, which is intentional
 
-    CHUNK_SIZE = 640
     v = 0
     if s[0] == "-":
         is_negative = True
@@ -159,9 +166,9 @@ def str_to_int_unlimited(s: str) -> int:
     else:
         is_negative = False
 
-    for i in range(0, len(s), CHUNK_SIZE):
+    for i in range(0, len(s), INT_STRING_CHUNK_SIZE):
         start = i
-        end = min(i + CHUNK_SIZE, len(s))
+        end = min(i + INT_STRING_CHUNK_SIZE, len(s))
         v *= 10 ** (end - start)
         v += int(s[start:end], 10)
     return v if not is_negative else -v

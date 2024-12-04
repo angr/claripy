@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import unittest
+import sys
 
 import claripy
 
@@ -41,6 +42,7 @@ class TestZ3(unittest.TestCase):
         """
 
         s2i = claripy.backends.backend_z3.str_to_int_unlimited
+        CHUNK_SIZE = sys.get_int_max_str_digits() if hasattr(sys, "get_int_max_str_digits") else 640
 
         assert s2i("0") == 0
         assert s2i("1337") == 1337
@@ -51,9 +53,13 @@ class TestZ3(unittest.TestCase):
         assert s2i("1" + "0" * 640 + "1") == 10**641 + 1
         assert s2i("1" + "0" * 8192) == 10**8192
 
+        assert s2i("1" + "0" * (CHUNK_SIZE - 1)) == 10 ** (CHUNK_SIZE - 1)
+        assert s2i("1" + "0" * CHUNK_SIZE) == 10**CHUNK_SIZE
+        assert s2i("1" + "0" * (CHUNK_SIZE + 1)) == 10 ** (CHUNK_SIZE + 1)
+
         assert s2i("-0") == 0
         assert s2i("-1") == -1
-        assert s2i("-1" + "0" * 8192) == -(10**8192)
+        assert s2i("-1" + "0" * CHUNK_SIZE) == -(10**CHUNK_SIZE)
 
     def test_int2str(self):
         """
@@ -61,11 +67,13 @@ class TestZ3(unittest.TestCase):
         """
 
         i2s = claripy.backends.backend_z3.int_to_str_unlimited
+        CHUNK_SIZE = sys.get_int_max_str_digits() if hasattr(sys, "get_int_max_str_digits") else 640
 
         assert i2s(0) == "0"
         assert i2s(-1) == "-1"
         assert i2s(1337) == "1337"
         assert i2s(10**8192) == "1" + "0" * 8192
+        assert i2s(10**CHUNK_SIZE) == "1" + "0" * CHUNK_SIZE
 
     def test_get_long_strings(self):
         # Python 3.11 introduced limits in decimal-to-int conversion. we bypass it by using the str_to_int_unlimited
