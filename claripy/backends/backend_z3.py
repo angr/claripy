@@ -38,6 +38,7 @@ log = logging.getLogger(__name__)
 # pylint:disable=unidiomatic-typecheck
 
 ALL_Z3_CONTEXTS = weakref.WeakSet()
+INT_STRING_CHUNK_SIZE: int | None = None  # will be updated later if we are on CPython 3.11+
 
 
 def handle_sigint(signals, frametype):
@@ -95,6 +96,82 @@ def _add_memory_pressure(p):
     global _is_pypy  # pylint:disable=global-variable-not-assigned
     if _is_pypy:
         __pypy__.add_memory_pressure(p)
+
+
+def int_to_str_unlimited(v: int) -> str:
+    """
+    Convert an integer to a decimal string, without any size limit.
+
+    :param v: The integer to convert.
+    :return: The string.
+    """
+
+    if INT_STRING_CHUNK_SIZE is None:
+        return str(v)
+
+    if v == 0:
+        return "0"
+
+    MOD = 10**INT_STRING_CHUNK_SIZE
+    v_str = ""
+    if v < 0:
+        is_negative = True
+        v = -v
+    else:
+        is_negative = False
+    while v > 0:
+        v_chunk = str(v % MOD)
+        v //= MOD
+        if v > 0:
+            v_chunk = v_chunk.zfill(INT_STRING_CHUNK_SIZE)
+        v_str = v_chunk + v_str
+    return v_str if not is_negative else "-" + v_str
+
+
+def Z3_to_int_str(val):
+    # we will monkey-patch Z3 and replace Z3._to_int_str with this version, which is free of integer size limits.
+
+    if isinstance(val, float):
+        return str(int(val))
+    if isinstance(val, bool):
+        return "1" if val else "0"
+    return int_to_str_unlimited(val)
+
+
+if hasattr(sys, "get_int_max_str_digits"):
+    # CPython 3.11+
+    # monkey-patch Z3 so that it can accept long integers
+    z3.z3._to_int_str = Z3_to_int_str
+    # update INT_STRING_CHUNK_SIZE
+    INT_STRING_CHUNK_SIZE = sys.get_int_max_str_digits()
+
+
+def str_to_int_unlimited(s: str) -> int:
+    """
+    Convert a decimal string to an integer, without any size limit.
+
+    :param s: The string to convert.
+    :return: The integer.
+    """
+    if INT_STRING_CHUNK_SIZE is None:
+        return int(s)
+
+    if not s:
+        return int(s)  # an exception will be raised, which is intentional
+
+    v = 0
+    if s[0] == "-":
+        is_negative = True
+        s = s[1:]
+    else:
+        is_negative = False
+
+    for i in range(0, len(s), INT_STRING_CHUNK_SIZE):
+        start = i
+        end = min(i + INT_STRING_CHUNK_SIZE, len(s))
+        v *= 10 ** (end - start)
+        v += int(s[start:end], 10)
+    return v if not is_negative else -v
 
 
 #
@@ -457,7 +534,7 @@ class BackendZ3(Backend):
             bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
             if z3.Z3_get_numeral_uint64(ctx, ast, self._c_uint64_p):
                 return claripy.BVV(self._c_uint64_p.contents.value, bv_size)
-            bv_num = int(z3.Z3_get_numeral_string(ctx, ast))
+            bv_num = str_to_int_unlimited(z3.Z3_get_numeral_string(ctx, ast))
             return claripy.BVV(bv_num, bv_size)
         if op_name in ("FPVal", "MinusZero", "MinusInf", "PlusZero", "PlusInf", "NaN"):
             ebits = z3.Z3_fpa_get_ebits(ctx, z3_sort)
@@ -608,7 +685,7 @@ class BackendZ3(Backend):
     def _abstract_bv_val(self, ctx, ast):
         if z3.Z3_get_numeral_uint64(ctx, ast, self._c_uint64_p):
             return self._c_uint64_p.contents.value
-        return int(z3.Z3_get_numeral_string(ctx, ast))
+        return str_to_int_unlimited(z3.Z3_get_numeral_string(ctx, ast))
 
     @staticmethod
     def _abstract_fp_val(ctx, ast, op_name):
