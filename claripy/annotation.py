@@ -133,6 +133,7 @@ class UninitializedAnnotation(Annotation):
     Use UninitializedAnnotation to annotate ASTs that are uninitialized.
     """
 
+    eliminatable = False
     relocatable = True
 
     def __hash__(self):
