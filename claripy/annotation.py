@@ -126,3 +126,17 @@ class RegionAnnotation(SimplificationAvoidanceAnnotation):
 
     def __repr__(self):
         return f"<RegionAnnotation {self.region_id}:{self.offset:#08x}>"
+
+
+class UninitializedAnnotation(Annotation):
+    """
+    Use UninitializedAnnotation to annotate ASTs that are uninitialized.
+    """
+
+    relocatable = True
+
+    def __hash__(self):
+        return hash("uninitialized")
+
+    def __repr__(self):
+        return "<UninitializedAnnotation>"
