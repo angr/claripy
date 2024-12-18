@@ -112,9 +112,6 @@ class Base:
     # Caching
     _cached_encoded_name: bytes | None
 
-    # Extra information
-    _uninitialized: bool
-
     __slots__ = [
         "__weakref__",
         "_cached_encoded_name",
@@ -122,7 +119,6 @@ class Base:
         "_hash",
         "_relocatable_annotations",
         "_uneliminatable_annotations",
-        "_uninitialized",
         "annotations",
         "args",
         "depth",
@@ -143,7 +139,6 @@ class Base:
         symbolic: bool | None = None,
         variables: frozenset[str] | None = None,
         errored: set[Backend] | None = None,
-        uninitialized: bool = False,
         annotations: tuple[Annotation, ...] = (),
         skip_child_annotations: bool = False,
         length: int | None = None,
@@ -217,7 +212,6 @@ class Base:
                 symbolic=symbolic,
                 length=length,
                 errored=errored,
-                uninitialized=uninitialized,
                 annotations=annotations,
                 encoded_name=encoded_name,
                 depth=depth,
@@ -240,7 +234,6 @@ class Base:
         annotations: tuple[Annotation, ...] | None = None,
         variables: frozenset[str] | None = None,
         symbolic: bool | None = None,
-        uninitialized: bool = False,
         skip_child_annotations: bool = False,
         length: int | None = None,
     ) -> Self:
@@ -253,7 +246,6 @@ class Base:
             and annotations
             and variables is None
             and symbolic is None
-            and uninitialized is False
             and skip_child_annotations
             and length is not None
         ):
@@ -281,7 +273,6 @@ class Base:
                 symbolic=self.symbolic,
                 annotations=annotations,
                 length=length,
-                uninitialized=self._uninitialized,
             )
 
             result._hash = h
@@ -299,8 +290,6 @@ class Base:
                 annotations = simplified.annotations
         if variables is None and op in all_operations:
             variables = self.variables
-        if uninitialized is None:
-            uninitialized = self._uninitialized
         if symbolic is None and op in all_operations:
             symbolic = self.symbolic
 
@@ -309,7 +298,6 @@ class Base:
             args if simplified is None else simplified.args,
             annotations=annotations,
             variables=variables,
-            uninitialized=uninitialized,
             symbolic=symbolic,
             skip_child_annotations=skip_child_annotations,
             length=length,
@@ -324,7 +312,6 @@ class Base:
         symbolic: bool | None = None,
         length: int | None = None,
         errored: set[Backend] | None = None,
-        uninitialized: bool = False,
         annotations: tuple[Annotation, ...] | None = None,
         encoded_name: bytes | None = None,
         depth: int | None = None,
@@ -354,8 +341,6 @@ class Base:
         self._cached_encoded_name = encoded_name
 
         self._errored = errored if errored is not None else set()
-
-        self._uninitialized = uninitialized
 
         if len(self.args) == 0:
             raise ClaripyOperationError("AST with no arguments!")
@@ -899,16 +884,3 @@ class Base:
     @property
     def concrete(self) -> bool:
         return not self.symbolic
-
-    @property
-    def uninitialized(self) -> bool:
-        """
-        Whether this AST comes from an uninitialized dereference or not. It's only used in under-constrained symbolic
-        execution mode.
-
-        :returns:                   True/False/None (unspecified).
-        """
-
-        # TODO: It should definitely be moved to the proposed Annotation backend.
-
-        return self._uninitialized

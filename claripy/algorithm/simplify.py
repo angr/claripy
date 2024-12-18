@@ -36,9 +36,6 @@ def simplify(expr: T) -> T:
         simplification_cache[expr.hash()] = expr
         return expr
 
-    # Copy some parameters (that should really go to the Annotation backend)
-    simplified._uninitialized = expr.uninitialized
-
     # dealing with annotations
     if expr.annotations:
         ast_args = tuple(a for a in expr.args if isinstance(a, Base))
