@@ -139,5 +139,8 @@ class UninitializedAnnotation(Annotation):
     def __hash__(self):
         return hash("uninitialized")
 
+    def __eq__(self, other):
+        return isinstance(other, UninitializedAnnotation)
+
     def __repr__(self):
         return "<UninitializedAnnotation>"
