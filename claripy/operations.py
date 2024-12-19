@@ -73,10 +73,6 @@ def op(name, arg_types, return_type: type[T], extra_check=None, calc_length=None
         if calc_length is not None:
             kwargs["length"] = calc_length(*fixed_args)
 
-        kwargs["uninitialized"] = None
-        if any(a.uninitialized is True for a in args if isinstance(a, claripy.ast.Base)):
-            kwargs["uninitialized"] = True
-
         return return_type(name, fixed_args, **kwargs)
 
     _op.calc_length = calc_length
