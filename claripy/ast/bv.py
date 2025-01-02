@@ -162,9 +162,9 @@ class BV(Bits):
         :return:        An FP AST whose value is the same as this BV
         """
         if rm is None:
-            rm = claripy.fp.RM.default()
+            rm = claripy.RM.default()
         if sort is None:
-            sort = claripy.fp.FSort.from_size(self.length)
+            sort = claripy.FSort.from_size(self.length)
 
         op = claripy.ast.fp.fpToFP if signed else claripy.ast.fp.fpToFPUnsigned
         return op(rm, self, sort)
@@ -176,7 +176,7 @@ class BV(Bits):
 
         :return:        An FP AST whose bit-pattern is the same as this BV
         """
-        sort = claripy.fp.FSort.from_size(self.length)
+        sort = claripy.FSort.from_size(self.length)
         return claripy.ast.fp.fpToFP(self, sort)
 
     def raw_to_bv(self):
@@ -197,7 +197,7 @@ class BV(Bits):
 def BVS(  # pylint:disable=redefined-builtin
     name,
     size,
-    explicit_name=None,
+    explicit_name: bool = False,
     **kwargs,
 ) -> BV:
     """
@@ -220,7 +220,7 @@ def BVS(  # pylint:disable=redefined-builtin
     if size is None or not isinstance(size, int):
         raise TypeError("Size value for BVS must be an integer")
 
-    n = _make_name(name, size, False if explicit_name is None else explicit_name)
+    n = _make_name(name, size, explicit_name)
     encoded_name = n.encode()
 
     return BV(
@@ -284,15 +284,14 @@ def SI(
     lower_bound=None,
     upper_bound=None,
     stride=None,
-    explicit_name=None,
+    explicit_name=False,
 ):
     return BVS(name, bits, explicit_name=explicit_name).annotate(
-        claripy.annotation.StridedIntervalAnnotation(stride, lower_bound, upper_bound)
+        claripy.annotation.StridedIntervalAnnotation(stride or 1, lower_bound or 0, upper_bound or 2**bits - 1)
     )
 
 
-def TSI(bits, name=None, explicit_name=None):
-    name = "unnamed" if name is None else name
+def TSI(bits, name="unnamed", explicit_name=False):
     return BVS(name, bits, explicit_name=explicit_name)
 
 

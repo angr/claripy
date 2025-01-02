@@ -7,7 +7,7 @@ import operator
 import threading
 from contextlib import suppress
 
-from claripy.ast import Base
+from claripy.ast import BV, Base
 from claripy.errors import BackendError, BackendUnsupportedError, ClaripyRecursionError
 
 log = logging.getLogger(__name__)
@@ -282,7 +282,7 @@ class Backend:
     # Abstraction and resolution.
     #
 
-    def _abstract(self, e):  # pylint:disable=W0613,R0201
+    def _abstract(self, e) -> Base:  # pylint:disable=W0613,R0201
         """
         Abstracts the BackendObject e to an AST.
 
@@ -464,7 +464,7 @@ class Backend:
         """
         raise BackendError("backend doesn't support solving")
 
-    def add(self, s, c, track=False):
+    def add(self, s, c, track=False) -> None:
         """
         This function adds constraints to the backend solver.
 
@@ -474,7 +474,7 @@ class Backend:
         """
         return self._add(s, self.convert_list(c), track=track)
 
-    def _add(self, s, c, track=False):  # pylint:disable=no-self-use,unused-argument
+    def _add(self, s, c, track=False) -> None:  # pylint:disable=no-self-use,unused-argument
         """
         This function adds constraints to the backend solver.
 
@@ -612,7 +612,7 @@ class Backend:
 
     def _min(
         self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None
-    ):  # pylint:disable=unused-argument,no-self-use
+    ) -> BV:  # pylint:disable=unused-argument,no-self-use
         """
         Return the minimum value of expr.
 
@@ -708,7 +708,7 @@ class Backend:
 
     def _satisfiable(
         self, extra_constraints=(), solver=None, model_callback=None
-    ):  # pylint:disable=no-self-use,unused-argument
+    ) -> bool:  # pylint:disable=no-self-use,unused-argument
         """
         This function does a constraint check and returns a model for a solver.
 
@@ -719,7 +719,7 @@ class Backend:
         """
         raise BackendError("backend doesn't support solving")
 
-    def solution(self, expr, v, extra_constraints=(), solver=None, model_callback=None):
+    def solution(self, expr, v, extra_constraints=(), solver=None, model_callback=None) -> bool:
         """
         Return True if `v` is a solution of `expr` with the extra constraints, False otherwise.
 
@@ -744,7 +744,7 @@ class Backend:
 
     def _solution(
         self, expr, v, extra_constraints=(), solver=None, model_callback=None
-    ):  # pylint:disable=unused-argument,no-self-use
+    ) -> bool:  # pylint:disable=unused-argument,no-self-use
         """
         Return True if v is a solution of expr with the extra constraints, False otherwise.
 
@@ -770,7 +770,7 @@ class Backend:
         """
         return self._name(self.convert(a))
 
-    def _name(self, o):  # pylint:disable=no-self-use,unused-argument
+    def _name(self, o) -> str | None:  # pylint:disable=no-self-use,unused-argument
         """
         This should return the name of an object.
 
@@ -778,7 +778,7 @@ class Backend:
         """
         raise BackendError("backend doesn't support name()")
 
-    def identical(self, a, b):
+    def identical(self, a, b) -> bool:
         """
         This should return whether `a` is identical to `b`. Of course, this isn't always clear. True should mean that it
         is definitely identical. False eans that, conservatively, it might not be.
@@ -788,7 +788,7 @@ class Backend:
         """
         return self._identical(self.convert(a), self.convert(b))
 
-    def _identical(self, a, b):  # pylint:disable=no-self-use,unused-argument
+    def _identical(self, a, b) -> bool:  # pylint:disable=no-self-use,unused-argument
         """
         This should return whether `a` is identical to `b`. This is the native version of ``identical()``.
 
@@ -797,7 +797,7 @@ class Backend:
         """
         raise BackendError("backend doesn't support identical()")
 
-    def cardinality(self, a):
+    def cardinality(self, a) -> int:
         """
         This should return the maximum number of values that an expression can take on. This should be a strict *over*
         approximation.
@@ -807,7 +807,7 @@ class Backend:
         """
         return self._cardinality(self.convert(a))
 
-    def _cardinality(self, a):  # pylint:disable=no-self-use,unused-argument
+    def _cardinality(self, a) -> int:  # pylint:disable=no-self-use,unused-argument
         """
         This should return the maximum number of values that an expression can take on. This should be a strict
         *over* approximation.
