@@ -7,7 +7,7 @@ import operator
 from functools import reduce
 
 import claripy
-from claripy.annotation import RegionAnnotation, StridedIntervalAnnotation
+from claripy.annotation import RegionAnnotation, StridedIntervalAnnotation, UninitializedAnnotation
 from claripy.ast import BV, Base
 from claripy.backends.backend import Backend
 from claripy.backends.backend_vsa.balancer import Balancer
@@ -270,6 +270,11 @@ class BackendVSA(Backend):
                     raise ClaripyVSAError(f"Unsupported offset type {type(offset)}")
                 return vs
 
+            if isinstance(a, UninitializedAnnotation):
+                o2 = o.copy()
+                o2.uninitialized = True
+                return o2
+
         if isinstance(o, ValueSet) and isinstance(a, StridedIntervalAnnotation):
             si = CreateStridedInterval(
                 bits=o.bits,
@@ -281,6 +286,10 @@ class BackendVSA(Backend):
             vs = o.copy()
             vs._merge_si(a.region_id, a.region_base_addr, si)
             return vs
+
+        if isinstance(o, BoolResult) and isinstance(a, UninitializedAnnotation):
+            # TODO: Do we want to do anything here?
+            return o
 
         raise ValueError(f"Unsupported annotation type {type(a)} for object {type(o)}")
 
@@ -462,8 +471,8 @@ class BackendVSA(Backend):
         return ret
 
     @staticmethod
-    def CreateTopStridedInterval(bits, name=None, uninitialized=False):
-        return StridedInterval.top(bits, name, uninitialized=uninitialized)
+    def CreateTopStridedInterval(bits, name=None):
+        return StridedInterval.top(bits, name)
 
     @staticmethod
     def constraint_to_si(expr):

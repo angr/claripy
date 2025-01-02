@@ -289,9 +289,7 @@ class BackendZ3(Backend):
 
         self.solve_count = 0
 
-    # XXX this is a HUGE HACK that should be removed whenever uninitialized gets moved to the
-    # "proposed annotation backend" or wherever will prevent it from being part of the object
-    # identity. also whenever the VSA attributes get the fuck out of BVS as well
+    # This is necessary to be able to carry over annotations when round-tripping through Z3
     @property
     def bvs_annotations(self) -> dict[bytes, tuple[Annotation, ...]]:
         if not hasattr(self._tls, "bvs_annotations"):
