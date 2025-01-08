@@ -28,8 +28,8 @@ def op(name, arg_types, return_type: type[T], extra_check=None, calc_length=None
     def _type_fixer(args):
         num_args = len(args)
         if expected_num_args is not None and num_args != expected_num_args:
-            if num_args + 1 == expected_num_args and arg_types[0] is claripy.fp.RM:
-                args = (claripy.fp.RM.default(), *args)
+            if num_args + 1 == expected_num_args and arg_types[0] is claripy.RM:
+                args = (claripy.RM.default(), *args)
             else:
                 raise ClaripyTypeError(f"Operation {name} takes exactly {len(arg_types)} arguments ({len(args)} given)")
 
@@ -37,7 +37,7 @@ def op(name, arg_types, return_type: type[T], extra_check=None, calc_length=None
         matches = list(itertools.starmap(isinstance, zip(args, actual_arg_types, strict=False)))
 
         # heuristically, this works!
-        thing = args[matches.index(True, 1 if actual_arg_types[0] is claripy.fp.RM else 0)] if True in matches else None
+        thing = args[matches.index(True, 1 if actual_arg_types[0] is claripy.RM else 0)] if True in matches else None
 
         for arg, argty, match in zip(args, actual_arg_types, matches, strict=False):
             if not match:

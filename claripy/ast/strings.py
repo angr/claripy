@@ -47,7 +47,7 @@ class String(Base):
         return StrIndexOf(self, pattern, start_idx)
 
 
-def StringS(name, explicit_name=False, **kwargs):
+def StringS(name, explicit_name: bool = False, **kwargs):
     """
     Create a new symbolic string (analogous to z3.String())
 
@@ -56,7 +56,7 @@ def StringS(name, explicit_name=False, **kwargs):
 
     :returns:                    The String object representing the symbolic string
     """
-    n = _make_name(name, 0, False if explicit_name is None else explicit_name)
+    n = _make_name(name, 0, explicit_name)
     return String(
         "StringS",
         (n,),
@@ -66,7 +66,7 @@ def StringS(name, explicit_name=False, **kwargs):
     )
 
 
-def StringV(value, **kwargs):
+def StringV(value: str, **kwargs):
     """
     Create a new Concrete string (analogous to z3.StringVal())
 
