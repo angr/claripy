@@ -17,7 +17,7 @@ class ConstraintFilterMixin:
         ccs = [self._concrete_constraint(c) for c in constraints]
         if False in ccs:
             raise UnsatError("Constraints contain False.")
-        return tuple((o if n is None else o) for o, n in zip(constraints, ccs, strict=False) if n is not True)
+        return tuple(o for o, n in zip(constraints, ccs, strict=False) if n is not True)
 
     def _add(self, constraints, invalidate_cache=True):
         try:
