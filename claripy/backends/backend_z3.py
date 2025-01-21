@@ -583,11 +583,6 @@ class BackendZ3(Backend):
             sort = FSort.from_params(exp, mantissa)
             args = [*children, sort]
             append_children = False
-        elif op_name in ("fpToSBV", "fpToUBV"):
-            # uuuuuugggggghhhhhh
-            bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
-            args = [*children, bv_size]
-            append_children = False
         else:
             args = []
 
