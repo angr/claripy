@@ -540,6 +540,12 @@ class BackendZ3(Backend):
             sort = FSort.from_params(ebits, sbits)
             val = self._abstract_fp_val(ctx, ast, op_name)
             return claripy.FPV(val, sort)
+        if op_name == "fpToUBV":
+            bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
+            return claripy.fpToUBV(*children, bv_size)
+        if op_name == "fpToSBV":
+            bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
+            return claripy.fpToSBV(*children, bv_size)
 
         if op_name == "UNINTERPRETED" and num_args == 0:  # symbolic value
             symbol_name = _z3_decl_name_str(ctx, decl)
