@@ -577,11 +577,16 @@ class BackendZ3(Backend):
             sort = FSort.from_params(exp, mantissa)
             args = [*children, sort]
             append_children = False
-        elif op_name in ("fpToSBV", "fpToUBV"):
-            # uuuuuugggggghhhhhh
+        elif op_name == "fpToSBV":
             bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
-            args = [*children, bv_size]
+            args = [*children]
             append_children = False
+            return claripy.fpToSBV(*args, length=bv_size)
+        elif op_name == "fpToUBV":
+            bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
+            args = [*children]
+            append_children = False
+            return claripy.fpToUBV(*args, length=bv_size)
         else:
             args = []
 
