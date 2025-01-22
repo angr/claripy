@@ -5,6 +5,8 @@ import sys
 import unittest
 
 import claripy
+from claripy import FPS, fpToSBV, fpToUBV
+from claripy.fp import RM
 
 
 class TestZ3(unittest.TestCase):
@@ -86,6 +88,28 @@ class TestZ3(unittest.TestCase):
         backend.add(s, [x == 10**16384])
         d = backend.eval(x, 1, solver=s)
         assert d == [10**16384]
+
+    def test_abstract_sbv(self):
+        """
+        Test abstracting fpToSBV
+        """
+
+        f = FPS("f", claripy.FSORT_FLOAT)
+        sbv = fpToSBV(RM.RM_NearestTiesEven, f, 32)
+
+        sbv2 = claripy.backends.z3.simplify(sbv)
+        assert sbv2.length == 32
+
+    def test_abstract_ubv(self):
+        """
+        Test abstracting fpToUBV
+        """
+
+        f = FPS("f", claripy.FSORT_FLOAT)
+        sbv = fpToUBV(RM.RM_NearestTiesEven, f, 32)
+
+        sbv2 = claripy.backends.z3.simplify(sbv)
+        assert sbv2.length == 32
 
 
 if __name__ == "__main__":
