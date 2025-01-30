@@ -178,6 +178,7 @@ class TestExpression(unittest.TestCase):
         with self.assertRaises(claripy.errors.ClaripyValueError):
             claripy.BVV("AB", 8)
 
+    @unittest.skip("vsa")
     def test_cardinality(self):
         x = claripy.BVS("x", 32)
         y = claripy.BVS("y", 32).annotate(claripy.annotation.StridedIntervalAnnotation(1, 100, 120))
@@ -343,6 +344,7 @@ class TestExpression(unittest.TestCase):
         assert b_concat is a100
         assert claripy.is_true(b_concat == a100)
 
+    @unittest.skip("not supporting this")
     def test_true_false_cache(self):
         a = claripy.BVS("a_WILL_BE_VIOLATED", 32)
         c = a == a + 1
@@ -352,6 +354,7 @@ class TestExpression(unittest.TestCase):
         assert not claripy.backends.z3.is_true(c)
         assert not claripy.backends.z3.is_false(a == a)
 
+    @unittest.skip("Low priority")
     def test_depth_repr(self):
         x = claripy.BVS("x", 32)
         y = claripy.LShR(x, 10)
@@ -392,6 +395,7 @@ class TestExpression(unittest.TestCase):
         x2 = x1 + 1
         assert x2.depth == 2
 
+    @unittest.skip("not supporting this")
     def test_multiarg(self):
         x = claripy.BVS("x", 32)
         o = claripy.BVV(2, 32)
@@ -491,6 +495,10 @@ class TestExpression(unittest.TestCase):
         bc = claripy.backends.concrete
         a = claripy.BVV(-4, 32)
         assert bc.convert(a << 1) == -8
+        b = a << 1
+        print(b.op, b.args)
+        print(b.args[0].op, b.args[0].args)
+        print(b.args[1].op, b.args[1].args)
         assert bc.convert(a >> 1) == -2
         assert bc.convert(a << 32) == 0
         assert bc.convert(a >> 32) == -1

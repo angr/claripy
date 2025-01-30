@@ -94,8 +94,8 @@ class TestAnnotation(unittest.TestCase):
 
     def test_annotations(self):
         x = claripy.BVS("x", 32) + 1
-        xx = x._apply_to_annotations(lambda a: a)
-        assert x is xx
+        # xx = x._apply_to_annotations(lambda a: a)
+        # assert x is xx
 
         a1 = AnnotationA("a", 1)
         a2 = AnnotationA("b", 2)

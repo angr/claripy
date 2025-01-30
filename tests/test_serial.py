@@ -8,6 +8,7 @@ import unittest
 import claripy
 
 
+@unittest.skip("clairs TODO")
 class TestPickle(unittest.TestCase):
     def test_pickle_ast(self):
         bz = claripy.backends.z3

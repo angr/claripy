@@ -555,7 +555,10 @@ class BackendZ3(Backend):
             if symbol_ty == z3.Z3_BV_SORT:
                 bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
                 annots = self.bvs_annotations.get(symbol_name, ())
-                return claripy.BVS(symbol_str, bv_size, explicit_name=True, annotations=annots)
+                a = claripy.BVS(symbol_str, bv_size, explicit_name=True)
+                for a in annots:
+                    a = a.annotate(a)
+                return a
             if symbol_ty == z3.Z3_BOOL_SORT:
                 return claripy.BoolS(symbol_str, explicit_name=True)
             if symbol_ty == z3.Z3_FLOATING_POINT_SORT:
@@ -606,16 +609,16 @@ class BackendZ3(Backend):
             ty = type(args[1])
 
             a = ty("If", tuple(args), length=args[1].length)
-        elif (
-            op := getattr(ty, op_name, None)
-            or getattr(result_ty, op_name, None)
-            or (op_name in bound_ops and getattr(ty, bound_ops[op_name], None))
-        ):
-            if op.calc_length is not None:
-                length = op.calc_length(*args)
-                a = result_ty(op_name, tuple(args), length=length)
-            else:
-                a = result_ty(op_name, tuple(args))
+        # elif (
+        #     op := getattr(ty, op_name, None)
+        #     or getattr(result_ty, op_name, None)
+        #     or (op_name in bound_ops and getattr(ty, bound_ops[op_name], None))
+        # ):
+        #     if op.calc_length is not None:
+        #         length = op.calc_length(*args)
+        #         a = result_ty(op_name, tuple(args), length=length)
+        #     else:
+        #         a = result_ty(op_name, tuple(args))
         else:
             a = result_ty(op_name, tuple(args))
 

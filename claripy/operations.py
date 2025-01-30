@@ -82,7 +82,7 @@ def op(name, arg_types, return_type: type[T], extra_check=None, calc_length=None
 def _handle_annotations(simp, args):
     # pylint:disable=isinstance-second-argument-not-valid-type
     ast_args = tuple(a for a in args if isinstance(a, claripy.ast.Base))
-    preserved_relocatable = frozenset(simp._relocatable_annotations)
+    preserved_relocatable = frozenset({a for a in simp.annotations if a.relocatable})
     relocated_annotations = set()
     bad_eliminated = 0
 

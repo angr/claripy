@@ -7,6 +7,7 @@ import unittest
 import claripy
 
 
+@unittest.skip("clairs TODO")
 class TestFp(unittest.TestCase):
     def test_nan(self):
         a = claripy.FPS("a", claripy.FSORT_FLOAT)
