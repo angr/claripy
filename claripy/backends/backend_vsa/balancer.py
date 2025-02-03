@@ -334,52 +334,54 @@ class Balancer:
     #
 
     def _balance(self, truism):
-        log.debug("Balancing %s", truism)
+        while True:
+            log.debug("Balancing %s", truism)
 
-        # can't balance single-arg bools (Not) for now
-        if len(truism.args) == 1:
-            return truism
-
-        if not isinstance(truism.args[0], Base):
-            return truism
-
-        try:
-            inner_aligned = Balancer._align_truism(truism)
-            if inner_aligned.args[1].cardinality > 1:
-                log.debug("can't do anything because we have multiple multivalued guys")
+            # can't balance single-arg bools (Not) for now
+            if len(truism.args) == 1:
                 return truism
 
-            match inner_aligned.args[0].op:
-                case "Reverse":
-                    balanced = Balancer._balance_reverse(inner_aligned)
-                case "__add__":
-                    balanced = Balancer._balance_add(inner_aligned)
-                case "__sub__":
-                    balanced = Balancer._balance_sub(inner_aligned)
-                case "ZeroExt":
-                    balanced = Balancer._balance_zeroext(inner_aligned)
-                case "SignExt":
-                    balanced = Balancer._balance_signext(inner_aligned)
-                case "Extract":
-                    balanced = Balancer._balance_extract(inner_aligned)
-                case "__and__":
-                    balanced = Balancer._balance_and(inner_aligned)
-                case "Concat":
-                    balanced = Balancer._balance_concat(inner_aligned)
-                case "__lshift__":
-                    balanced = Balancer._balance_lshift(inner_aligned)
-                case "If":
-                    balanced = self._balance_if(inner_aligned)
-                case _:
-                    log.debug("Balance handler %s not implemented.", truism.args[0].op)
+            if not isinstance(truism.args[0], Base):
+                return truism
+
+            try:
+                inner_aligned = Balancer._align_truism(truism)
+                if inner_aligned.args[1].cardinality > 1:
+                    log.debug("can't do anything because we have multiple multivalued guys")
                     return truism
 
-            if balanced is inner_aligned:
-                return balanced
-            return self._balance(balanced)
-        except ClaripyBalancerError:
-            log.warning("Balance handler for operation %s raised exception.", truism.args[0].op)
-            return truism
+                match inner_aligned.args[0].op:
+                    case "Reverse":
+                        balanced = Balancer._balance_reverse(inner_aligned)
+                    case "__add__":
+                        balanced = Balancer._balance_add(inner_aligned)
+                    case "__sub__":
+                        balanced = Balancer._balance_sub(inner_aligned)
+                    case "ZeroExt":
+                        balanced = Balancer._balance_zeroext(inner_aligned)
+                    case "SignExt":
+                        balanced = Balancer._balance_signext(inner_aligned)
+                    case "Extract":
+                        balanced = Balancer._balance_extract(inner_aligned)
+                    case "__and__":
+                        balanced = Balancer._balance_and(inner_aligned)
+                    case "Concat":
+                        balanced = Balancer._balance_concat(inner_aligned)
+                    case "__lshift__":
+                        balanced = Balancer._balance_lshift(inner_aligned)
+                    case "If":
+                        balanced = self._balance_if(inner_aligned)
+                    case _:
+                        log.debug("Balance handler %s not implemented.", truism.args[0].op)
+                        return truism
+
+                if balanced is inner_aligned:
+                    return balanced
+                truism = balanced
+                continue
+            except ClaripyBalancerError:
+                log.warning("Balance handler for operation %s raised exception.", truism.args[0].op)
+                return truism
 
     @staticmethod
     def _balance_reverse(truism):
