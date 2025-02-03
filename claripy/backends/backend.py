@@ -778,7 +778,7 @@ class Backend:
         """
         raise BackendError("backend doesn't support name()")
 
-    def identical(self, a, b):
+    def identical(self, a, b) -> bool:
         """
         This should return whether `a` is identical to `b`. Of course, this isn't always clear. True should mean that it
         is definitely identical. False eans that, conservatively, it might not be.
@@ -788,7 +788,7 @@ class Backend:
         """
         return self._identical(self.convert(a), self.convert(b))
 
-    def _identical(self, a, b):  # pylint:disable=no-self-use,unused-argument
+    def _identical(self, a, b) -> bool:  # pylint:disable=no-self-use,unused-argument
         """
         This should return whether `a` is identical to `b`. This is the native version of ``identical()``.
 
