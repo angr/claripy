@@ -1089,6 +1089,10 @@ class BackendZ3(Backend):
         return z3.BoolRef(z3.Z3_mk_fpa_eq(self._context.ref(), a.as_ast(), b.as_ast()), self._context)
 
     @condom
+    def _op_raw_fpNEQ(self, a, b):
+        return z3.Not(z3.BoolRef(z3.Z3_mk_fpa_eq(self._context.ref(), a.as_ast(), b.as_ast()), self._context))
+
+    @condom
     def _op_raw_fpIsNaN(self, a):
         return z3.BoolRef(z3.Z3_mk_fpa_is_nan(self._context.ref(), a.as_ast()), self._context)
 

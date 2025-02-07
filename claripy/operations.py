@@ -286,6 +286,7 @@ backend_fp_cmp_operations = {
     "fpGT",
     "fpGEQ",
     "fpEQ",
+    "fpNEQ",
 }
 
 backend_fp_operations = {
