@@ -150,6 +150,7 @@ def _fp_cmp_check(a, b):
 
 
 fpEQ = operations.op("fpEQ", (FP, FP), Bool, extra_check=_fp_cmp_check)
+fpNEQ = operations.op("fpNEQ", (FP, FP), Bool, extra_check=_fp_cmp_check)
 fpGT = operations.op("fpGT", (FP, FP), Bool, extra_check=_fp_cmp_check)
 fpGEQ = operations.op("fpGEQ", (FP, FP), Bool, extra_check=_fp_cmp_check)
 fpLT = operations.op("fpLT", (FP, FP), Bool, extra_check=_fp_cmp_check)
@@ -183,7 +184,7 @@ fpSqrt = operations.op("fpSqrt", (RM, FP), FP, calc_length=lambda _, x: x.length
 #
 
 FP.__eq__ = operations.op("fpEQ", (FP, FP), Bool, extra_check=_fp_cmp_check)
-FP.__ne__ = operations.op("fpNE", (FP, FP), Bool, extra_check=_fp_cmp_check)
+FP.__ne__ = operations.op("fpNEQ", (FP, FP), Bool, extra_check=_fp_cmp_check)
 FP.__ge__ = operations.op("fpGEQ", (FP, FP), Bool, extra_check=_fp_cmp_check)
 FP.__le__ = operations.op("fpLEQ", (FP, FP), Bool, extra_check=_fp_cmp_check)
 FP.__gt__ = operations.op("fpGT", (FP, FP), Bool, extra_check=_fp_cmp_check)
@@ -212,7 +213,7 @@ FP.fpDiv = fpDiv
 FP.fpSqrt = fpSqrt
 
 FP.fpEQ = fpEQ
-FP.fpNE = fpEQ
+FP.fpNEQ = fpNEQ
 FP.fpGT = fpGT
 FP.fpGEQ = fpGEQ
 FP.fpLT = fpLT

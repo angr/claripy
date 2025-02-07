@@ -314,7 +314,7 @@ def fpEQ(a, b):
     return a == b
 
 
-def fpNE(a, b):
+def fpNEQ(a, b):
     """
     Checks if floating point `a` is not equal to floating point `b`.
     """
