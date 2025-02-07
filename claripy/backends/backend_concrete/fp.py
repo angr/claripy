@@ -67,6 +67,8 @@ class FPV(BackendObject):
         return FPV(-self.value, self.sort)
 
     def fpSqrt(self):
+        if self.value < 0:
+            return FPV(float("nan"), self.sort)
         return FPV(math.sqrt(self.value), self.sort)
 
     @normalize_types
