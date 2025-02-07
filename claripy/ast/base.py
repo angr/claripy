@@ -426,7 +426,7 @@ class Base:
             if math.isnan(arg):
                 return b"nan"
             if math.isinf(arg):
-                return b"inf"
+                return b"inf" if arg > 0 else b"-inf"
             if arg == 0.0 and math.copysign(1, arg) < 0:
                 return b"-0.0"
             return struct.pack("d", arg)
