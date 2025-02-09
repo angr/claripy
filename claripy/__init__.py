@@ -96,7 +96,7 @@ from claripy.errors import (
     ClaripyZeroDivisionError,
     UnsatError,
 )
-from claripy.fp import FSORT_DOUBLE, FSORT_FLOAT
+from claripy.fp import FSORT_DOUBLE, FSORT_FLOAT, RM, FSort
 from claripy.solvers import (
     Solver,
     SolverCacheless,
@@ -118,6 +118,7 @@ __all__ = (
     "FPV",
     "FSORT_DOUBLE",
     "FSORT_FLOAT",
+    "RM",
     "SGE",
     "SGT",
     "SI",
@@ -140,6 +141,7 @@ __all__ = (
     "ClaripyZeroDivisionError",
     "Concat",
     "Extract",
+    "FSort",
     "If",
     "IntToStr",
     "LShR",

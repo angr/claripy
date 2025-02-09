@@ -14,23 +14,10 @@ class Annotation:
     They provide a means to pass extra information to the claripy backends.
     """
 
-    @property
-    def eliminatable(self) -> bool:  # pylint:disable=no-self-use
-        """
-        Returns whether this annotation can be eliminated in a simplification.
-
-        :return: True if eliminatable, False otherwise
-        """
-        return True
-
-    @property
-    def relocatable(self) -> bool:  # pylint:disable=no-self-use
-        """
-        Returns whether this annotation can be relocated in a simplification.
-
-        :return: True if it can be relocated, false otherwise.
-        """
-        return False
+    # Whether this annotation can be eliminated in a simplification.
+    eliminatable: bool = True
+    # Whether this annotation can be relocated in a simplification.
+    relocatable: bool = False
 
     def relocate(self, src: claripy.ast.Base, dst: claripy.ast.Base):  # pylint:disable=no-self-use,unused-argument
         """
@@ -70,13 +57,8 @@ class Annotation:
 class SimplificationAvoidanceAnnotation(Annotation):
     """SimplificationAvoidanceAnnotation is an annotation that prevents simplification of an AST."""
 
-    @property
-    def eliminatable(self):
-        return False
-
-    @property
-    def relocatable(self):
-        return False
+    eliminatable = False
+    relocatable = False
 
 
 class StridedIntervalAnnotation(SimplificationAvoidanceAnnotation):
