@@ -238,7 +238,8 @@ class Base:
         length: int | None = None,
     ) -> Self:
         # Try to simplify the expression again
-        simplified, annotated = claripy.simplifications.simplify(op, args) if simplify else (None, False)
+        # simplified, annotated = claripy.simplifications.simplify(op, args) if simplify else (None, False)
+        simplified, annotated = None, False
         if simplified is not None:
             op = simplified.op
         if (  # fast path
