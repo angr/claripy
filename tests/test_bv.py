@@ -126,6 +126,20 @@ class TestBv(unittest.TestCase):
         _check_exception(a, b, "SMod")
         _check_exception(a, b, "SDiv")
 
+    def test_signext_convert(self):
+        x = claripy.BVS('x', 32)
+        y = claripy.SignExt(32, x)
+        roundtripped = claripy.backends.z3._abstract(claripy.backends.z3.convert(y))
+        print(roundtripped)
+        assert roundtripped.length == 64
+
+    def test_zeroext_convert(self):
+        x = claripy.BVS('x', 32)
+        y = claripy.ZeroExt(32, x)
+        roundtripped = claripy.backends.z3._abstract(claripy.backends.z3.convert(y))
+        print(roundtripped)
+        assert roundtripped.length == 64
+
     def test_type_errors(self):
         self.assertRaises(TypeError, lambda: claripy.BVV(None))
         self.assertRaises(TypeError, lambda: claripy.BVV(3))
