@@ -631,8 +631,8 @@ class TestVSAOperations(unittest.TestCase):  # pylint: disable=no-member functio
         assert vsa_model(vs_1).is_empty
 
         # Test merging two addresses
-        vsa_model(vs_1)._merge_si("global", 0, vsa_model(claripy.SI(bits=32, stride=0, lower_bound=10, upper_bound=10)))
-        vsa_model(vs_1)._merge_si("global", 0, vsa_model(claripy.SI(bits=32, stride=0, lower_bound=28, upper_bound=28)))
+        vs_1 = vs_1.union(VS(32, "global", 0, claripy.SI(bits=32, stride=0, lower_bound=10, upper_bound=10)))
+        vs_1 = vs_1.union(VS(32, "global", 0, claripy.SI(bits=32, stride=0, lower_bound=28, upper_bound=28)))
         assert (
             vsa_model(vs_1)
             .get_si("global")
@@ -644,14 +644,12 @@ class TestVSAOperations(unittest.TestCase):  # pylint: disable=no-member functio
         vs_2 = VS(name="foo", bits=32, value=0).intersection(VS(name="makeitempty", bits=32, value=1))
         assert self.is_equal(vs_1, vs_1)
         assert self.is_equal(vs_2, vs_2)
-        vsa_model(vs_1)._merge_si("global", 0, vsa_model(claripy.SI(bits=32, stride=0, lower_bound=10, upper_bound=10)))
+        vs_1 = vs_1.union(VS(32, "global", 0, claripy.SI(bits=32, stride=0, lower_bound=10, upper_bound=10)))
         assert not self.is_equal(vs_1, vs_2)
-        vsa_model(vs_2)._merge_si("global", 0, vsa_model(claripy.SI(bits=32, stride=0, lower_bound=10, upper_bound=10)))
+        vs_2 = vs_2.union(VS(32, "global", 0, claripy.SI(bits=32, stride=0, lower_bound=10, upper_bound=10)))
         assert self.is_equal(vs_1, vs_2)
         assert claripy.backends.vsa.is_true((vs_1 & vs_2) == vs_1)
-        vsa_model(vs_1)._merge_si(
-            "global", 0, vsa_model(claripy.SI(bits=32, stride=18, lower_bound=10, upper_bound=28))
-        )
+        vs_1 = vs_1.union(VS(32, "global", 0, claripy.SI(bits=32, stride=18, lower_bound=10, upper_bound=28)))
         assert not self.is_equal(vs_1, vs_2)
 
     def test_value_set_subtraction(self):
