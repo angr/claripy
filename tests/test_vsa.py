@@ -708,8 +708,7 @@ class TestVSAOperations(unittest.TestCase):  # pylint: disable=no-member functio
             claripy.SI(bits=32, stride=0, lower_bound=0xFFFFFFFF, upper_bound=0xFFFFFFFF),
         )
         assert claripy.backends.vsa.is_true(
-            vsa_model(claripy.excavate_ite(if_1).args[1])
-            == vsa_model(claripy.ValueSet(32, "global", 0, 0))
+            vsa_model(claripy.excavate_ite(if_1).args[1]) == vsa_model(claripy.ValueSet(32, "global", 0, 0))
         )
         assert claripy.backends.vsa.is_true(vsa_model(claripy.excavate_ite(if_1).args[2]) == vsa_model(vs_2))
 
@@ -723,8 +722,7 @@ class TestVSAOperations(unittest.TestCase):  # pylint: disable=no-member functio
             claripy.SI(bits=32, stride=0, lower_bound=0xFFFFFFFF, upper_bound=0xFFFFFFFF),
         )
         assert claripy.backends.vsa.is_true(
-            vsa_model(claripy.excavate_ite(if_2).args[1])
-            == vsa_model(claripy.ValueSet(32, "global", 0, 0))
+            vsa_model(claripy.excavate_ite(if_2).args[1]) == vsa_model(claripy.ValueSet(32, "global", 0, 0))
         )
         assert claripy.backends.vsa.is_true(vsa_model(claripy.excavate_ite(if_2).args[2]) == vsa_model(vs_3))
 

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import numbers
 import weakref
 from contextlib import suppress
 
