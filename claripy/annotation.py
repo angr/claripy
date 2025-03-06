@@ -112,20 +112,19 @@ class RegionAnnotation(SimplificationAvoidanceAnnotation):
     RegionAnnotations is treated as a ValueSet.
     """
 
-    def __init__(self, region_id, region_base_addr, offset):
+    def __init__(self, region_id, region_base_addr):
         self.region_id = region_id
         self.region_base_addr = region_base_addr
-        self.offset = offset
 
     #
     # Overriding base methods
     #
 
     def __hash__(self):
-        return hash((self.region_id, self.region_base_addr, hash(self.offset)))
+        return hash((self.region_id, self.region_base_addr))
 
     def __repr__(self):
-        return f"<RegionAnnotation {self.region_id}:{self.offset:#08x}>"
+        return f"<RegionAnnotation {self.region_id}@{self.region_base_addr:#08x}>"
 
 
 class UninitializedAnnotation(Annotation):
