@@ -257,7 +257,7 @@ class BackendVSA(Backend):
                 )
 
             if isinstance(a, RegionAnnotation):
-                offset = self.convert(a.offset)
+                offset = o
                 if isinstance(offset, numbers.Number):
                     offset = StridedInterval(bits=o.bits, stride=0, lower_bound=offset, upper_bound=offset)
                 vs = ValueSet.empty(o.bits)

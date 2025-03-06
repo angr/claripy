@@ -304,7 +304,7 @@ def ValueSet(bits: int, region: str, region_base_addr: int, value: BV | int):
         value = BVV(value, bits)
     value = value + region_base_addr
     # Annotate the bvs and return the new AST
-    return value.annotate(claripy.annotation.RegionAnnotation(region, region_base_addr, value))
+    return value.annotate(claripy.annotation.RegionAnnotation(region, region_base_addr))
 
 
 VS = ValueSet
