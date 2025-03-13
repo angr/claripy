@@ -81,7 +81,7 @@ class Balancer:
         si = claripy.backends.vsa.convert(a)
         mx = Balancer._max(a)
         mn = Balancer._min(a)
-        return claripy.BVS("bound", len(a)).annotate(claripy.annotation.StridedIntervalAnnotation(si._stride, mn, mx))
+        return claripy.BVS("bounds", len(a)).annotate(claripy.annotation.StridedIntervalAnnotation(si._stride, mn, mx))
 
     @staticmethod
     def _cardinality(a):
