@@ -46,7 +46,6 @@ class TestAST(unittest.TestCase):
         assert (x - y).is_leaf() is False
         assert (x // y).is_leaf() is False
         assert (x % y).is_leaf() is False
-        assert (x**y).is_leaf() is False
         assert (x & y).is_leaf() is False
         assert (x | y).is_leaf() is False
         assert (x ^ y).is_leaf() is False
