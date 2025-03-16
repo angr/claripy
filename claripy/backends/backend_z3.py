@@ -1456,7 +1456,7 @@ op_map = {
     "Z3_OP_PB_EQ": None,
     "Z3_OP_PB_GE": None,
     "Z3_OP_PB_LE": None,
-    "Z3_OP_POWER": "__pow__",
+    "Z3_OP_POWER": None,
     "Z3_OP_PR_AND_ELIM": None,
     "Z3_OP_PR_APPLY_DEF": None,
     "Z3_OP_PR_ASSERTED": None,

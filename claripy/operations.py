@@ -167,8 +167,6 @@ expression_arithmetic_operations = {
     "__rmul__",
     "__sub__",
     "__rsub__",
-    "__pow__",
-    "__rpow__",
     "__mod__",
     "__rmod__",
     "SDiv",
@@ -333,8 +331,6 @@ opposites = {
     "__rmul__": "__mul__",
     "__sub__": "__rsub__",
     "__rsub__": "__sub__",
-    "__pow__": "__rpow__",
-    "__rpow__": "__pow__",
     "__mod__": "__rmod__",
     "__rmod__": "__mod__",
     "__eq__": "__eq__",
@@ -374,7 +370,6 @@ reversed_ops = {
     "__rmod__": "__mod__",
     "__rmul__": "__mul__",
     "__ror__": "__or__",
-    "__rpow__": "__pow__",
     "__rrshift__": "__rshift__",
     "__rsub__": "__sub__",
     "__rtruediv__": "__truediv__",
@@ -427,7 +422,6 @@ infix = {
     "__mul__": "*",
     "__floordiv__": "/",
     "__truediv__": "/",  # the raw / operator should use integral semantics on bitvectors
-    "__pow__": "**",
     "__mod__": "%",
     "__eq__": "==",
     "__ne__": "!=",
@@ -463,7 +457,6 @@ prefix = {
 
 op_precedence = {  # based on https://en.cppreference.com/w/c/language/operator_precedence
     # precedence: 2
-    "__pow__": 2,
     "Not": 2,
     "__neg__": 2,
     "__invert__": 2,

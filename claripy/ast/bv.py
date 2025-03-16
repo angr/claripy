@@ -425,10 +425,6 @@ BV.__sub__ = operations.op(
     "__sub__", (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc
 )
 BV.__rsub__ = operations.reversed_op(BV.__sub__)
-BV.__pow__ = operations.op(
-    "__pow__", (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc
-)
-BV.__rpow__ = operations.reversed_op(BV.__pow__)
 BV.__mod__ = operations.op(
     "__mod__", (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc
 )
