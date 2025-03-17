@@ -216,6 +216,27 @@ class TestBalancer(unittest.TestCase):
         assert len(r) == 1
         assert r[0][0] is x
 
+    def test_adding_multiple_symbolic_variables(self):
+        x0 = claripy.BVS("x0", 32)
+        x1 = claripy.BVS("x1", 32)
+        expr = x0 + x1 + claripy.BVV(1, 32) < claripy.BVV(99, 32)
+        s, r = Balancer(expr).compat_ret
+
+        assert s is True
+        assert len(r) == 1
+        print(r)
+        assert r[0][0] is x0 + x1
+        assert claripy.backends.vsa.cardinality(r[0][1]) == 99
+
+        expr = x0 + claripy.BVV(8, 32) + x1 < claripy.BVV(99, 32)
+        s, r = Balancer(expr).compat_ret
+
+        assert s is True
+        assert len(r) == 1
+        print(r)
+        assert r[0][0] is x0 + x1
+        assert claripy.backends.vsa.cardinality(r[0][1]) == 99
+
 
 if __name__ == "__main__":
     unittest.main()
