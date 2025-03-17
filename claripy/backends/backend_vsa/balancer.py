@@ -393,9 +393,20 @@ class Balancer:
     def _balance_add(truism):
         if len(truism.args) != 2:
             return truism
-        new_lhs = truism.args[0].args[0]
         old_rhs = truism.args[1]
-        other_adds = truism.args[0].args[1:]
+        lhs = truism.args[0]
+        if all(a.concrete for a in lhs.args):
+            # the old logic
+            new_lhs = lhs.args[0]
+            other_adds = lhs.args[1:]
+        else:
+            new_lhs = tuple(a for a in lhs.args if a.symbolic)
+            if not new_lhs:
+                return truism
+            new_lhs = new_lhs[0] if len(new_lhs) == 1 else lhs.make_like("__add__", new_lhs)
+            other_adds = tuple(a for a in lhs.args if a.concrete)
+            if not other_adds:
+                return truism
         new_rhs = truism.args[0].make_like("__sub__", (old_rhs, *other_adds))
         return truism.make_like(truism.op, (new_lhs, new_rhs))
 
