@@ -258,7 +258,7 @@ class Base:
 
             cache = type(self)._hash_cache
             h = Base._calc_hash(op, args, annotations, length)
-            cached_ast = cast(T | None, cache.get(h, None))
+            cached_ast = cast("T | None", cache.get(h, None))
             if cached_ast is not None:
                 return cached_ast
 

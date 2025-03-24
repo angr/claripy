@@ -139,7 +139,7 @@ def burrow_ite(expr: T) -> T:
     possible into the ast, for simpler printing.
     """
     if expr.hash() in burrowed_cache and burrowed_cache[expr.hash()] is not None:
-        return cast(T, burrowed_cache[expr.hash()])
+        return cast("T", burrowed_cache[expr.hash()])
 
     burrowed = _burrow_ite(expr)
     burrowed_cache[burrowed.hash()] = burrowed
@@ -153,7 +153,7 @@ def excavate_ite(expr: T) -> T:
     possible toward the root of the AST, for processing in static analyses.
     """
     if expr.hash() in excavated_cache and excavated_cache[expr.hash()] is not None:
-        return cast(T, excavated_cache[expr.hash()])
+        return cast("T", excavated_cache[expr.hash()])
 
     excavated = _excavate_ite(expr)
     excavated_cache[excavated.hash()] = excavated
