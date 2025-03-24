@@ -2835,8 +2835,8 @@ class StridedInterval(BackendObject):
         :param b: Second integer
         :return: the integer GCD between a and b
         """
-        a = int(round(a))
-        b = int(round(b))
+        a = round(a)
+        b = round(b)
         if b < 0:
             b = -b
         while b:
@@ -2928,7 +2928,7 @@ class StridedInterval(BackendObject):
             else:
                 t = ub if abs(ub) < abs(lb) else lb
             # round the value of t
-            t = int(math.floor(t)) if t == ub else int(math.ceil(t))
+            t = math.floor(t) if t == ub else math.ceil(t)
 
             return (c * x0 + b * t, c * y0 - a * t)
         return (None, None)

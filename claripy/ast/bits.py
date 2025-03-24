@@ -24,7 +24,7 @@ class Bits(Base):
         """
         :returns: The bit length of this AST
         """
-        return cast(int, self.length)
+        return cast("int", self.length)
 
     def _type_name(self):
         return self.__class__.__name__ + str(self.length)
