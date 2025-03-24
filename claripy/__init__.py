@@ -50,6 +50,7 @@ from claripy.ast.bv import (
 from claripy.ast.fp import (
     FPS,
     FPV,
+    RM,
     fpAbs,
     fpAdd,
     fpDiv,
@@ -145,6 +146,7 @@ __all__ = (
     "LShR",
     "Not",
     "Or",
+    "RM",
     "RegionAnnotation",
     "Reverse",
     "RotateLeft",
