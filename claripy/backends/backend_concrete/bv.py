@@ -53,9 +53,13 @@ class BVV(BackendObject):
     Any use outside of claripy should use `claripy.BVV` instead.
     """
 
+    _value: int
+    bits: int
+    mod: int
+
     __slots__ = ["_value", "bits", "mod"]
 
-    def __init__(self, value, bits):
+    def __init__(self, value: int, bits: int):
         if _d._DEBUG:
             if not isinstance(bits, numbers.Number) or bits < 0:
                 raise ClaripyOperationError("BVV needs a non-negative length and an int value")
@@ -86,8 +90,8 @@ class BVV(BackendObject):
         return self._value
 
     @value.setter
-    def value(self, v):
-        self._value = v & (self.mod - 1) if v is not None else None
+    def value(self, v: int):
+        self._value = v & (self.mod - 1)
 
     @property
     def signed(self):
