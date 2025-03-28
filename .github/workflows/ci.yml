@@ -26,3 +26,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: uv sync --dev
       - run: uv run pytest
+
+  ecosystem:
+    name: angr Ecosystem Test
+    uses: angr/ci-settings/.github/workflows/angr-ci.yml@master
+    with:
+      include_self: false
