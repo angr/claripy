@@ -25,7 +25,9 @@ content-type = "text/markdown"
 
 [project.optional-dependencies]
 docs = ["furo", "myst-parser", "sphinx", "sphinx-autodoc-typehints"]
-testing = ["pytest"]
+
+[dependency-groups]
+dev = ["pytest", "pytest-xdist"]
 
 [tool.setuptools]
 license-files = ["LICENSE"]
