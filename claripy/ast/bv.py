@@ -446,7 +446,6 @@ BV.SMod = operations.op(
 
 BV.__neg__ = operations.op("__neg__", (BV,), BV, calc_length=operations.basic_length_calc)
 BV.__pos__ = lambda x: x
-BV.__abs__ = operations.op("__abs__", (BV,), BV, calc_length=operations.basic_length_calc)
 
 BV.__eq__ = operations.op("__eq__", (BV, BV), Bool, extra_check=operations.length_same_check)
 BV.__ne__ = operations.op("__ne__", (BV, BV), Bool, extra_check=operations.length_same_check)
