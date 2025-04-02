@@ -260,6 +260,10 @@ def ne_simplifier(a, b):
     if a.op == "Reverse" and b.op == "Reverse":
         return a.args[0] != b.args[0]
 
+    # simple canonicalization
+    if a.op == "BVV" and b.op != "BVV":
+        return b != a
+
     if a.op == "If":
         if a.args[2] is b and claripy.is_true(a.args[1] != b):
             # (If(c, x, y) == x, x != y) -> c
