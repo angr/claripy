@@ -11,7 +11,7 @@ import threading
 import weakref
 from decimal import Decimal
 from functools import reduce
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import z3
 from cachetools import LRUCache
@@ -30,6 +30,8 @@ from claripy.fp import RM, FSort
 from claripy.operations import backend_fp_operations, backend_operations, backend_strings_operations, bound_ops
 
 if TYPE_CHECKING:
+    from types import FrameType
+
     from claripy.annotation import Annotation
 
 
@@ -41,7 +43,7 @@ ALL_Z3_CONTEXTS = weakref.WeakSet()
 INT_STRING_CHUNK_SIZE: int | None = None  # will be updated later if we are on CPython 3.11+
 
 
-def handle_sigint(signals, frametype):
+def handle_sigint(signals: int, frametype: FrameType | None) -> Any:
     if old_handler == signal.SIG_IGN:
         return
 
@@ -49,8 +51,6 @@ def handle_sigint(signals, frametype):
     for context in contexts:
         context.interrupt()
 
-    if old_handler is signal.default_int_handler:
-        raise KeyboardInterrupt
     if callable(old_handler):
         old_handler(signals, frametype)
     else:
