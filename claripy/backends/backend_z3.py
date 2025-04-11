@@ -42,6 +42,7 @@ log = logging.getLogger(__name__)
 ALL_Z3_CONTEXTS = weakref.WeakSet()
 INT_STRING_CHUNK_SIZE: int | None = None  # will be updated later if we are on CPython 3.11+
 
+
 def handle_sigint(signals: int, frametype: FrameType | None) -> Any:
     if old_handler == signal.SIG_IGN:
         return
