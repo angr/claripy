@@ -82,7 +82,7 @@ class FP(Bits):
     _from_str = _from_float
 
 
-def FPS(name, sort, explicit_name=None) -> FP:
+def FPS(name, sort, explicit_name: bool = False) -> FP:
     """
     Creates a floating-point symbol.
 
@@ -92,7 +92,7 @@ def FPS(name, sort, explicit_name=None) -> FP:
     :return:                An FP AST.
     """
 
-    n = _make_name(name, sort.length, False if explicit_name is None else explicit_name, prefix="FP_")
+    n = _make_name(name, sort.length, explicit_name, prefix="FP_")
     return FP("FPS", (n, sort), variables=frozenset((n,)), symbolic=True, length=sort.length)
 
 
