@@ -713,18 +713,18 @@ def bitwise_and_simplifier(a, b, *args):
             a.op == "If"
             and b.op == "If"
             and (
-                (a.args[1] == claripy.BVV(1, 1)).is_true()
-                and (a.args[2] == claripy.BVV(0, 1)).is_true()
-                and (b.args[1] == claripy.BVV(1, 1)).is_true()
-                and (b.args[2] == claripy.BVV(0, 1)).is_true()
+                (a.args[1] == claripy.BVV(1, len(a.args[1]))).is_true()
+                and (a.args[2] == claripy.BVV(0, len(a.args[2]))).is_true()
+                and (b.args[1] == claripy.BVV(1, len(a.args[1]))).is_true()
+                and (b.args[2] == claripy.BVV(0, len(a.args[2]))).is_true()
             )
         ):
             cond0 = a.args[0]
             cond1 = b.args[0]
             return claripy.If(
                 cond0 & cond1,
-                claripy.BVV(1, 1),
-                claripy.BVV(0, 1),
+                claripy.BVV(1, len(a.args[1])),
+                claripy.BVV(0, len(a.args[2])),
             )
 
     return _flatten_simplifier("__and__", _deduplicate_filter, a, b, *args)
