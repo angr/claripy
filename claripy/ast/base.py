@@ -131,7 +131,7 @@ class Base:
     _hash_cache: WeakValueDictionary[int, Base] = WeakValueDictionary()
 
     def __new__(  # pylint:disable=redefined-builtin
-        cls: type[Base],
+        cls: type[T],
         op: str,
         args: Iterable[ArgType],
         add_variables: Iterable[str] | None = None,
@@ -143,7 +143,7 @@ class Base:
         skip_child_annotations: bool = False,
         length: int | None = None,
         encoded_name: bytes | None = None,
-    ):
+    ) -> T:
         """
         This is called when you create a new Base object, whether directly or through an operation.
         It finalizes the arguments (see the _finalize function, above) and then computes
@@ -229,7 +229,7 @@ class Base:
     def make_like(
         self,
         op: str,
-        args: Iterable[ArgType],
+        args: tuple[ArgType, ...],
         simplify: bool = False,
         annotations: tuple[Annotation, ...] | None = None,
         variables: frozenset[str] | None = None,
@@ -309,14 +309,14 @@ class Base:
         op: str,
         args: tuple[ArgType, ...],
         variables: frozenset[str],
-        symbolic: bool | None = None,
+        symbolic: bool,
         length: int | None = None,
         errored: set[Backend] | None = None,
-        annotations: tuple[Annotation, ...] | None = None,
+        annotations: tuple[Annotation, ...] = (),
         encoded_name: bytes | None = None,
         depth: int | None = None,
-        uneliminatable_annotations: frozenset[Annotation] | None = None,
-        relocatable_annotations: frozenset[Annotation] | None = None,
+        uneliminatable_annotations: frozenset[Annotation] = frozenset(),
+        relocatable_annotations: frozenset[Annotation] = frozenset(),
     ) -> None:
         """
         Initializes an AST. Takes the same arguments as ``Base.__new__()``
@@ -332,7 +332,7 @@ class Base:
         self.length = length
         self.variables = variables
         self.symbolic = symbolic
-        self.annotations: tuple[Annotation] = annotations
+        self.annotations = annotations
         self._uneliminatable_annotations = uneliminatable_annotations
         self._relocatable_annotations = relocatable_annotations
 
@@ -361,7 +361,7 @@ class Base:
     @staticmethod
     def _calc_hash(
         op: str,
-        args: tuple[Base, ...],
+        args: tuple[ArgType, ...],
         annotations: tuple[Annotation, ...],
         length: int | None,
     ) -> int:
@@ -452,7 +452,10 @@ class Base:
     @property
     def _encoded_name(self) -> bytes:
         if self._cached_encoded_name is None:
-            self._cached_encoded_name = self.args[0].encode()
+            if isinstance(self.args[0], str):
+                self._cached_encoded_name = self.args[0].encode()
+            else:
+                self._cached_encoded_name = self._hash.to_bytes(8, "little")
         return self._cached_encoded_name
 
     def identical(self, other: Self) -> bool:
@@ -836,7 +839,7 @@ class Base:
 
         return True
 
-    def canonicalize(self, var_map=None, counter=None) -> Self:
+    def canonicalize(self, var_map=None, counter=None) -> tuple[dict[str, str], itertools.count, Self]:
         counter = itertools.count() if counter is None else counter
         var_map = {} if var_map is None else var_map
 

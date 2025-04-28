@@ -50,7 +50,7 @@ class Bool(Base):
     __len__ = size
 
 
-def BoolS(name, explicit_name=None) -> Bool:
+def BoolS(name: str, explicit_name: bool = False) -> Bool:
     """
     Creates a boolean symbol (i.e., a variable).
 
@@ -59,7 +59,7 @@ def BoolS(name, explicit_name=None) -> Bool:
 
     :return:                A Bool object representing this symbol.
     """
-    n = _make_name(name, -1, False if explicit_name is None else explicit_name)
+    n = _make_name(name, -1, explicit_name)
     return Bool("BoolS", (n,), variables=frozenset((n,)), symbolic=True)
 
 

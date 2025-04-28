@@ -963,7 +963,7 @@ class BackendZ3(Backend):
     def _is_true(self, e, extra_constraints=(), solver=None, model_callback=None):
         return z3.simplify(e).eq(z3.BoolVal(True, ctx=self._context))
 
-    def _solution(self, expr, v, extra_constraints=(), solver=None, model_callback=None):
+    def _solution(self, expr, v, extra_constraints=(), solver=None, model_callback=None) -> bool:
         return self._satisfiable(
             extra_constraints=(expr == v, *tuple(extra_constraints)), solver=solver, model_callback=model_callback
         )
