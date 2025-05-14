@@ -223,3 +223,4 @@ FP.isInf = fpIsInf
 
 FP.fpToIEEEBV = fpToIEEEBV
 FP.fpToFP = fpToFP
+FP.fpToFPUnsigned = fpToFPUnsigned

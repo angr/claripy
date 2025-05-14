@@ -19,6 +19,14 @@ class TestRegressions(unittest.TestCase):
         assert not s.satisfiable(extra_constraints=[claripy.BVS("lol", 32) == 0])
         assert not s.satisfiable()
 
+    def test_fpToIEEEBVV(self):
+        # test that fpToIEEEBVV does not have a length of None
+        expr = claripy.fpToIEEEBV(
+            claripy.fpToFPUnsigned(claripy.RM.RM_TowardsZero, claripy.BVS("a", 64), claripy.FSORT_DOUBLE)
+        )
+        simplified_expr = claripy.simplify(expr)
+        assert simplified_expr.length == 64
+
 
 if __name__ == "__main__":
     unittest.main()
