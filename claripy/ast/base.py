@@ -838,7 +838,7 @@ class Base:
 
         return True
 
-    def canonicalize(self, var_map=None, counter: int | None=None) -> tuple[dict[int, Base], int, Base]:
+    def canonicalize(self, var_map=None, counter: int | None = None) -> tuple[dict[int, Base], int, Base]:
         ctr = itertools.count(0 if counter is None else counter)
         var_map = {} if var_map is None else var_map
 
