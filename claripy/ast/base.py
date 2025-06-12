@@ -460,7 +460,9 @@ class Base:
         Check if two ASTs are identical. If `strict` is False, the comparison
         will be lenient on the names of the ASTs.
         """
-        return self.canonicalize() is other.canonicalize()
+        a = self.canonicalize()
+        b = other.canonicalize()
+        return a[:2] == b[:2] and a[2] is b[2]
 
     #
     # Annotations
@@ -836,13 +838,13 @@ class Base:
 
         return True
 
-    def canonicalize(self, var_map=None, counter=None) -> Self:
-        counter = itertools.count() if counter is None else counter
+    def canonicalize(self, var_map=None, counter: int | None=None) -> tuple[dict[int, Base], int, Base]:
+        ctr = itertools.count(0 if counter is None else counter)
         var_map = {} if var_map is None else var_map
 
         for v in self.leaf_asts():
             if v.hash() not in var_map and v.is_leaf():
-                new_name = f"canonical_{next(counter)}"
+                new_name = f"canonical_{next(ctr)}"
                 match v.op:
                     case "BVS":
                         var_map[v.hash()] = claripy.BVS(new_name, v.length, explicit_name=True)
@@ -853,7 +855,7 @@ class Base:
                     case "StringS":
                         var_map[v.hash()] = claripy.StringS(new_name, explicit_name=True)
 
-        return var_map, counter, claripy.replace_dict(self, var_map)
+        return var_map, next(ctr), claripy.replace_dict(self, var_map)
 
     #
     # these are convenience operations

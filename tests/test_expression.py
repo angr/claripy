@@ -386,6 +386,20 @@ class TestExpression(unittest.TestCase):
         assert frozenset.union(*[a.variables for a in y2.leaf_asts()]) == two_names
         assert y1.canonicalize()[-1] is y2.canonicalize()[-1]
 
+        assert y1.canonicalize(counter=3)[-1] is y2.canonicalize(counter=3)[-1]
+
+    def test_identical(self):
+        x1 = claripy.BVS("x", 32)
+        x2 = claripy.BVS("x", 32)
+        y = claripy.BoolV(False)
+        z = claripy.BoolS("z")
+
+        assert x1.identical(x1) is True
+        assert x1.identical(x2) is True
+        assert y.identical(y) is True
+        assert y.identical(claripy.false()) is True
+        assert z.identical(z) is True
+
     def test_depth(self):
         x1 = claripy.BVS("x", 32)
         assert x1.depth == 1
