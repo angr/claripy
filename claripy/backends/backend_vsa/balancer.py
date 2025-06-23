@@ -129,7 +129,7 @@ class Balancer:
     def _align_truism(truism):
         outer_aligned = Balancer._align_ast(truism)
         inner_aligned = outer_aligned.make_like(
-            outer_aligned.op, (Balancer._align_ast(outer_aligned.args[0]),) + outer_aligned.args[1:]
+            outer_aligned.op, (Balancer._align_ast(outer_aligned.args[0]), *outer_aligned.args[1:])
         )
 
         if not claripy.backends.vsa.identical(inner_aligned, truism):
