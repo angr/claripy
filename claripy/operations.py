@@ -192,18 +192,15 @@ expression_comparator_operations = {
     # comparisons
     "__eq__",
     "__ne__",
-    "__ge__",
-    "__le__",
-    "__gt__",
-    "__lt__",
+    "UGT",
+    "UGE",
+    "ULT",
+    "ULE",
+    "SGT",
+    "SGE",
+    "SLT",
+    "SLE",
 }
-
-# expression_comparator_operations = {
-#     'Eq',
-#     'Ne',
-#     'Ge', 'Le',
-#     'Gt', 'Lt',
-# }
 
 expression_bitwise_operations = {
     # bitwise
@@ -335,10 +332,6 @@ opposites = {
     "__rmod__": "__mod__",
     "__eq__": "__eq__",
     "__ne__": "__ne__",
-    "__ge__": "__le__",
-    "__le__": "__ge__",
-    "__gt__": "__lt__",
-    "__lt__": "__gt__",
     "ULT": "UGT",
     "UGT": "ULT",
     "ULE": "UGE",
@@ -379,10 +372,6 @@ reversed_ops = {
 inverse_operations = {
     "__eq__": "__ne__",
     "__ne__": "__eq__",
-    "__gt__": "__le__",
-    "__lt__": "__ge__",
-    "__ge__": "__lt__",
-    "__le__": "__gt__",
     "ULT": "UGE",
     "UGE": "ULT",
     "UGT": "ULE",
@@ -425,10 +414,6 @@ infix = {
     "__mod__": "%",
     "__eq__": "==",
     "__ne__": "!=",
-    "__ge__": ">=",
-    "__le__": "<=",
-    "__gt__": ">",
-    "__lt__": "<",
     "UGE": ">=",
     "ULE": "<=",
     "UGT": ">",

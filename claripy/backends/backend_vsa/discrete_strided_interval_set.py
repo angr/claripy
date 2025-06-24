@@ -213,7 +213,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
 
     @convert_operand_to_si
     @collapse_operand
-    def __gt__(self, o):
+    def UGT(self, o):
         """
         Operation >
 
@@ -225,7 +225,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
 
     @convert_operand_to_si
     @collapse_operand
-    def __le__(self, o):
+    def ULE(self, o):
         """
         Operation <=
 
@@ -237,7 +237,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
 
     @convert_operand_to_si
     @collapse_operand
-    def __lt__(self, o):
+    def ULT(self, o):
         """
         Operation <
 
@@ -245,6 +245,18 @@ class DiscreteStridedIntervalSet(StridedInterval):
         :return:    An instance of BoolResult.
         """
         return self.collapse() < o
+
+    @convert_operand_to_si
+    @collapse_operand
+    def UGE(self, o):
+        """
+        Operation >=
+
+        :param o:   The other operand.
+        :return:    An instance of BoolResult.
+        """
+
+        return self.collapse() >= o
 
     # Bitwise operations
 

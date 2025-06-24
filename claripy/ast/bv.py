@@ -316,10 +316,10 @@ VS = ValueSet
 
 
 # comparisons
-ULT = operations.op("__lt__", (BV, BV), Bool, extra_check=operations.length_same_check)
-ULE = operations.op("__le__", (BV, BV), Bool, extra_check=operations.length_same_check)
-UGT = operations.op("__gt__", (BV, BV), Bool, extra_check=operations.length_same_check)
-UGE = operations.op("__ge__", (BV, BV), Bool, extra_check=operations.length_same_check)
+ULT = operations.op("ULT", (BV, BV), Bool, extra_check=operations.length_same_check)
+ULE = operations.op("ULE", (BV, BV), Bool, extra_check=operations.length_same_check)
+UGT = operations.op("UGT", (BV, BV), Bool, extra_check=operations.length_same_check)
+UGE = operations.op("UGE", (BV, BV), Bool, extra_check=operations.length_same_check)
 SLT = operations.op("SLT", (BV, BV), Bool, extra_check=operations.length_same_check)
 SLE = operations.op("SLE", (BV, BV), Bool, extra_check=operations.length_same_check)
 SGT = operations.op("SGT", (BV, BV), Bool, extra_check=operations.length_same_check)
@@ -447,20 +447,20 @@ BV.SMod = operations.op(
 BV.__neg__ = operations.op("__neg__", (BV,), BV, calc_length=operations.basic_length_calc)
 BV.__pos__ = lambda x: x
 
-BV.__eq__ = operations.op("__eq__", (BV, BV), Bool, extra_check=operations.length_same_check)
-BV.__ne__ = operations.op("__ne__", (BV, BV), Bool, extra_check=operations.length_same_check)
-BV.__ge__ = operations.op("__ge__", (BV, BV), Bool, extra_check=operations.length_same_check)
-BV.__le__ = operations.op("__le__", (BV, BV), Bool, extra_check=operations.length_same_check)
-BV.__gt__ = operations.op("__gt__", (BV, BV), Bool, extra_check=operations.length_same_check)
-BV.__lt__ = operations.op("__lt__", (BV, BV), Bool, extra_check=operations.length_same_check)
 BV.SLT = operations.op("SLT", (BV, BV), Bool, extra_check=operations.length_same_check)
 BV.SGT = operations.op("SGT", (BV, BV), Bool, extra_check=operations.length_same_check)
 BV.SLE = operations.op("SLE", (BV, BV), Bool, extra_check=operations.length_same_check)
 BV.SGE = operations.op("SGE", (BV, BV), Bool, extra_check=operations.length_same_check)
-BV.ULT = operations.op("__lt__", (BV, BV), Bool, extra_check=operations.length_same_check)
-BV.UGT = operations.op("__gt__", (BV, BV), Bool, extra_check=operations.length_same_check)
-BV.ULE = operations.op("__le__", (BV, BV), Bool, extra_check=operations.length_same_check)
-BV.UGE = operations.op("__ge__", (BV, BV), Bool, extra_check=operations.length_same_check)
+BV.ULT = operations.op("ULT", (BV, BV), Bool, extra_check=operations.length_same_check)
+BV.UGT = operations.op("UGT", (BV, BV), Bool, extra_check=operations.length_same_check)
+BV.ULE = operations.op("ULE", (BV, BV), Bool, extra_check=operations.length_same_check)
+BV.UGE = operations.op("UGE", (BV, BV), Bool, extra_check=operations.length_same_check)
+BV.__eq__ = operations.op("__eq__", (BV, BV), Bool, extra_check=operations.length_same_check)
+BV.__ne__ = operations.op("__ne__", (BV, BV), Bool, extra_check=operations.length_same_check)
+BV.__ge__ = BV.UGE
+BV.__le__ = BV.ULE
+BV.__gt__ = BV.UGT
+BV.__lt__ = BV.ULT
 
 BV.__invert__ = operations.op("__invert__", (BV,), BV, calc_length=operations.basic_length_calc)
 BV.__or__ = operations.op(
