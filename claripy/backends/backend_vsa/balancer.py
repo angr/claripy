@@ -603,16 +603,7 @@ class Balancer:
                 self._handle_ne(truism)
             case "If":
                 self._handle_if(truism)
-            case (
-                "ULT"
-                | "ULE"
-                | "UGT"
-                | "UGE"
-                | "SLT"
-                | "SLE"
-                | "SGT"
-                | "SGE"
-            ):
+            case "ULT" | "ULE" | "UGT" | "UGE" | "SLT" | "SLE" | "SGT" | "SGE":
                 self._handle_comparison(truism)
             case _:
                 log.debug("No handler for operation %s", truism.op)
