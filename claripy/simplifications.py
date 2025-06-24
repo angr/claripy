@@ -396,7 +396,7 @@ def boolean_and_simplifier(*args):
             and len(b.args) >= 2
             and a.args[0] is b.args[0]
             and a.args[1] is b.args[1]
-            and a.op == "__ge__"
+            and a.op == "UGE"
             and b.op == "__ne__"
         ):
             return claripy.UGT(a.args[0], a.args[1])
@@ -757,14 +757,6 @@ def boolean_not_simplifier(body):
     if body.op == "UGE":
         return claripy.ULT(body.args[0], body.args[1])
 
-    if body.op == "__lt__":
-        return claripy.UGE(body.args[0], body.args[1])
-    if body.op == "__le__":
-        return claripy.UGT(body.args[0], body.args[1])
-    if body.op == "__gt__":
-        return claripy.ULE(body.args[0], body.args[1])
-    if body.op == "__ge__":
-        return claripy.ULT(body.args[0], body.args[1])
     return None
 
 
@@ -1108,7 +1100,7 @@ def zeroext_comparing_against_simplifier(op, a, b):
         if (b_highbits == 0).is_false():
             if op is operator.__ne__:
                 return claripy.true()
-            # op is __eq__, __ge__
+            # op is __eq__, UGE
             return claripy.false()
 
     return None
@@ -1127,7 +1119,7 @@ _all_simplifiers = {
     "LShR": lshr_simplifier,
     "__eq__": eq_simplifier,
     "__ne__": ne_simplifier,
-    "__ge__": ge_simplifier,
+    "UGE": ge_simplifier,
     "__or__": bitwise_or_simplifier,
     "__and__": bitwise_and_simplifier,
     "__xor__": bitwise_xor_simplifier,

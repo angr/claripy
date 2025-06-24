@@ -403,28 +403,40 @@ class ValueSet(BackendObject):
 
         return ~(self == other)
 
-    def __le__(self, other):
+    def __le__(self, _):
         return MaybeResult()
 
-    def __lt__(self, other):
+    def __lt__(self, _):
         return MaybeResult()
 
-    def __gt__(self, other):
+    def __ge__(self, _):
         return MaybeResult()
 
-    def __ge__(self, other):
+    def __gt__(self, _):
         return MaybeResult()
 
-    def SLT(self, other):
+    def ULE(self, _):
         return MaybeResult()
 
-    def SGT(self, other):
+    def ULT(self, _):
         return MaybeResult()
 
-    def SLE(self, other):
+    def UGT(self, _):
         return MaybeResult()
 
-    def SGE(self, other):
+    def UGE(self, _):
+        return MaybeResult()
+
+    def SLT(self, _):
+        return MaybeResult()
+
+    def SGT(self, _):
+        return MaybeResult()
+
+    def SLE(self, _):
+        return MaybeResult()
+
+    def SGE(self, _):
         return MaybeResult()
 
     #

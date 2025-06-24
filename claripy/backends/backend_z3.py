@@ -258,10 +258,10 @@ class BackendZ3(Backend):
             self._op_raw[o] = getattr(self, "_op_raw_" + o)
         self._op_raw["Xor"] = self._op_raw_Xor
 
-        self._op_raw["__ge__"] = self._op_raw_UGE
-        self._op_raw["__gt__"] = self._op_raw_UGT
-        self._op_raw["__le__"] = self._op_raw_ULE
-        self._op_raw["__lt__"] = self._op_raw_ULT
+        self._op_raw["UGE"] = self._op_raw_UGE
+        self._op_raw["UGT"] = self._op_raw_UGT
+        self._op_raw["ULE"] = self._op_raw_ULE
+        self._op_raw["ULT"] = self._op_raw_ULT
 
         self._op_raw["Reverse"] = self._op_raw_Reverse
         self._op_raw["fpToSBV"] = self._op_raw_fpToSBV

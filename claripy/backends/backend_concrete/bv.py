@@ -250,22 +250,22 @@ class BVV(BackendObject):
 
     @normalize_types
     @compare_bits
-    def __lt__(self, o):
+    def ULT(self, o):
         return self.value < o.value
 
     @normalize_types
     @compare_bits
-    def __gt__(self, o):
+    def UGT(self, o):
         return self.value > o.value
 
     @normalize_types
     @compare_bits
-    def __le__(self, o):
+    def ULE(self, o):
         return self.value <= o.value
 
     @normalize_types
     @compare_bits
-    def __ge__(self, o):
+    def UGE(self, o):
         return self.value >= o.value
 
     #

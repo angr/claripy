@@ -168,7 +168,7 @@ class Balancer:
             raise ClaripyBalancerError(f"unable to reverse comparison {a.op} (missing from 'opposites')")
 
         try:
-            op = getattr(operator, new_op)
+            op = getattr(BV, new_op)
         except AttributeError as err:
             raise ClaripyBalancerError(f"unable to reverse comparison {a.op} (AttributeError)") from err
 
@@ -278,9 +278,9 @@ class Balancer:
         assumed to be true. For example, `x <= 10` would return `x >= 0`.
         """
 
-        if t.op in ("__le__", "__lt__", "ULE", "ULT"):
+        if t.op in ("ULE", "ULT"):
             return [t.args[0] >= 0]
-        if t.op in ("__ge__", "__gt__", "UGE", "UGT"):
+        if t.op in ("UGE", "UGT"):
             return [t.args[0] <= 2 ** len(t.args[0]) - 1]
         if t.op in ("SLE", "SLT"):
             return [claripy.SGE(t.args[0], -(1 << (len(t.args[0]) - 1)))]
@@ -604,11 +604,7 @@ class Balancer:
             case "If":
                 self._handle_if(truism)
             case (
-                "__lt__"
-                | "__le__"
-                | "__gt__"
-                | "__ge__"
-                | "ULT"
+                "ULT"
                 | "ULE"
                 | "UGT"
                 | "UGE"
@@ -630,10 +626,6 @@ class Balancer:
         "SLE": (True, True, False),
         "SGT": (False, False, False),
         "SGE": (False, True, False),
-        "__lt__": (True, False, False),
-        "__le__": (True, True, False),
-        "__gt__": (False, False, False),
-        "__ge__": (False, True, False),
     }
 
     def _handle_comparison(self, truism):
