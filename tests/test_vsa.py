@@ -768,10 +768,10 @@ class TestVSAConstraintToSI(unittest.TestCase):  # pylint: disable=no-member,fun
         ast_true = claripy.If(s1 == claripy.BVV(0, 32), claripy.BVV(1, 1), claripy.BVV(0, 1)) <= claripy.BVV(1, 1)
         ast_false = claripy.If(s1 == claripy.BVV(0, 32), claripy.BVV(1, 1), claripy.BVV(0, 1)) > claripy.BVV(1, 1)
 
-        trueside_sat, trueside_replacement = self.b.constraint_to_si(ast_true)
+        trueside_sat, _trueside_replacement = self.b.constraint_to_si(ast_true)
         assert trueside_sat  # Always satisfiable
 
-        falseside_sat, falseside_replacement = self.b.constraint_to_si(ast_false)
+        falseside_sat, _falseside_replacement = self.b.constraint_to_si(ast_false)
         assert not falseside_sat  # Not satisfiable
 
     def test_if_si_greater_than_15(self):
