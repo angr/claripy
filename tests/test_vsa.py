@@ -1,6 +1,7 @@
 # pylint: disable=missing-class-docstring,no-self-use,no-member
 from __future__ import annotations
 
+import contextlib
 import unittest
 
 import claripy
@@ -232,12 +233,11 @@ class TestVSA(unittest.TestCase):  # pylint: disable=no-member,function-redefine
         # SI = claripy.StridedInterval
 
         # Disable the use of DiscreteStridedIntervalSet
-        claripy.backends.backend_vsa.strided_interval.allow_dsis = False
-
-        # Signedness/unsignedness conversion
-        si1 = claripy.SI(bits=32, stride=1, lower_bound=0, upper_bound=0xFFFFFFFF)
-        assert vsa_model(si1)._signed_bounds() == [(0x0, 0x7FFFFFFF), (-0x80000000, -0x1)]
-        assert vsa_model(si1)._unsigned_bounds() == [(0x0, 0xFFFFFFFF)]
+        with claripy.backends.backend_vsa.strided_interval._allow_dsis(False):
+            # Signedness/unsignedness conversion
+            si1 = claripy.SI(bits=32, stride=1, lower_bound=0, upper_bound=0xFFFFFFFF)
+            assert vsa_model(si1)._signed_bounds() == [(0x0, 0x7FFFFFFF), (-0x80000000, -0x1)]
+            assert vsa_model(si1)._unsigned_bounds() == [(0x0, 0xFFFFFFFF)]
 
 
 class TestVSAJoin(unittest.TestCase):  # pylint: disable=no-member,function-redefined
@@ -294,22 +294,22 @@ class TestVSAOperations(unittest.TestCase):  # pylint: disable=no-member functio
         self.b = claripy.backends.vsa
 
         # Disable the use of DiscreteStridedIntervalSet
-        claripy.backends.backend_vsa.strided_interval.allow_dsis = False
+        with claripy.backends.backend_vsa.strided_interval._allow_dsis(False):
 
-        # Integers
-        self.si1 = claripy.SI(bits=32, stride=0, lower_bound=10, upper_bound=10)
-        self.si2 = claripy.SI(bits=32, stride=0, lower_bound=10, upper_bound=10)
-        self.si3 = claripy.SI(bits=32, stride=0, lower_bound=28, upper_bound=28)
+            # Integers
+            self.si1 = claripy.SI(bits=32, stride=0, lower_bound=10, upper_bound=10)
+            self.si2 = claripy.SI(bits=32, stride=0, lower_bound=10, upper_bound=10)
+            self.si3 = claripy.SI(bits=32, stride=0, lower_bound=28, upper_bound=28)
 
-        # Strided intervals
-        self.si_a = claripy.SI(bits=32, stride=2, lower_bound=10, upper_bound=20)
-        self.si_b = claripy.SI(bits=32, stride=2, lower_bound=-100, upper_bound=200)
-        self.si_c = claripy.SI(bits=32, stride=3, lower_bound=-100, upper_bound=200)
-        self.si_d = claripy.SI(bits=32, stride=2, lower_bound=50, upper_bound=60)
-        self.si_e = claripy.SI(bits=16, stride=1, lower_bound=0x2000, upper_bound=0x3000)
-        self.si_f = claripy.SI(bits=16, stride=1, lower_bound=0, upper_bound=255)
-        self.si_g = claripy.SI(bits=16, stride=1, lower_bound=0, upper_bound=0xFF)
-        self.si_h = claripy.SI(bits=32, stride=0, lower_bound=0x80000000, upper_bound=0x80000000)
+            # Strided intervals
+            self.si_a = claripy.SI(bits=32, stride=2, lower_bound=10, upper_bound=20)
+            self.si_b = claripy.SI(bits=32, stride=2, lower_bound=-100, upper_bound=200)
+            self.si_c = claripy.SI(bits=32, stride=3, lower_bound=-100, upper_bound=200)
+            self.si_d = claripy.SI(bits=32, stride=2, lower_bound=50, upper_bound=60)
+            self.si_e = claripy.SI(bits=16, stride=1, lower_bound=0x2000, upper_bound=0x3000)
+            self.si_f = claripy.SI(bits=16, stride=1, lower_bound=0, upper_bound=255)
+            self.si_g = claripy.SI(bits=16, stride=1, lower_bound=0, upper_bound=0xFF)
+            self.si_h = claripy.SI(bits=32, stride=0, lower_bound=0x80000000, upper_bound=0x80000000)
 
     def is_equal(self, ast_0, ast_1):
         return claripy.backends.vsa.identical(ast_0, ast_1)
@@ -736,7 +736,9 @@ class TestVSAConstraintToSI(unittest.TestCase):  # pylint: disable=no-member,fun
     def setUp(self):
         self.b = claripy.backends.vsa
         self.s = claripy.SolverVSA()  # pylint:disable=unused-variable
-        claripy.backends.backend_vsa.strided_interval.allow_dsis = False
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(claripy.backends.backend_vsa.strided_interval._allow_dsis(False))
+            self.addCleanup(stack.pop_all().close)
 
     def test_if_si_equals_1(self):
         # If(SI == 0, 1, 0) == 1
@@ -968,13 +970,9 @@ class TestVSADiscreteValueSet(unittest.TestCase):  # pylint: disable=no-member,f
         self.s = claripy.SolverVSA()  # pylint:disable=unused-variable
 
         # Allow the use of DiscreteStridedIntervalSet
-        claripy.backends.backend_vsa.strided_interval.allow_dsis = True
-        claripy.backends.vsa.downsize()
-
-    def tearDown(self):
-        # Disable DiscreteStridedIntervalSet after tests
-        claripy.backends.backend_vsa.strided_interval.allow_dsis = False
-        claripy.backends.vsa.downsize()
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(claripy.backends.backend_vsa.strided_interval._allow_dsis(True))
+            self.addCleanup(stack.pop_all().close)
 
     def test_union_operations(self):
         # Union operations
