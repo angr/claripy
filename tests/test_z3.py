@@ -111,6 +111,30 @@ class TestZ3(unittest.TestCase):
         sbv2 = claripy.backends.z3.simplify(sbv)
         assert sbv2.length == 32
 
+    def test_abstract_rotate_left(self):
+        """
+        Test abstracting rotate_left
+        """
+
+        x = claripy.BVS("x", 32)
+        y = claripy.BVS("y", 32)
+        r = claripy.RotateLeft(x, y)
+
+        r2 = claripy.backends.z3.simplify(r)
+        assert r2.length == 32
+
+    def test_abstract_rotate_right(self):
+        """
+        Test abstracting rotate_right
+        """
+
+        x = claripy.BVS("x", 32)
+        y = claripy.BVS("y", 32)
+        r = claripy.RotateRight(x, y)
+
+        r2 = claripy.backends.z3.simplify(r)
+        assert r2.length == 32
+
 
 if __name__ == "__main__":
     unittest.main()

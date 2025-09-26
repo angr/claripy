@@ -552,6 +552,10 @@ class BackendZ3(Backend):
         if op_name == "ZeroExt":
             bv_size = z3.Z3_get_decl_int_parameter(ctx, decl, 0)
             return claripy.ZeroExt(bv_size, children[0])
+        if op_name == "RotateLeft":
+            return claripy.RotateLeft(children[0], children[1])
+        if op_name == "RotateRight":
+            return claripy.RotateRight(children[0], children[1])
 
         if op_name == "UNINTERPRETED" and num_args == 0:  # symbolic value
             symbol_name = _z3_decl_name_str(ctx, decl)
