@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import functools
 import itertools
 import logging
@@ -162,7 +163,20 @@ si_id_ctr = itertools.count()
 
 # Whether DiscreteStridedIntervalSet should be used or not. Sometimes we manually
 # set it to False to allow easy implementation of test cases.
-allow_dsis = False
+_allow_dsis_flag = False
+
+
+@contextlib.contextmanager
+def _allow_dsis(flag):
+    global _allow_dsis_flag
+    saved = _allow_dsis_flag
+    _allow_dsis_flag = flag
+    claripy.backends.vsa.downsize()
+    try:
+        yield
+    finally:
+        _allow_dsis_flag = saved
+        claripy.backends.vsa.downsize()
 
 
 class StridedInterval(BackendObject):
@@ -2491,7 +2505,7 @@ class StridedInterval(BackendObject):
         :return: A new DiscreteStridedIntervalSet, or a new StridedInterval.
         """
 
-        if not allow_dsis:
+        if not _allow_dsis_flag:
             return StridedInterval.least_upper_bound(self, b)
 
         if (
