@@ -198,12 +198,28 @@ def eq_simplifier(a, b):
     if a.op == "__sub__" and len(a.args) == 2 and a.args[1].op == "BVV" and b.op == "BVV":
         return a.args[0] == a.args[1] + b
 
-    # 1 ^ expr == 0     ->   expr == 1
     if a.op == "__xor__" and b.op == "BVV" and b.args[0] == 0 and len(a.args) == 2:
+        # 1 ^ expr == 0     ->   expr == 1
         if a.args[1].op == "BVV" and a.args[1].args[0] == 1:  # expr ^ 1 == 0
             return a.args[0] == 1
         if a.args[0].op == "BVV" and a.args[0].args[0] == 1:  # 1 ^ expr == 0
             return a.args[1] == 1
+
+        # (expr & a) ^ a == 0  ->  expr & a != 0
+        if (
+            a.args[1].op == "BVV"
+            and a.args[0].op == "__and__"
+            and a.args[0].args[1].op == "BVV"
+            and a.args[0].args[1].args[0] == a.args[1].args[0]
+        ):
+            return a.args[0] != 0
+        if (
+            a.args[1].op == "BVV"
+            and a.args[0].op == "__and__"
+            and a.args[0].args[0].op == "BVV"
+            and a.args[0].args[0].args[0] == a.args[1].args[0]
+        ):
+            return a.args[0].args[1] & a.args[0].args[0] != 0
 
     # TODO: all these ==/!= might really slow things down...
     if a.op == "If":
@@ -280,12 +296,28 @@ def ne_simplifier(a, b):
             # (y == If(c, x, y)) -> !c
             return claripy.Not(b.args[0])
 
-    # 1 ^ expr != 0     ->   expr == 0
     if a.op == "__xor__" and b.op == "BVV" and b.args[0] == 0 and len(a.args) == 2:
+        # 1 ^ expr != 0     ->   expr == 0
         if a.args[1].op == "BVV" and a.args[1].args[0] == 1:
             return a.args[0] != 1
         if a.args[0].op == "BVV" and a.args[0].args[0] == 1:
             return a.args[1] != 1
+
+        # (expr & a) ^ a != 0  ->  expr & a == 0
+        if (
+            a.args[1].op == "BVV"
+            and a.args[0].op == "__and__"
+            and a.args[0].args[1].op == "BVV"
+            and a.args[0].args[1].args[0] == a.args[1].args[0]
+        ):
+            return a.args[0] == 0
+        if (
+            a.args[1].op == "BVV"
+            and a.args[0].op == "__and__"
+            and a.args[0].args[0].op == "BVV"
+            and a.args[0].args[0].args[0] == a.args[1].args[0]
+        ):
+            return a.args[0].args[1] & a.args[0].args[0] == 0
 
     # Masking and comparing against a constant
     simp = and_mask_comparing_against_constant_simplifier(operator.__ne__, a, b)
