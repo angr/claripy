@@ -402,6 +402,18 @@ def boolean_and_simplifier(*args):
     if len(args) == 1:
         return args[0]
 
+    # a == 0 && a == 1  ->  False
+    if (
+        len(args) == 2
+        and args[0].op == "__eq__"
+        and args[1].op == "__eq__"
+        and args[0].args[0] is args[1].args[0]
+        and args[0].args[1].op == "BVV"
+        and args[1].args[1].op == "BVV"
+    ):
+        if args[0].args[1].args[0] != args[1].args[1].args[0]:
+            return claripy.false()
+
     new_args = [None] * len(args)
     ctr = 0
     for a in args:
