@@ -118,6 +118,11 @@ class FullFrontend(ConstrainedFrontend):
         return self.constraints
 
     def check_satisfiability(self, extra_constraints=(), exact=None) -> bool:
+        if not extra_constraints and len(self.constraints) == 1:
+            con = self.constraints[0]
+            if con.op in {"__eq__", "__ne__"} and con.args[0].op == "BVS" and con.args[1].op == "BVV":
+                # trivially satisfiable
+                return True
         try:
             return self._solver_backend.check_satisfiability(
                 extra_constraints=extra_constraints, solver=self._get_solver(), model_callback=self._model_hook
