@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from claripy import false, is_false, And
+from claripy import And, false, is_false
 from claripy.errors import UnsatError
 
 
