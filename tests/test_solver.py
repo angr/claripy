@@ -338,9 +338,11 @@ def raw_composite_solver(reuse_z3_solver):
         assert len(s._solver_list) == 3
         count = claripy.backends.z3.solve_count
         assert s.satisfiable()
-        assert claripy.backends.z3.solve_count == count + 3
+        # although there are three solvers, the first two only have trivial constraints, and as a result we saved two
+        # solves.
+        assert claripy.backends.z3.solve_count == count + 1
         assert list(s.eval(x + y, 1)) == [3]
-        assert claripy.backends.z3.solve_count == count + 3
+        assert claripy.backends.z3.solve_count == count + 1
 
 
 def raw_minmax(reuse_z3_solver):
