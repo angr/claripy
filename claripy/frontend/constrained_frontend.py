@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 
-from claripy import And, Or, is_false
+from claripy import And, Or
 from claripy.algorithm import simplify
 from claripy.annotation import SimplificationAvoidanceAnnotation
 
