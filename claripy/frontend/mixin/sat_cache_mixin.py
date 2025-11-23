@@ -54,6 +54,13 @@ class SatCacheMixin:
             self._cached_satness = r
         return r
 
+    def check_satisfiability(self, extra_constraints=(), exact=None) -> str:
+        if self._cached_satness is False:
+            return "UNSAT"
+        if self._cached_satness is True and not extra_constraints:
+            return "SAT"
+        return super().check_satisfiability(extra_constraints=extra_constraints, exact=exact)
+
     def eval(self, e, n, extra_constraints=(), exact=None):
         if self._cached_satness is False:
             raise UnsatError("cached unsat")
