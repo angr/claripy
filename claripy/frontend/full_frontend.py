@@ -117,7 +117,25 @@ class FullFrontend(ConstrainedFrontend):
 
         return self.constraints
 
-    def check_satisfiability(self, extra_constraints=(), exact=None) -> bool:
+    def check_satisfiability(self, extra_constraints=(), exact=None) -> str:
+        if not extra_constraints and len(self.constraints) == 1:
+            con = self.constraints[0]
+            if con.op in {"__eq__", "__ne__"}:
+                op0, op1 = con.args
+                if op0.op == "BVS" and op1.op == "BVV":
+                    # trivially satisfiable
+                    if self._model_hook is not None:
+                        # create a new model
+                        self._model_hook(
+                            {
+                                op0.args[0]: (
+                                    op1.concrete_value
+                                    if con.op == "__eq__"
+                                    else (op1.concrete_value + 1) & ((1 << op0.size()) - 1)
+                                )
+                            }
+                        )
+                    return "SAT"
         try:
             return self._solver_backend.check_satisfiability(
                 extra_constraints=extra_constraints, solver=self._get_solver(), model_callback=self._model_hook
