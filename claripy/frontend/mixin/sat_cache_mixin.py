@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from claripy import false
+from claripy import And, false, is_false
 from claripy.errors import UnsatError
 
 
@@ -32,10 +32,23 @@ class SatCacheMixin:
 
     def _add(self, constraints, invalidate_cache=True):
         added = super()._add(constraints, invalidate_cache=invalidate_cache)
-        if len(added) > 0 and any(c is false() for c in added):
+
+        cached_satness = None
+        if len(added) > 0:
+            if any(c is false() for c in added):
+                cached_satness = False
+            elif len(added) == 1 and len(self.constraints) < 5:
+                added_ = added[0]
+                for con in self.constraints:
+                    if is_false(And(con.clear_annotations(), added_.clear_annotations())):
+                        cached_satness = False
+                        break
+
+        if cached_satness is False:
             self._cached_satness = False
         elif self._cached_satness is True:
             self._cached_satness = None
+
         return added
 
     def simplify(self):
