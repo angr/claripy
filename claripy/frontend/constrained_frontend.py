@@ -17,18 +17,21 @@ class ConstrainedFrontend(Frontend):
     def __init__(self):
         Frontend.__init__(self)
         self.constraints = []
+        self.constraints_wo_annotations = set()
         self.variables = set()
         self._finalized = False
 
     def _blank_copy(self, c):
         super()._blank_copy(c)
         c.constraints = []
+        c.constraints_wo_annotations = set()
         c.variables = set()
         c._finalized = False
 
     def _copy(self, c):
         super()._copy(c)
         c.constraints = list(self.constraints)
+        c.constraints_wo_annotations = set(self.constraints_wo_annotations)
         c.variables = set(self.variables)
 
         # finalize both
@@ -44,6 +47,7 @@ class ConstrainedFrontend(Frontend):
 
     def __setstate__(self, s):
         self.constraints, self.variables, self._finalized, base_state = s
+        self.constraints_wo_annotations = {con.clear_annotations() for con in self.constraints}
         super().__setstate__(base_state)
 
     #
@@ -104,10 +108,15 @@ class ConstrainedFrontend(Frontend):
     #
 
     def _add(self, constraints, invalidate_cache=True):
-        self.constraints += constraints
-        for c in constraints:
-            self.variables.update(c.variables)
-        return constraints
+        added = []
+        for con in constraints:
+            if not con.annotations and con in self.constraints_wo_annotations:
+                continue
+            self.constraints_wo_annotations.add(con.clear_annotations())
+            self.constraints.append(con)
+            self.variables.update(con.variables)
+            added.append(con)
+        return added
 
     def simplify(self):
         to_simplify = [
