@@ -280,6 +280,13 @@ class TestSimplify(unittest.TestCase):
         expected = expr & a != 0
         assert cond is expected
 
+    def test_simplification_zero_bitwise_and_after_extract(self):
+        a = claripy.BVV(0xFFFFFFFF_00000000, 64)
+        b = claripy.BVS("b", 64)
+        a_and_b = a & b
+        expr = claripy.Extract(31, 0, a_and_b)
+        assert expr is claripy.BVV(0, 32)
+
 
 if __name__ == "__main__":
     unittest.main()

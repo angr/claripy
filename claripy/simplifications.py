@@ -912,7 +912,9 @@ def extract_simplifier(high, low, val):
         all_args = tuple(a[high:low] for a in val.args)
         if val.op in flattenable:
             # directly create a flattened claripy
-            return next(a for a in all_args if isinstance(a, claripy.ast.Base)).make_like(val.op, all_args)
+            return next(a for a in all_args if isinstance(a, claripy.ast.Base)).make_like(
+                val.op, all_args, simplify=True
+            )
         return reduce(getattr(operator, val.op), all_args)
 
     #  (if cond then 1 else 0)[0:0]  ->  if(cond then 1[0:0] else 0[0:0])
