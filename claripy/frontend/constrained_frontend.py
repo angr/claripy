@@ -17,7 +17,7 @@ class ConstrainedFrontend(Frontend):
     def __init__(self):
         Frontend.__init__(self)
         self.constraints = []
-        self.constraints_wo_annotations = set()
+        self.constraints_wo_annotations: set[int] = set()
         self.variables = set()
         self._finalized = False
 
@@ -47,7 +47,7 @@ class ConstrainedFrontend(Frontend):
 
     def __setstate__(self, s):
         self.constraints, self.variables, self._finalized, base_state = s
-        self.constraints_wo_annotations = {con.clear_annotations() for con in self.constraints}
+        self.constraints_wo_annotations = {con.clear_annotations().hash() for con in self.constraints}
         super().__setstate__(base_state)
 
     #
@@ -110,9 +110,9 @@ class ConstrainedFrontend(Frontend):
     def _add(self, constraints, invalidate_cache=True):
         added = []
         for con in constraints:
-            if not con.annotations and con in self.constraints_wo_annotations:
+            if not con.annotations and con.hash() in self.constraints_wo_annotations:
                 continue
-            self.constraints_wo_annotations.add(con.clear_annotations())
+            self.constraints_wo_annotations.add(con.clear_annotations().hash())
             self.constraints.append(con)
             self.variables.update(con.variables)
             added.append(con)
