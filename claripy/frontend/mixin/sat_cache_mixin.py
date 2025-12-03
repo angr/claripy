@@ -1,7 +1,14 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from claripy import And, false, is_false
 from claripy.errors import UnsatError
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from claripy.ast.bool import Bool
 
 
 class SatCacheMixin:
@@ -10,20 +17,23 @@ class SatCacheMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._cached_satness = None
+        self._cached_unsat_core: tuple[Bool, ...] | None = None
 
     def _blank_copy(self, c):
         super()._blank_copy(c)
         c._cached_satness = None
+        c._cached_unsat_core = None
 
     def _copy(self, c):
         super()._copy(c)
         c._cached_satness = self._cached_satness
+        c._cached_unsat_core = self._cached_unsat_core
 
     def __getstate__(self):
-        return self._cached_satness, super().__getstate__()
+        return self._cached_satness, self._cached_unsat_core, super().__getstate__()
 
     def __setstate__(self, s):
-        self._cached_satness, base_state = s
+        self._cached_satness, self._cached_unsat_core, base_state = s
         super().__setstate__(base_state)
 
     #
@@ -42,6 +52,7 @@ class SatCacheMixin:
                 for con in self.constraints:
                     if is_false(And(con.clear_annotations(), added_.clear_annotations())):
                         cached_satness = False
+                        self._cached_unsat_core = (con, added)
                         break
 
         if cached_satness is False:
@@ -133,3 +144,8 @@ class SatCacheMixin:
             if len(extra_constraints) == 0:
                 self._cached_satness = False
             raise
+
+    def unsat_core(self, extra_constraints: tuple[Bool, ...] = ()) -> Iterable[Bool]:
+        if self._cached_unsat_core is not None:
+            return self._cached_unsat_core
+        return super().unsat_core(extra_constraints)
