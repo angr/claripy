@@ -1,48 +1,13 @@
 # pylint:disable=unused-argument,no-self-use,wrong-import-position
 from __future__ import annotations
 
-import functools
 import itertools
 import numbers
 
-from claripy.ast import Base
 from claripy.backends.backend_object import BackendObject
-from claripy.errors import ClaripyValueError
 
 from .bool_result import BoolResult, FalseResult, MaybeResult, TrueResult
 from .errors import ClaripyVSAError, ClaripyVSAOperationError
-
-
-def normalize_types_two_args(f):
-    @functools.wraps(f)
-    def normalizer(self, region, o):
-        """
-        Convert any object to an object that we can process.
-        """
-        if isinstance(o, Base):
-            raise ClaripyValueError("BoolResult can't handle AST objects directly")
-
-        if not isinstance(o, StridedInterval):
-            raise ClaripyVSAOperationError(f"Unsupported operand type {type(o)}")
-
-        return f(self, region, o)
-
-    return normalizer
-
-
-def normalize_types_one_arg(f):
-    @functools.wraps(f)
-    def normalizer(self, o):
-        """
-        Convert any object to an object that we can process.
-        """
-        if isinstance(o, Base):
-            raise ClaripyValueError("BoolResult can't handle AST objects directly")
-
-        return f(self, o)
-
-    return normalizer
-
 
 vs_id_ctr = itertools.count()
 
@@ -225,7 +190,6 @@ class ValueSet(BackendObject):
     # Arithmetic operations
     #
 
-    @normalize_types_one_arg
     def __add__(self, other):
         """
         Binary operation: addition
@@ -248,11 +212,9 @@ class ValueSet(BackendObject):
 
         return new_vs
 
-    @normalize_types_one_arg
     def __radd__(self, other):
         return self.__add__(other)
 
-    @normalize_types_one_arg
     def __sub__(self, other):
         """
         Binary operation: subtraction
@@ -291,7 +253,6 @@ class ValueSet(BackendObject):
 
         return new_vs
 
-    @normalize_types_one_arg
     def __mod__(self, other):
         """
         Binary operation: modulo
@@ -313,7 +274,6 @@ class ValueSet(BackendObject):
 
         return new_vs
 
-    @normalize_types_one_arg
     def __and__(self, other):
         """
         Binary operation: and
@@ -530,7 +490,6 @@ class ValueSet(BackendObject):
 
         return new_vs
 
-    @normalize_types_one_arg
     def union(self, b):
         merged_vs = self.copy()
 
@@ -551,7 +510,6 @@ class ValueSet(BackendObject):
 
         return merged_vs
 
-    @normalize_types_one_arg
     def widen(self, b):
         merged_vs = self.copy()
 
@@ -572,7 +530,6 @@ class ValueSet(BackendObject):
 
         return merged_vs
 
-    @normalize_types_one_arg
     def intersection(self, b):
         vs = self.copy()
 
