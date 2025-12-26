@@ -11,8 +11,6 @@ from itertools import chain, product
 
 import claripy
 import claripy.backends.backend_vsa as vsa
-from claripy.ast import Base
-from claripy.backends.backend_concrete import BVV
 from claripy.backends.backend_object import BackendObject
 from claripy.errors import ClaripyOperationError
 
@@ -52,38 +50,11 @@ def normalize_types(f):
                 # It should be put to o.__radd__(self) when o is a ValueSet
                 return NotImplemented
 
-        if isinstance(o, Base) or isinstance(self, Base):
-            return NotImplemented
-        if isinstance(self, BVV):
-            self = self.value
-        if isinstance(o, BVV):
-            o = o.value
+        if isinstance(o, numbers.Number) and isinstance(self, StridedInterval):
+            o = StridedInterval(bits=self.bits, stride=0, lower_bound=o, upper_bound=o)
 
-        if isinstance(o, numbers.Number):
-            min_bits = self.bits if hasattr(self, "bits") else 64
-            repr_bits = StridedInterval.min_bits(o)
-            n_bits = max(repr_bits, min_bits)
-            si = StridedInterval(bits=n_bits, stride=0, lower_bound=o, upper_bound=o)
-            if o < 0:
-                si.upper_bound &= (1 << n_bits) - 1
-                si.lower_bound &= (1 << n_bits) - 1
-                mask = (2**n_bits - 1) - (2**repr_bits - 1)
-                si.lower_bound |= mask
-                si.upper_bound |= mask
-            o = si
-
-        if isinstance(self, numbers.Number):
-            min_bits = o.bits if hasattr(o, "bits") else 64
-            repr_bits = StridedInterval.min_bits(self)
-            n_bits = max(repr_bits, min_bits)
-            si = StridedInterval(bits=n_bits, stride=0, lower_bound=self, upper_bound=self)
-            if self < 0:
-                si.upper_bound &= (1 << n_bits) - 1
-                si.lower_bound &= (1 << n_bits) - 1
-                mask = (2**n_bits - 1) - (2**repr_bits - 1)
-                si.lower_bound |= mask
-                si.upper_bound |= mask
-            self = si
+        if isinstance(self, numbers.Number) and isinstance(o, StridedInterval):
+            self = StridedInterval(bits=o.bits, stride=0, lower_bound=self, upper_bound=self)
 
         if f.__name__ != "concat":
             # Make sure they have the same length
