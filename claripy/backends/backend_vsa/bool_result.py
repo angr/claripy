@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-from claripy.backends.backend_object import BackendObject
 
-
-class BoolResult(BackendObject):
+class BoolResult:
     """A class representing the result of a boolean operation. Values can be
     True, False, or Maybe.
     """

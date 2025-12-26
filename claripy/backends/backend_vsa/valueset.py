@@ -4,15 +4,13 @@ from __future__ import annotations
 import itertools
 import numbers
 
-from claripy.backends.backend_object import BackendObject
-
 from .bool_result import BoolResult, FalseResult, MaybeResult, TrueResult
 from .errors import ClaripyVSAError, ClaripyVSAOperationError
 
 vs_id_ctr = itertools.count()
 
 
-class ValueSet(BackendObject):
+class ValueSet:
     """
     ValueSet is a mapping between memory regions and corresponding offsets.
     """

@@ -5,7 +5,6 @@ import math
 import struct
 from decimal import Decimal
 
-from claripy.backends.backend_object import BackendObject
 from claripy.errors import ClaripyOperationError
 from claripy.fp import FSORT_DOUBLE, FSORT_FLOAT, RM, FSort
 
@@ -36,7 +35,7 @@ def normalize_types(f):
     return normalize_helper
 
 
-class FPV(BackendObject):
+class FPV:
     """A concrete floating point value. Used in the concrete backend for
     calculations.  Any use outside of claripy should use `claripy.FPV`
     instead.
