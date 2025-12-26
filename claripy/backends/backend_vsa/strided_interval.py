@@ -11,7 +11,6 @@ from itertools import chain, product
 
 import claripy
 import claripy.backends.backend_vsa as vsa
-from claripy.backends.backend_object import BackendObject
 from claripy.errors import ClaripyOperationError
 
 from .bool_result import FalseResult, MaybeResult, TrueResult
@@ -150,7 +149,7 @@ def _allow_dsis(flag):
         claripy.backends.vsa.downsize()
 
 
-class StridedInterval(BackendObject):
+class StridedInterval:
     """
     A Strided Interval is represented in the following form::
 

@@ -4,7 +4,6 @@ import functools
 import numbers
 
 from claripy import debug as _d
-from claripy.backends.backend_object import BackendObject
 from claripy.errors import ClaripyOperationError, ClaripyTypeError, ClaripyZeroDivisionError
 
 
@@ -48,7 +47,7 @@ def normalize_types(f):
     return normalize_helper
 
 
-class BVV(BackendObject):
+class BVV:
     """A concrete bitvector value. Used in the concrete backend for calculations.
     Any use outside of claripy should use `claripy.BVV` instead.
     """

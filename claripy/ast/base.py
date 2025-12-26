@@ -165,9 +165,6 @@ class Base:
         if hash is not None and (self := cls._hash_cache.get(hash, None)) is not None:
             return self
 
-        # if any(isinstance(a, BackendObject) for a in args):
-        #   raise Exception('asdf')
-
         a_args = args if type(args) is tuple else tuple(args)
         b_args = tuple(a for a in a_args if isinstance(a, Base))
 
