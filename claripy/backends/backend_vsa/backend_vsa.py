@@ -17,7 +17,7 @@ from claripy.operations import backend_operations_vsa_compliant, expression_set_
 
 from .bool_result import BoolResult, FalseResult, TrueResult
 from .discrete_strided_interval_set import DiscreteStridedIntervalSet
-from .strided_interval import CreateStridedInterval, StridedInterval
+from .strided_interval import StridedInterval
 from .valueset import ValueSet
 
 log = logging.getLogger(__name__)
@@ -248,7 +248,7 @@ class BackendVSA(Backend):
 
         if isinstance(o, StridedInterval):
             if isinstance(a, StridedIntervalAnnotation):
-                return CreateStridedInterval(
+                return StridedInterval(
                     bits=o.bits,
                     stride=a.stride,
                     lower_bound=a.lower_bound,
@@ -276,7 +276,7 @@ class BackendVSA(Backend):
                 return o2
 
         if isinstance(o, ValueSet) and isinstance(a, StridedIntervalAnnotation):
-            si = CreateStridedInterval(
+            si = StridedInterval(
                 bits=o.bits,
                 stride=a.stride,
                 lower_bound=a.lower_bound,
@@ -297,7 +297,7 @@ class BackendVSA(Backend):
     def BVV(ast):
         if ast.args[0] is None:
             return StridedInterval.empty(ast.args[1])
-        return CreateStridedInterval(bits=ast.args[1], stride=0, lower_bound=ast.args[0], upper_bound=ast.args[0])
+        return StridedInterval(bits=ast.args[1], stride=0, lower_bound=ast.args[0], upper_bound=ast.args[0])
 
     @staticmethod
     def BoolV(ast):
@@ -353,7 +353,7 @@ class BackendVSA(Backend):
 
     @staticmethod
     def BVS(ast: BV):
-        return CreateStridedInterval(name=ast.args[0], bits=ast.size())
+        return StridedInterval(name=ast.args[0], bits=ast.size())
 
     def If(self, cond, t, f):
         if not self.has_true(cond):
