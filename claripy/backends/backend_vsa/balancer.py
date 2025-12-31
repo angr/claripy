@@ -78,10 +78,10 @@ class Balancer:
 
     @staticmethod
     def _same_bound_bv(a):
-        si = claripy.backends.vsa.convert(a)
         mx = Balancer._max(a)
         mn = Balancer._min(a)
-        return claripy.BVS("bounds", len(a)).annotate(claripy.annotation.StridedIntervalAnnotation(si._stride, mn, mx))
+        stride = Balancer._stride(a)
+        return claripy.BVS("bounds", len(a)).annotate(claripy.annotation.StridedIntervalAnnotation(stride, mn, mx))
 
     @staticmethod
     def _cardinality(a):
@@ -89,33 +89,41 @@ class Balancer:
 
     @staticmethod
     def _min(a, signed=False):
-        converted = claripy.backends.vsa.convert(a)
-        if isinstance(converted, vsa.ValueSet):
-            if len(converted.regions) == 1:
-                converted = next(iter(converted.regions.values()))
+        a = claripy.backends.vsa.simplify(a)
+        if a.has_annotation_type(claripy.annotation.RegionAnnotation):
+            region_annos = a.get_annotations_by_type(claripy.annotation.RegionAnnotation)
+            if len(region_annos) == 1:
+                a = next(iter(region_annos)).region_base_addr
             else:
                 # unfortunately, this is a real abstract pointer
                 # the minimum value will be 0 or MIN_INT
                 if signed:
-                    return -(1 << (len(converted) - 1))
+                    return -(1 << (len(a) - 1))
                 return 0
-        bounds = converted._unsigned_bounds() if not signed else converted._signed_bounds()
-        return min(mn for mn, mx in bounds)
+        return claripy.backends.vsa.min(a, signed=signed)
 
     @staticmethod
     def _max(a, signed=False):
-        converted = claripy.backends.vsa.convert(a)
-        if isinstance(converted, vsa.ValueSet):
-            if len(converted.regions) == 1:
-                converted = next(iter(converted.regions.values()))
+        a = claripy.backends.vsa.simplify(a)
+        if a.has_annotation_type(claripy.annotation.RegionAnnotation):
+            region_annos = a.get_annotations_by_type(claripy.annotation.RegionAnnotation)
+            if len(region_annos) == 1:
+                a = next(iter(region_annos)).region_base_addr
             else:
                 # unfortunately, this is a real abstract pointer
                 # the minimum value will be 0 or MIN_INT
                 if signed:
-                    return (1 << (len(converted) - 1)) - 1
-                return (1 << len(converted)) - 1
-        bounds = converted._unsigned_bounds() if not signed else converted._signed_bounds()
-        return max(mx for mn, mx in bounds)
+                    return (1 << (len(a) - 1)) - 1
+                return (1 << len(a)) - 1
+        return claripy.backends.vsa.max(a, signed=signed)
+
+    @staticmethod
+    def _stride(a):
+        a = claripy.backends.vsa.simplify(a)
+        si_anno = a.get_annotation_by_type(claripy.annotation.StridedIntervalAnnotation)
+        if si_anno is not None:
+            return si_anno.stride
+        return 1
 
     @staticmethod
     def _range(a, signed=False):
