@@ -923,10 +923,10 @@ class TestReverseOperations(unittest.TestCase):  # pylint: disable=no-member,fun
         r2 = x.intersection(y.reversed).reversed
         r3 = x.reversed.intersection(y.reversed).reversed
 
-        assert self.backend.convert(r0).max == 1337
-        assert self.backend.convert(r1).max == 1337
-        assert self.backend.convert(r2).max == 1337
-        assert self.backend.convert(r3).max == 1337
+        assert self.backend.convert(r0).max() == 1337
+        assert self.backend.convert(r1).max() == 1337
+        assert self.backend.convert(r2).max() == 1337
+        assert self.backend.convert(r3).max() == 1337
 
     def test_reverse_discrete_strided_interval_set(self):
         # Reversing a DiscreteStridedIntervalSet

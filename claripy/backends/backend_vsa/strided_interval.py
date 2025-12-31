@@ -1082,9 +1082,8 @@ class StridedInterval:
     def stride(self, value):
         self._stride = value
 
-    @property
     @reversed_processor
-    def max(self):
+    def max(self, signed=False):
         """
         Treat this StridedInterval as a set of unsigned numbers, and return the
         greatest one
@@ -1093,14 +1092,13 @@ class StridedInterval:
             unsigned, or None if empty
         """
         if not self.is_empty:
-            splitted = self._ssplit()
-            return splitted[0].upper_bound
+            split = self._signed_bounds() if signed else self._unsigned_bounds()
+            return max(ub for _, ub in split)
         # It is empty!
         return None
 
-    @property
     @reversed_processor
-    def min(self):
+    def min(self, signed=False):
         """
         Treat this StridedInterval as a set of unsigned numbers, and return the
         smallest one
@@ -1109,8 +1107,8 @@ class StridedInterval:
             unsigned, or None if empty
         """
         if not self.is_empty:
-            splitted = self._ssplit()
-            return splitted[-1].lower_bound
+            split = self._signed_bounds() if signed else self._unsigned_bounds()
+            return min(lb for lb, _ in split)
         # It is empty
         return None
 

@@ -161,30 +161,14 @@ class BackendVSA(Backend):
         raise BackendError(f"Unsupported type {type(expr)}")
 
     def _min(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None):
-        # TODO: signed min
-        if isinstance(expr, StridedInterval):
-            if expr.is_top:
-                # TODO: Return
-                return 0
-
-            return expr.min
-
-        if isinstance(expr, ValueSet):
-            return expr.min
+        if isinstance(expr, StridedInterval | ValueSet):
+            return expr.min(signed=signed)
 
         raise BackendError(f"Unsupported expr type {type(expr)}")
 
     def _max(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None):
-        # TODO: signed max
-        if isinstance(expr, StridedInterval):
-            if expr.is_top:
-                # TODO:
-                return StridedInterval.max_int(expr.bits)
-
-            return expr.max
-
-        if isinstance(expr, ValueSet):
-            return expr.max
+        if isinstance(expr, StridedInterval | ValueSet):
+            return expr.max(signed=signed)
 
         raise BackendError(f"Unsupported expr type {type(expr)}")
 
