@@ -138,7 +138,10 @@ class Balancer:
         outer_aligned = Balancer._align_ast(truism)
         inner_aligned = Bool(outer_aligned.op, (Balancer._align_ast(outer_aligned.args[0]), *outer_aligned.args[1:]))
 
-        if not claripy.backends.vsa.identical(inner_aligned, truism):
+        _, _, inner_aligned_canon = claripy.backends.vsa.simplify(inner_aligned).canonicalize()
+        _, _, truism_canon = claripy.backends.vsa.simplify(truism).canonicalize()
+
+        if not inner_aligned_canon.identical(truism_canon):
             log.critical(
                 "ERROR: the balancer is messing up an AST. This must be looked into. "
                 "Please submit the binary and script to the angr project, if possible. "

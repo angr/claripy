@@ -151,6 +151,12 @@ class BackendVSA(Backend):
                     name=e.name,
                 )
             raise ClaripyVSAError("Cannot abstract ValueSet with multiple regions")
+        if isinstance(e, BoolResult):
+            if e.is_true:
+                return claripy.BoolV(True)
+            if e.is_false:
+                return claripy.BoolV(False)
+            return claripy.BoolS("maybe")
         raise BackendError(f"Don't know how to abstract {type(e)}")
 
     def _eval(self, expr, n, extra_constraints=(), solver=None, model_callback=None):
