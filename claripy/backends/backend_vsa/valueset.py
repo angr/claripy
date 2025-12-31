@@ -408,8 +408,7 @@ class ValueSet:
 
         return list(itertools.islice(itertools.chain.from_iterable(si.eval(n) for si in self._regions.values()), n))
 
-    @property
-    def min(self):
+    def min(self, signed=False):
         """
         The minimum integer value of a value-set. It is only defined when there is exactly one region.
 
@@ -420,10 +419,9 @@ class ValueSet:
         if len(self.regions) != 1:
             raise ClaripyVSAOperationError("'min()' onlly works on single-region value-sets.")
 
-        return self.get_si(next(iter(self.regions))).min
+        return self.get_si(next(iter(self.regions))).min(signed=signed)
 
-    @property
-    def max(self):
+    def max(self, signed=False):
         """
         The maximum integer value of a value-set. It is only defined when there is exactly one region.
 
@@ -434,7 +432,7 @@ class ValueSet:
         if len(self.regions) != 1:
             raise ClaripyVSAOperationError("'max()' onlly works on single-region value-sets.")
 
-        return self.get_si(next(iter(self.regions))).max
+        return self.get_si(next(iter(self.regions))).max(signed=signed)
 
     def reverse(self):
         # TODO: obviously valueset.reverse is not properly implemented. I'm disabling the old annoying output line for
