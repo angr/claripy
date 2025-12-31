@@ -128,9 +128,7 @@ class Balancer:
     @staticmethod
     def _align_truism(truism):
         outer_aligned = Balancer._align_ast(truism)
-        inner_aligned = outer_aligned.make_like(
-            outer_aligned.op, (Balancer._align_ast(outer_aligned.args[0]), *outer_aligned.args[1:])
-        )
+        inner_aligned = Bool(outer_aligned.op, (Balancer._align_ast(outer_aligned.args[0]), *outer_aligned.args[1:]))
 
         if not claripy.backends.vsa.identical(inner_aligned, truism):
             log.critical(
@@ -180,7 +178,7 @@ class Balancer:
     @staticmethod
     def _align_bv(a):
         if a.op in commutative_operations:
-            return a.make_like(a.op, tuple(sorted(a.args, key=lambda v: -Balancer._cardinality(v))))
+            return BV(a.op, tuple(sorted(a.args, key=lambda v: -Balancer._cardinality(v))), length=len(a))
 
         match a.op:
             case "__sub__":
@@ -195,7 +193,7 @@ class Balancer:
             return a
 
         adjusted = tuple(operator.__neg__(v) for v in a.args[1:]) + a.args[:1]
-        return a.make_like("__add__", tuple(sorted(adjusted, key=lambda v: -Balancer._cardinality(v))))
+        return BV("__add__", tuple(sorted(adjusted, key=lambda v: -Balancer._cardinality(v))), length=len(a))
 
     #
     # Find bounds
@@ -386,7 +384,7 @@ class Balancer:
     @staticmethod
     def _balance_reverse(truism):
         if truism.op in ["__eq__", "__ne__"]:
-            return truism.make_like(truism.op, (truism.args[0].args[0], truism.args[1].reversed))
+            return Bool(truism.op, (truism.args[0].args[0], truism.args[1].reversed))
         return truism
 
     @staticmethod
@@ -403,12 +401,12 @@ class Balancer:
             new_lhs = tuple(a for a in lhs.args if a.symbolic)
             if not new_lhs:
                 return truism
-            new_lhs = new_lhs[0] if len(new_lhs) == 1 else lhs.make_like("__add__", new_lhs)
+            new_lhs = new_lhs[0] if len(new_lhs) == 1 else BV("__add__", new_lhs, length=len(lhs))
             other_adds = tuple(a for a in lhs.args if a.concrete)
             if not other_adds:
                 return truism
-        new_rhs = truism.args[0].make_like("__sub__", (old_rhs, *other_adds))
-        return truism.make_like(truism.op, (new_lhs, new_rhs))
+        new_rhs = BV("__sub__", (old_rhs, *other_adds), length=len(lhs))
+        return Bool(truism.op, (new_lhs, new_rhs))
 
     @staticmethod
     def _balance_sub(truism):
@@ -417,8 +415,8 @@ class Balancer:
         new_lhs = truism.args[0].args[0]
         old_rhs = truism.args[1]
         other_adds = truism.args[0].args[1:]
-        new_rhs = truism.args[0].make_like("__add__", (old_rhs, *other_adds))
-        return truism.make_like(truism.op, (new_lhs, new_rhs))
+        new_rhs = BV("__add__", (old_rhs, *other_adds), length=len(truism.args[0]))
+        return Bool(truism.op, (new_lhs, new_rhs))
 
     @staticmethod
     def _balance_zeroext(truism):
@@ -427,8 +425,7 @@ class Balancer:
 
         if claripy.backends.vsa.is_true(other_side == 0):
             # We can safely eliminate this layer of ZeroExt
-            new_args = (inner, truism.args[1][len(truism.args[1]) - num_zeroes - 1 : 0])
-            return truism.make_like(truism.op, new_args)
+            return Bool(truism.op, (inner, truism.args[1][len(truism.args[1]) - num_zeroes - 1 : 0]))
 
         return truism
 
@@ -441,8 +438,7 @@ class Balancer:
         # TODO: what if this is a set value, but *not* the same as other_side
         if claripy.backends.vsa.identical(left_side, other_side):
             # We can safely eliminate this layer of ZeroExt
-            new_args = (truism.args[0].args[1], truism.args[1][len(truism.args[1]) - num_zeroes - 1 : 0])
-            return truism.make_like(truism.op, new_args)
+            return Bool(truism.op, (truism.args[0].args[1], truism.args[1][len(truism.args[1]) - num_zeroes - 1 : 0]))
 
         return truism
 
@@ -468,22 +464,22 @@ class Balancer:
         if left_msb_zero and left_lsb_zero:
             new_left = inner
             new_right = claripy.Concat(claripy.BVV(0, len(left_msb)), truism.args[1], claripy.BVV(0, len(left_lsb)))
-            return truism.make_like(truism.op, (new_left, new_right))
+            return Bool(truism.op, (new_left, new_right))
         if left_msb_zero:
             new_left = inner
             new_right = claripy.Concat(claripy.BVV(0, len(left_msb)), truism.args[1])
-            return truism.make_like(truism.op, (new_left, new_right))
+            return Bool(truism.op, (new_left, new_right))
         if left_lsb_zero:
             new_left = inner
             new_right = claripy.Concat(truism.args[1], claripy.BVV(0, len(left_lsb)))
-            return truism.make_like(truism.op, (new_left, new_right))
+            return Bool(truism.op, (new_left, new_right))
 
         if low == 0 and truism.args[1].op == "BVV" and truism.op not in {"SGE", "SLE", "SGT", "SLT"}:
             # single-valued rhs value with an unsigned operator
             # Eliminate Extract on lhs and zero-extend the value on rhs
             new_left = inner
             new_right = claripy.ZeroExt(inner.size() - truism.args[1].size(), truism.args[1])
-            return truism.make_like(truism.op, (new_left, new_right))
+            return Bool(truism.op, (new_left, new_right))
 
         return truism
 
@@ -505,14 +501,14 @@ class Balancer:
                 v >>= 1
             if low_ones == 0:
                 # this should probably never happen
-                new_left = truism.args[0].make_like("BVV", (0, truism.args[0].size()))
-                return truism.make_like(truism.op, (new_left, truism.args[1]))
+                new_left = BV("BVV", (0, truism.args[0].size()), length=truism.args[0].size())
+                return Bool(truism.op, (new_left, truism.args[1]))
 
             if op0.op == "ZeroExt" and op0.args[0] + low_ones == op0.size():
                 # ZeroExt(56, a) & 0xff == a  if a.size() == 8
                 # we can safely remove __and__
                 new_left = op0
-                return truism.make_like(truism.op, (new_left, truism.args[1]))
+                return Bool(truism.op, (new_left, truism.args[1]))
 
         return truism
 
@@ -526,7 +522,7 @@ class Balancer:
             # we can cut these guys off!
             remaining_left = claripy.Concat(*truism.args[0].args[1:])
             remaining_right = truism.args[1][size - len(left_msb) - 1 : 0]
-            return truism.make_like(truism.op, (remaining_left, remaining_right))
+            return Bool(truism.op, (remaining_left, remaining_right))
         # TODO: handle non-zero single-valued cases
         return truism
 
@@ -547,7 +543,7 @@ class Balancer:
         if len(rhs_lower_values) == 1 and rhs_lower_values[0] == 0:
             # we can remove the __lshift__
 
-            return truism.make_like(truism.op, (expr, rhs >> shift_amount))
+            return Bool(truism.op, (expr, rhs >> shift_amount))
 
         return truism
 
@@ -575,11 +571,11 @@ class Balancer:
         if must_true or (can_true and not can_false):
             # it will always be true
             self._truisms.append(condition)
-            return truism.make_like(truism.op, (true_expr, truism.args[1]))
+            return Bool(truism.op, (true_expr, truism.args[1]))
         if must_false or (can_false and not can_true):
             # it will always be false
             self._truisms.append(~condition)
-            return truism.make_like(truism.op, (false_expr, truism.args[1]))
+            return Bool(truism.op, (false_expr, truism.args[1]))
         return None
 
     #
