@@ -120,7 +120,7 @@ class Balancer:
     @staticmethod
     def _stride(a):
         a = claripy.backends.vsa.simplify(a)
-        si_anno = a.get_annotation_by_type(claripy.annotation.StridedIntervalAnnotation)
+        si_anno = a.get_annotation(claripy.annotation.StridedIntervalAnnotation)
         if si_anno is not None:
             return si_anno.stride
         return 1
