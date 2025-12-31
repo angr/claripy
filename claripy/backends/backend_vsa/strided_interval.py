@@ -1092,8 +1092,8 @@ class StridedInterval:
             unsigned, or None if empty
         """
         if not self.is_empty:
-            splitted = self._signed_bounds() if signed else self._unsigned_bounds()
-            return max(ub for lb, ub in splitted)
+            split = self._signed_bounds() if signed else self._unsigned_bounds()
+            return max(ub for _, ub in split)
         # It is empty!
         return None
 
@@ -1107,8 +1107,8 @@ class StridedInterval:
             unsigned, or None if empty
         """
         if not self.is_empty:
-            splitted = self._signed_bounds() if signed else self._unsigned_bounds()
-            return min(lb for lb, ub in splitted)
+            split = self._signed_bounds() if signed else self._unsigned_bounds()
+            return min(lb for lb, _ in split)
         # It is empty
         return None
 
