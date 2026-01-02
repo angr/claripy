@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from .bool_check import is_false, is_true
 from .ite_relocation import burrow_ite, excavate_ite
-from .replace import replace, replace_dict
+from .replace import replace, replace_dict, replace_slice
 from .simplify import simplify
 
 __all__ = (
