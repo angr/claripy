@@ -106,8 +106,8 @@ def replace_slice(expr : Base, old : Base, new : Base):
     is_slice = (old.op == "Extract")
     if not is_slice:
         return replace(expr, old, new)
-    sz_base = base.length
     sl_e, sl_s, base = old.args
+    sz_base = base.length
     vars = []
     if sl_e < sz_base - 1:
         vars.append(base[:sl_e+1])
