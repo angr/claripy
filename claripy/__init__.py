@@ -1,7 +1,16 @@
 from __future__ import annotations
 
 from claripy import algorithm, annotation, ast, backends
-from claripy.algorithm import burrow_ite, excavate_ite, is_false, is_true, replace, replace_slice, replace_dict, simplify
+from claripy.algorithm import (
+    burrow_ite,
+    excavate_ite,
+    is_false,
+    is_true,
+    replace,
+    replace_slice,
+    replace_dict,
+    simplify,
+)
 from claripy.annotation import Annotation, RegionAnnotation, SimplificationAvoidanceAnnotation, UninitializedAnnotation
 from claripy.ast.bool import (
     And,
