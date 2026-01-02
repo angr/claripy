@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, TypeVar
 
 from claripy.ast import Base
+from claripy.ast.bv import Concat
 from claripy.errors import ClaripyReplacementError
 
 if TYPE_CHECKING:
@@ -97,3 +98,20 @@ def replace(expr: Base, old: T, new: T) -> Base:
     _check_replaceability(old, new)
     replacements: dict[int, Base] = {old.hash(): new}
     return replace_dict(expr, replacements, variable_set=old.variables)
+
+def replace_slice(expr : Base, old : Base, new : Base):
+    """
+    A helper function for the replacements of sliced ASTs
+    """
+    is_slice = (old.op == "Extract")
+    if not is_slice:
+        return replace(expr, old, new)
+    sz_base = base.length
+    sl_e, sl_s, base = old.args
+    vars = []
+    if sl_e < sz_base - 1:
+        vars.append(base[:sl_e+1])
+    vars.append(new)
+    if sl_s > 0:
+        vars.append(base[sl_s-1:])
+    return replace(expr, base, Concat(*vars))
