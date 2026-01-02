@@ -7,8 +7,8 @@ from claripy.algorithm import (
     is_false,
     is_true,
     replace,
-    replace_slice,
     replace_dict,
+    replace_slice,
     simplify,
 )
 from claripy.annotation import Annotation, RegionAnnotation, SimplificationAvoidanceAnnotation, UninitializedAnnotation
@@ -223,8 +223,8 @@ __all__ = (
     "ite_cases",
     "ite_dict",
     "replace",
-    "replace_slice",
     "replace_dict",
+    "replace_slice",
     "reverse_ite_cases",
     "set_debug",
     "simplify",

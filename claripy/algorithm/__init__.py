@@ -11,7 +11,7 @@ __all__ = (
     "is_false",
     "is_true",
     "replace",
-    "replace_slice",
     "replace_dict",
+    "replace_slice",
     "simplify",
 )

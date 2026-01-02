@@ -100,9 +100,11 @@ def replace(expr: Base, old: T, new: T) -> Base:
     return replace_dict(expr, replacements, variable_set=old.variables)
 
 
-def replace_slice(expr: Base, old: Base, new: Base):
+def replace_slice(expr: Base, old: Base, new: Base) -> Base:
     """
-    A helper function for the replacements of sliced ASTs
+    Returns this AST but with the AST 'old' replaced with AST 'new' considering slices of 'old', unlike replace().
+
+    If the root of 'old' is not a slice operation, returns the same AST as replace().
     """
     is_slice = old.op == "Extract"
     if not is_slice:
