@@ -102,13 +102,16 @@ def replace(expr: Base, old: T, new: T) -> Base:
 
 def replace_slice(expr: Base, old: Base, new: Base) -> Base:
     """
-    Returns this AST but with the AST 'old' replaced with AST 'new' considering slices of 'old', unlike replace().
+    Returns this AST but with the AST 'old' replaced with same-sized AST 'new'
+    in its subexpressions considering slices of 'old', unlike replace().
 
     If the root of 'old' is not a slice operation, returns the same AST as replace().
     """
     is_slice = old.op == "Extract"
     if not is_slice:
         return replace(expr, old, new)
+    if old.length != new.length:
+        raise ClaripyReplacementError("replacements considering slices must have same length")
     sl_e, sl_s, base = old.args
     sz_base = base.length
     vars = []
