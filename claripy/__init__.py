@@ -109,7 +109,7 @@ from claripy.solvers import (
     SolverVSA,
 )
 
-__version__ = "9.2.193.dev0"
+__version__ = "9.2.194.dev0"
 
 __all__ = (
     "BVS",
