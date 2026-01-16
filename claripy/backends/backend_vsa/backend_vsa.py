@@ -127,7 +127,7 @@ class BackendVSA(Backend):
         if isinstance(e, StridedInterval):
             if e.is_top:
                 return claripy.TSI(e.bits, explicit_name=e.name)
-            if e.is_bottom:
+            if e.is_empty:
                 return claripy.ESI(e.bits)
             if e.stride in {0, 1} and e.lower_bound == e.upper_bound:
                 return claripy.BVV(e.lower_bound, e.bits)
@@ -210,12 +210,6 @@ class BackendVSA(Backend):
         if type(a) != type(b):  # noqa: E721
             return False
         return a.identical(b)
-
-    @staticmethod
-    def _unique(obj):
-        if isinstance(obj, StridedInterval | ValueSet):
-            return obj.unique
-        raise BackendError(f"Not supported type of operand {type(obj)}")
 
     def _cardinality(self, a):
         return a.cardinality
