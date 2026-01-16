@@ -81,10 +81,6 @@ class ValueSet:
         return self._reversed
 
     @property
-    def unique(self):
-        return len(self.regions) == 1 and self.regions.values()[0].unique
-
-    @property
     def cardinality(self):
         card = 0
         for region in self._regions:
@@ -95,10 +91,6 @@ class ValueSet:
     @property
     def is_empty(self):
         return len(self._regions) == 0
-
-    @property
-    def valueset(self):
-        return self
 
     #
     # Private methods
