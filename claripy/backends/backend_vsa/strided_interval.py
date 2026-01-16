@@ -1983,7 +1983,6 @@ class StridedInterval:
             return (self.bits, self.bits)
         return (round(self.bits, self.lower_bound), round(self.bits, self.upper_bound))
 
-
     @reversed_processor
     def rshift_logical(self, shift_amount: StridedInterval) -> StridedInterval:
         """
