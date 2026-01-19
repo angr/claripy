@@ -1237,8 +1237,8 @@ class StridedInterval:
         # use the same variable names as in paper
         s = src_interval
         t = tar_interval
-        (_, b) = (s.lower_bound, s.upper_bound)
-        (c, _) = (t.lower_bound, t.upper_bound)
+        _, b = (s.lower_bound, s.upper_bound)
+        c, _ = (t.lower_bound, t.upper_bound)
 
         w = s.bits
         # case 1
