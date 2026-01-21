@@ -5,6 +5,7 @@ import logging
 import numbers
 import operator
 import os
+import re
 import signal
 import sys
 import threading
@@ -688,7 +689,8 @@ class BackendZ3(Backend):
         if op_name == "INTERNAL":
             seq = z3.SeqRef(ast)
             if seq.is_string():
-                return seq.as_string()
+                # Converts a Unicode escape sequence to the corresponding character.
+                return re.sub(r"\\u\{([0-9a-fA-F]+)\}", lambda match: chr(int(match.group(1), 16)), seq.as_string())
         raise BackendError("Unable to abstract Z3 object to primitive")
 
     def _abstract_bv_val(self, ctx, ast):
