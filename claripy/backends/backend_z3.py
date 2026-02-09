@@ -509,7 +509,7 @@ class BackendZ3(Backend):
 
         if decl_num not in z3_op_nums:
             raise ClaripyError(f"unknown decl kind {decl_num}")
-        if op_map.get(z3_op_nums[decl_num], None) is None:
+        if op_map.get(z3_op_nums[decl_num]) is None:
             raise ClaripyError(f"unknown decl op {z3_op_nums[decl_num]}")
         op_name = op_map[z3_op_nums[decl_num]]
 
@@ -639,7 +639,7 @@ class BackendZ3(Backend):
 
         if decl_num not in z3_op_nums:
             raise ClaripyError(f"unknown decl kind {decl_num}")
-        if op_map.get(z3_op_nums[decl_num], None) is None:
+        if op_map.get(z3_op_nums[decl_num]) is None:
             raise ClaripyError(f"unknown decl op {z3_op_nums[decl_num]}")
         op_name = op_map[z3_op_nums[decl_num]]
 
