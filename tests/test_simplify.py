@@ -244,9 +244,7 @@ class TestSimplify(unittest.TestCase):
         d = claripy.BoolS("d")
 
         # If(...) & If(...) with arbitrary multi-bit concrete values
-        expr = claripy.If(c, claripy.BVV(1, 8), claripy.BVV(2, 8)) & claripy.If(
-            d, claripy.BVV(3, 8), claripy.BVV(4, 8)
-        )
+        expr = claripy.If(c, claripy.BVV(1, 8), claripy.BVV(2, 8)) & claripy.If(d, claripy.BVV(3, 8), claripy.BVV(4, 8))
         assert expr.size() == 8
 
         # If(cond, 1, 0) & If(cond, 1, 0) with 8-bit should still optimize
