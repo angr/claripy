@@ -237,6 +237,51 @@ class TestSimplify(unittest.TestCase):
         result = claripy.If(e > 5, claripy.BVV(1, 1), claripy.BVV(0, 1))
         assert ifcond1 & ifcond2 is result
 
+    def test_bitwise_and_if_multibyte(self):
+        # Regression: If & If with non-1-bit values used to crash with
+        # ClaripyOperationError due to hardcoded BVV(1, 1) comparisons
+        c = claripy.BoolS("c")
+        d = claripy.BoolS("d")
+
+        # If(...) & If(...) with arbitrary multi-bit concrete values
+        expr = claripy.If(c, claripy.BVV(1, 8), claripy.BVV(2, 8)) & claripy.If(
+            d, claripy.BVV(3, 8), claripy.BVV(4, 8)
+        )
+        assert expr.size() == 8
+
+        # If(cond, 1, 0) & If(cond, 1, 0) with 8-bit should still optimize
+        expr2 = claripy.If(c, claripy.BVV(1, 8), claripy.BVV(0, 8)) & claripy.If(
+            d, claripy.BVV(1, 8), claripy.BVV(0, 8)
+        )
+        assert expr2.op == "If"
+        assert (expr2.args[1] == claripy.BVV(1, 8)).is_true()
+        assert (expr2.args[2] == claripy.BVV(0, 8)).is_true()
+
+        # If(...) & BVV should not crash
+        expr3 = claripy.If(c, claripy.BVV(1, 8), claripy.BVV(2, 8)) & claripy.BVV(0xFF, 8)
+        assert expr3.size() == 8
+
+        # BVV & If(...) should not crash
+        expr4 = claripy.BVV(0xFF, 8) & claripy.If(c, claripy.BVV(1, 8), claripy.BVV(2, 8))
+        assert expr4.size() == 8
+
+    def test_bitwise_or_xor_if(self):
+        # Ensure bitwise OR and XOR also handle If expressions without crashing
+        c = claripy.BoolS("c")
+        d = claripy.BoolS("d")
+
+        # If | If
+        expr_or = claripy.If(c, claripy.BVV(1, 8), claripy.BVV(2, 8)) | claripy.If(
+            d, claripy.BVV(3, 8), claripy.BVV(4, 8)
+        )
+        assert expr_or.size() == 8
+
+        # If ^ If
+        expr_xor = claripy.If(c, claripy.BVV(1, 8), claripy.BVV(2, 8)) ^ claripy.If(
+            d, claripy.BVV(3, 8), claripy.BVV(4, 8)
+        )
+        assert expr_xor.size() == 8
+
     def test_invert_if(self):
         cond = claripy.BoolS("cond")
         expr = ~(claripy.If(cond, claripy.BVV(1, 1), claripy.BVV(0, 1)))
