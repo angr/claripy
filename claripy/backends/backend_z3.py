@@ -54,17 +54,29 @@ def handle_sigint(signals: int, frametype: FrameType | None) -> Any:
     if callable(old_handler):
         old_handler(signals, frametype)
     else:
-        print("*** CRITICAL ERROR - THIS SHOULD NEVER HAPPEN", sys.stderr, flush=True)
         raise KeyboardInterrupt
 
 
-if threading.current_thread() == threading.main_thread():  # Signal only works in the main thread
-    old_handler = signal.getsignal(signal.SIGINT)
-    if old_handler is None or old_handler == signal.SIG_DFL:
-        # there is a signal handler installed by someone other than python. we cannot handle this.
+old_handler = True  # I forget why True is the default value here...
+
+
+def install_sigint_handler():
+    global old_handler
+    if threading.current_thread() == threading.main_thread():  # Signal only works in the main thread
+        old_handler = signal.getsignal(signal.SIGINT)
+        if old_handler is None or old_handler == signal.SIG_DFL:
+            # there is a signal handler installed by someone other than python. we cannot handle this.
+            pass
+        else:
+            signal.signal(signal.SIGINT, handle_sigint)
+
+
+def uninstall_sigint_handler():
+    global old_handler
+    if old_handler is not True:
+        signal.signal(signal.SIGINT, old_handler)
         old_handler = True
-    else:
-        signal.signal(signal.SIGINT, handle_sigint)
+
 
 try:
     import __pypy__
@@ -192,9 +204,12 @@ def condom(f):
         The Z3 condom intercepts Z3Exceptions and throws a ClaripyZ3Error instead.
         """
         try:
+            install_sigint_handler()
             return f(*args, **kwargs)
         except z3.Z3Exception as ze:
             raise ClaripyZ3Error from ze
+        finally:
+            uninstall_sigint_handler()
 
     return z3_condom
 
