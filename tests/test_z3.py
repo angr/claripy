@@ -1,7 +1,9 @@
 # pylint: disable=missing-class-docstring,no-self-use
 from __future__ import annotations
 
+import gc
 import sys
+import threading
 import unittest
 
 import claripy
@@ -134,6 +136,63 @@ class TestZ3(unittest.TestCase):
 
         r2 = claripy.backends.z3.simplify(r)
         assert r2.length == 32
+
+    def test_gc_stays_disabled_until_last_thread_exits_z3(self):
+        backend_z3 = claripy.backends.backend_z3
+        ready = threading.Barrier(3)
+        allow_first_exit = threading.Event()
+        allow_second_exit = threading.Event()
+        first_exited = threading.Event()
+        failures = []
+
+        def worker(exit_event, exited_event=None):
+            try:
+                backend_z3._enter_z3()
+                ready.wait(timeout=5)
+                assert exit_event.wait(timeout=5)
+            except BaseException as ex:  # pragma: no cover
+                failures.append(ex)
+                raise
+            finally:
+                backend_z3._exit_z3()
+                if exited_event is not None:
+                    exited_event.set()
+
+        threads = [
+            threading.Thread(target=worker, args=(allow_first_exit, first_exited)),
+            threading.Thread(target=worker, args=(allow_second_exit,)),
+        ]
+
+        was_enabled = gc.isenabled()
+        if not was_enabled:
+            gc.enable()
+
+        try:
+            for thread in threads:
+                thread.start()
+
+            ready.wait(timeout=5)
+            assert not gc.isenabled()
+
+            allow_first_exit.set()
+            assert first_exited.wait(timeout=5)
+            assert not gc.isenabled()
+
+            allow_second_exit.set()
+            for thread in threads:
+                thread.join(timeout=5)
+                assert not thread.is_alive()
+
+            assert not failures
+            assert gc.isenabled()
+        finally:
+            allow_first_exit.set()
+            allow_second_exit.set()
+            for thread in threads:
+                thread.join(timeout=5)
+
+            if not was_enabled and gc.isenabled():
+                gc.disable()
 
 
 if __name__ == "__main__":
