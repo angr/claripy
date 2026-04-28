@@ -16,6 +16,7 @@ def replace_dict(
     replacements: dict[int, Base],
     variable_set: set[str] | None = None,
     leaf_operation: Callable[[Base], Base] = lambda x: x,
+    simplify: bool = False,
 ) -> Base:
     """
     Returns this AST with subexpressions replaced by those that can be found in `replacements`
@@ -71,7 +72,7 @@ def replace_dict(
 
                 # Check if replacement occurred.
                 if any((a is not b for a, b in zip(ast.args, args, strict=False))):
-                    repl = ast.make_like(ast.op, tuple(args))
+                    repl = ast.make_like(ast.op, tuple(args), simplify=simplify)
                     replacements[ast.hash()] = repl
 
                 rep_queue.append(repl)
