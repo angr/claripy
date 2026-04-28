@@ -160,12 +160,15 @@ def If(cond, true_value, false_value):
 And = operations.op("And", Bool, Bool)
 Or = operations.op("Or", Bool, Bool)
 Not = operations.op("Not", (Bool,), Bool)
+Xor = operations.op("Xor", (Bool, Bool), Bool)
 
 Bool.__invert__ = Not
 Bool.__and__ = And
 Bool.__rand__ = And
 Bool.__or__ = Or
 Bool.__ror__ = Or
+Bool.__xor__ = Xor
+Bool.__rxor__ = Xor
 
 
 # For large tables, ite_dict that uses a binary search tree instead of a "linear" search tree.
