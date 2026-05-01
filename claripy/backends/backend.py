@@ -361,9 +361,7 @@ class Backend:
                     self._true_cache[e.hash()] = False
             return f
 
-    def _is_false(
-        self, e, extra_constraints=(), solver=None, model_callback=None
-    ):  # pylint:disable=no-self-use,unused-argument
+    def _is_false(self, e, extra_constraints=(), solver=None, model_callback=None):  # pylint:disable=no-self-use,unused-argument
         """
         The native version of is_false.
 
@@ -375,9 +373,7 @@ class Backend:
         """
         raise BackendError("backend doesn't support _is_false")
 
-    def _is_true(
-        self, e, extra_constraints=(), solver=None, model_callback=None
-    ):  # pylint:disable=no-self-use,unused-argument
+    def _is_true(self, e, extra_constraints=(), solver=None, model_callback=None):  # pylint:disable=no-self-use,unused-argument
         """
         The native version of is_true.
 
@@ -425,9 +421,7 @@ class Backend:
             self.convert(e), extra_constraints=extra_constraints, solver=solver, model_callback=model_callback
         )
 
-    def _has_false(
-        self, e, extra_constraints=(), solver=None, model_callback=None
-    ):  # pylint:disable=no-self-use,unused-argument
+    def _has_false(self, e, extra_constraints=(), solver=None, model_callback=None):  # pylint:disable=no-self-use,unused-argument
         """
         The native version of :func:`has_false`.
 
@@ -439,9 +433,7 @@ class Backend:
         """
         raise BackendError("backend doesn't support _has_false")
 
-    def _has_true(
-        self, e, extra_constraints=(), solver=None, model_callback=None
-    ):  # pylint:disable=no-self-use,unused-argument
+    def _has_true(self, e, extra_constraints=(), solver=None, model_callback=None):  # pylint:disable=no-self-use,unused-argument
         """
         The native version of :func:`has_true`.
 
@@ -531,9 +523,7 @@ class Backend:
             model_callback=model_callback,
         )
 
-    def _eval(
-        self, expr, n, extra_constraints=(), solver=None, model_callback=None
-    ):  # pylint:disable=unused-argument,no-self-use
+    def _eval(self, expr, n, extra_constraints=(), solver=None, model_callback=None):  # pylint:disable=unused-argument,no-self-use
         """
         This function returns up to `n` possible solutions for expression `expr`.
 
@@ -571,9 +561,7 @@ class Backend:
             model_callback=model_callback,
         )
 
-    def _batch_eval(
-        self, exprs, n, extra_constraints=(), solver=None, model_callback=None
-    ):  # pylint:disable=unused-argument,no-self-use
+    def _batch_eval(self, exprs, n, extra_constraints=(), solver=None, model_callback=None):  # pylint:disable=unused-argument,no-self-use
         """
         Evaluate one or multiple expressions.
 
@@ -610,9 +598,7 @@ class Backend:
             model_callback=model_callback,
         )
 
-    def _min(
-        self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None
-    ):  # pylint:disable=unused-argument,no-self-use
+    def _min(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None):  # pylint:disable=unused-argument,no-self-use
         """
         Return the minimum value of expr.
 
@@ -649,9 +635,7 @@ class Backend:
             model_callback=model_callback,
         )
 
-    def _max(
-        self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None
-    ):  # pylint:disable=unused-argument,no-self-use
+    def _max(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None):  # pylint:disable=unused-argument,no-self-use
         """
         Return the maximum value of expr.
 
@@ -706,9 +690,7 @@ class Backend:
             extra_constraints=self.convert_list(extra_constraints), solver=solver, model_callback=model_callback
         )
 
-    def _satisfiable(
-        self, extra_constraints=(), solver=None, model_callback=None
-    ):  # pylint:disable=no-self-use,unused-argument
+    def _satisfiable(self, extra_constraints=(), solver=None, model_callback=None):  # pylint:disable=no-self-use,unused-argument
         """
         This function does a constraint check and returns a model for a solver.
 
@@ -742,9 +724,7 @@ class Backend:
             model_callback=model_callback,
         )
 
-    def _solution(
-        self, expr, v, extra_constraints=(), solver=None, model_callback=None
-    ):  # pylint:disable=unused-argument,no-self-use
+    def _solution(self, expr, v, extra_constraints=(), solver=None, model_callback=None):  # pylint:disable=unused-argument,no-self-use
         """
         Return True if v is a solution of expr with the extra constraints, False otherwise.
 
