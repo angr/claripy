@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=77.0.0", "wheel"]
+requires = ["setuptools>=77.0.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -10,24 +10,22 @@ license-files = ["LICENSE"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 urls = { Homepage = "https://github.com/angr/claripy" }
-requires-python = ">=3.10"
-dependencies = ["cachetools", "typing-extensions", "z3-solver==4.13.0.0"]
+requires-python = ">=3.12"
+dependencies = ["cachetools", "z3-solver==4.13.0.0"]
 dynamic = ["version"]
 
 [project.readme]
 file = "README.md"
 content-type = "text/markdown"
 
-[project.optional-dependencies]
-docs = ["furo", "myst-parser", "sphinx", "sphinx-autodoc-typehints"]
-
 [dependency-groups]
 dev = ["pytest", "pytest-xdist"]
+docs = ["furo", "myst-parser", "sphinx", "sphinx-autodoc-typehints"]
 
 [tool.setuptools]
 include-package-data = false
@@ -39,7 +37,6 @@ claripy = ["py.typed"]
 version = { attr = "claripy.__version__" }
 
 [tool.ruff]
-target-version = "py310"
 line-length = 120
 
 [tool.ruff.lint]

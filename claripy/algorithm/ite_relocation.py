@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from typing import TypeVar, cast
+from typing import cast
 from weakref import WeakValueDictionary
 
 import claripy
 from claripy.ast import Base
-
-T = TypeVar("T", bound=Base)
 
 #
 # This code handles burrowing ITEs deeper into the ast and excavating
@@ -17,7 +15,7 @@ burrowed_cache: WeakValueDictionary[int, Base] = WeakValueDictionary()
 excavated_cache: WeakValueDictionary[int, Base] = WeakValueDictionary()
 
 
-def _burrow_ite(expr: T) -> T:
+def _burrow_ite[T: Base](expr: T) -> T:
     if expr.op != "If":
         return expr.make_like(expr.op, [(burrow_ite(a) if isinstance(a, Base) else a) for a in expr.args])
 
@@ -51,7 +49,7 @@ def _burrow_ite(expr: T) -> T:
     return old_true.__class__(old_true.op, new_args, length=expr.length)
 
 
-def _excavate_ite(expr: T) -> T:
+def _excavate_ite[T: Base](expr: T) -> T:
     ast_queue = [iter([expr])]
     arg_queue = []
     op_queue = []
@@ -133,7 +131,7 @@ def _excavate_ite(expr: T) -> T:
     return arg_queue.pop()
 
 
-def burrow_ite(expr: T) -> T:
+def burrow_ite[T: Base](expr: T) -> T:
     """
     Returns an equivalent AST that "burrows" the ITE expressions as deep as
     possible into the ast, for simpler printing.
@@ -147,7 +145,7 @@ def burrow_ite(expr: T) -> T:
     return burrowed
 
 
-def excavate_ite(expr: T) -> T:
+def excavate_ite[T: Base](expr: T) -> T:
     """
     Returns an equivalent AST that "excavates" the ITE expressions out as far as
     possible toward the root of the AST, for processing in static analyses.

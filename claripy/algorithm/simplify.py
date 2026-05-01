@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from itertools import chain
-from typing import TypeVar, cast
+from typing import cast
 from weakref import WeakValueDictionary
 
 import claripy
@@ -11,12 +11,11 @@ from claripy.errors import BackendError
 
 log = logging.getLogger(__name__)
 
-T = TypeVar("T", bound=Base)
 
 simplification_cache: WeakValueDictionary[int, Base] = WeakValueDictionary()
 
 
-def simplify(expr: T) -> T:
+def simplify[T: Base](expr: T) -> T:
     """
     Simplify an expression.
     """
