@@ -12,8 +12,7 @@ from .constrained_frontend import ConstrainedFrontend
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-
-    from typing_extensions import Self
+    from typing import Self
 
     from claripy.ast import BV, FP, Bool
 

@@ -1,14 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING
 
 from claripy.ast import Base
 from claripy.errors import ClaripyReplacementError
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-
-T = TypeVar("T", bound="Base")
 
 
 def replace_dict(
@@ -83,14 +81,14 @@ def replace_dict(
     return rep_queue.pop()
 
 
-def _check_replaceability(old: T, new: T) -> None:
+def _check_replaceability[T: "Base"](old: T, new: T) -> None:
     if not isinstance(old, Base) or not isinstance(new, Base):
         raise ClaripyReplacementError("replacements must be AST nodes")
     if type(old) is not type(new):
         raise ClaripyReplacementError(f"cannot replace type {type(old)} ast with type {type(new)} ast")
 
 
-def replace(expr: Base, old: T, new: T) -> Base:
+def replace[T: "Base"](expr: Base, old: T, new: T) -> Base:
     """
     Returns this AST but with the AST 'old' replaced with AST 'new' in its subexpressions.
     """

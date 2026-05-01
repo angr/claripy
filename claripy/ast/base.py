@@ -10,10 +10,8 @@ from contextlib import suppress
 from enum import IntEnum
 from hashlib import blake2b
 from itertools import chain
-from typing import TYPE_CHECKING, NoReturn, TypeVar, Union, cast
+from typing import TYPE_CHECKING, NoReturn, Self, TypeVar, Union, cast
 from weakref import WeakValueDictionary
-
-from typing_extensions import Self
 
 import claripy
 from claripy import operations

@@ -3,8 +3,7 @@ from __future__ import annotations
 import logging
 import weakref
 from contextlib import suppress
-
-from typing_extensions import Self
+from typing import Self
 
 import claripy
 from claripy import operations
