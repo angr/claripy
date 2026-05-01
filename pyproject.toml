@@ -23,11 +23,9 @@ dynamic = ["version"]
 file = "README.md"
 content-type = "text/markdown"
 
-[project.optional-dependencies]
-docs = ["furo", "myst-parser", "sphinx", "sphinx-autodoc-typehints"]
-
 [dependency-groups]
 dev = ["pytest", "pytest-xdist"]
+docs = ["furo", "myst-parser", "sphinx", "sphinx-autodoc-typehints"]
 
 [tool.setuptools]
 include-package-data = false
