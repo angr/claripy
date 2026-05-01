@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from claripy.ast import Base
 
 
-def op[T: "Base"](name, arg_types, return_type: type[T], extra_check=None, calc_length=None) -> Callable[..., T]:
+def op[T: Base](name, arg_types, return_type: type[T], extra_check=None, calc_length=None) -> Callable[..., T]:
     if isinstance(arg_types, tuple | list):
         expected_num_args = len(arg_types)
     elif isinstance(arg_types, type):
