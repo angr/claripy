@@ -295,7 +295,6 @@ class TestVSAOperations(unittest.TestCase):  # pylint: disable=no-member functio
 
         # Disable the use of DiscreteStridedIntervalSet
         with claripy.backends.backend_vsa.strided_interval._allow_dsis(False):
-
             # Integers
             self.si1 = claripy.SI(bits=32, stride=0, lower_bound=10, upper_bound=10)
             self.si2 = claripy.SI(bits=32, stride=0, lower_bound=10, upper_bound=10)
