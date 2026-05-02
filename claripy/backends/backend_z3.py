@@ -106,9 +106,9 @@ def install_sigint_handler():
 def uninstall_sigint_handler():
     if threading.current_thread() == threading.main_thread():
         old_handler = signal.getsignal(signal.SIGINT)
-        assert isinstance(
-            old_handler, SigintHandler
-        ), "Told to uninstall SIGINT handler even though we didn't install it most recently?"
+        assert isinstance(old_handler, SigintHandler), (
+            "Told to uninstall SIGINT handler even though we didn't install it most recently?"
+        )
         signal.signal(signal.SIGINT, old_handler.prev)
 
 
