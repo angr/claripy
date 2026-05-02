@@ -44,21 +44,24 @@ ALL_Z3_CONTEXTS = weakref.WeakSet()
 INT_STRING_CHUNK_SIZE: int | None = None  # will be updated later if we are on CPython 3.11+
 
 
-def handle_sigint(signals: int, frametype: FrameType | None) -> Any:
-    if old_handler == signal.SIG_IGN:
-        return
+class SigintHandler:
+    def __init__(self, prev):
+        self.prev = prev
 
-    contexts = list(ALL_Z3_CONTEXTS)
-    for context in contexts:
-        context.interrupt()
+    def __call__(self, signals: int, frametype: FrameType | None) -> Any:
+        if self.prev == signal.SIG_IGN:
+            return
 
-    if callable(old_handler):
-        old_handler(signals, frametype)
-    else:
-        raise KeyboardInterrupt
+        contexts = list(ALL_Z3_CONTEXTS)
+        for context in contexts:
+            context.interrupt()
+
+        if callable(self.prev):
+            self.prev(signals, frametype)
+        else:
+            raise KeyboardInterrupt
 
 
-old_handler = True  # I forget why True is the default value here...
 _gc_lock = threading.Lock()
 _active_z3_calls = 0
 _gc_was_enabled = False
@@ -91,21 +94,22 @@ def _exit_z3():
 
 
 def install_sigint_handler():
-    global old_handler
     if threading.current_thread() == threading.main_thread():  # Signal only works in the main thread
         old_handler = signal.getsignal(signal.SIGINT)
         if old_handler is None or old_handler == signal.SIG_DFL:
             # there is a signal handler installed by someone other than python. we cannot handle this.
             pass
         else:
-            signal.signal(signal.SIGINT, handle_sigint)
+            signal.signal(signal.SIGINT, SigintHandler(old_handler))
 
 
 def uninstall_sigint_handler():
-    global old_handler
-    if old_handler is not True:
-        signal.signal(signal.SIGINT, old_handler)
-        old_handler = True
+    if threading.current_thread() == threading.main_thread():
+        old_handler = signal.getsignal(signal.SIGINT)
+        assert isinstance(old_handler, SigintHandler), (
+            "Told to uninstall SIGINT handler even though we didn't install it most recently?"
+        )
+        signal.signal(signal.SIGINT, old_handler.prev)
 
 
 try:
