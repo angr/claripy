@@ -8,6 +8,7 @@ from functools import reduce
 from typing import TYPE_CHECKING
 
 import claripy
+from claripy import operations
 from claripy.fp import FSORT_DOUBLE, FSORT_FLOAT
 
 if TYPE_CHECKING:
@@ -399,8 +400,20 @@ def bv_reverse_simplifier(body):
 
 
 def boolean_and_simplifier(*args):
+    needs_rewrite = False
+    for a in args:
+        if a.op == "BoolV":
+            if not a.args[0]:
+                return claripy.false()
+            needs_rewrite = True
+
+    if needs_rewrite:
+        args = tuple(a for a in args if a.op != "BoolV")
+
     if len(args) == 1:
         return args[0]
+    if len(args) == 0:
+        return claripy.false()
 
     # a == 0 && a == 1  ->  False
     if (
@@ -503,19 +516,20 @@ def boolean_and_simplifier(*args):
 
 
 def boolean_or_simplifier(*args):
-    if len(args) == 1:
-        return args[0]
-
-    new_args = []
+    needs_rewrite = False
     for a in args:
-        if a.is_true():
-            return claripy.true()
-        if not a.is_false():
-            new_args.append(a)
+        if a.op == "BoolV":
+            if a.args[0]:
+                return claripy.true()
+            needs_rewrite = True
 
-    if not new_args:
-        return claripy.false()
-    if len(new_args) < len(args):
+    if needs_rewrite:
+        new_args = tuple(a for a in args if a.op != "BoolV")
+
+        if len(new_args) == 1:
+            return new_args[0]
+        if len(new_args) == 0:
+            return claripy.true()
         return claripy.Or(*new_args)
 
     return _flatten_simplifier("Or", _deduplicate_filter, *args)
@@ -801,6 +815,18 @@ def boolean_not_simplifier(body):
     if body.op == "UGE":
         return claripy.ULT(body.args[0], body.args[1])
 
+    return None
+
+
+def boolean_xor_simplifier(a, b):
+    if a.op == "BoolV":
+        if a.args[0]:
+            return ~b
+        return b
+    if b.op == "BoolV":
+        if b.args[0]:
+            return ~a
+        return a
     return None
 
 
@@ -1156,6 +1182,7 @@ _all_simplifiers = {
     "And": boolean_and_simplifier,
     "Or": boolean_or_simplifier,
     "Not": boolean_not_simplifier,
+    "Xor": boolean_xor_simplifier,
     "Reverse": bv_reverse_simplifier,
     "Extract": extract_simplifier,
     "Concat": concat_simplifier,
@@ -1188,6 +1215,9 @@ def simplify(op, args) -> tuple[Base | None, bool]:
     simplified result if possible, along with a boolean representing whether
     annotations were handled by the simplifier.
     """
+
+    if op in operations.commutative_operations:
+        args = tuple(sorted(args, key=lambda x: x.hash()))
 
     if op not in _all_simplifiers:
         return None, False
