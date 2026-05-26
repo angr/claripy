@@ -98,7 +98,7 @@ def install_sigint_handler() -> bool:
         old_handler = signal.getsignal(signal.SIGINT)
         if old_handler is None or old_handler == signal.SIG_DFL:
             # there is a signal handler installed by someone other than python. we cannot handle this.
-            return False
+            pass
         else:
             signal.signal(signal.SIGINT, SigintHandler(old_handler))
             return True
