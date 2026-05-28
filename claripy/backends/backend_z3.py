@@ -93,7 +93,7 @@ def _exit_z3():
             _gc_was_enabled = False
 
 
-def install_sigint_handler():
+def install_sigint_handler() -> bool:
     if threading.current_thread() == threading.main_thread():  # Signal only works in the main thread
         old_handler = signal.getsignal(signal.SIGINT)
         if old_handler is None or old_handler == signal.SIG_DFL:
@@ -101,6 +101,8 @@ def install_sigint_handler():
             pass
         else:
             signal.signal(signal.SIGINT, SigintHandler(old_handler))
+            return True
+    return False
 
 
 def uninstall_sigint_handler():
@@ -237,14 +239,16 @@ def condom(f):
         """
         The Z3 condom intercepts Z3Exceptions and throws a ClaripyZ3Error instead.
         """
+        handler_installed = False
         try:
             _enter_z3()
-            install_sigint_handler()
+            handler_installed = install_sigint_handler()
             return f(*args, **kwargs)
         except z3.Z3Exception as ze:
             raise ClaripyZ3Error from ze
         finally:
-            uninstall_sigint_handler()
+            if handler_installed:
+                uninstall_sigint_handler()
             _exit_z3()
 
     return z3_condom
