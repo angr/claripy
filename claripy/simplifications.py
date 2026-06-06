@@ -8,6 +8,7 @@ from functools import reduce
 from typing import TYPE_CHECKING
 
 import claripy
+from claripy import operations
 from claripy.fp import FSORT_DOUBLE, FSORT_FLOAT
 
 if TYPE_CHECKING:
@@ -1188,6 +1189,9 @@ def simplify(op, args) -> tuple[Base | None, bool]:
     simplified result if possible, along with a boolean representing whether
     annotations were handled by the simplifier.
     """
+
+    if op in operations.commutative_operations:
+        args = tuple(sorted(args, key=lambda x: x.hash()))
 
     if op not in _all_simplifiers:
         return None, False
