@@ -399,8 +399,20 @@ def bv_reverse_simplifier(body):
 
 
 def boolean_and_simplifier(*args):
+    needs_rewrite = False
+    for a in args:
+        if a.op == "BoolV":
+            if not a.args[0]:
+                return claripy.false()
+            needs_rewrite = True
+
+    if needs_rewrite:
+        args = tuple(a for a in args if a.op != "BoolV")
+
     if len(args) == 1:
         return args[0]
+    if len(args) == 0:
+        return claripy.true()
 
     # a == 0 && a == 1  ->  False
     if (
@@ -503,19 +515,20 @@ def boolean_and_simplifier(*args):
 
 
 def boolean_or_simplifier(*args):
-    if len(args) == 1:
-        return args[0]
-
-    new_args = []
+    needs_rewrite = False
     for a in args:
-        if a.is_true():
-            return claripy.true()
-        if not a.is_false():
-            new_args.append(a)
+        if a.op == "BoolV":
+            if a.args[0]:
+                return claripy.true()
+            needs_rewrite = True
 
-    if not new_args:
-        return claripy.false()
-    if len(new_args) < len(args):
+    if needs_rewrite:
+        new_args = tuple(a for a in args if a.op != "BoolV")
+
+        if len(new_args) == 1:
+            return new_args[0]
+        if len(new_args) == 0:
+            return claripy.false()
         return claripy.Or(*new_args)
 
     return _flatten_simplifier("Or", _deduplicate_filter, *args)
