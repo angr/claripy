@@ -28,7 +28,7 @@ from claripy.errors import (
     ClaripyZ3Error,
 )
 from claripy.fp import RM, FSort
-from claripy.operations import backend_fp_operations, backend_operations, backend_strings_operations, bound_ops
+from claripy.operations import backend_fp_operations, backend_operations, backend_strings_operations
 
 if TYPE_CHECKING:
     from types import FrameType
@@ -656,7 +656,6 @@ class BackendZ3(Backend):
 
         # hmm.... honestly not sure what to do here
         result_ty = op_type_map[z3_op_nums[decl_num]]
-        ty = type(args[-1])
 
         if isinstance(result_ty, str):
             err = (
@@ -671,18 +670,17 @@ class BackendZ3(Backend):
             ty = type(args[1])
 
             a = ty("If", tuple(args), length=args[1].length)
-        elif (
-            op := getattr(ty, op_name, None)
-            or getattr(result_ty, op_name, None)
-            or (op_name in bound_ops and getattr(ty, bound_ops[op_name], None))
-        ):
-            if op.calc_length is not None:
-                length = op.calc_length(*args)
-                a = result_ty(op_name, tuple(args), length=length)
-            else:
-                a = result_ty(op_name, tuple(args))
         else:
-            a = result_ty(op_name, tuple(args))
+            # Take the result length directly from the Z3 sort rather than re-deriving it from the
+            # claripy operation.
+            sort_kind = z3.Z3_get_sort_kind(ctx, z3_sort)
+            if sort_kind == z3.Z3_BV_SORT:
+                length = z3.Z3_get_bv_sort_size(ctx, z3_sort)
+            elif sort_kind == z3.Z3_FLOATING_POINT_SORT:
+                length = z3.Z3_fpa_get_ebits(ctx, z3_sort) + z3.Z3_fpa_get_sbits(ctx, z3_sort)
+            else:
+                length = None
+            a = result_ty(op_name, tuple(args), length=length)
 
         self._ast_cache[h] = (a, ast)
         z3.Z3_inc_ref(ctx, ast)
