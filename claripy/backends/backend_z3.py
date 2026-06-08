@@ -671,8 +671,6 @@ class BackendZ3(Backend):
 
             a = ty("If", tuple(args), length=args[1].length)
         else:
-            # Take the result length directly from the Z3 sort rather than re-deriving it from the
-            # claripy operation.
             sort_kind = z3.Z3_get_sort_kind(ctx, z3_sort)
             if sort_kind == z3.Z3_BV_SORT:
                 length = z3.Z3_get_bv_sort_size(ctx, z3_sort)
