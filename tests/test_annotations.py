@@ -201,6 +201,11 @@ class TestAnnotation(unittest.TestCase):
         x3 = claripy.simplify(x0 + x1)
         assert len(x3.annotations) == 1
 
+    def test_strided_interval_annotation_eq(self):
+        si = claripy.annotation.StridedIntervalAnnotation
+        assert si(1, 0, 10) == si(1, 0, 10)
+        assert si(1, 0, 10) != si(1, 0, 20)
+
 
 if __name__ == "__main__":
     unittest.main()

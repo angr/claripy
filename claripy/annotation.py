@@ -99,7 +99,7 @@ class StridedIntervalAnnotation(SimplificationAvoidanceAnnotation):
             isinstance(other, StridedIntervalAnnotation)
             and self.stride == other.stride
             and self.lower_bound == other.lower_bound
-            and self.upper_bound == other
+            and self.upper_bound == other.upper_bound
         )
 
     def __repr__(self):
