@@ -16,7 +16,11 @@ classifiers = [
 ]
 urls = { Homepage = "https://github.com/angr/claripy" }
 requires-python = ">=3.12"
-dependencies = ["cachetools", "z3-solver==4.13.0.0"]
+dependencies = [
+    "cachetools",
+    "z3-solver==4.13.0.0; sys_platform != 'emscripten'",
+    "z3-solver>=5.0.0.0; sys_platform == 'emscripten'",
+]
 dynamic = ["version"]
 
 [project.readme]
