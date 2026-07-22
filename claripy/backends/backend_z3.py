@@ -42,6 +42,7 @@ log = logging.getLogger(__name__)
 
 ALL_Z3_CONTEXTS = weakref.WeakSet()
 INT_STRING_CHUNK_SIZE: int | None = None  # will be updated later if we are on CPython 3.11+
+Z3_BOOL_TYPE = ctypes.c_bool if z3.get_version() >= (5, 0, 0, 0) else ctypes.c_int
 
 
 class SigintHandler:
@@ -753,7 +754,7 @@ class BackendZ3(Backend):
             # TODO: do better than this
             fp_mantissa = float(z3.Z3_fpa_get_numeral_significand_string(ctx, ast))
             fp_exp = int(z3.Z3_fpa_get_numeral_exponent_string(ctx, ast, False))
-            fp_sign_c = ctypes.c_bool()  # pylint: disable=no-value-for-parameter
+            fp_sign_c = Z3_BOOL_TYPE()  # pylint: disable=no-value-for-parameter
             z3.Z3_fpa_get_numeral_sign(ctx, ast, ctypes.byref(fp_sign_c))
             fp_sign = -1 if fp_sign_c.value != 0 else 1
             return fp_sign * fp_mantissa * (2**fp_exp)
@@ -782,7 +783,7 @@ class BackendZ3(Backend):
             # TODO: do better than this
             fp_mantissa = int(z3.Z3_fpa_get_numeral_significand_string(ctx, ast))
             fp_exp = int(z3.Z3_fpa_get_numeral_exponent_string(ctx, ast, True))
-            fp_sign_c = ctypes.c_bool()  # pylint: disable=no-value-for-parameter
+            fp_sign_c = Z3_BOOL_TYPE()  # pylint: disable=no-value-for-parameter
             z3.Z3_fpa_get_numeral_sign(ctx, ast, ctypes.byref(fp_sign_c))
             fp_sign = 1 if fp_sign_c.value != 0 else 0
         elif op_name == "MinusZero":
