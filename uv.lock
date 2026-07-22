@@ -1,6 +1,10 @@
 version = 1
 revision = 3
-requires-python = ">=3.10"
+requires-python = ">=3.12"
+resolution-markers = [
+    "sys_platform != 'emscripten'",
+    "sys_platform == 'emscripten'",
+]
 
 [[package]]
 name = "accessible-pygments"
@@ -125,7 +129,8 @@ name = "claripy"
 source = { editable = "." }
 dependencies = [
     { name = "cachetools" },
-    { name = "z3-solver" },
+    { name = "z3-solver", version = "4.13.0.0", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform != 'emscripten'" },
+    { name = "z3-solver", version = "5.0.0.0", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform == 'emscripten'" },
 ]
 
 [package.dev-dependencies]
@@ -143,7 +148,8 @@ docs = [
 [package.metadata]
 requires-dist = [
     { name = "cachetools" },
-    { name = "z3-solver", specifier = "==4.13.0.0" },
+    { name = "z3-solver", marker = "sys_platform != 'emscripten'", specifier = "==4.13.0.0" },
+    { name = "z3-solver", marker = "sys_platform == 'emscripten'", specifier = ">=5.0.0.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -637,6 +643,9 @@ wheels = [
 name = "z3-solver"
 version = "4.13.0.0"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "sys_platform != 'emscripten'",
+]
 sdist = { url = "https://files.pythonhosted.org/packages/3a/fd/e3f5850fd04480a942aca9f9f7520d3fa5b57731335c221a11f55bb6d91a/z3-solver-4.13.0.0.tar.gz", hash = "sha256:52588e92aec7cb338fd6288ce93758ae01770f62ca0c80e8f4f2b2333feaf51b", size = 4848532, upload-time = "2024-03-07T19:20:07.192Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/4e/5b/934de9f1f31b1d0f3a8da0ff2e3092136fbffe737eca52965818464af4c3/z3_solver-4.13.0.0-py2.py3-none-macosx_11_0_arm64.whl", hash = "sha256:bca7d59a699a440247537c2180c519d682c9df3520a16ce288fced61a70d253d", size = 27144281, upload-time = "2024-03-07T19:19:36.033Z" },
@@ -646,3 +655,12 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/b9/27/ca09e1f4642b42a2972047f508bc4ecb0c5acf975c910eb0fdeaf9ec21d0/z3_solver-4.13.0.0-py2.py3-none-win32.whl", hash = "sha256:13468e1018c817b7f794898d3100f02541d15c13ab56c0785c5acdea32a066cf", size = 55429050, upload-time = "2024-03-07T19:19:58.867Z" },
     { url = "https://files.pythonhosted.org/packages/25/c0/dd978c813288f6860bcfb9e4d2d1d3b311a42a2237a4766e5a0adbcaa79b/z3_solver-4.13.0.0-py2.py3-none-win_amd64.whl", hash = "sha256:3555436cfe9a5fa2d1b432fb9a5e4460e487649c22e5e68a56f7d81594d043e9", size = 58378460, upload-time = "2024-03-07T19:20:03.281Z" },
 ]
+
+[[package]]
+name = "z3-solver"
+version = "5.0.0.0"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "sys_platform == 'emscripten'",
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d8/00/4ffb6fb197af2e6645165433d65bbfc7c914e4176573da954685f09e51a2/z3_solver-5.0.0.0.tar.gz", hash = "sha256:24d4b524c21f48c86c7058a36e83091c1fc08be28b68bf5a0f3cce5305ed8464", size = 5388479, upload-time = "2026-07-17T01:54:16.286Z" }
