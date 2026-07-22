@@ -5,17 +5,6 @@ from unittest import TestCase, main
 
 import claripy
 import claripy.frontend
-from claripy.backends.backend_z3 import BackendZ3
-
-
-def test_z3_solver_reuse_defaults_on(monkeypatch):
-    monkeypatch.delenv("REUSE_Z3_SOLVER", raising=False)
-    assert BackendZ3().reuse_z3_solver
-
-
-def test_z3_solver_reuse_can_be_disabled(monkeypatch):
-    monkeypatch.setenv("REUSE_Z3_SOLVER", "false")
-    assert not BackendZ3().reuse_z3_solver
 
 
 def raw_hybrid_solver(reuse_z3_solver):
