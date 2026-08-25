@@ -178,6 +178,36 @@ class TestExpression(unittest.TestCase):
         with self.assertRaises(claripy.errors.ClaripyValueError):
             claripy.BVV("AB", 8)
 
+    def test_singlevalued_when_no_backend_can_bound_cardinality(self):
+        """
+        singlevalued and multivalued are answered by cardinality, which BackendZ3 does not implement at all.
+        An expression only Z3 can represent therefore leaves every backend declining -- concrete cannot
+        evaluate it and VSA cannot represent it -- and the two predicates used to raise instead of answering.
+        Failing to bound the cardinality says nothing about how many values the expression holds, so they
+        answer the conservative way round.
+
+        Both a floating-point value and a rotate by a symbolic amount reach this; the second carries no
+        floating point at all, which is what shows the hole is in cardinality rather than in FP support.
+        """
+        unbounded = [
+            claripy.fpToFP(claripy.BVS("x", 32), claripy.FSORT_FLOAT),
+            claripy.RotateLeft(claripy.BVS("y", 32), claripy.BVS("amount", 32)),
+        ]
+        for expr in unbounded:
+            with self.subTest(op=expr.op):
+                for backend in claripy.backends.all_backends:
+                    self.assertRaises(claripy.errors.BackendError, backend.cardinality, expr)
+
+                self.assertFalse(expr.singlevalued)
+                self.assertTrue(expr.multivalued)
+
+                # cardinality itself still reports that nobody could answer: there is no safe number to invent
+                self.assertRaises(claripy.errors.BackendError, lambda: expr.cardinality)  # noqa: B023
+
+        # expressions a backend can bound are unaffected
+        self.assertTrue(claripy.BVV(5, 32).singlevalued)
+        self.assertFalse(claripy.BVS("z", 32).singlevalued)
+
     def test_cardinality(self):
         x = claripy.BVS("x", 32)
         y = claripy.BVS("y", 32).annotate(claripy.annotation.StridedIntervalAnnotation(1, 100, 120))

@@ -72,3 +72,19 @@ class BackendAny(Backend):
 
     def cardinality(self, a):
         return self._first_backend(a, "cardinality")
+
+    def singlevalued(self, a):
+        # Not every expression can be handed to a backend that implements cardinality: BackendZ3 does not
+        # implement it at all, so an expression only Z3 can represent -- any symbolic floating-point value,
+        # for one -- leaves every backend declining. Failing to bound the cardinality is not evidence that
+        # the expression holds one value, so answer the conservative way round rather than raising.
+        try:
+            return self.cardinality(a) == 1
+        except BackendError:
+            return False
+
+    def multivalued(self, a):
+        try:
+            return self.cardinality(a) > 1
+        except BackendError:
+            return True
