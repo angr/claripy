@@ -202,7 +202,7 @@ class TestExpression(unittest.TestCase):
                 self.assertTrue(expr.multivalued)
 
                 # cardinality itself still reports that nobody could answer: there is no safe number to invent
-                self.assertRaises(claripy.errors.BackendError, lambda: expr.cardinality)  # noqa: B023
+                self.assertRaises(claripy.errors.BackendError, lambda e=expr: e.cardinality)
 
         # expressions a backend can bound are unaffected
         self.assertTrue(claripy.BVV(5, 32).singlevalued)
@@ -380,7 +380,9 @@ class TestExpression(unittest.TestCase):
         c.args[1].args = (a, claripy.BVV(0, 32))
         assert claripy.backends.z3.is_false(c)
         assert not claripy.backends.z3.is_true(c)
-        assert not claripy.backends.z3.is_false(a == a)
+        # a is an AST, so a == a builds a symbolic equality expression rather than comparing a value
+        # with itself, and that expression being neither true nor false is exactly what is under test.
+        assert not claripy.backends.z3.is_false(a == a)  # pylint:disable=comparison-with-itself
 
     def test_depth_repr(self):
         x = claripy.BVS("x", 32)

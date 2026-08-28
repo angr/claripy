@@ -797,10 +797,10 @@ class Backend:
         """
         raise BackendError("backend doesn't support cardinality()")
 
-    def singlevalued(self, a):
+    def singlevalued(self, a) -> bool:
         return self.cardinality(a) == 1
 
-    def multivalued(self, a):
+    def multivalued(self, a) -> bool:
         return self.cardinality(a) > 1
 
     def apply_annotation(self, o, a):  # pylint:disable=no-self-use,unused-argument
