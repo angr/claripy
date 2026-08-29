@@ -446,6 +446,21 @@ def raw_unsat_core(solver, reuse_z3_solver):
 
 
 class StandardTests(TestCase):
+    def test_branching_does_not_duplicate_z3_assertions(self):
+        # branch-then-solve used to re-assert the whole constraint list into a solver cloned from one that
+        # already held it, so the backing z3 solver grew quadratically while the frontend did not.
+        # SolverCacheless is used so that every satisfiable() really reaches z3.
+        s = claripy.SolverCacheless()
+        x = claripy.BVS("x", 32)
+        s.add(x > 0)
+        assert s.satisfiable()
+
+        for i in range(1, 30):
+            s = s.branch()
+            s.add(x != i)
+            assert s.satisfiable()
+            assert len(s._tls.solver.assertions()) == len(s.constraints)
+
     def test_composite_solver_with_strings(self):
         s = claripy.SolverComposite()
         x = claripy.BVS("x", 32)

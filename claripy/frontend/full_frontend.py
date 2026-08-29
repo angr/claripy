@@ -76,26 +76,35 @@ class FullFrontend(ConstrainedFrontend):
     def _get_solver(self):
         if getattr(self._tls, "solver", None) is None:
             self._tls.solver = self._solver_backend.solver(timeout=self.timeout, max_memory=self.max_memory)
-            self._add_constraints()
+            self._add_constraints(everything=True)
         elif self._finalized and len(self._to_add) > 0:
             if not hasattr(self._solver_backend, "clone_solver") or self._solver_backend.reuse_z3_solver:
-                # this function may return a cached solver
+                # this function may return a cached solver, which comes back empty
                 self._tls.solver = self._solver_backend.solver(timeout=self.timeout, max_memory=self.max_memory)
+                self._add_constraints(everything=True)
             else:
+                # the clone already holds everything except what is still pending
                 self._tls.solver = self._solver_backend.clone_solver(self._tls.solver)
-            self._add_constraints()
+                self._add_constraints()
 
         if len(self._to_add) > 0:
             self._add_constraints()
 
         solver = self._tls.solver
         if self._solver_backend.reuse_z3_solver:
-            # we must re-add all constraints
-            self._add_constraints()
+            # the shared solver may have been reset under us, so we must re-add all constraints
+            self._add_constraints(everything=True)
         return solver
 
-    def _add_constraints(self):
-        self._solver_backend.add(self._tls.solver, self.constraints, track=self._track)
+    def _add_constraints(self, everything: bool = False):
+        """
+        Assert this frontend's constraints into ``self._tls.solver``.
+
+        The solver invariant is that it already holds every constraint except those still queued in
+        ``self._to_add``, so only the queue needs to be asserted. Pass ``everything`` when that does not
+        hold: when the solver was just created, or reset by the ``reuse_z3_solver`` path.
+        """
+        self._solver_backend.add(self._tls.solver, self.constraints if everything else self._to_add, track=self._track)
         self._to_add = []
 
     #
