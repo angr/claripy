@@ -461,6 +461,20 @@ class StandardTests(TestCase):
             assert s.satisfiable()
             assert len(s._tls.solver.assertions()) == len(s.constraints)
 
+    def test_tracking_survives_branching(self):
+        # a tracking solver records each constraint as Implies(literal, constraint), so a clone that merely
+        # re-asserts the assertions leaves every literal free and the result is vacuously satisfiable
+        s = claripy.Solver(track=True)
+        x = claripy.BVS("x", 32)
+        y = claripy.BVS("y", 32)
+        s.add(x == y)
+        s.add(x == 1)
+        assert s.satisfiable()  # materialises the z3 solver so that branching shares it
+
+        s = s.branch()
+        s.add(y == 2)
+        assert not s.satisfiable()
+
     def test_composite_solver_with_strings(self):
         s = claripy.SolverComposite()
         x = claripy.BVS("x", 32)

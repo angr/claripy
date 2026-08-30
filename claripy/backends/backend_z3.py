@@ -835,10 +835,19 @@ class BackendZ3(Backend):
             s.set("max_memory", max_memory)
         return s
 
-    def clone_solver(self, s):
+    def clone_solver(self, s, timeout=None, max_memory=None, track=False):
         # This clones the solver.
         # See https://github.com/Z3Prover/z3/issues/556
-        return s.translate(self._context)
+        if track:
+            # assert_and_track() attaches a tracking literal to each assertion, which unsat_core() needs
+            # and which re-asserting s.assertions() would drop. Only translate() carries them over.
+            return s.translate(self._context)
+        # The assertions are already z3 ASTs belonging to this context, so re-asserting them into a new
+        # solver just bumps their refcounts. translate() rebuilds every one of them instead, which costs
+        # far more than the solving on large constraint sets.
+        clone = self.solver(timeout=timeout, max_memory=max_memory)
+        clone.add(*s.assertions())
+        return clone
 
     def _add(self, s, c, track=False):
         if track:

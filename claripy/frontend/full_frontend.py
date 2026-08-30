@@ -84,7 +84,9 @@ class FullFrontend(ConstrainedFrontend):
                 self._add_constraints(everything=True)
             else:
                 # the clone already holds everything except what is still pending
-                self._tls.solver = self._solver_backend.clone_solver(self._tls.solver)
+                self._tls.solver = self._solver_backend.clone_solver(
+                    self._tls.solver, timeout=self.timeout, max_memory=self.max_memory, track=self._track
+                )
                 self._add_constraints()
 
         if len(self._to_add) > 0:
