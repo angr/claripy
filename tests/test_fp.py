@@ -59,6 +59,13 @@ class TestFp(unittest.TestCase):
         s = claripy.Solver()
         assert s.eval(b, 1)[0] == 2
 
+    def test_fp_model_value(self):
+        a = claripy.FPS("a", claripy.FSORT_FLOAT)
+        s = claripy.Solver()
+        s.add(a == -2.5)
+        assert s.eval(a, 1) == (-2.5,)
+        assert s.eval(a.raw_to_bv(), 1) == (0xC0200000,)
+
     def test_fp_precision_loss(self):
         dd = claripy.FPV(101817237862.0, claripy.FSORT_DOUBLE)
         s = claripy.Solver()
