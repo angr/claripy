@@ -229,6 +229,9 @@ def str_to_int_unlimited(s: str) -> int:
 # as of z3 4.8.7.0 this seems to matter
 z3.set_param("rewriter.hi_fp_unspecified", "true")
 
+# with these rules on, angr's test_manyfloatsum_symbolic_i386 and _x86_64 run out of memory
+z3.set_param("rewriter.ite_extra_rules", "false")
+
 #
 # Utility functions
 #
