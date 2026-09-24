@@ -287,6 +287,17 @@ class TestSimplify(unittest.TestCase):
         expr = claripy.Extract(31, 0, a_and_b)
         assert expr is claripy.BVV(0, 32)
 
+    def test_invert_wide_ite(self):
+        x = claripy.BVS("x", 32)
+        for w in (1, 8, 32):
+            e = ~claripy.If(x == 5, claripy.BVV(1, w), claripy.BVV(0, w))
+            s = claripy.Solver()
+            s.add(x == 5)
+            assert s.eval(e, 1)[0] == (1 << w) - 2
+            s = claripy.Solver()
+            s.add(x != 5)
+            assert s.eval(e, 1)[0] == (1 << w) - 1
+
 
 if __name__ == "__main__":
     unittest.main()
