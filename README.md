@@ -1,3 +1,9 @@
+
+> [!WARNING]
+> Claripy has been rewritten in Rust and is now part of the angr package! The implementation of Claripy found in this repository is now in maintenance mode. This repository is scheduled for archiving on January 1, 2027.
+
+---
+
 # claripy
 [![Latest Release](https://img.shields.io/pypi/v/claripy.svg)](https://pypi.python.org/pypi/claripy/)
 [![Python Version](https://img.shields.io/pypi/pyversions/claripy)](https://pypi.python.org/pypi/claripy/)
