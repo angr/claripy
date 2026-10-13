@@ -1019,9 +1019,14 @@ def str_reverse_simplifier(arg):
 
 
 def invert_simplifier(expr):
-    # ~ if(cond then 1 else 0)  ->  if(cond, ~1, ~0)  ->    if(!cond, 1,0)
-    if expr.op == "If" and expr.args[1].op == "BVV" and expr.args[1].args[0] == 1 and expr.args[2].args[0] == 0:
-        return claripy.If(claripy.Not(expr.args[0]), expr.args[1], expr.args[2])
+    if expr.op == "If":
+        cond, if_true, if_false = expr.args
+        if if_true.op == "BVV" and if_false.op == "BVV":
+            # 1-bit: ~If(c, 1, 0) ==> If(!c, 1, 0), keeping the canonical bool-as-BV form
+            if expr.length == 1 and if_true.args[0] == 1 and if_false.args[0] == 0:
+                return claripy.If(claripy.Not(cond), if_true, if_false)
+            # general: ~If(c, a, b) ==> If(c, ~a, ~b), which constant-folds the arms
+            return claripy.If(cond, ~if_true, ~if_false)
     return None
 
 
