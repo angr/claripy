@@ -817,6 +817,18 @@ def boolean_not_simplifier(body):
     return None
 
 
+def boolean_xor_simplifier(a, b):
+    if a.op == "BoolV":
+        if a.args[0]:
+            return ~b
+        return b
+    if b.op == "BoolV":
+        if b.args[0]:
+            return ~a
+        return a
+    return None
+
+
 def zeroext_simplifier(n, e):
     if n == 0:
         return e
@@ -1169,6 +1181,7 @@ _all_simplifiers = {
     "And": boolean_and_simplifier,
     "Or": boolean_or_simplifier,
     "Not": boolean_not_simplifier,
+    "Xor": boolean_xor_simplifier,
     "Reverse": bv_reverse_simplifier,
     "Extract": extract_simplifier,
     "Concat": concat_simplifier,
